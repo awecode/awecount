@@ -2,24 +2,14 @@
   <div class="md:grid md:grid-cols-12">
     <div class="border border-r border-black col-span-3">
       <div>
-        <q-input v-model="searchTerm" autofocus debounce="250" label="&nbsp;&nbsp;Search Items..."
-          input-class="pl-2 bg-red-200 focus:bg-green-200" @keypress.enter="enterClicked = true" class="search-input"
-          color="green-8"></q-input>
+        <q-input v-model="searchTerm" autofocus debounce="250" label="&nbsp;&nbsp;Search Items..." input-class="pl-2 bg-red-200 focus:bg-green-200" @keypress.enter="enterClicked = true" class="search-input" color="green-8"></q-input>
         <!-- <div class="row q-py-sm q-px-md text-subtitle2">
               <div class="col-8">Name</div>
               <div class="col-4">Rate</div>
             </div> -->
-        <div class="row" style="
-            border-bottom: 1px lightgrey solid;
-            padding: 8px 16px 6px 16px;
-            font-size: 13px;
-          " v-for=" item  in
-  searchResults?.results ||
-    formDefaults.collections?.items.results
-" :key="item.id">
+        <div class="row" style="border-bottom: 1px lightgrey solid; padding: 8px 16px 6px 16px; font-size: 13px" v-for="item in searchResults?.results || formDefaults.collections?.items.results" :key="item.id">
           <div class="col-8">
-            <router-link v-if="hasItemModifyAccess" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%;" class="text-blue" target="_blank"
-              :title="item.code" :to="`/items/${item.id}/`">
+            <router-link v-if="hasItemModifyAccess" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%" class="text-blue" target="_blank" :title="item.code" :to="`/items/${item.id}/`">
               {{ item.name }}
             </router-link>
             <span v-else>{{ item.name }}</span>
@@ -34,32 +24,33 @@
           </div>
         </div>
       </div>
-      <PaginateList class="q-mt-md" @update-page="(page) => (currentPage = page)"
-        v-if="formDefaults.collections?.items.pagination" :pagination="searchResults?.pagination ||
-          formDefaults.collections?.items.pagination
-          "></PaginateList>
+      <PaginateList class="q-mt-md" @update-page="(page) => (currentPage = page)" v-if="formDefaults.collections?.items.pagination" :pagination="searchResults?.pagination || formDefaults.collections?.items.pagination"></PaginateList>
     </div>
     <div class="col-span-9">
       <q-form>
-        <PosInvoiceTable :unitOptions="formDefaults.collections ? formDefaults.collections.units : null"
-          :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes"
-          v-model="fields.rows" :mainDiscount="{
+        <PosInvoiceTable
+          :unitOptions="formDefaults.collections ? formDefaults.collections.units : null"
+          :discountOptions="discountOptionsComputed"
+          :taxOptions="formDefaults.collections?.tax_schemes"
+          v-model="fields.rows"
+          :mainDiscount="{
             discount_type: fields.discount_type,
             discount: fields.discount,
-          }
-            " :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
-    " @updateTableData="(val) => totalTableData = val"></PosInvoiceTable>
-        <q-card
-          class="fixed md:w-[calc(75%-32px)] lg:w-[calc(75%-76px)] w-[100%] md:right-4 right-0 bottom-4 border border-solid border-gray-200">
-          <div style="width: 100%;">
+          }"
+          :errors="!!errors?.rows ? errors.rows : null"
+          @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)"
+          @updateTableData="(val) => (totalTableData = val)"
+        ></PosInvoiceTable>
+        <q-card class="fixed md:w-[calc(75%-32px)] lg:w-[calc(75%-76px)] w-[100%] md:right-4 right-0 bottom-4 border border-solid border-gray-200">
+          <div style="width: 100%">
             <div class="py-4 px-6 w-full bg-white">
               <div class="row justify-between">
                 <div class="text-center text-left pt-2">
-                  <div v-if="fields.rows.reduce((accumulator, currentDict) => (accumulator + currentDict.quantity), 0)">
+                  <div v-if="fields.rows.reduce((accumulator, currentDict) => accumulator + currentDict.quantity, 0)">
                     <div class="font-medium text-gray-500">Rows &nbsp; {{ fields.rows.length }}</div>
-                    <div class="font-medium text-gray-500">Items &nbsp;
-                      {{ fields.rows.reduce((accumulator, currentDict) => (accumulator + currentDict.quantity), 0)
-                      }}
+                    <div class="font-medium text-gray-500">
+                      Items &nbsp;
+                      {{ fields.rows.reduce((accumulator, currentDict) => accumulator + currentDict.quantity, 0) }}
                     </div>
                   </div>
                 </div>
@@ -95,12 +86,11 @@
               <div>
                 <div class="flex -my-2 items-center gap-x-8">
                   <div class="flex-grow min-w-[225px]">
-                    <n-auto-complete-v2 v-model="fields.mode" label="Mode" class="col-12 col-md-6"
-                      :error-message="errors?.mode ? errors.mode[0] : null" :error="!!errors?.mode" :options="modeOptionsComputed"
-                      endpoint="v1/pos/create-defaults/bank_accounts" option-value="id" option-label="name" map-options emit-value>
+                    <n-auto-complete-v2 v-model="fields.mode" label="Mode" class="col-12 col-md-6" :error-message="errors?.mode ? errors.mode[0] : null" :error="!!errors?.mode" :options="modeOptionsComputed" endpoint="v1/pos/create-defaults/bank_accounts" option-value="id" option-label="name" map-options emit-value>
                       <template v-slot:append>
-                        <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
-                          @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>
+                        <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear" @click.stop.prevent="fields.mode = null" />
+                      </template>
+                    </n-auto-complete-v2>
                   </div>
                   <div class="flex items-center gap-x-8 gap-y-4">
                     <q-btn class="f-open-btn" icon="mdi-menu">
@@ -110,17 +100,8 @@
                             <div class="col-12">
                               <div class="row">
                                 <div class="col-10">
-                                  <q-input v-model="fields.customer_name" label="Customer Name" :error-message="errors.customer_name
-                                    ? errors.customer_name[0]
-                                    : null
-                                    " :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'">
-                                  </q-input>
-                                  <n-auto-complete-v2 v-else v-model="fields.party" :options="partyChoices" label="Party"
-                                    endpoint="v1/parties/choices/"
-                                    :error="errors?.party ? errors?.party[0] : null" :modal-component="checkPermissions('PartyCreate')
-                                      ? PartyForm
-                                      : null
-                                      " />
+                                  <q-input v-model="fields.customer_name" label="Customer Name" :error-message="errors.customer_name ? errors.customer_name[0] : null" :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'"></q-input>
+                                  <n-auto-complete-v2 v-else v-model="fields.party" :options="partyChoices" label="Party" endpoint="v1/parties/choices/" :error="errors?.party ? errors?.party[0] : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
                                 </div>
                                 <div class="col-2 row justify-center q-py-md">
                                   <q-btn flat size="md" @click="() => switchMode(fields)">
@@ -132,30 +113,16 @@
                           </div>
                           <div class="row q-col-gutter-md">
                             <div class="col-12 row q-col-gutter-md">
-                              <div :class="fields.discount_type === 'Amount' ||
-                                fields.discount_type === 'Percent'
-                                ? 'col-8'
-                                : 'col-12'
-                                ">
-                                <n-auto-complete v-model="fields.discount_type" label="Discount*"
-                                  :error="errors?.discount_type" :options="discountOptionsComputed" :modal-component="checkPermissions('SalesDiscountCreate')
-                                    ? SalesDiscountForm
-                                    : null
-                                    ">
-                                </n-auto-complete>
+                              <div :class="fields.discount_type === 'Amount' || fields.discount_type === 'Percent' ? 'col-8' : 'col-12'">
+                                <n-auto-complete v-model="fields.discount_type" label="Discount*" :error="errors?.discount_type" :options="discountOptionsComputed" :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null"></n-auto-complete>
                               </div>
-                              <div class="col-4" v-if="fields.discount_type === 'Amount' ||
-                                fields.discount_type === 'Percent'
-                                ">
-                                <q-input v-model.number="fields.discount" label="Discount" :error-message="errors?.discount ? errors.discount[0] : null
-                                  " :error="!!errors?.discount"></q-input>
+                              <div class="col-4" v-if="fields.discount_type === 'Amount' || fields.discount_type === 'Percent'">
+                                <q-input v-model.number="fields.discount" label="Discount" :error-message="errors?.discount ? errors.discount[0] : null" :error="!!errors?.discount"></q-input>
                               </div>
                             </div>
                           </div>
                           <div class="col-12 -mt-4">
-                            <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow
-                              :error="!!errors?.remarks" :error-message="errors?.remarks ? errors.remarks[0] : null
-                                " />
+                            <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow :error="!!errors?.remarks" :error-message="errors?.remarks ? errors.remarks[0] : null" />
                           </div>
                         </div>
                       </q-menu>
@@ -188,14 +155,14 @@ const metaData = {
   title: 'POS | Awecount',
 }
 const totalTableData = ref({
-  'subTotal': 0,
-  'discount': 0,
-  'total': 0,
-  'totalTax': 0,
-  'taxName': 'Tax',
-  'taxRate': null,
-  'taxableAmount': 0,
-  'addTotal': 0
+  subTotal: 0,
+  discount: 0,
+  total: 0,
+  totalTax: 0,
+  taxName: 'Tax',
+  taxRate: null,
+  taxableAmount: 0,
+  addTotal: 0,
 })
 useMeta(metaData)
 const store = useLoginStore()
@@ -258,8 +225,7 @@ const onSubmitClick = (status, noPrint) => {
           message: 'Please fill out the form correctly.',
           icon: 'report_problem',
         })
-      }
-      else if (err.status === 422) {
+      } else if (err.status === 422) {
         useHandleCancelInconsistencyError('/v1/pos/', err, fields.value, $q)
           .then((data) => {
             handleSubmitSuccess(data, fields.value.noPrint)
@@ -270,8 +236,7 @@ const onSubmitClick = (status, noPrint) => {
             if (error.status !== 'cancel') {
               $q.notify({
                 color: 'negative',
-                message:
-                  'Server Error! Please contact us with the problem.',
+                message: 'Server Error! Please contact us with the problem.',
                 icon: 'report_problem',
               })
             }
@@ -287,10 +252,7 @@ fields.value.rows = []
 fields.value.due_date = today
 // handle Search
 const fetchResults = async () => {
-  useApi(
-    `/v1/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''
-    }${`&page=${currentPage.value || 1}`}`
-  )
+  useApi(`/v1/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}${`&page=${currentPage.value || 1}`}`)
     .then((data) => {
       searchResults.value = data
       if (enterClicked.value) {
@@ -322,7 +284,7 @@ watch(
       fetchResults()
     }
   },
-  { deep: true }
+  { deep: true },
 )
 watch(
   () => fields.value.rows,
@@ -333,13 +295,11 @@ watch(
   },
   {
     deep: true,
-  }
+  },
 )
 // handle Search
 const onAddItem = (itemInfo) => {
-  const index = fields.value.rows.findIndex(
-    (item) => item.item_id === itemInfo.id
-  )
+  const index = fields.value.rows.findIndex((item) => item.item_id === itemInfo.id)
   if (index >= 0) {
     fields.value.rows[index].quantity++
   } else {
@@ -359,11 +319,8 @@ const onAddItem = (itemInfo) => {
   searchTerm.value = null
 }
 const getPartyObj = () => {
-
   if (fields.value.party && !partyMode.value) {
-    const index = partyChoices.value.findIndex(
-      (item) => item.id === fields.value.party
-    )
+    const index = partyChoices.value.findIndex((item) => item.id === fields.value.party)
     return partyChoices.value[index]
   } else return null
 }
@@ -377,13 +334,11 @@ watch(
     if (formDefaults.value.options.persist_pos_items) {
       fields.value.rows = store.posData || []
     }
-  }
+  },
 )
 const discountOptionsComputed = computed(() => {
   if (formDefaults?.value?.collections?.discounts) {
-    return staticOptions.discount_types.concat(
-      formDefaults.value.collections.discounts
-    )
+    return staticOptions.discount_types.concat(formDefaults.value.collections.discounts)
   } else return staticOptions.discount_types
 })
 
@@ -395,12 +350,7 @@ const handleSubmitSuccess = (data, noPrint) => {
     icon: 'check',
   })
   if (data.status !== 'Draft' && !noPrint) {
-    const printData = useGeneratePosPdf(
-      data,
-      getPartyObj(),
-      !formDefaults.value.options.show_rate_quantity_in_voucher,
-      formDefaults.value.collections.tax_schemes
-    )
+    const printData = useGeneratePosPdf(data, getPartyObj(), !formDefaults.value.options.show_rate_quantity_in_voucher, formDefaults.value.collections.tax_schemes)
     usePrintPdfWindow(printData)
   }
   fields.value.rows = []
@@ -419,12 +369,10 @@ const handleKeyDown = (event) => {
   if (event.ctrlKey && event.keyCode === 68) {
     event.preventDefault()
     onSubmitClick('Draft', true)
-  }
-  else if (event.ctrlKey && event.keyCode === 83) {
+  } else if (event.ctrlKey && event.keyCode === 83) {
     event.preventDefault()
     onSubmitClick('Issued', true)
-  }
-  else if (event.ctrlKey && event.keyCode === 73) {
+  } else if (event.ctrlKey && event.keyCode === 73) {
     event.preventDefault()
     onSubmitClick('Issued')
   }

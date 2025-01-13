@@ -7,22 +7,17 @@
           <div class="grid lg:grid-cols-2 grid-cols-1 gap-y-12 gap-x-6 py-6">
             <div class="flex gap-4">
               <div class="flex grow gap-1">
-                <q-skeleton height="45px" type="rect" class="grow">
-                </q-skeleton>
-                <q-skeleton height="45px" width="45px" type="QBtn" square>
-                </q-skeleton>
+                <q-skeleton height="45px" type="rect" class="grow"></q-skeleton>
+                <q-skeleton height="45px" width="45px" type="QBtn" square></q-skeleton>
               </div>
-              <q-skeleton height="45px" width="65px" type="QBtn" square>
-              </q-skeleton>
+              <q-skeleton height="45px" width="65px" type="QBtn" square></q-skeleton>
             </div>
             <q-skeleton height="45px" type="QInput"></q-skeleton>
             <q-skeleton height="45px" type="QInput"></q-skeleton>
             <q-skeleton height="45px" type="QInput"></q-skeleton>
             <div class="flex gap-4">
-              <q-skeleton height="45px" type="rect" class="grow">
-              </q-skeleton>
-              <q-skeleton height="45px" width="65px" type="QBtn" square>
-              </q-skeleton>
+              <q-skeleton height="45px" type="rect" class="grow"></q-skeleton>
+              <q-skeleton height="45px" width="65px" type="QBtn" square></q-skeleton>
             </div>
             <div></div>
             <q-skeleton height="45px" type="QInput"></q-skeleton>

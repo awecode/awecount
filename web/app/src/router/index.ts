@@ -1,10 +1,5 @@
 import { route } from 'quasar/wrappers'
-import {
-  createMemoryHistory,
-  createRouter,
-  createWebHashHistory,
-  createWebHistory,
-} from 'vue-router'
+import { createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 
 import routes from './routes'
 import { useLoginStore } from 'src/stores/login-info'
@@ -19,10 +14,9 @@ import { useLoginStore } from 'src/stores/login-info'
  */
 
 export default route(function (/* { store, ssrContext } */) {
-  const createHistory = process.env.SERVER
-    ? createMemoryHistory
-    : process.env.VUE_ROUTER_MODE === 'history'
-    ? createWebHistory
+  const createHistory =
+    process.env.SERVER ? createMemoryHistory
+    : process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory
     : createWebHashHistory
 
   const Router = createRouter({
@@ -55,10 +49,7 @@ export default route(function (/* { store, ssrContext } */) {
     } else {
       // Should check if back btn is pressed from Nopermission page
       // TODO: Not handled when jumping from one no permission page to another
-      if (
-        to.fullPath === window.history.state.current &&
-        from.name === 'NoPermission'
-      ) {
+      if (to.fullPath === window.history.state.current && from.name === 'NoPermission') {
         next(window.history.state.back)
       } else next()
     }

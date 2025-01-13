@@ -12,7 +12,7 @@ export default boot(({ app }) => {
     const returnAmount = Math.round((amount + Number.EPSILON) * 100) / 100
     if (toFixed === undefined) {
       return returnAmount
-    } else return (returnAmount).toFixed(toFixed)
+    } else return returnAmount.toFixed(toFixed)
   }
   app.config.globalProperties.$nf = $nf
 })

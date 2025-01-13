@@ -1,26 +1,9 @@
 <template>
   <div class="q-pa-md">
-    <q-table
-      title="Income Items"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="full-width search-input"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -33,66 +16,27 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mx-md">
-                    <DateRangePicker
-                      v-model:startDate="filters.start_date"
-                      v-model:endDate="filters.end_date"
-                    />
+                    <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                   </div>
                   <div class="q-mx-sm">
-                    <NAutoCompleteV2 v-model="filters.party"
-                      endpoint="v1/parties/choices"
-                      label="Party" fetchOnMount
-                    />
+                    <NAutoCompleteV2 v-model="filters.party" endpoint="v1/parties/choices" label="Party" fetchOnMount />
                   </div>
                   <div class="q-mx-sm">
-                    <NAutoCompleteV2
-                      v-model="filters.tax_scheme"
-                      endpoint="v1/tax_scheme/choices"
-                      label="Tax Scheme"
-                      fetchOnMount
-                    />
+                    <NAutoCompleteV2 v-model="filters.tax_scheme" endpoint="v1/tax_scheme/choices" label="Tax Scheme" fetchOnMount />
                   </div>
                   <div class="q-mx-sm">
-                    <NAutoCompleteV2
-                      v-model="filters.item_category"
-                      endpoint="v1/inventory-categories/choices"
-                      label="Item Category"
-                      fetchOnMount
-                    />
+                    <NAutoCompleteV2 v-model="filters.item_category" endpoint="v1/inventory-categories/choices" label="Item Category" fetchOnMount />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch
-                      v-model="filters.item"
-                      endpoint="v1/items/purchase-choices/"
-                      label="Items"
-                    />
+                    <SelectWithFetch v-model="filters.item" endpoint="v1/items/purchase-choices/" label="Items" />
                   </div>
                   <div class="q-ma-sm">
-                    <MultiSelectChip
-                      :options="[
-                        'Draft',
-                        'Issued',
-                        'Paid',
-                        'Partially Paid',
-                        'Cancelled',
-                      ]"
-                      v-model="filters.status"
-                    />
+                    <MultiSelectChip :options="['Draft', 'Issued', 'Paid', 'Partially Paid', 'Cancelled']" v-model="filters.status" />
                   </div>
                 </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    class="f-submit-btn"
-                    @click="onFilterUpdate"
-                  ></q-btn>
-                  <q-btn
-                    color="red"
-                    icon="close"
-                    class="f-reset-btn"
-                    @click="resetFilters"
-                  ></q-btn>
+                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
+                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters"></q-btn>
                 </div>
               </div>
             </q-menu>
@@ -101,59 +45,39 @@
       </template>
 
       <template v-slot:body-cell-voucher_id="props">
-        <q-td  :props="props" style="padding: 0;">
-            <router-link
-              v-if="checkPermissions('PurchaseVoucherView')"
-              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
-              class="text-blue l-view-btn"
-              :to="`/purchase-voucher/${props.row.voucher_id}/view`"
-            >
-              {{ props.row.voucher_id }}
-              {{ props.row.voucher__voucher_no }}
-            </router-link>
-            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">{{ props.row.voucher__voucher_no }}</span>
+        <q-td :props="props" style="padding: 0">
+          <router-link v-if="checkPermissions('PurchaseVoucherView')" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue l-view-btn" :to="`/purchase-voucher/${props.row.voucher_id}/view`">
+            {{ props.row.voucher_id }}
+            {{ props.row.voucher__voucher_no }}
+          </router-link>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.voucher__voucher_no }}</span>
         </q-td>
       </template>
       <template v-slot:body-cell-party_name="props">
         <q-td :props="props">
-          <div
-            v-if="props.row.customer_name"
-            class="row align-center text-subtitle2 text-grey-8"
-          >
+          <div v-if="props.row.customer_name" class="row align-center text-subtitle2 text-grey-8">
             {{ props.row.customer_name }}
           </div>
           <div v-else>
             <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
-            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
-              props.row.party_name
-            }}</span>
+            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{ props.row.party_name }}</span>
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-voucher__date="props">
         <q-td :props="props">
-          {{
-            store.isCalendarInAD
-              ? props.row.voucher__date
-              : DateConverter.getRepresentation(props.row.voucher__date, 'bs')
-          }}
+          {{ store.isCalendarInAD ? props.row.voucher__date : DateConverter.getRepresentation(props.row.voucher__date, 'bs') }}
         </q-td>
       </template>
     </q-table>
     <q-card class="q-mt-md" v-if="aggregate">
       <q-card-section>
         <div>
-          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">
-            Aggregate Report for Filtered Data
-          </h5>
+          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">Aggregate Report for Filtered Data</h5>
         </div>
         <hr />
         <div class="q-mt-md">
-          <div
-            class="row q-mb-md"
-            v-for="header in aggregate_headers"
-            :key="header[0]"
-          >
+          <div class="row q-mb-md" v-for="header in aggregate_headers" :key="header[0]">
             <div class="col-6">
               <div class="text-weight-medium text-grey-9">
                 {{ header[0] }}

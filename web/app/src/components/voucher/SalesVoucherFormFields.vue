@@ -3,14 +3,11 @@
     <q-card-section>
       <div class="row q-col-gutter-md">
         <div class="col-md-6 col-12" v-if="formDefaults.options?.enable_import_challan">
-          <q-btn color="blue" @click="importChallanModal = true" data-testid="import-challan-btn"
-            label="Import challan(s)"></q-btn>
+          <q-btn color="blue" @click="importChallanModal = true" data-testid="import-challan-btn" label="Import challan(s)"></q-btn>
           <div v-if="fields.challans && fields.challans.length > 0">
             <q-input dense v-model="fields.challan_numbers" disable label="Import challan(s)"></q-input>
           </div>
-          <q-dialog v-model="importChallanModal" @before-hide="
-            errors && delete errors?.fiscal_year && delete errors?.invoice_no
-            ">
+          <q-dialog v-model="importChallanModal" @before-hide="errors && delete errors?.fiscal_year && delete errors?.invoice_no">
             <q-card style="min-width: min(60vw, 400px)">
               <q-card-section class="bg-grey-4">
                 <div class="text-h6">
@@ -19,16 +16,10 @@
               </q-card-section>
 
               <q-card-section class="q-mx-lg">
-                <q-input v-model.number="referenceFormData.invoice_no" label="Challan No.*" autofocus type="number"
-                  :error="errors?.invoice_no ?? null" :error-message="errors?.invoice_no"
-                  data-testid="challan-no-input"></q-input>
-                <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
-                  :options="formDefaults.options?.fiscal_years" option-value="id" option-label="name" map-options
-                  emit-value data-testid="fiscal-year-select" :error="errors?.fiscal_year ?? null"
-                  :error-message="errors?.fiscal_year"></q-select>
+                <q-input v-model.number="referenceFormData.invoice_no" label="Challan No.*" autofocus type="number" :error="errors?.invoice_no ?? null" :error-message="errors?.invoice_no" data-testid="challan-no-input"></q-input>
+                <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year" :options="formDefaults.options?.fiscal_years" option-value="id" option-label="name" map-options emit-value data-testid="fiscal-year-select" :error="errors?.fiscal_year ?? null" :error-message="errors?.fiscal_year"></q-select>
                 <div class="row justify-end q-mt-lg">
-                  <q-btn color="green" label="Add" size="md" @click="fetchInvoice(fields)"
-                    data-testid="add-reference-btn"></q-btn>
+                  <q-btn color="green" label="Add" size="md" @click="fetchInvoice(fields)" data-testid="add-reference-btn"></q-btn>
                 </div>
               </q-card-section>
             </q-card>
@@ -37,13 +28,8 @@
         <div class="col-md-6 col-12">
           <div class="row">
             <div class="col-10">
-              <q-input v-model="fields.customer_name" label="Customer Name" :error-message="errors?.customer_name"
-                :error="errors?.customer_name ?? null" v-if="customerMode" data-testid="customer-name-input">
-              </q-input>
-              <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties"
-                label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
-                  " :staticOption="fields.selected_party_obj" endpoint="/v1/sales-voucher/create-defaults/parties"
-                :emitObj="true" @updateObj="onPartyChange" />
+              <q-input v-model="fields.customer_name" label="Customer Name" :error-message="errors?.customer_name" :error="errors?.customer_name ?? null" v-if="customerMode" data-testid="customer-name-input"></q-input>
+              <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties" label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" :staticOption="fields.selected_party_obj" endpoint="/v1/sales-voucher/create-defaults/parties" :emitObj="true" @updateObj="onPartyChange" />
             </div>
 
             <div class="col-2 row justify-center q-py-md">
@@ -53,101 +39,70 @@
             </div>
           </div>
           <div>
-            <n-auto-complete v-if="!customerMode && fields.party && aliases.length > 0" v-model="fields.customer_name"
-              class="col-md-6 col-12" label="Name on Invoice" :options="aliases" :modal-component="checkPermissions('PartyAliasCreate') ? PartyAlias : null
-                " :error="errors?.customer_name ? errors?.customer_name : null" data-testid="alias-select">
-            </n-auto-complete>
+            <n-auto-complete v-if="!customerMode && fields.party && aliases.length > 0" v-model="fields.customer_name" class="col-md-6 col-12" label="Name on Invoice" :options="aliases" :modal-component="checkPermissions('PartyAliasCreate') ? PartyAlias : null" :error="errors?.customer_name ? errors?.customer_name : null" data-testid="alias-select"></n-auto-complete>
           </div>
         </div>
 
         <template v-if="!isTemplate">
-          <date-picker v-if="formDefaults.options?.enable_sales_date_edit" label="Invoice Date*" v-model="fields.date"
-            class="col-md-6 col-12" :error="errors?.date ? errors?.date : null"
-            :error-message="errors?.date"></date-picker>
+          <date-picker v-if="formDefaults.options?.enable_sales_date_edit" label="Invoice Date*" v-model="fields.date" class="col-md-6 col-12" :error="errors?.date ? errors?.date : null" :error-message="errors?.date"></date-picker>
           <DateInputDisabled v-else :date="fields.date" class="col-md-6 col-12" label="Invoice Date*" />
         </template>
-        <q-input v-model="fields.address" class="col-md-6 col-12" label="Address" :error-message="errors?.address"
-          :error="!!errors?.address" data-testid="address-input"></q-input>
-        <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher && !isTemplate" label="Due Date"
-          v-model="fields.due_date" class="col-md-6 col-12" :error="errors?.due_date ? errors.due_date : null"
-          :error-message="errors?.due_date" :toLimit="fields.date" data-testid="due-date"></date-picker>
+        <q-input v-model="fields.address" class="col-md-6 col-12" label="Address" :error-message="errors?.address" :error="!!errors?.address" data-testid="address-input"></q-input>
+        <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher && !isTemplate" label="Due Date" v-model="fields.due_date" class="col-md-6 col-12" :error="errors?.due_date ? errors.due_date : null" :error-message="errors?.due_date" :toLimit="fields.date" data-testid="due-date"></date-picker>
         <div class="col-md-6 col-12 row q-col-gutter-md">
-          <div :class="['Percent', 'Amount'].includes(fields.discount_type)
-            ? 'col-6'
-            : 'col-12'
-            " data-testid="overall-discount-type-div">
-            <n-auto-complete v-model="fields.discount_type" label="Discount"
-              :error="errors?.discount_type ? errors?.discount_type : null" :options="staticOptions.discount_types.concat(
-                formDefaults.collections?.discounts
-              )
-                " :modal-component="checkPermissions('SalesDiscountCreate')
-                  ? SalesDiscountForm
-                  : null
-                  ">
-            </n-auto-complete>
+          <div :class="['Percent', 'Amount'].includes(fields.discount_type) ? 'col-6' : 'col-12'" data-testid="overall-discount-type-div">
+            <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors?.discount_type ? errors?.discount_type : null" :options="staticOptions.discount_types.concat(formDefaults.collections?.discounts)" :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null"></n-auto-complete>
           </div>
           <div class="col-6 row">
-            <div :class="formDefaults.options?.show_trade_discount_in_voucher
-              ? 'col-6'
-              : 'col-12'
-              " v-if="
-                fields.discount_type === 'Amount' ||
-                fields.discount_type === 'Percent'
-              ">
-              <q-input class="col-6" v-model.number="fields.discount" label="Discount" :error-message="errors?.discount"
-                :error="!!errors?.discount" data-testid="discount-input"></q-input>
+            <div :class="formDefaults.options?.show_trade_discount_in_voucher ? 'col-6' : 'col-12'" v-if="fields.discount_type === 'Amount' || fields.discount_type === 'Percent'">
+              <q-input class="col-6" v-model.number="fields.discount" label="Discount" :error-message="errors?.discount" :error="!!errors?.discount" data-testid="discount-input"></q-input>
             </div>
-            <div class="col-3 row" v-if="
-              formDefaults.options?.show_trade_discount_in_voucher &&
-              ['Percent', 'Amount'].includes(fields.discount_type)
-            ">
-              <q-checkbox v-model="fields.trade_discount" label="Trade Discount?"
-                data-testid="trade-discount-input"></q-checkbox>
+            <div class="col-3 row" v-if="formDefaults.options?.show_trade_discount_in_voucher && ['Percent', 'Amount'].includes(fields.discount_type)">
+              <q-checkbox v-model="fields.trade_discount" label="Trade Discount?" data-testid="trade-discount-input"></q-checkbox>
             </div>
           </div>
         </div>
         <div class="col-12 col-md-6">
-          <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode *"
-            endpoint="/v1/sales-voucher/create-defaults/payment_modes"
-            :error="errors?.payment_mode ? errors?.payment_mode : null" :options="modeOptionsComputed" :staticOption="isEdit
-              ? fields.selected_payment_mode_obj
-              : formDefaults.options?.default_payment_mode_obj
-              " @updateObj="onPaymentModeChange" data-testid="payment-mode-select" :emitObj="true" :mapOptions="true">
+          <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode *" endpoint="/v1/sales-voucher/create-defaults/payment_modes" :error="errors?.payment_mode ? errors?.payment_mode : null" :options="modeOptionsComputed" :staticOption="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj" @updateObj="onPaymentModeChange" data-testid="payment-mode-select" :emitObj="true" :mapOptions="true">
             <template v-slot:append>
-              <q-icon v-if="fields.payment_mode !== null" class="cursor-pointer" name="clear"
-                @click.stop.prevent="fields.payment_mode = null" /></template>
+              <q-icon v-if="fields.payment_mode !== null" class="cursor-pointer" name="clear" @click.stop.prevent="fields.payment_mode = null" />
+            </template>
           </n-auto-complete-v2>
         </div>
       </div>
     </q-card-section>
   </q-card>
-  <invoice-table v-if="formDefaults.collections" :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
-    " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
-      " :discountOptions="staticOptions.discount_types.concat(formDefaults.collections?.discounts)
-        " :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
-          discount_type: fields.discount_type,
-          discount: fields.discount,
-        }" :errors="errors?.rows ? errors.rows : null" @deleteRowErr="deleteRowErr"
+  <invoice-table
+    v-if="formDefaults.collections"
+    :itemOptions="formDefaults.collections ? formDefaults.collections.items : null"
+    :unitOptions="formDefaults.collections ? formDefaults.collections.units : null"
+    :discountOptions="staticOptions.discount_types.concat(formDefaults.collections?.discounts)"
+    :taxOptions="formDefaults.collections?.tax_schemes"
+    v-model="fields.rows"
+    :mainDiscount="{
+      discount_type: fields.discount_type,
+      discount: fields.discount,
+    }"
+    :errors="errors?.rows ? errors.rows : null"
+    @deleteRowErr="deleteRowErr"
     :enableRowDescription="formDefaults.options?.enable_row_description"
     :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row"
     :inputAmount="formDefaults.options?.enable_amount_entry"
-    :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher" :isFifo="formDefaults.options?.enable_fifo"
-    usedIn="sales" :hasChallan="!!(fields.challans && fields.challans.length > 0)"></invoice-table>
+    :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher"
+    :isFifo="formDefaults.options?.enable_fifo"
+    usedIn="sales"
+    :hasChallan="!!(fields.challans && fields.challans.length > 0)"
+  ></invoice-table>
   <div class="row q-px-lg">
     <div class="col-12 col-md-6 row">
-      <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10"
-        :error="!!errors?.remarks" :error-message="errors?.remarks" data-testid="remarks-input" />
+      <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10" :error="!!errors?.remarks" :error-message="errors?.remarks" data-testid="remarks-input" />
     </div>
     <div class="col-12 col-md-6 row justify-between">
       <div class="col-3">
-        <q-checkbox label="Export?" v-model="fields.is_export" class="q-mt-md col-3"
-          data-testid="export-checkbox"></q-checkbox>
+        <q-checkbox label="Export?" v-model="fields.is_export" class="q-mt-md col-3" data-testid="export-checkbox"></q-checkbox>
       </div>
       <div class="col-9">
-        <n-auto-complete-v2 v-if="loginStore.companyInfo.enable_sales_agents" v-model="fields.sales_agent"
-          label="Sales Agent" class="col-8" :error="errors?.sales_agent"
-          :options="formDefaults.collections?.sales_agents" :endpoint="`v1/sales-voucher/create-defaults/sales_agents`"
-          :staticOption="fields.selected_sales_agent_obj" data-testid="sales-agent-select"></n-auto-complete-v2>
+        <n-auto-complete-v2 v-if="loginStore.companyInfo.enable_sales_agents" v-model="fields.sales_agent" label="Sales Agent" class="col-8" :error="errors?.sales_agent" :options="formDefaults.collections?.sales_agents" :endpoint="`v1/sales-voucher/create-defaults/sales_agents`" :staticOption="fields.selected_sales_agent_obj" data-testid="sales-agent-select"></n-auto-complete-v2>
       </div>
     </div>
   </div>
@@ -183,7 +138,7 @@ const props = defineProps({
   today: {
     type: String,
     required: true,
-  }
+  },
 })
 
 const fields = defineModel('fields')
@@ -220,14 +175,8 @@ const fetchInvoice = async (fields) => {
   delete errors.value.fiscal_year
   delete errors.value.invoice_no
 
-  if (
-    referenceFormData.value.invoice_no &&
-    referenceFormData.value.fiscal_year
-  ) {
-    if (
-      fields.challans &&
-      fields.challans.includes(referenceFormData.value.invoice_no)
-    ) {
+  if (referenceFormData.value.invoice_no && referenceFormData.value.fiscal_year) {
+    if (fields.challans && fields.challans.includes(referenceFormData.value.invoice_no)) {
       $q.notify({
         color: 'red-6',
         message: 'Invoice Already Exists!',
@@ -238,22 +187,14 @@ const fetchInvoice = async (fields) => {
     } else {
       const url = 'v1/challan/by-voucher-no/'
       try {
-        const data = await useApi(
-          url +
-          `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`
-        )
+        const data = await useApi(url + `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`)
         errors.value = {}
         const response = { ...data }
 
-        if (
-          (fields.party && fields.party !== response.party) ||
-          (fields.customer_name &&
-            fields.customer_name !== response.customer_name)
-        ) {
+        if ((fields.party && fields.party !== response.party) || (fields.customer_name && fields.customer_name !== response.customer_name)) {
           $q.notify({
             color: 'red-6',
-            message:
-              'A single challan can be issued to a single party/customer only',
+            message: 'A single challan can be issued to a single party/customer only',
             icon: 'report_problem',
             position: 'top-right',
           })
@@ -272,19 +213,7 @@ const fetchInvoice = async (fields) => {
           fields.challan_numbers = [response.voucher_no]
         }
 
-        const removeArr = [
-          'id',
-          'date',
-          'voucher_meta',
-          'print_count',
-          'issue_datetime',
-          'is_export',
-          'status',
-          'due_date',
-          'rows',
-          'date',
-          'remarks',
-        ]
+        const removeArr = ['id', 'date', 'voucher_meta', 'print_count', 'issue_datetime', 'is_export', 'status', 'due_date', 'rows', 'date', 'remarks']
 
         if (data.customer_name) {
           customerMode.value = true
@@ -321,9 +250,7 @@ const fetchInvoice = async (fields) => {
         if (err.status === 404) {
           message = 'Invoice Not Found!'
         } else {
-          message =
-            err.data?.detail ||
-            'Server Error! Please contact us with the problem.'
+          message = err.data?.detail || 'Server Error! Please contact us with the problem.'
         }
         $q.notify({
           color: 'red-6',
@@ -354,10 +281,7 @@ const onPartyChange = (obj) => {
   if (obj) {
     fields.value.address = obj.address
     if (obj.aliases && obj.aliases.length > 0) {
-      aliases.value = [
-        { name: obj.name, id: null },
-        ...obj.aliases.map((item) => ({ name: item, id: item })),
-      ]
+      aliases.value = [{ name: obj.name, id: null }, ...obj.aliases.map((item) => ({ name: item, id: item }))]
     }
   }
 }
@@ -396,13 +320,8 @@ const modeOptionsComputed = computed(() => {
     pagination: {},
   }
   if (props.formDefaults?.collections?.payment_modes?.results) {
-    obj.results = obj.results.concat(
-      props.formDefaults.collections.payment_modes.results
-    )
-    Object.assign(
-      obj.pagination,
-      props.formDefaults.collections.payment_modes.pagination
-    )
+    obj.results = obj.results.concat(props.formDefaults.collections.payment_modes.results)
+    Object.assign(obj.pagination, props.formDefaults.collections.payment_modes.pagination)
   }
   return obj
 })
@@ -430,6 +349,6 @@ watch(
         fields.value.payment_mode = props.formDefaults.fields.payment_mode
       }
     }
-  }
+  },
 )
 </script>

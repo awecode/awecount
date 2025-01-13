@@ -1,11 +1,9 @@
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
-      <q-btn v-if="checkPermissions('PurchaseDiscountCreate')" color="green" to="/purchase-discount/add/"
-        label="New Purchase Discount" icon-right="add" class="add-btn" />
+      <q-btn v-if="checkPermissions('PurchaseDiscountCreate')" color="green" to="/purchase-discount/add/" label="New Purchase Discount" icon-right="add" class="add-btn" />
     </div>
-    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
-      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
           <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
@@ -24,8 +22,7 @@
                     <MultiSelectChip v-model="filters.type" :options="['Percent', 'Amount']" />
                   </div>
                   <div class="q-mt-md">
-                    <q-checkbox v-model="filters.trade_discount" label="Is Trade Discount?"
-                      :false-value="null"></q-checkbox>
+                    <q-checkbox v-model="filters.trade_discount" label="Is Trade Discount?" :false-value="null"></q-checkbox>
                   </div>
                 </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
@@ -40,16 +37,14 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <div class="row q-gutter-x-md items-center">
-            <q-btn v-if="checkPermissions('PurchaseDiscountModify')" color="orange-7" label="Edit"
-              :to="`/purchase-discount/${props.row.id}/`" class="q-py-none q-px-md font-size-sm l-edit-btn"
-              style="font-size: 12px" />
+            <q-btn v-if="checkPermissions('PurchaseDiscountModify')" color="orange-7" label="Edit" :to="`/purchase-discount/${props.row.id}/`" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" />
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-trade_discount="props">
         <q-td :props="props">
           <div class="row justify-center">
-            <ShowListBoolean :value="props.row.trade_discount"/>
+            <ShowListBoolean :value="props.row.trade_discount" />
           </div>
         </q-td>
       </template>
@@ -68,13 +63,7 @@ export default {
     const listData = useList(endpoint)
     const onDownloadXls = () => {
       useApi('v1/sales-voucher/export')
-        .then((data) =>
-          usedownloadFile(
-            data,
-            'application/vnd.ms-excel',
-            'Credit_Notes'
-          )
-        )
+        .then((data) => usedownloadFile(data, 'application/vnd.ms-excel', 'Credit_Notes'))
         .catch((err) => console.log('Error Due To', err))
     }
     const newColumn = [
@@ -83,16 +72,16 @@ export default {
         label: 'Name.',
         align: 'left',
         field: 'name',
-        sortable: true
+        sortable: true,
       },
-      { name: 'type', label: 'Type', align: 'left', field: 'type', sortable: true},
-      { name: 'value', label: 'Value', align: 'left', field: 'value', sortable: true},
+      { name: 'type', label: 'Type', align: 'left', field: 'type', sortable: true },
+      { name: 'value', label: 'Value', align: 'left', field: 'value', sortable: true },
       {
         name: 'trade_discount',
         label: 'Trade Discount',
         align: 'center',
         field: 'trade_discount',
-        sortable: true
+        sortable: true,
       },
       { name: 'actions', label: 'Actions', align: 'left' },
     ]

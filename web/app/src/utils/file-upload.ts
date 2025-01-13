@@ -1,9 +1,6 @@
 type FileOrString = File | string
 
-export async function uploadFiles(
-  file: FileOrString | FileOrString[],
-  folder?: string
-): Promise<string | string[]> {
+export async function uploadFiles(file: FileOrString | FileOrString[], folder?: string): Promise<string | string[]> {
   const formData = new FormData()
   if (folder) {
     formData.append('folder', folder)

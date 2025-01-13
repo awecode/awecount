@@ -1,34 +1,12 @@
 <template>
   <div class="q-pa-md">
     <div class="row">
-      <q-btn
-        color="green"
-        to="/book/add/"
-        label="New Book"
-        class="q-ml-auto"
-        icon-right="add"
-      />
+      <q-btn color="green" to="/book/add/" label="New Book" class="q-ml-auto" icon-right="add" />
     </div>
-    <q-table
-      title="Income Items"
-      :rows="rows"
-      :columns="columns"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-    >
+    <q-table title="Income Items" :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -40,16 +18,8 @@
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md">
-            <q-btn
-              color="blue"
-              label="View"
-              :to="`/inventory-account/detail/${props.row.id}/`"
-            />
-            <q-btn
-              color="orange-6"
-              label="Edit"
-              :to="`/items/${props.row.id}/`"
-            />
+            <q-btn color="blue" label="View" :to="`/inventory-account/detail/${props.row.id}/`" />
+            <q-btn color="orange-6" label="Edit" :to="`/items/${props.row.id}/`" />
           </div>
           <!-- {{ props }} -->
         </q-td>
@@ -60,8 +30,8 @@
 </template>
 
 <script setup>
-import useList from '/src/composables/useList';
-const endpoint = '/v1/items';
+import useList from '/src/composables/useList'
+const endpoint = '/v1/items'
 // console.log(useList(endpoint))
 // export default {
 //   setup() {
@@ -69,18 +39,7 @@ const endpoint = '/v1/items';
 //     return { ...useList(endpoint) }
 //   },
 // }
-const {
-  columns,
-  rows,
-  resetFilters,
-  filters,
-  loading,
-  searchQuery,
-  pagination,
-  onRequest,
-  confirmDeletion,
-  initiallyLoaded,
-} = useList(endpoint);
+const { columns, rows, resetFilters, filters, loading, searchQuery, pagination, onRequest, confirmDeletion, initiallyLoaded } = useList(endpoint)
 </script>
 
 <style>

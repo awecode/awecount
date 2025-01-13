@@ -10,16 +10,13 @@
         <div>
           <div class="column q-gutter-y-sm q-mb-sm">
             <div>
-              <q-checkbox v-model="fields.show_trade_discount_in_voucher" label="Show trade discount in voucher?">
-              </q-checkbox>
+              <q-checkbox v-model="fields.show_trade_discount_in_voucher" label="Show trade discount in voucher?"></q-checkbox>
             </div>
             <div>
-              <q-checkbox v-model="fields.is_trade_discount_in_voucher" label="Is trade discount in voucher?">
-              </q-checkbox>
+              <q-checkbox v-model="fields.is_trade_discount_in_voucher" label="Is trade discount in voucher?"></q-checkbox>
             </div>
             <div>
-              <q-checkbox v-model="fields.show_trade_discount_in_row" label="Show trade discount in row?">
-              </q-checkbox>
+              <q-checkbox v-model="fields.show_trade_discount_in_row" label="Show trade discount in row?"></q-checkbox>
             </div>
           </div>
           <!-- <div class="row q-ml-sm">
@@ -36,43 +33,38 @@
           </div> -->
           <div class="row q-ml-sm">
             <div class="col-12 col-sm-6">
-              <n-auto-complete-v2 label="Mode" v-model.number="fields.payment_mode" :options="modeOptionsComputed"
-                endpoint="v1/purchase-settings/create-defaults/payment_modes" :staticOption="fields.selected_mode_obj"
-                option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
-                :error-message="modeErrors">
+              <n-auto-complete-v2 label="Mode" v-model.number="fields.payment_mode" :options="modeOptionsComputed" endpoint="v1/purchase-settings/create-defaults/payment_modes" :staticOption="fields.selected_mode_obj" option-value="id" option-label="name" map-options emit-value :error="!!modeErrors" :error-message="modeErrors">
                 <template v-slot:append>
-                  <q-icon v-if="fields.payment_mode" name="close" @click.stop.prevent="fields.payment_mode = null"
-                    class="cursor-pointer" />
+                  <q-icon v-if="fields.payment_mode" name="close" @click.stop.prevent="fields.payment_mode = null" class="cursor-pointer" />
                 </template>
               </n-auto-complete-v2>
             </div>
           </div>
           <div class="column q-gutter-y-sm">
             <div>
-              <q-checkbox v-model="fields.enable_row_description" label="Enable Item Description in row?">
-              </q-checkbox>
+              <q-checkbox v-model="fields.enable_row_description" label="Enable Item Description in row?"></q-checkbox>
             </div>
             <div>
-              <q-checkbox v-model="fields.enable_due_date_in_voucher" label="Enable Due date in voucher?">
-              </q-checkbox>
+              <q-checkbox v-model="fields.enable_due_date_in_voucher" label="Enable Due date in voucher?"></q-checkbox>
             </div>
             <div>
-              <q-checkbox v-model="fields.enable_purchase_order_import" label="Enable Purchase Orders Import?">
-              </q-checkbox>
+              <q-checkbox v-model="fields.enable_purchase_order_import" label="Enable Purchase Orders Import?"></q-checkbox>
             </div>
             <div>
-              <q-checkbox v-model="fields.enable_item_rate_change_alert" label="Enable Item Rate Change alert?">
-              </q-checkbox>
+              <q-checkbox v-model="fields.enable_item_rate_change_alert" label="Enable Item Rate Change alert?"></q-checkbox>
             </div>
           </div>
           <q-card class="q-mt-lg" v-if="fields.enable_item_rate_change_alert">
-                <q-card-section>
-                  <div class="text-grey-7 q-mb-md"><q-icon name="info" size="sm"></q-icon> List of email address that will receive alert</div>
-                  <div class=" q-mb-md">
-                    <email-list v-model="fields.rate_change_alert_emails" :errors="emailListErrors" @updateErrors="onupdateErrors"/>
-                  </div>
-                </q-card-section>
-              </q-card>
+            <q-card-section>
+              <div class="text-grey-7 q-mb-md">
+                <q-icon name="info" size="sm"></q-icon>
+                List of email address that will receive alert
+              </div>
+              <div class="q-mb-md">
+                <email-list v-model="fields.rate_change_alert_emails" :errors="emailListErrors" @updateErrors="onupdateErrors" />
+              </div>
+            </q-card-section>
+          </q-card>
         </div>
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">
@@ -152,7 +144,7 @@ export default {
         })
     }
     watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
-    const onupdateErrors = () => emailListErrors.value = null
+    const onupdateErrors = () => (emailListErrors.value = null)
     const modeOptionsComputed = computed(() => {
       const obj = {
         results: [{ id: null, name: 'Credit' }],
@@ -173,7 +165,7 @@ export default {
       emailListErrors,
       onupdateErrors,
       formLoading,
-      modeOptionsComputed
+      modeOptionsComputed,
     }
   },
 }

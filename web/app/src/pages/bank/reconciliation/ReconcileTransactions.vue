@@ -12,8 +12,7 @@
         <!-- <q-btn icon="mdi-file-upload-outline" color="green" label="Go to List" @click="router.push('/bank/reconciliation')" /> -->
       </div>
     </div>
-    <ReconciliationTable v-if="accountDetails" :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate"
-      :accountDetails="accountDetails" />
+    <ReconciliationTable v-if="accountDetails" :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate" :accountDetails="accountDetails" />
   </q-page>
 </template>
 
@@ -23,11 +22,11 @@ const route = useRoute()
 const router = useRouter()
 
 type Bank = {
-  ledger_id: number,
-  id: number,
-  cheque_no: string,
-  account_number: string,
-  name: string,
+  ledger_id: number
+  id: number
+  cheque_no: string
+  account_number: string
+  name: string
 }
 
 const selectedAccount = ref(route.query.account_id ? Number(route.query.account_id) : null)
@@ -50,7 +49,7 @@ const fetchTransactions = async () => {
       account_id: selectedAccount.value,
       start_date: startDate.value,
       end_date: endDate.value,
-    }
+    },
   })
   accountDetails.value = bankAccounts.value?.find((account) => account.ledger_id === selectedAccount.value) || null
 }
@@ -64,5 +63,4 @@ useApi(endpoint).then((response) => {
     fetchTransactions()
   }
 })
-
 </script>

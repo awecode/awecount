@@ -1,19 +1,15 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('FundTransferCreate')" color="green" to="/fund-transfer/add/"
-        label="New Fund Transfer" class="add-btn" icon-right="add" />
+      <q-btn v-if="checkPermissions('FundTransferCreate')" color="green" to="/fund-transfer/add/" label="New Fund Transfer" class="add-btn" icon-right="add" />
     </div>
     <q-card class="p-4 mt-4" v-if="data?.templates && data.templates.length">
       <h5 class="q-my-none q-mb-sm text-h6 text-grey-8">Templates:</h5>
       <div class="flex gap-4">
-        <q-btn v-for="template in data.templates" :key="template.id" class="add-btn" icon-right="add" color="green"
-          :label="template.name"
-          :to="{ path: '/fund-transfer/add/', query: { template: encodeURIComponent(JSON.stringify(template)) } }" />
+        <q-btn v-for="template in data.templates" :key="template.id" class="add-btn" icon-right="add" color="green" :label="template.name" :to="{ path: '/fund-transfer/add/', query: { template: encodeURIComponent(JSON.stringify(template)) } }" />
       </div>
     </q-card>
-    <q-table title="Fund Transfer" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
-      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table title="Fund Transfer" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
           <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
@@ -47,12 +43,15 @@
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center">
-            <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
-              ? 'bg-blue-2 text-blue-10'
-              : props.row.status == 'Cleared'
-                ? 'bg-green-2 text-green-10'
+            <div
+              class="text-white text-subtitle row items-center justify-center"
+              :class="
+                props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
+                : props.row.status == 'Cleared' ? 'bg-green-2 text-green-10'
                 : 'bg-red-2 text-red-10'
-              " style="border-radius: 8px; padding: 2px 10px">
+              "
+              style="border-radius: 8px; padding: 2px 10px"
+            >
               {{ props.row.status }}
             </div>
           </div>
@@ -60,17 +59,13 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('FundTransferModify')" label="Edit" color="orange-6"
-            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px"
-            :to="`/fund-transfer/${props.row.id}/`" />
+          <q-btn v-if="checkPermissions('FundTransferModify')" label="Edit" color="orange-6" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/fund-transfer/${props.row.id}/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props" style="padding: 0;">
-          <router-link v-if="checkPermissions('FundTransferModify')" class="text-blue text-weight-medium"
-          style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;" :to="`/fund-transfer/${props.row.id}/`">{{ props.row.voucher_no
-            }}</router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"> {{ props.row.voucher_no }}</span>
+        <q-td :props="props" style="padding: 0">
+          <router-link v-if="checkPermissions('FundTransferModify')" class="text-blue text-weight-medium" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" :to="`/fund-transfer/${props.row.id}/`">{{ props.row.voucher_no }}</router-link>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.voucher_no }}</span>
         </q-td>
       </template>
     </q-table>
@@ -91,14 +86,14 @@ export default {
         label: 'Voucher #',
         align: 'left',
         field: 'voucher_no',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'date',
         label: 'Date',
         align: 'left',
         field: 'date',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'from',
@@ -117,14 +112,14 @@ export default {
         label: 'Amount',
         align: 'center',
         field: 'amount',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'status',
         label: 'Status',
         align: 'center',
         field: 'status',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'actions',

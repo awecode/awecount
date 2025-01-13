@@ -1,12 +1,10 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('JournalVoucherCreate')" color="green" to="/journal-voucher/add/"
-        label="New Journal Voucher" class="add-btn" icon-right="add" />
+      <q-btn v-if="checkPermissions('JournalVoucherCreate')" color="green" to="/journal-voucher/add/" label="New Journal Voucher" class="add-btn" icon-right="add" />
     </div>
 
-    <q-table :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
-      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
           <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
@@ -40,34 +38,35 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <div class="flex gap-4 no-wrap">
-            <q-btn v-if="checkPermissions('JournalVoucherView')" color="blue" label="View" :to="`/journal-voucher/${props.row.id}/view/`"
-              class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" />
-            <q-btn v-if="props.row.status !== 'Cancelled' && checkPermissions('JournalVoucherModify')" color="orange-7"
-              label="Edit" :to="`/journal-voucher/${props.row.id}/edit/`" class="q-py-none q-px-md font-size-sm l-edit-btn"
-              style="font-size: 12px" />
+            <q-btn v-if="checkPermissions('JournalVoucherView')" color="blue" label="View" :to="`/journal-voucher/${props.row.id}/view/`" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" />
+            <q-btn v-if="props.row.status !== 'Cancelled' && checkPermissions('JournalVoucherModify')" color="orange-7" label="Edit" :to="`/journal-voucher/${props.row.id}/edit/`" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" />
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row q-gutter-sm justify-center">
-            <span class="text-white text-subtitle" :class="props.row.status === 'Unapproved'
-              ? 'bg-orange-2 text-orange-10'
-              : props.row.status === 'Approved'
-                ? 'bg-green-2 text-green-10'
+            <span
+              class="text-white text-subtitle"
+              :class="
+                props.row.status === 'Unapproved' ? 'bg-orange-2 text-orange-10'
+                : props.row.status === 'Approved' ? 'bg-green-2 text-green-10'
                 : 'bg-red-2 text-red-10'
-              " style="border-radius: 8px; padding: 2px 10px">{{ props.row.status }}</span>
+              "
+              style="border-radius: 8px; padding: 2px 10px"
+            >
+              {{ props.row.status }}
+            </span>
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props" style="padding: 0;">
+        <q-td :props="props" style="padding: 0">
           <span v-if="props.row.voucher_no">
-            <router-link v-if="checkPermissions('JournalVoucherView')" :to="`/challan/${props.row.id}/`"
-            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;" class="text-blue">
+            <router-link v-if="checkPermissions('JournalVoucherView')" :to="`/challan/${props.row.id}/`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue">
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">{{ props.row.voucher_no }}</span>
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.voucher_no }}</span>
           </span>
         </q-td>
       </template>
@@ -89,16 +88,16 @@ export default {
         label: 'Voucher No.',
         align: 'left',
         field: 'voucher_no',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'date',
         label: 'Date',
         align: 'left',
         field: 'date',
-        sortable: true
+        sortable: true,
       },
-      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true},
+      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true },
       {
         name: 'narration',
         label: 'Narration',

@@ -6,12 +6,10 @@
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
         <q-toolbar-title class="flex items-center" style="gap: 16px">
           <RouterLink v-if="store.companyInfo?.logo_url" to="/" style="max-width: 60px; max-height: 40px">
-            <img style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url"
-              alt="Company Logo" />
+            <img style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url" alt="Company Logo" />
           </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">
-            <q-breadcrumbs-el v-for="breadCrum in breadCrums" :key="breadCrum" :label="breadCrum"
-              :to="{ name: breadCrum }" />
+            <q-breadcrumbs-el v-for="breadCrum in breadCrums" :key="breadCrum" :label="breadCrum" :to="{ name: breadCrum }" />
             <!-- :class="breadCrums?.length - 1 === index cursor-pointer" -->
           </q-breadcrumbs>
         </q-toolbar-title>
@@ -19,18 +17,24 @@
           <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
              -->
           <div class="row btns-Con">
-            <q-btn class="gt-sm">{{ store.companyInfo?.current_fiscal_year }}
-              <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Yaar</q-tooltip></q-btn>
-            <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2"
-              @click="store.isCalendarInAD = !store.isCalendarInAD">{{ activeDateFormat }}
+            <q-btn class="gt-sm">
+              {{ store.companyInfo?.current_fiscal_year }}
+              <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Yaar</q-tooltip>
+            </q-btn>
+            <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2" @click="store.isCalendarInAD = !store.isCalendarInAD">
+              {{ activeDateFormat }}
               <q-tooltip :delay="1000" :offset="[0, 10]">Change Date Format</q-tooltip>
             </q-btn>
             <a target="_blank" href="https://docs.awecount.com/" style="color: inherit">
-              <q-btn class="gt-sm"><q-icon name="mdi-help-circle-outline"></q-icon><q-tooltip :delay="1000"
-                  :offset="[0, 10]">Help</q-tooltip></q-btn>
+              <q-btn class="gt-sm">
+                <q-icon name="mdi-help-circle-outline"></q-icon>
+                <q-tooltip :delay="1000" :offset="[0, 10]">Help</q-tooltip>
+              </q-btn>
             </a>
-            <q-btn @click="logoutDiologueOpen = true"><q-icon name="mdi-logout" /><q-tooltip :delay="1000"
-                :offset="[0, 10]">Logout</q-tooltip></q-btn>
+            <q-btn @click="logoutDiologueOpen = true">
+              <q-icon name="mdi-logout" />
+              <q-tooltip :delay="1000" :offset="[0, 10]">Logout</q-tooltip>
+            </q-btn>
             <q-dialog v-model="logoutDiologueOpen">
               <q-card style="min-width: min(40vw, 450px)">
                 <div style="margin: 20px 30px 10px">
@@ -51,8 +55,7 @@
         <!-- <div>ERP v{{ $q.version }}</div> -->
       </q-toolbar>
     </q-header>
-    <q-drawer v-if="store.isLoggedIn" drawer persistent overlay show-if-above :mini="miniState"
-      @mouseover="miniState = false" @mouseout="miniState = true" v-model="leftDrawerOpen" class="shadow-6">
+    <q-drawer v-if="store.isLoggedIn" drawer persistent overlay show-if-above :mini="miniState" @mouseover="miniState = false" @mouseout="miniState = true" v-model="leftDrawerOpen" class="shadow-6">
       <q-list class="icon-grey d-print-none print-hide">
         <!-- <q-item-label header> Menu </q-item-label> -->
         <!-- <q-img src="../assets/background-image.png" style="height: 90px">
@@ -82,22 +85,17 @@
               <div class="grid lg:grid-cols-2 grid-cols-1 gap-y-12 gap-x-6 py-6">
                 <div class="flex gap-4">
                   <div class="flex grow gap-1">
-                    <q-skeleton height="45px" type="rect" class="grow">
-                    </q-skeleton>
-                    <q-skeleton height="45px" width="45px" type="QBtn" square>
-                    </q-skeleton>
+                    <q-skeleton height="45px" type="rect" class="grow"></q-skeleton>
+                    <q-skeleton height="45px" width="45px" type="QBtn" square></q-skeleton>
                   </div>
-                  <q-skeleton height="45px" width="65px" type="QBtn" square>
-                  </q-skeleton>
+                  <q-skeleton height="45px" width="65px" type="QBtn" square></q-skeleton>
                 </div>
                 <q-skeleton height="45px" type="QInput"></q-skeleton>
                 <q-skeleton height="45px" type="QInput"></q-skeleton>
                 <q-skeleton height="45px" type="QInput"></q-skeleton>
                 <div class="flex gap-4">
-                  <q-skeleton height="45px" type="rect" class="grow">
-                  </q-skeleton>
-                  <q-skeleton height="45px" width="65px" type="QBtn" square>
-                  </q-skeleton>
+                  <q-skeleton height="45px" type="rect" class="grow"></q-skeleton>
+                  <q-skeleton height="45px" width="65px" type="QBtn" square></q-skeleton>
                 </div>
                 <div></div>
                 <q-skeleton height="45px" type="QInput"></q-skeleton>
@@ -111,40 +109,32 @@
                     </div>
                     <div class="grid grid-cols-12 gap-6">
                       <div class="flex grow gap-1 col-span-5">
-                        <q-skeleton height="45px" type="rect" class="grow">
-                        </q-skeleton>
-                        <q-skeleton height="45px" width="45px" type="QBtn" square>
-                        </q-skeleton>
+                        <q-skeleton height="45px" type="rect" class="grow"></q-skeleton>
+                        <q-skeleton height="45px" width="45px" type="QBtn" square></q-skeleton>
                       </div>
                       <div class="col-span-2">
-                        <q-skeleton height="45px" type="rect"> </q-skeleton>
+                        <q-skeleton height="45px" type="rect"></q-skeleton>
                       </div>
                       <div class="col-span-2">
-                        <q-skeleton height="45px" type="rect"> </q-skeleton>
+                        <q-skeleton height="45px" type="rect"></q-skeleton>
                       </div>
                       <div class="col-span-2">
-                        <q-skeleton height="45px" type="rect"> </q-skeleton>
+                        <q-skeleton height="45px" type="rect"></q-skeleton>
                       </div>
                       <div class="col-span-1 grid grid-cols-2 gap-2">
-                        <q-skeleton type="rect"> </q-skeleton>
-                        <q-skeleton type="rect"> </q-skeleton>
+                        <q-skeleton type="rect"></q-skeleton>
+                        <q-skeleton type="rect"></q-skeleton>
                       </div>
                     </div>
                     <div class="sm:grid grid-cols-8 py-8">
                       <div class="col-span-5"></div>
                       <div class="col-span-3 grid grid-cols-2 gap-x-4">
-                        <q-skeleton type="text" height="30px" class="w-">
-                        </q-skeleton>
-                        <q-skeleton type="text" height="30px" class="w-">
-                        </q-skeleton>
-                        <q-skeleton type="text" height="30px" class="w-">
-                        </q-skeleton>
-                        <q-skeleton type="text" height="30px" class="w-">
-                        </q-skeleton>
-                        <q-skeleton type="text" height="30px" class="w-">
-                        </q-skeleton>
-                        <q-skeleton type="text" height="30px" class="w-">
-                        </q-skeleton>
+                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
+                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
+                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
+                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
+                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
+                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
                       </div>
                     </div>
                   </q-card-section>

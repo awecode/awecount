@@ -3,8 +3,7 @@
     <div class="row q-gutter-x-md justify-end" v-if="checkPermissions('SalesDiscountDelete')">
       <q-btn color="green" to="/sales-discount/add/" label="New sales discount" icon-right="add" class="add-btn" />
     </div>
-    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
-      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
           <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
@@ -23,8 +22,7 @@
                     <MultiSelectChip v-model="filters.type" :options="['Percent', 'Amount']" />
                   </div>
                   <div class="q-mt-md">
-                    <q-checkbox v-model="filters.trade_discount" label="Is Trade Discount?"
-                      :false-value="null"></q-checkbox>
+                    <q-checkbox v-model="filters.trade_discount" label="Is Trade Discount?" :false-value="null"></q-checkbox>
                   </div>
                 </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
@@ -44,19 +42,15 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('SalesDiscountModify')" color="orange-6" label="Edit"
-            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px"
-            :to="`/sales-discount/${props.row.id}/`" />
+          <q-btn v-if="checkPermissions('SalesDiscountModify')" color="orange-6" label="Edit" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/sales-discount/${props.row.id}/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-name="props">
-        <q-td :props="props" style="padding: 0;">
-          <router-link v-if="checkPermissions('SalesDiscountModify')" :to="`/sales-discount/${props.row.id}/`"
-            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
-            class="text-blue">
+        <q-td :props="props" style="padding: 0">
+          <router-link v-if="checkPermissions('SalesDiscountModify')" :to="`/sales-discount/${props.row.id}/`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue">
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
             {{ props.row.name }}
           </span>
         </q-td>
@@ -82,7 +76,7 @@ export default {
         label: 'Name',
         align: 'left',
         field: 'name',
-        sortable: true
+        sortable: true,
       },
       { name: 'type', label: 'Type', align: 'left', field: 'type', sortable: true },
       {
@@ -90,14 +84,14 @@ export default {
         label: 'Value',
         align: 'left',
         field: 'value',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'trade_discount',
         label: 'Trade Discount',
         align: 'center',
         field: 'trade_discount',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'actions',

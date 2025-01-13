@@ -6,10 +6,8 @@
           <div class="q-mx-md">
             <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date" :hide-btns="true" />
           </div>
-          <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
-            @click="fields = { start_date: null, end_date: null }" class="f-reset-btn"></q-btn>
-          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch" class="f-submit-btn"
-            @click="fetchData"></q-btn>
+          <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close" @click="fields = { start_date: null, end_date: null }" class="f-reset-btn"></q-btn>
+          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch" class="f-submit-btn" @click="fetchData"></q-btn>
         </div>
       </div>
       <div v-if="reportData">
@@ -25,9 +23,7 @@
             </thead>
             <tbody>
               <tr>
-                <td>
                 <th class="text-left subHeading">1. Sales</th>
-                </td>
               </tr>
               <tr>
                 <td class="text-left">1.1 Taxable Sales</td>
@@ -56,9 +52,7 @@
                 <td class="text-center"></td>
               </tr>
               <tr>
-                <td>
                 <th class="text-left subHeading">2. Purchase</th>
-                </td>
               </tr>
               <tr>
                 <td class="text-left">2.1 Taxable Purchase</td>
@@ -68,8 +62,7 @@
                 <td class="text-center">
                   {{ $nf(reportData.purchase.total_meta_tax) }}
                 </td>
-                <td class="text-center">
-                </td>
+                <td class="text-center"></td>
               </tr>
               <tr>
                 <td class="text-left">2.2 Taxable Import</td>
@@ -79,35 +72,35 @@
                 <td class="text-center">
                   {{ $nf(reportData.import.total_meta_tax) }}
                 </td>
-                <td class="text-center">
-                </td>
+                <td class="text-center"></td>
               </tr>
               <tr>
                 <td class="text-left">2.3 Non-taxable Purchase</td>
                 <td class="text-center">
                   {{ $nf(reportData.purchase.total_meta_non_taxable) }}
                 </td>
-                <td class="text-center">
-                </td>
-                <td class="text-center">
-                </td>
+                <td class="text-center"></td>
+                <td class="text-center"></td>
               </tr>
               <tr>
                 <td class="text-left">2.4 Non-taxable Import</td>
                 <td class="text-center">
                   {{ $nf(reportData.import.total_meta_non_taxable) }}
                 </td>
-                <td class="text-center">
-                </td>
-                <td class="text-center">
-                </td>
+                <td class="text-center"></td>
+                <td class="text-center"></td>
               </tr>
               <tr>
-                <td colspan="2" class="text-center text-black"><span class="text-center" style="color: black;">
-                <th>Tax Payable</th></span></td>
-                <td colspan="2" class="text-center text-weight-bold"><span class="text-center" style="color: black;">
-                <th>{{ $nf(reportData.sales.total_meta_tax - reportData.purchase.total_meta_tax) }}
-                </th></span></td>
+                <td colspan="2" class="text-center text-black">
+                  <span class="text-center" style="color: black">
+                    <th>Tax Payable</th>
+                  </span>
+                </td>
+                <td colspan="2" class="text-center text-weight-bold">
+                  <span class="text-center" style="color: black">
+                    <th>{{ $nf(reportData.sales.total_meta_tax - reportData.purchase.total_meta_tax) }}</th>
+                  </span>
+                </td>
               </tr>
             </tbody>
           </q-markup-table>
@@ -119,7 +112,7 @@
 
 <script lang="ts">
 import { Ref } from 'vue'
-import {$nf} from 'src/composables/global'
+import { $nf } from 'src/composables/global'
 export default {
   setup() {
     const metaData = {

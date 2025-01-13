@@ -1,12 +1,7 @@
 <template>
   <div class="q-ma-md">
     <div>
-      <q-btn
-        icon="add"
-        label="Add widget"
-        to="/dashboard-widgets/add"
-        style="font-size: 0.75rem"
-      ></q-btn>
+      <q-btn icon="add" label="Add widget" to="/dashboard-widgets/add" style="font-size: 0.75rem"></q-btn>
     </div>
     <div class="q-mt-md grid-con">
       <div v-for="widget in fields" :key="widget.id">
@@ -17,13 +12,7 @@
                 {{ widget.name }}
               </h5>
               <span style="flex-grow: 0; flex-shrink: 0">
-                <q-btn
-                  flat
-                  icon="edit"
-                  :to="`/dashboard-widgets/${widget.id}`"
-                  size="sm"
-                  class="text-grey-8"
-                ></q-btn>
+                <q-btn flat icon="edit" :to="`/dashboard-widgets/${widget.id}`" size="sm" class="text-grey-8"></q-btn>
               </span>
             </div>
             <div>
@@ -31,25 +20,14 @@
                 <q-markup-table flat>
                   <thead>
                     <tr>
-                      <th
-                        v-for="value in widget.data.labels"
-                        :key="value"
-                        class="text-left"
-                      >
+                      <th v-for="value in widget.data.labels" :key="value" class="text-left">
                         {{ value }}
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="(row, index) in widget.data.datasets"
-                      :key="index"
-                    >
-                      <td
-                        v-for="(value, index) in row"
-                        :key="index"
-                        class="text-left"
-                      >
+                    <tr v-for="(row, index) in widget.data.datasets" :key="index">
+                      <td v-for="(value, index) in row" :key="index" class="text-left">
                         {{ value }}
                       </td>
                     </tr>

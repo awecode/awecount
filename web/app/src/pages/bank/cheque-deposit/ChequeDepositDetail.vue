@@ -3,9 +3,7 @@
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span>Cheque Deposit | {{ fields?.status || '-' }} | #{{
-            fields?.id || '-'
-          }}</span>
+          <span>Cheque Deposit | {{ fields?.status || '-' }} | #{{ fields?.id || '-' }}</span>
         </div>
       </q-card-section>
 
@@ -79,16 +77,13 @@
         <q-btn :to="`/cheque-deposit/${id}/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
       </div>
       <div v-if="fields?.status === 'Issued' && checkPermissions('ChequeDepositModify')">
-        <q-btn @click.prevent="onClearedClick" color="green" icon="done_all" label="Mark as cleared" :loading="loading"
-          class="text-h7 q-py-sm" />
+        <q-btn @click.prevent="onClearedClick" color="green" icon="done_all" label="Mark as cleared" :loading="loading" class="text-h7 q-py-sm" />
       </div>
       <div v-if="fields?.status !== 'Cancelled' && checkPermissions('ChequeDepositCancel')">
-        <q-btn @click.prevent="() => (isDeleteOpen = true)" color="red" icon="block" label="Cancel"
-          class="text-h7 q-py-sm" :loading="loading"/>
+        <q-btn @click.prevent="() => (isDeleteOpen = true)" color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" :loading="loading" />
       </div>
       <div class="q-ml-auto" v-if="fields?.status === 'Cleared'">
-        <q-btn :to="`/journal-entries/cheque-deposits/${fields.id}/`" color="blue" icon="library_books"
-          label="Journal Entries" class="text-h7 q-py-sm" />
+        <q-btn :to="`/journal-entries/cheque-deposits/${fields.id}/`" color="blue" icon="library_books" label="Journal Entries" class="text-h7 q-py-sm" />
       </div>
     </div>
     <q-dialog v-model="isDeleteOpen">
@@ -101,14 +96,11 @@
         </q-card-section>
         <q-separator inset />
         <q-card-section>
-          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500;">
-            Are you sure?
-          </div>
-          <div class=" text-blue">
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">Are you sure?</div>
+          <div class="text-blue">
             <div class="row justify-end">
               <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
-              <q-btn flat class="text-red" label="Yes"
-                @click="onCancelClick"></q-btn>
+              <q-btn flat class="text-red" label="Yes" @click="onCancelClick"></q-btn>
             </div>
           </div>
         </q-card-section>
@@ -121,7 +113,7 @@
 import useApi from 'src/composables/useApi'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
-import checkPermissions from 'src/composables/checkPermissions';
+import checkPermissions from 'src/composables/checkPermissions'
 const loading = ref(false)
 const store = useLoginStore()
 const metaData = {
@@ -130,18 +122,9 @@ const metaData = {
 useMeta(metaData)
 const getDate = computed(() => {
   let dates = {
-    deposit_date: DateConverter.getRepresentation(
-      fields.value?.date,
-      store.isCalendarInAD ? 'ad' : 'bs'
-    ),
-    clearing_date: DateConverter.getRepresentation(
-      fields.value?.clearing_date,
-      store.isCalendarInAD ? 'ad' : 'bs'
-    ),
-    cheque_date: DateConverter.getRepresentation(
-      fields.value?.cheque_date,
-      store.isCalendarInAD ? 'ad' : 'bs'
-    ),
+    deposit_date: DateConverter.getRepresentation(fields.value?.date, store.isCalendarInAD ? 'ad' : 'bs'),
+    clearing_date: DateConverter.getRepresentation(fields.value?.clearing_date, store.isCalendarInAD ? 'ad' : 'bs'),
+    cheque_date: DateConverter.getRepresentation(fields.value?.cheque_date, store.isCalendarInAD ? 'ad' : 'bs'),
   }
   return dates
 })
@@ -149,7 +132,7 @@ const props = defineProps(['id'])
 const fields = ref(null)
 const $q = useQuasar()
 const isDeleteOpen = ref(false)
-const getData = async() =>
+const getData = async () =>
   await useApi(`/v1/cheque-deposits/${props.id}/details/`, { method: 'GET' }, false, true).then((data) => {
     fields.value = data
   })

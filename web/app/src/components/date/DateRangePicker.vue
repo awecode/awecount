@@ -11,34 +11,104 @@
             <div class="text-caption">Date Range</div>
             <q-list dense padding class="rounded-borders q-pr-md">
               <q-item clickable :active="activeDate == 'today'" v-ripple>
-                <q-item-section @click="getToday((last = false)); menuDom.hide();">Today</q-item-section>
+                <q-item-section
+                  @click="
+                    getToday((last = false))
+                    menuDom.hide()
+                  "
+                >
+                  Today
+                </q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'yesterday'" v-ripple>
-                <q-item-section @click="getToday((last = true)); menuDom.hide();">Yesterday</q-item-section>
+                <q-item-section
+                  @click="
+                    getToday((last = true))
+                    menuDom.hide()
+                  "
+                >
+                  Yesterday
+                </q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'last7'" v-ripple>
-                <q-item-section @click="getDays((last = 7)); menuDom.hide();">Last 7 Days</q-item-section>
+                <q-item-section
+                  @click="
+                    getDays((last = 7))
+                    menuDom.hide()
+                  "
+                >
+                  Last 7 Days
+                </q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'last30'" v-ripple>
-                <q-item-section @click="getDays((last = 30)); menuDom.hide();">Last 30 Days</q-item-section>
+                <q-item-section
+                  @click="
+                    getDays((last = 30))
+                    menuDom.hide()
+                  "
+                >
+                  Last 30 Days
+                </q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisMonth'" v-ripple>
-                <q-item-section @click="getMonth((last = false)); menuDom.hide();">This Month</q-item-section>
+                <q-item-section
+                  @click="
+                    getMonth((last = false))
+                    menuDom.hide()
+                  "
+                >
+                  This Month
+                </q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastMonth'" v-ripple>
-                <q-item-section @click="getMonth((last = true)); menuDom.hide();">Last Month</q-item-section>
+                <q-item-section
+                  @click="
+                    getMonth((last = true))
+                    menuDom.hide()
+                  "
+                >
+                  Last Month
+                </q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisYear'" v-ripple>
-                <q-item-section @click="getYear((last = false)); menuDom.hide();">This Year</q-item-section>
+                <q-item-section
+                  @click="
+                    getYear((last = false))
+                    menuDom.hide()
+                  "
+                >
+                  This Year
+                </q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastYear'" v-ripple>
-                <q-item-section @click="getYear((last = true)); menuDom.hide();">Last Year</q-item-section>
+                <q-item-section
+                  @click="
+                    getYear((last = true))
+                    menuDom.hide()
+                  "
+                >
+                  Last Year
+                </q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisFY'" v-ripple>
-                <q-item-section @click="getFY((last = false)); menuDom.hide();">This FY</q-item-section>
+                <q-item-section
+                  @click="
+                    getFY((last = false))
+                    menuDom.hide()
+                  "
+                >
+                  This FY
+                </q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastFY'" v-ripple>
-                <q-item-section @click="getFY((last = true)); menuDom.hide();">Last FY</q-item-section>
+                <q-item-section
+                  @click="
+                    getFY((last = true))
+                    menuDom.hide()
+                  "
+                >
+                  Last FY
+                </q-item-section>
               </q-item>
             </q-list>
           </div>
@@ -85,7 +155,6 @@ import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
 
-
 const props = defineProps({
   startDate: { type: String, default: undefined },
   endDate: { type: String, default: undefined },
@@ -122,14 +191,14 @@ const getText0 = computed(() => {
   return DateConverter.getRepresentation(
     value0.value,
     // this.$store.state.calendar
-    isCalendarInAD.value ? 'ad' : 'bs'
+    isCalendarInAD.value ? 'ad' : 'bs',
   )
 })
 const getText1 = computed(() => {
   return DateConverter.getRepresentation(
     value1.value,
     // this.$store.state.calendar
-    isCalendarInAD.value ? 'ad' : 'bs'
+    isCalendarInAD.value ? 'ad' : 'bs',
   )
 })
 // const updated0 = (val) => {
@@ -143,26 +212,26 @@ watch(
   () => value0.value,
   (val) => {
     emit('update:startDate', val)
-  }
+  },
 )
 watch(
   () => value1.value,
   (val) => {
     emit('update:endDate', val)
-  }
+  },
 )
 
 watch(
   () => props.startDate,
   (val) => {
     value0.value = val
-  }
+  },
 )
 watch(
   () => props.endDate,
   (val) => {
     value1.value = val
-  }
+  },
 )
 
 // const filter = () => {
@@ -269,10 +338,7 @@ const getFY = (last = false) => {
     }
     bs_year = bs_year - (last ? 1 : 0)
     const bs_start = `${bs_year}-04-01`
-    const bs_end = `${bs_year + 1}-03-${DateConverter.getMonthDays(
-      bs_year + 1,
-      3
-    )}`
+    const bs_end = `${bs_year + 1}-03-${DateConverter.getMonthDays(bs_year + 1, 3)}`
     fy_start = DateConverter.bs2ad(bs_start)
     fy_end = DateConverter.bs2ad(bs_end)
   } else {
@@ -327,7 +393,7 @@ const getDays = (last = 7) => {
   setDateRange(startDayStr, todayStr)
 }
 onMounted(() => {
-  if (props.focusOnMount && (!value0.value && !value1.value)) {
+  if (props.focusOnMount && !value0.value && !value1.value) {
     value0.value = store.dateRange.start_date
     value1.value = store.dateRange.end_date
     menuDom.value.show()
@@ -338,9 +404,8 @@ watch([value0, value1], (newValve) => {
 })
 const toDateValidation = (date) => {
   if (value0.value) {
-    return (date >= value0.value.replaceAll('-', '/') && date < '2033/04/16')
-  }
-  else return date < '2033/04/16'
+    return date >= value0.value.replaceAll('-', '/') && date < '2033/04/16'
+  } else return date < '2033/04/16'
 }
 </script>
 

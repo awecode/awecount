@@ -1,6 +1,7 @@
 <template>
   <q-form class="q-pa-lg" autofocus>
-    <q-card class="q-pa-xs"><q-card-section>
+    <q-card class="q-pa-xs">
+      <q-card-section>
         <q-card>
           <q-card-section class="bg-green text-white">
             <div class="text-h6">
@@ -10,10 +11,8 @@
           </q-card-section>
           <q-card class="q-pt-md">
             <div class="row q-col-gutter-md q-px-md q-pb-md">
-              <q-input v-model="fields.voucher_no" label="Voucher No." class="col-6" :error-message="errors?.voucher_no"
-                :error="!!errors?.voucher_no" />
-              <DatePicker v-model="fields.date" class="col-6" label="Date" :error-message="errors?.date"
-                :error="!!errors?.date"></DatePicker>
+              <q-input v-model="fields.voucher_no" label="Voucher No." class="col-6" :error-message="errors?.voucher_no" :error="!!errors?.voucher_no" />
+              <DatePicker v-model="fields.date" class="col-6" label="Date" :error-message="errors?.date" :error="!!errors?.date"></DatePicker>
             </div>
           </q-card>
         </q-card>
@@ -30,9 +29,7 @@
               </div>
             </div>
             <div v-for="(voucher, index) in fields.rows" :key="voucher.id">
-              <VoucherRow :voucher="voucher" :index="index" :options="formDefaults.collections?.accounts"
-                :errors="errors?.rows ? errors.rows : null" @deleteVoucher="(index) => deleteVoucher(index, errors)"
-                @checkAddVoucher="checkAddVoucher" />
+              <VoucherRow :voucher="voucher" :index="index" :options="formDefaults.collections?.accounts" :errors="errors?.rows ? errors.rows : null" @deleteVoucher="(index) => deleteVoucher(index, errors)" @checkAddVoucher="checkAddVoucher" />
             </div>
             <div class="row q-col-gutter-md q-py-sm text-right text-bold">
               <div class="q-mr-md"></div>
@@ -52,21 +49,13 @@
       </q-card-section>
 
       <div class="row">
-        <q-input v-model="fields.narration" type="textarea" autogrow label="Narration *" class="col-12 q-pa-md q-mb-md"
-          :error-message="errors?.narration" :error="!!errors?.narration" />
+        <q-input v-model="fields.narration" type="textarea" autogrow label="Narration *" class="col-12 q-pa-md q-mb-md" :error-message="errors?.narration" :error="!!errors?.narration" />
       </div>
       <div class="row q-ma-md justify-end">
-        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit" @click.prevent="onSubmitClick('Unapproved')"
-          color="orange-7" icon="fa-solid fa-pen-to-square" label="Draft" class="q-mr-md q-py-sm" type="submit" />
-        <q-btn v-if="checkPermissions('JournalVoucherModify') &&
-          isEdit &&
-          fields.status === 'Draft'
-          " @click.prevent="onSubmitClick('Unapproved')" color="orange-7" icon="fa-solid fa-pen-to-square"
-          label="Save Draft" class="q-mr-md q-py-sm" type="submit" />
-        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit" @click.prevent="onSubmitClick('Approved')"
-          color="green-8" icon="fa-solid fa-floppy-disk" label="Save" />
-        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit" @click.prevent="onSubmitClick('Approved')"
-          color="green-8" icon="fa-solid fa-floppy-disk" label="Update" type="submit" />
+        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit" @click.prevent="onSubmitClick('Unapproved')" color="orange-7" icon="fa-solid fa-pen-to-square" label="Draft" class="q-mr-md q-py-sm" type="submit" />
+        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit && fields.status === 'Draft'" @click.prevent="onSubmitClick('Unapproved')" color="orange-7" icon="fa-solid fa-pen-to-square" label="Save Draft" class="q-mr-md q-py-sm" type="submit" />
+        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit" @click.prevent="onSubmitClick('Approved')" color="green-8" icon="fa-solid fa-floppy-disk" label="Save" />
+        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit" @click.prevent="onSubmitClick('Approved')" color="green-8" icon="fa-solid fa-floppy-disk" label="Update" type="submit" />
       </div>
     </q-card>
   </q-form>
@@ -114,16 +103,10 @@ export default {
       }
       if (amountComputed.value.dr - amountComputed.value.cr > 0) {
         newRow.type = 'Cr'
-        newRow.cr_amount = subtract(
-          amountComputed.value.dr,
-          amountComputed.value.cr
-        )
+        newRow.cr_amount = subtract(amountComputed.value.dr, amountComputed.value.cr)
       } else if (amountComputed.value.cr - amountComputed.value.dr > 0) {
         newRow.type = 'Dr'
-        newRow.dr_amount = subtract(
-          amountComputed.value.cr,
-          amountComputed.value.dr
-        )
+        newRow.dr_amount = subtract(amountComputed.value.cr, amountComputed.value.dr)
       }
       formData.fields.value.rows.push(newRow)
     }
@@ -133,10 +116,7 @@ export default {
     })
     useMeta(() => {
       return {
-        title:
-          (formData.isEdit?.value
-            ? 'Update Journal Voucher'
-            : 'Add Journal Voucher') + ' | Awecount',
+        title: (formData.isEdit?.value ? 'Update Journal Voucher' : 'Add Journal Voucher') + ' | Awecount',
       }
     })
     formData.fields.value.voucher_no = formData?.formDefaults?.value.voucher_no || null
@@ -157,8 +137,7 @@ export default {
       },
     ]
 
-    formData.fields.value.voucher_no =
-      formData.formDefaults.value?.fields?.voucher_no
+    formData.fields.value.voucher_no = formData.formDefaults.value?.fields?.voucher_no
     const amountComputed = computed(() => {
       let amount = { dr: 0, cr: 0 }
       formData.fields.value.rows.forEach((item) => {

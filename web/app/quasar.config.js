@@ -7,7 +7,7 @@
 
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
-const { sentryVitePlugin } = require("@sentry/vite-plugin")
+const { sentryVitePlugin } = require('@sentry/vite-plugin')
 const UnoCSS = require('unocss/vite').default
 // const { presetAttributify, presetUno } = require('unocss')
 // import presetWind from '@unocss/preset-wind'
@@ -84,7 +84,7 @@ module.exports = configure(function (ctx) {
         viteConf.plugins.push(
           ...UnoCSS({
             presets: [presetWind()],
-          })
+          }),
         )
         viteConf.plugins.push(
           sentryVitePlugin({

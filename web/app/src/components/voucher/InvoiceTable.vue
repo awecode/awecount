@@ -4,12 +4,8 @@
       <div class="q-pa-lg q-col-gutter-md scroll">
         <div class="row text-subtitle2 hr q-py-sm no-wrap">
           <div class="col-5 row">
-            <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
-              Particular(s)
-            </div>
-            <div v-if="usedIn === 'creditNote'" class="col-2 text-center">
-              Return
-            </div>
+            <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">Particular(s)</div>
+            <div v-if="usedIn === 'creditNote'" class="col-2 text-center">Return</div>
           </div>
           <div class="col-2 text-center">Qty</div>
           <div class="col-2 text-center">Rate</div>
@@ -29,7 +25,11 @@
             :rowEmpty="(rowEmpty && index === 0) || false"
             @deleteRow="(index) => removeRow(index)"
             :errors="
-              !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
+              !rowEmpty ?
+                Array.isArray(errors) ?
+                  errors[index]
+                : null
+              : null
             "
             :enableRowDescription="props.enableRowDescription"
             :showRowTradeDiscount="props.showRowTradeDiscount"
@@ -74,15 +74,7 @@
           <div class="col-1 text-center"></div>
         </div>
         <div>
-          <q-btn
-            @click="addRow"
-            color="green"
-            outline
-            class="q-px-lg q-py-ms"
-            :disabled="hasChallan"
-            data-testid="add-row-btn"
-            >Add Row</q-btn
-          >
+          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan" data-testid="add-row-btn">Add Row</q-btn>
         </div>
       </div>
     </q-card>
@@ -193,21 +185,21 @@ export default {
       () => props.modelValue,
       (newValue) => {
         modalValue.value = newValue
-      }
+      },
     )
     watch(
       () => props.errors,
       (newValue) => {
         if (newValue === 'This field is required.') rowEmpty.value = true
         else rowEmpty.value = false
-      }
+      },
     )
     watch(
       () => modalValue,
       (newValue) => {
         emit('update:modelValue', newValue)
       },
-      { deep: true }
+      { deep: true },
     )
     const totalDataComputed = computed(() => {
       let data = {
@@ -228,56 +220,29 @@ export default {
       modalValue.value.forEach((item, index) => {
         const rowTotal = (item.rate || 0) * (item.quantity || 0)
         data.subTotal = data.subTotal + rowTotal
-        const rowDiscount =
-          useCalcDiscount(
-            item.discount_type,
-            rowTotal,
-            item.discount,
-            props.discountOptions
-          ) || 0
+        const rowDiscount = useCalcDiscount(item.discount_type, rowTotal, item.discount, props.discountOptions) || 0
         let currentTaxObj = null
         if (item.tax_scheme_id && props.taxOptions && props.taxOptions.length) {
-          const taxindex = props.taxOptions.findIndex(
-            (taxItem) => taxItem.id === item.tax_scheme_id
-          )
+          const taxindex = props.taxOptions.findIndex((taxItem) => taxItem.id === item.tax_scheme_id)
           if (taxindex > -1) {
             currentTaxObj = props.taxOptions[taxindex]
           }
         }
         if (data.sameScheme !== false && currentTaxObj) {
-          if (
-            data.sameScheme === null &&
-            currentTaxObj &&
-            currentTaxObj.rate != 0
-          ) {
+          if (data.sameScheme === null && currentTaxObj && currentTaxObj.rate != 0) {
             data.sameScheme = currentTaxObj.id
             data.taxObj = currentTaxObj
-          } else if (
-            data.sameScheme === currentTaxObj?.id ||
-            currentTaxObj.rate === 0
-          ) {
+          } else if (data.sameScheme === currentTaxObj?.id || currentTaxObj.rate === 0) {
           } else data.sameScheme = false
         }
-        let mainDiscountAmount =
-          useCalcDiscount(
-            props.mainDiscount.discount_type,
-            rowTotal - (rowDiscount || 0),
-            props.mainDiscount.discount,
-            props.discountOptions
-          ) || 0
+        let mainDiscountAmount = useCalcDiscount(props.mainDiscount.discount_type, rowTotal - (rowDiscount || 0), props.mainDiscount.discount, props.discountOptions) || 0
 
         if (currentTaxObj) {
           let rowTax = 0
           if (props.mainDiscount.discount_type === 'Amount') {
-            rowTax =
-              (rowTotal -
-                (rowDiscount || 0) -
-                props.mainDiscount.discount * (rowTotal / data.addTotal)) *
-              (currentTaxObj.rate / 100 || 0)
+            rowTax = (rowTotal - (rowDiscount || 0) - props.mainDiscount.discount * (rowTotal / data.addTotal)) * (currentTaxObj.rate / 100 || 0)
           } else {
-            rowTax =
-              (rowTotal - (rowDiscount || 0) - mainDiscountAmount) *
-              (currentTaxObj.rate / 100 || 0)
+            rowTax = (rowTotal - (rowDiscount || 0) - mainDiscountAmount) * (currentTaxObj.rate / 100 || 0)
           }
           data.totalTax = data.totalTax + rowTax
         }
@@ -293,11 +258,7 @@ export default {
       })
       // tax
       if (typeof data.sameScheme === 'number' && data.taxObj) {
-        data.taxName =
-          `${data.taxObj.name || ''}` +
-          ' @ ' +
-          `${data.taxObj.rate || ''}` +
-          '%'
+        data.taxName = `${data.taxObj.name || ''}` + ' @ ' + `${data.taxObj.rate || ''}` + '%'
         data.taxRate = data.taxObj.rate
       } else {
         data.taxName = 'Tax'
@@ -327,12 +288,7 @@ export default {
       })
     }
     const removeRow = (index) => {
-      if (props.errors || modalValue.value[index].id)
-        emit(
-          'deleteRowErr',
-          index,
-          modalValue.value[index]?.id ? modalValue.value[index] : null
-        )
+      if (props.errors || modalValue.value[index].id) emit('deleteRowErr', index, modalValue.value[index]?.id ? modalValue.value[index] : null)
       modalValue.value.splice(index, 1)
     }
     // For purchase rows Data of Items
@@ -347,45 +303,30 @@ export default {
           console.log(err)
         }
       }
-      const localPurchaseData = JSON.parse(
-        JSON.stringify(itemPurchaseData.value)
-      )
+      const localPurchaseData = JSON.parse(JSON.stringify(itemPurchaseData.value))
       const COGSRows = {}
       modalValue.value.forEach((row, index) => {
         const currentItemId = row.item_id
         // this calculates the total available stock for the selected item According to fifo
-        const availableStock =
-          localPurchaseData[currentItemId] &&
-          localPurchaseData[currentItemId].length > 0
-            ? localPurchaseData[currentItemId].reduce(
-                (accumulator, obj) => accumulator + obj.remaining_quantity,
-                0
-              )
-            : 0
+        const availableStock = localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0 ? localPurchaseData[currentItemId].reduce((accumulator, obj) => accumulator + obj.remaining_quantity, 0) : 0
         let currentCOGS = 0
         let quantity = row.quantity
-        if (
-          localPurchaseData[currentItemId] &&
-          localPurchaseData[currentItemId].length > 0
-        ) {
+        if (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) {
           for (let i = 0; quantity >= 0; i++) {
             const currentRow = localPurchaseData[currentItemId][i]
             if (currentRow.remaining_quantity > quantity) {
-              currentRow.remaining_quantity =
-                currentRow.remaining_quantity - quantity
+              currentRow.remaining_quantity = currentRow.remaining_quantity - quantity
               currentCOGS = currentCOGS + quantity * currentRow.rate
               break
             } else if (currentRow.remaining_quantity <= quantity) {
               quantity = quantity - currentRow.remaining_quantity
-              currentCOGS =
-                currentCOGS + currentRow.remaining_quantity * currentRow.rate
+              currentCOGS = currentCOGS + currentRow.remaining_quantity * currentRow.rate
               localPurchaseData[currentItemId][i].remaining_quantity = 0
               if (i + 1 === localPurchaseData[currentItemId].length) {
                 if (quantity > 0) {
                   currentCOGS = {
                     status: 'error',
-                    message:
-                      'The provided quantity exceeded the avaliable quantity',
+                    message: 'The provided quantity exceeded the avaliable quantity',
                   }
                   break
                 } else break

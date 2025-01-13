@@ -9,22 +9,16 @@
       </q-card-section>
 
       <q-card-section class="q-ma-md">
-        <p class="text-caption">{{
-          props.helpText || 'Please select a file to import. The file should be in .xlsx format.'
-          }}
-          <a v-if="props.sampleFileUrl" :href="props.sampleFileUrl" download class="text-primary">Download
-            sample
-            file</a>
+        <p class="text-caption">
+          {{ props.helpText || 'Please select a file to import. The file should be in .xlsx format.' }}
+          <a v-if="props.sampleFileUrl" :href="props.sampleFileUrl" download class="text-primary">Download sample file</a>
         </p>
-        <q-file @input="validateImportFile" v-model="fileToImport" accept=".xlsx" label="Select file" color="primary"
-          flat dense :disable="isImporting">
-        </q-file>
+        <q-file @input="validateImportFile" v-model="fileToImport" accept=".xlsx" label="Select file" color="primary" flat dense :disable="isImporting"></q-file>
         <p v-if="importFileParseError" class="text-red-600">
           {{ importFileParseError }}
         </p>
         <div class="text-right q-mt-lg">
-          <q-btn label="Import" color="primary" @click="importXLS()"
-            :disabled="isImporting || !fileToImport || importFileParseError"></q-btn>
+          <q-btn label="Import" color="primary" @click="importXLS()" :disabled="isImporting || !fileToImport || importFileParseError"></q-btn>
         </div>
       </q-card-section>
     </q-card>
@@ -34,38 +28,41 @@
 <script setup>
 import * as XLSX from 'xlsx'
 
-const showImportModal = defineModel('showImportModal');
+const showImportModal = defineModel('showImportModal')
 const fileToImport = ref(null)
 const importFileParseError = ref(null)
 const isImporting = ref(false)
 
 const $q = useQuasar()
 
-watch(() => showImportModal.value, () => {
-  fileToImport.value = null
-})
+watch(
+  () => showImportModal.value,
+  () => {
+    fileToImport.value = null
+  },
+)
 
 const props = defineProps({
   title: {
     type: String,
-    required: true
+    required: true,
   },
   helpText: {
     type: String,
-    default: null
+    default: null,
   },
   sampleFileUrl: {
     type: String,
-    default: null
+    default: null,
   },
   requiredColumns: {
     type: Array,
-    required: true
+    required: true,
   },
   endpoint: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 })
 function validateImportFile(event) {
   importFileParseError.value = null
@@ -88,7 +85,6 @@ function validateImportFile(event) {
   reader.readAsArrayBuffer(file)
 }
 
-
 function importXLS() {
   if (isImporting.value || !fileToImport.value || importFileParseError.value) {
     return
@@ -98,37 +94,32 @@ function importXLS() {
   formData.append('file', fileToImport.value)
   useApi(props.endpoint, {
     method: 'POST',
-    body: formData
+    body: formData,
   })
     .then(() => {
-      $q.notify(
-        {
-          color: 'positive',
-          message: 'Import queued successfully!',
-          icon: 'check_circle'
-        }
-      )
+      $q.notify({
+        color: 'positive',
+        message: 'Import queued successfully!',
+        icon: 'check_circle',
+      })
       showImportModal.value = false
     })
     .catch((error) => {
       if (error.data && error.data.error) {
-        $q.notify(
-          {
-            color: 'negative',
-            message: error.data.error,
-            icon: 'error'
-          }
-        )
+        $q.notify({
+          color: 'negative',
+          message: error.data.error,
+          icon: 'error',
+        })
       } else {
-        $q.notify(
-          {
-            color: 'negative',
-            message: 'Something went wrong!',
-            icon: 'error'
-          }
-        )
+        $q.notify({
+          color: 'negative',
+          message: 'Something went wrong!',
+          icon: 'error',
+        })
       }
-    }).finally(() => {
+    })
+    .finally(() => {
       isImporting.value = false
     })
 }

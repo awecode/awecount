@@ -1,12 +1,10 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('PartyCreate')" color="green" to="/party/add/" label="New party" class="add-btn"
-        icon-right="add" />
+      <q-btn v-if="checkPermissions('PartyCreate')" color="green" to="/party/add/" label="New party" class="add-btn" icon-right="add" />
     </div>
 
-    <q-table title="Accounts" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
-      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table title="Accounts" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
           <template v-slot:append>
@@ -16,21 +14,16 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('PartyModify')" color="orange-6"
-            class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit"
-            :to="`/party/${props.row.id}/`" />
-          <q-btn color="blue" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" label="Account"
-            :to="`/parties/account/${props.row.id}/`" />
+          <q-btn v-if="checkPermissions('PartyModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit" :to="`/party/${props.row.id}/`" />
+          <q-btn color="blue" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" label="Account" :to="`/parties/account/${props.row.id}/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-name="props">
-        <q-td :props="props" style="padding: 0;">
-          <router-link v-if="checkPermissions('PartyModify')"
-            :to="`/party/${props.row.id}/`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
-            class="text-blue">
+        <q-td :props="props" style="padding: 0">
+          <router-link v-if="checkPermissions('PartyModify')" :to="`/party/${props.row.id}/`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue">
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
             {{ props.row.name }}
           </span>
         </q-td>
@@ -54,14 +47,14 @@ export default {
         label: 'Name',
         align: 'left',
         field: 'name',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'address',
         label: 'Address',
         align: 'left',
         field: 'address',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'contact_no',
@@ -80,7 +73,7 @@ export default {
         label: 'Pan No.',
         align: 'center',
         field: 'tax_registration_number',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'actions',

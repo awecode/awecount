@@ -120,12 +120,8 @@ const Converter = {
     // Tuple in the dictionary starts from 0
     // The range(a,b) function starts from a and ends at b-1
 
-    let [begin_year, begin_month, begin_day] = begin_bs_date
-      .split('-')
-      .map((data) => parseInt(data))
-    let [end_year, end_month, end_day] = end_bs_date
-      .split('-')
-      .map((data) => parseInt(data))
+    let [begin_year, begin_month, begin_day] = begin_bs_date.split('-').map((data) => parseInt(data))
+    let [end_year, end_month, end_day] = end_bs_date.split('-').map((data) => parseInt(data))
 
     let days = 0
 
@@ -171,9 +167,7 @@ const Converter = {
     // num_days : Number of days to add to the given date
     let date = new Date(ad_date)
     date.setDate(date.getDate() + num_days)
-    return `${date.getFullYear()}-${this.zeroPad(
-      date.getMonth() + 1
-    )}-${this.zeroPad(date.getDate())}`
+    return `${date.getFullYear()}-${this.zeroPad(date.getMonth() + 1)}-${this.zeroPad(date.getDate())}`
   },
 
   addBsDays: function (bs_date, num_days) {
@@ -322,32 +316,11 @@ const Converter = {
   },
 
   getMonths() {
-    return [
-      'Baishakh',
-      'Jestha',
-      'Asadh',
-      'Shrawan',
-      'Bhadra',
-      'Ashwin',
-      'Kartik',
-      'Mangsir',
-      'Poush',
-      'Magh',
-      'Falgun',
-      'Chaitra',
-    ]
+    return ['Baishakh', 'Jestha', 'Asadh', 'Shrawan', 'Bhadra', 'Ashwin', 'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra']
   },
 
   getDays() {
-    return [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-    ]
+    return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   },
 
   getRepresentation(adDate, calendarType, showTime = false) {
@@ -378,9 +351,7 @@ const Converter = {
     }
   },
   date2str(date) {
-    return `${date.getFullYear()}-${this.zeroPad(
-      date.getMonth() + 1
-    )}-${this.zeroPad(date.getDate())}`
+    return `${date.getFullYear()}-${this.zeroPad(date.getMonth() + 1)}-${this.zeroPad(date.getDate())}`
   },
 }
 

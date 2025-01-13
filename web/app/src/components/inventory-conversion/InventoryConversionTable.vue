@@ -13,32 +13,30 @@
       <div v-for="(row, index) in modalValue" :key="row" class="row mt-1 q-col-gutter-md">
         <template v-if="row.transaction_type === props.type">
           <div :class="props.type === 'Cr' ? 'col-7' : 'col-3'">
-            <n-auto-complete label="Item" v-model="row.item_id" :options="itemOptions"
+            <n-auto-complete
+              label="Item"
+              v-model="row.item_id"
+              :options="itemOptions"
               @update:model-value="onItemChange(index)"
-              :error="rowEmpty ? 'This field is required.' : errors && errors[index]?.item_id ? errors[index].item_id[0] : null" />
+              :error="
+                rowEmpty ? 'This field is required.'
+                : errors && errors[index]?.item_id ? errors[index].item_id[0]
+                : null
+              "
+            />
           </div>
           <div class="col-2 text-center">
-            <q-input v-model.number="row.quantity" label="Quantity" type="number" data-testid="quantity-input"
-              :error="errors && errors[index]?.quantity ? true : false"
-              :error-message="errors && errors[index]?.quantity ? errors[index].quantity[0] : ''">
-            </q-input>
+            <q-input v-model.number="row.quantity" label="Quantity" type="number" data-testid="quantity-input" :error="errors && errors[index]?.quantity ? true : false" :error-message="errors && errors[index]?.quantity ? errors[index].quantity[0] : ''"></q-input>
           </div>
           <div v-if="props.type === 'Dr'" class="col-2 text-center">
-            <q-input v-model.number="row.rate" label="Rate" data-testid="quantity-input"
-              :error="errors && errors[index]?.rate ? true : false"
-              :error-message="errors && errors[index]?.rate ? errors[index].rate[0] : ''">
-            </q-input>
+            <q-input v-model.number="row.rate" label="Rate" data-testid="quantity-input" :error="errors && errors[index]?.rate ? true : false" :error-message="errors && errors[index]?.rate ? errors[index].rate[0] : ''"></q-input>
           </div>
           <div class="col-2">
-            <q-select v-model="row.unit_id" :options="unitOptions" label="Unit" option-value="id" option-label="name"
-              emit-value map-options data-testid="unit-select" :error="errors && errors[index]?.unit_id ? true : false"
-              :error-message="errors && errors[index]?.unit_id ? errors[index].unit_id[0] : ''" />
+            <q-select v-model="row.unit_id" :options="unitOptions" label="Unit" option-value="id" option-label="name" emit-value map-options data-testid="unit-select" :error="errors && errors[index]?.unit_id ? true : false" :error-message="errors && errors[index]?.unit_id ? errors[index].unit_id[0] : ''" />
           </div>
-          <div class="col-2 row items-center justify-center" v-if="props.type === 'Dr'">{{ row.rate * row.quantity }}
-          </div>
+          <div class="col-2 row items-center justify-center" v-if="props.type === 'Dr'">{{ row.rate * row.quantity }}</div>
           <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
-            <q-btn flat @click="() => deleteRow(index)" class="q-pa-sm focus-highLight" color="transparent"
-              data-testid="row-delete-btn">
+            <q-btn flat @click="() => deleteRow(index)" class="q-pa-sm focus-highLight" color="transparent" data-testid="row-delete-btn">
               <q-icon name="delete" size="20px" color="negative" class="cursor-pointer"></q-icon>
             </q-btn>
           </div>
@@ -51,10 +49,7 @@
         <div v-if="props.type === 'Dr'" class="col-4 row font-medium text-gray-600">
           <div class="col-6">Total Amount</div>
           <div class="col-6">
-            {{ modalValue?.reduce(
-          (accum, row) => accum + (row.quantity * row.rate),
-          0
-        ) || 0 }}
+            {{ modalValue?.reduce((accum, row) => accum + row.quantity * row.rate, 0) || 0 }}
           </div>
         </div>
       </div>
@@ -70,20 +65,21 @@ const props = defineProps({
   },
   modelValue: {
     type: Array,
-    default: () => [{
-      quantity: 1,
-      item_id: null,
-      unit_id: null,
-      transaction_type: 'Cr'
-    },
-    {
-      quantity: 1,
-      rate: 0,
-      item_id: null,
-      unit_id: null,
-      transaction_type: 'Dr'
-    }
-    ]
+    default: () => [
+      {
+        quantity: 1,
+        item_id: null,
+        unit_id: null,
+        transaction_type: 'Cr',
+      },
+      {
+        quantity: 1,
+        rate: 0,
+        item_id: null,
+        unit_id: null,
+        transaction_type: 'Dr',
+      },
+    ],
   },
   itemOptions: {
     type: Array,
@@ -120,26 +116,26 @@ watch(
   () => props.modelValue,
   (newValue) => {
     modalValue.value = newValue
-  }
+  },
 )
 watch(
   () => props.errors,
   (newValue) => {
     errors.value = newValue
-  }
+  },
 )
 const addRow = () => {
   let newRow = {
     quantity: 1,
     item_id: null,
     unit_id: null,
-    transaction_type: props.type
+    transaction_type: props.type,
   }
   if (props.transaction_type === 'Dr') newRow.rate = 0
   modalValue.value.push(newRow)
 }
 const deleteRow = (index) => {
-  if (props.errors && props.errors.length && props.errors[index] || modalValue.value[index]?.id) {
+  if ((props.errors && props.errors.length && props.errors[index]) || modalValue.value[index]?.id) {
     emit('deleteRow', index)
   }
   modalValue.value.splice(index, 1)
@@ -149,7 +145,7 @@ watch(
   (newValue) => {
     emit('update:modelValue', newValue.value)
   },
-  { deep: true }
+  { deep: true },
 )
 const rowEmpty = computed(() => {
   let val = false
@@ -172,7 +168,7 @@ const onItemChange = (index) => {
   if (itemIds.length > itemIdSet.size) {
     $q.notify({
       type: 'negative',
-      message: 'Item cannot be selected as both Dr and Cr'
+      message: 'Item cannot be selected as both Dr and Cr',
     })
     nextTick(() => {
       modalValue.value[index].item_id = null

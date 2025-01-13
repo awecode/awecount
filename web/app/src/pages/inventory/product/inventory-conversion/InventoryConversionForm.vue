@@ -11,40 +11,27 @@
       <q-card class="q-ma-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-select class="col-md-6 col-12" v-model="fields.finished_product"
-              :options="formDefaults?.collections?.finished_products" option-value="id" option-label="name" map-options
-              emit-value label="Finished Product" :disable="isEdit"
-              @update:model-value="onFinishedProductClick"></q-select>
-            <date-picker label="Date*" v-model="fields.date" class="col-md-6 col-12" :error="!!errors?.date"
-              :error-message="errors?.date"></date-picker>
+            <q-select class="col-md-6 col-12" v-model="fields.finished_product" :options="formDefaults?.collections?.finished_products" option-value="id" option-label="name" map-options emit-value label="Finished Product" :disable="isEdit" @update:model-value="onFinishedProductClick"></q-select>
+            <date-picker label="Date*" v-model="fields.date" class="col-md-6 col-12" :error="!!errors?.date" :error-message="errors?.date"></date-picker>
           </div>
           <div class="q-mt-lg grid 2xl:grid-cols-12 2xl:gap-x-8 grid-cols-1 gap-y-8">
             <div class="col-span-4">
               <div class="mb-2 pl-2">Raw Material(s)</div>
-              <InventoryConversionTable v-model="fields.rows" :itemOptions="formDefaults?.collections?.items"
-                :unitOptions="formDefaults?.collections?.units" :errors="errors?.rows"
-                @deleteRow="(index) => deleteRow(index, errors)" type="Cr"></InventoryConversionTable>
+              <InventoryConversionTable v-model="fields.rows" :itemOptions="formDefaults?.collections?.items" :unitOptions="formDefaults?.collections?.units" :errors="errors?.rows" @deleteRow="(index) => deleteRow(index, errors)" type="Cr"></InventoryConversionTable>
             </div>
             <div class="col-span-8">
               <div class="mb-2 pl-2">Finished Product(s)</div>
-              <InventoryConversionTable v-model="fields.rows" :itemOptions="formDefaults?.collections?.items"
-                :unitOptions="formDefaults?.collections?.units" :errors="errors?.rows"
-                @deleteRow="(index) => deleteRow(index, errors)" type="Dr"></InventoryConversionTable>
+              <InventoryConversionTable v-model="fields.rows" :itemOptions="formDefaults?.collections?.items" :unitOptions="formDefaults?.collections?.units" :errors="errors?.rows" @deleteRow="(index) => deleteRow(index, errors)" type="Dr"></InventoryConversionTable>
             </div>
           </div>
           <div class="q-mt-lg">
-            <q-input v-model="fields.remarks" label="Remarks*" class="col-6" :error-message="errors.remarks"
-              :error="!!errors.remarks" type="textarea" autogrow />
+            <q-input v-model="fields.remarks" label="Remarks*" class="col-6" :error-message="errors.remarks" :error="!!errors.remarks" type="textarea" autogrow />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
-          <q-btn v-if="checkPermissions('InventoryConversionVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
-            :loading="loading" @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
-          <q-btn v-if="checkPermissions('InventoryConversionVoucherModify') && isEdit && fields.status !== 'Cancelled'"
-            :loading="loading" @click.prevent="onSubmitClick(fields.status)" color="green" label="Update"
-            type="submit" />
-          <q-btn v-if="!isEdit && checkPermissions('InventoryConversionVoucherCreate')" :loading="loading"
-            @click.prevent="onSubmitClick('Issued')" color="green" label="Create" type="submit" />
+          <q-btn v-if="checkPermissions('InventoryConversionVoucherDelete') && isEdit && fields.status !== 'Cancelled'" :loading="loading" @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
+          <q-btn v-if="checkPermissions('InventoryConversionVoucherModify') && isEdit && fields.status !== 'Cancelled'" :loading="loading" @click.prevent="onSubmitClick(fields.status)" color="green" label="Update" type="submit" />
+          <q-btn v-if="!isEdit && checkPermissions('InventoryConversionVoucherCreate')" :loading="loading" @click.prevent="onSubmitClick('Issued')" color="green" label="Create" type="submit" />
         </div>
       </q-card>
       <q-dialog v-model="isDeleteOpen" @before-hide="delete errors.message">
@@ -57,8 +44,7 @@
           </q-card-section>
 
           <q-card-section class="q-ma-md">
-            <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message"
-              :error-message="errors?.message"> </q-input>
+            <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"></q-input>
             <div class="text-right q-mt-lg">
               <q-btn label="Confirm" @click="onCancelClick"></q-btn>
             </div>
@@ -96,14 +82,16 @@ export default {
           formData.fields.value.deleted_rows.push(deletedObj)
         } else formData.fields.value.deleted_rows = [deletedObj]
       }
-      if (errors && errors.rows && Array.isArray(errors) ) {
+      if (errors && errors.rows && Array.isArray(errors)) {
         errors.rows.splice(index, 1)
       }
     }
     const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try { await formData.submitForm() } catch (err) {
+      try {
+        await formData.submitForm()
+      } catch (err) {
         formData.fields.value.status = originalStatus
       }
     }
@@ -124,7 +112,7 @@ export default {
             icon: 'check_circle',
           })
           formData.fields.value.status = 'Cancelled'
-          formData.fields.value.remarks = ('\nReason for cancellation: ' + deleteMsg.value)
+          formData.fields.value.remarks = '\nReason for cancellation: ' + deleteMsg.value
           isDeleteOpen.value = false
           formData.loading.value = false
         })
@@ -138,7 +126,7 @@ export default {
                   icon: 'check_circle',
                 })
                 formData.fields.value.status = 'Cancelled'
-                formData.fields.value.remarks = ('\nReason for cancellation: ' + deleteMsg.value)
+                formData.fields.value.remarks = '\nReason for cancellation: ' + deleteMsg.value
                 isDeleteOpen.value = false
                 formData.loading.value = false
               })
@@ -171,7 +159,7 @@ export default {
           item_id: item.item_id,
           quantity: item.quantity,
           unit_id: item.unit_id,
-          transaction_type: 'Cr'
+          transaction_type: 'Cr',
         }
       })
       rows.push({
@@ -179,7 +167,7 @@ export default {
         quantity: data.quantity,
         unit_id: data.unit_id,
         rate: data.rate,
-        transaction_type: 'Dr'
+        transaction_type: 'Dr',
       })
       formData.fields.value.rows = rows
       formData.fields.value.remarks = data.remarks
@@ -198,7 +186,14 @@ export default {
       }
     }
     return {
-      ...formData, checkPermissions, deleteRow, onSubmitClick, isDeleteOpen, deleteMsg, onCancelClick, onFinishedProductClick
+      ...formData,
+      checkPermissions,
+      deleteRow,
+      onSubmitClick,
+      isDeleteOpen,
+      deleteMsg,
+      onCancelClick,
+      onFinishedProductClick,
     }
   },
 }

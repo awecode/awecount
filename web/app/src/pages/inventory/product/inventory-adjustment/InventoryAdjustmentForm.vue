@@ -8,34 +8,25 @@
         </div>
       </q-card-section>
       <div class="flex justify-end p-4">
-        <q-btn label="Import From XlS" @click="isAdjustmentImportOpen = true"
-          class="flex justify-end text-green"></q-btn>
+        <q-btn label="Import From XlS" @click="isAdjustmentImportOpen = true" class="flex justify-end text-green"></q-btn>
       </div>
       <q-dialog v-model="isAdjustmentImportOpen">
         <q-card style="min-width: min(80vw, 900px)">
-          <q-btn style="position: absolute; right: 8px; top: 8px; z-index: 50" push color="red" text-color="white" round
-            dense icon="close" @click="isAdjustmentImportOpen = false" />
-          <InventoryAdjustmentImport @modalClose="isAdjustmentImportOpen = false" @onImportSuccess=onXlsFileImport />
+          <q-btn style="position: absolute; right: 8px; top: 8px; z-index: 50" push color="red" text-color="white" round dense icon="close" @click="isAdjustmentImportOpen = false" />
+          <InventoryAdjustmentImport @modalClose="isAdjustmentImportOpen = false" @onImportSuccess="onXlsFileImport" />
         </q-card>
       </q-dialog>
       <q-card class="q-ma-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <date-picker label="Date*" v-model="fields.date" class="col-md-6 col-12" :error="!!errors?.date"
-              :error-message="errors?.date"></date-picker>
-            <q-select class="col-md-6 col-12" v-model="fields.purpose" :options="purposeChoices" option-value="value"
-              option-label="label" map-options emit-value label="Purpose" :error-message="errors.purpose"
-              :error="!!errors.purpose" :disable="isEdit"></q-select>
+            <date-picker label="Date*" v-model="fields.date" class="col-md-6 col-12" :error="!!errors?.date" :error-message="errors?.date"></date-picker>
+            <q-select class="col-md-6 col-12" v-model="fields.purpose" :options="purposeChoices" option-value="value" option-label="label" map-options emit-value label="Purpose" :error-message="errors.purpose" :error="!!errors.purpose" :disable="isEdit"></q-select>
           </div>
           <div class="q-mt-lg">
-            <AdjustmentInvoiceTable v-model="fields.rows" :itemOptions="formDefaults?.collections?.items"
-              :unitOptions="formDefaults?.collections?.units" :errors="errors?.rows"
-              @deleteRow="(index) => deleteRow(index, errors)">
-            </AdjustmentInvoiceTable>
+            <AdjustmentInvoiceTable v-model="fields.rows" :itemOptions="formDefaults?.collections?.items" :unitOptions="formDefaults?.collections?.units" :errors="errors?.rows" @deleteRow="(index) => deleteRow(index, errors)"></AdjustmentInvoiceTable>
           </div>
           <div class="q-mt-lg">
-            <q-input v-model="fields.remarks" label="Remarks*" class="col-6" :error-message="errors.remarks"
-              :error="!!errors.remarks" type="textarea" autogrow />
+            <q-input v-model="fields.remarks" label="Remarks*" class="col-6" :error-message="errors.remarks" :error="!!errors.remarks" type="textarea" autogrow />
           </div>
         </q-card-section>
         <div v-if="importErrorData.length">
@@ -47,13 +38,9 @@
           </div>
         </div>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
-          <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
-            :loading="loading" @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
-          <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherModify') && isEdit && fields.status !== 'Cancelled'"
-            :loading="loading" @click.prevent="onSubmitClick(fields.status)" color="green" label="Update"
-            type="submit" />
-          <q-btn v-if="!isEdit && checkPermissions('InventoryAdjustmentVoucherCreate')" :loading="loading"
-            @click.prevent="onSubmitClick('Issued')" color="green" label="Create" type="submit" />
+          <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherDelete') && isEdit && fields.status !== 'Cancelled'" :loading="loading" @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
+          <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherModify') && isEdit && fields.status !== 'Cancelled'" :loading="loading" @click.prevent="onSubmitClick(fields.status)" color="green" label="Update" type="submit" />
+          <q-btn v-if="!isEdit && checkPermissions('InventoryAdjustmentVoucherCreate')" :loading="loading" @click.prevent="onSubmitClick('Issued')" color="green" label="Create" type="submit" />
         </div>
       </q-card>
       <q-dialog v-model="isDeleteOpen" @before-hide="delete errors.message">
@@ -66,8 +53,7 @@
           </q-card-section>
 
           <q-card-section class="q-ma-md">
-            <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message"
-              :error-message="errors?.message"> </q-input>
+            <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"></q-input>
             <div class="text-right q-mt-lg">
               <q-btn label="Confirm" @click="onCancelClick"></q-btn>
             </div>
@@ -97,19 +83,19 @@ export default {
     const purposeChoices = [
       {
         label: 'Stock In',
-        value: 'Stock In'
+        value: 'Stock In',
       },
       {
         label: 'Stock Out',
-        value: 'Stock Out'
+        value: 'Stock Out',
       },
       {
         label: 'Damaged',
-        value: 'Damaged'
+        value: 'Damaged',
       },
       {
         label: 'Expired',
-        value: 'Expired'
+        value: 'Expired',
       },
     ]
     const formData = useForm(endpoint, {
@@ -131,7 +117,9 @@ export default {
     const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try { await formData.submitForm() } catch (err) {
+      try {
+        await formData.submitForm()
+      } catch (err) {
         formData.fields.value.status = originalStatus
       }
     }
@@ -159,7 +147,7 @@ export default {
             icon: 'check_circle',
           })
           formData.fields.value.status = 'Cancelled'
-          formData.fields.value.remarks = ('\nReason for cancellation: ' + deleteMsg.value)
+          formData.fields.value.remarks = '\nReason for cancellation: ' + deleteMsg.value
           isDeleteOpen.value = false
           formData.loading.value = false
         })
@@ -173,7 +161,7 @@ export default {
                   icon: 'check_circle',
                 })
                 formData.fields.value.status = 'Cancelled'
-                formData.fields.value.remarks = ('\nReason for cancellation: ' + deleteMsg.value)
+                formData.fields.value.remarks = '\nReason for cancellation: ' + deleteMsg.value
                 isDeleteOpen.value = false
                 formData.loading.value = false
               })
@@ -200,7 +188,17 @@ export default {
         })
     }
     return {
-      ...formData, checkPermissions, purposeChoices, deleteRow, onSubmitClick, isDeleteOpen, deleteMsg, onCancelClick, isAdjustmentImportOpen, onXlsFileImport, importErrorData
+      ...formData,
+      checkPermissions,
+      purposeChoices,
+      deleteRow,
+      onSubmitClick,
+      isDeleteOpen,
+      deleteMsg,
+      onCancelClick,
+      isAdjustmentImportOpen,
+      onXlsFileImport,
+      importErrorData,
     }
   },
 }

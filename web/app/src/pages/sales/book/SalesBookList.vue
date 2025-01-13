@@ -1,16 +1,13 @@
 <template>
   <div class="q-pa-md">
-    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
-      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="row q-col-gutter-md full-width" style="justify-content: space-between">
           <div class="row items-center q-gutter-x-md">
-            <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date"
-              :hideBtns="true" />
+            <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" :hideBtns="true" />
             <div class="flex gap-4 items-center">
               <q-btn class="f-submit-btn" label="Filter" color="green" @click="onFilterUpdate"></q-btn>
-              <q-btn v-if="filters.start_date || filters.end_date" class="f-reset-btn" icon="close" color="red"
-                @click="resetFilters"></q-btn>
+              <q-btn v-if="filters.start_date || filters.end_date" class="f-reset-btn" icon="close" color="red" @click="resetFilters"></q-btn>
             </div>
           </div>
           <div class="row items-center" v-if="aggregate">
@@ -20,14 +17,12 @@
       </template>
 
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props" style="padding: 0;">
-          <div class="row align-center" style="height: 100%;">
-            <router-link v-if="checkPermissions('SalesView')" :to="`/sales-voucher/${props.row.id}/view`"
-              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; padding: 8px 8px 8px 16px;"
-              class="text-blue l-view-btn">
+        <q-td :props="props" style="padding: 0">
+          <div class="row align-center" style="height: 100%">
+            <router-link v-if="checkPermissions('SalesView')" :to="`/sales-voucher/${props.row.id}/view`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; padding: 8px 8px 8px 16px" class="text-blue l-view-btn">
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
               {{ props.row.voucher_no }}
             </span>
           </div>
@@ -43,8 +38,9 @@
           <q-th rowspan="1" colspan="2" style="text-align: center">Taxable Sales</q-th>
         </q-tr>
         <q-tr>
-          <q-th v-for="header in props.cols" :key="header.name"
-            :style="header.remove === true ? { display: 'none' } : ''"><span>{{ header.label }}</span></q-th>
+          <q-th v-for="header in props.cols" :key="header.name" :style="header.remove === true ? { display: 'none' } : ''">
+            <span>{{ header.label }}</span>
+          </q-th>
         </q-tr>
       </template>
     </q-table>
@@ -52,9 +48,7 @@
     <q-card class="q-mt-md" v-if="aggregate">
       <q-card-section>
         <div>
-          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">
-            Aggregate Report for Filtered Data
-          </h5>
+          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">Aggregate Report for Filtered Data</h5>
         </div>
         <hr />
         <div class="q-mt-md">
@@ -156,20 +150,14 @@ export default {
     const onDownloadXls = () => {
       const downloadEndpoint = route.fullPath.slice(route.fullPath.indexOf('?'))
       useApi('v1/sales-book/export' + downloadEndpoint)
-        .then((data) =>
-          usedownloadFile(
-            data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Sales Book'
-          )
-        )
+        .then((data) => usedownloadFile(data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Sales Book'))
         .catch((err) => console.log('Error Due To', err))
     }
     return {
       ...listData,
       newColumn,
       onDownloadXls,
-      checkPermissions
+      checkPermissions,
     }
   },
 }

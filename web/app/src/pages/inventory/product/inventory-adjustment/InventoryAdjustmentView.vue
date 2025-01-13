@@ -5,7 +5,8 @@
       <q-card class="q-ma-lg q-mb-sm">
         <q-card-section class="bg-green text-white">
           <div class="text-h6 d-print-none">
-            <span>Inventory Adjustment Voucher | {{ fields?.status }}
+            <span>
+              Inventory Adjustment Voucher | {{ fields?.status }}
               <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no }}</span>
             </span>
           </div>
@@ -36,11 +37,11 @@
           <q-markup-table flat bordered>
             <thead>
               <q-tr class="text-left">
-                <q-th data-testid="SN"> SN </q-th>
-                <q-th data-testid="Particular"> Particular </q-th>
-                <q-th data-testid="Qty"> Qty </q-th>
-                <q-th data-testid="Rate"> Rate </q-th>
-                <q-th data-testid="Amount" class="text-right"> Amount </q-th>
+                <q-th data-testid="SN">SN</q-th>
+                <q-th data-testid="Particular">Particular</q-th>
+                <q-th data-testid="Qty">Qty</q-th>
+                <q-th data-testid="Rate">Rate</q-th>
+                <q-th data-testid="Amount" class="text-right">Amount</q-th>
               </q-tr>
             </thead>
             <tbody class="text-left">
@@ -49,7 +50,8 @@
                   {{ index + 1 }}
                 </q-td>
                 <q-td>
-                  {{ row.item_name }} <br />
+                  {{ row.item_name }}
+                  <br />
                   <span v-if="row.description" style="font-size: 11px" class="text-grey-8">
                     <div v-for="(des, index) in row.description.split('\n')" :key="index" class="whitespace-normal">
                       {{ des }}
@@ -57,9 +59,10 @@
                   </span>
                 </q-td>
                 <q-td>
-                  <span>{{ row.quantity }}
-                    <span class="text-grey-9">
-                      ({{ row.unit_name }})</span></span>
+                  <span>
+                    {{ row.quantity }}
+                    <span class="text-grey-9">({{ row.unit_name }})</span>
+                  </span>
                 </q-td>
                 <q-td>
                   <span>{{ $nf(row.rate) }}</span>
@@ -69,10 +72,11 @@
                 </q-td>
               </q-tr>
               <q-tr class="text-subtitle2">
-                <q-td> </q-td>
-                <q-td> </q-td><q-td> </q-td><q-td> Total </q-td><q-td class="text-right">{{
-    formatNumberWithComma(fields?.total_amount)
-  }}</q-td>
+                <q-td></q-td>
+                <q-td></q-td>
+                <q-td></q-td>
+                <q-td>Total</q-td>
+                <q-td class="text-right">{{ formatNumberWithComma(fields?.total_amount) }}</q-td>
               </q-tr>
             </tbody>
           </q-markup-table>
@@ -80,27 +84,20 @@
       </q-card>
       <q-card class="q-mx-lg q-my-md" v-if="fields?.remarks">
         <q-card-section>
-          <span class="text-subtitle2 text-grey-9"> Remarks: </span>
+          <span class="text-subtitle2 text-grey-9">Remarks:</span>
           <span class="text-grey-9">{{ fields?.remarks }}</span>
         </q-card-section>
       </q-card>
       <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherModify') && (fields?.status !== 'Cancelled')"
-              color="orange-5" label="Edit" icon="edit" :to="`/items/inventory-adjustment/${fields?.id}/`" />
-            <q-btn v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel"
-              icon="cancel" @click.prevent="() => (isDeleteOpen = true)" :loading="loading" />
+            <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherModify') && fields?.status !== 'Cancelled'" color="orange-5" label="Edit" icon="edit" :to="`/items/inventory-adjustment/${fields?.id}/`" />
+            <q-btn v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" :loading="loading" />
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status)
-    ? ''
-    : `# ${(fields?.print_count || 0)}`
-    }` : ''}`
-    " icon="print" />
-          <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
-            label="Journal Entries" icon="books" :to="`/journal-entries/inventory-adjustment/${fields.id}/`" />
+          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`" icon="print" />
+          <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7" label="Journal Entries" icon="books" :to="`/journal-entries/inventory-adjustment/${fields.id}/`" />
         </div>
         <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}" class="overflow-visible">
           <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
@@ -112,8 +109,7 @@
             </q-card-section>
 
             <q-card-section class="q-ma-md">
-              <q-input autofocus v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message"
-                :error-message="errors?.message"> </q-input>
+              <q-input autofocus v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"></q-input>
               <div class="text-right q-mt-lg">
                 <q-btn label="Confirm" @click="onCancelClick"></q-btn>
               </div>
@@ -157,7 +153,7 @@ export default {
             icon: 'check_circle',
           })
           fields.value.status = 'Cancelled'
-          fields.value.remarks = ('\nReason for cancellation: ' + deleteMsg.value)
+          fields.value.remarks = '\nReason for cancellation: ' + deleteMsg.value
           isDeleteOpen.value = false
           loading.value = false
         })
@@ -171,7 +167,7 @@ export default {
                   icon: 'check_circle',
                 })
                 fields.value.status = 'Cancelled'
-                fields.value.remarks = ('\nReason for cancellation: ' + deleteMsg.value)
+                fields.value.remarks = '\nReason for cancellation: ' + deleteMsg.value
                 isDeleteOpen.value = false
                 loading.value = false
               })
@@ -219,7 +215,7 @@ export default {
       isDeleteOpen,
       deleteMsg,
       onCancelClick,
-      onPrintclick
+      onPrintclick,
     }
   },
   created() {

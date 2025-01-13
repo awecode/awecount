@@ -5,16 +5,13 @@
       <q-btn color="green" to="/units/add/" label="New Unit" class="q-ml-lg add-btn" icon-right="add" />
     </div>
 
-    <q-table :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
-      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:body-cell-name="props">
-        <q-td :props="props" style="padding: 0;">
-          <router-link v-if="checkPermissions('UnitModify')" :to="`/units/${props.row.id}/`"
-            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px; text-decoration: none;"
-            class="text-blue text-weight-medium">
+        <q-td :props="props" style="padding: 0">
+          <router-link v-if="checkPermissions('UnitModify')" :to="`/units/${props.row.id}/`" style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px; text-decoration: none" class="text-blue text-weight-medium">
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
             {{ props.row.name }}
           </span>
         </q-td>

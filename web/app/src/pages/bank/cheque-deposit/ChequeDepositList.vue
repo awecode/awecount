@@ -1,12 +1,10 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('ChequeDepositCreate')" color="green" to="/cheque-deposit/add/"
-        label="New Cheque Deposit" class="add-btn" icon-right="add" />
+      <q-btn v-if="checkPermissions('ChequeDepositCreate')" color="green" to="/cheque-deposit/add/" label="New Cheque Deposit" class="add-btn" icon-right="add" />
     </div>
 
-    <q-table title="Cheque Deposits" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
-      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table title="Cheque Deposits" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
           <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
@@ -22,8 +20,7 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.bank_account" :fetchOnMount="true" endpoint="v1/bank-account/choices/"
-                      label="Bank Account" />
+                    <n-auto-complete-v2 v-model="filters.bank_account" :fetchOnMount="true" endpoint="v1/bank-account/choices/" label="Bank Account" />
                   </div>
                   <div class="q-ma-sm">
                     <MultiSelectChip v-model="filters.status" :options="['Issued', 'Draft', 'Cleared', 'Cancelled']" />
@@ -44,13 +41,16 @@
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center">
-            <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
-              ? 'bg-blue-2 text-blue-10'
-              : props.row.status == 'Draft'
-                ? 'bg-orange-2 text-orange-10' : props.row.status == 'Cleared'
-                  ? 'bg-green-2 text-green-10'
-                  : 'bg-red-2 text-red-10'
-              " style="border-radius: 8px; padding: 2px 10px">
+            <div
+              class="text-white text-subtitle row items-center justify-center"
+              :class="
+                props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
+                : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
+                : props.row.status == 'Cleared' ? 'bg-green-2 text-green-10'
+                : 'bg-red-2 text-red-10'
+              "
+              style="border-radius: 8px; padding: 2px 10px"
+            >
               {{ props.row.status }}
             </div>
           </div>
@@ -58,8 +58,7 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn label="View" color="blue" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px"
-            :to="`/cheque-deposit/${props.row.id}/view/`" />
+          <q-btn label="View" color="blue" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" :to="`/cheque-deposit/${props.row.id}/view/`" />
         </q-td>
       </template>
     </q-table>
@@ -92,14 +91,14 @@ export default {
         label: 'Status',
         align: 'center',
         field: 'status',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'date',
         label: 'Date',
         align: 'left',
         field: 'date',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'actions',

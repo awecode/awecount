@@ -7,7 +7,7 @@ function parseErrors(errors: Record<string, any>) {
         } else val = val.join(' ')
       }
       return [k, val]
-    })
+    }),
   )
 }
 

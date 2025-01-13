@@ -1,12 +1,7 @@
 <template>
   <q-card class="q-ma-md q-px-md">
     <q-card-section>
-      <PlainNode
-        v-for="data in treeData"
-        :data="data"
-        :key="data.id"
-        :root="true"
-      ></PlainNode>
+      <PlainNode v-for="data in treeData" :data="data" :key="data.id" :root="true"></PlainNode>
     </q-card-section>
   </q-card>
 </template>

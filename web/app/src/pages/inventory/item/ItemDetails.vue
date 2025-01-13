@@ -17,23 +17,26 @@
         <div class="flex pb-2">
           <div class="text-h5">
             <span class="text-bold">{{ data?.name || '-' }}</span>
-            <span v-if="data?.code" class="ml-4 text-h6 text-grey-9 text-sm p-2 inline-block">[Code: {{
-              data.code }}]</span>
+            <span v-if="data?.code" class="ml-4 text-h6 text-grey-9 text-sm p-2 inline-block">[Code: {{ data.code }}]</span>
           </div>
         </div>
 
         <div class="mb-4">
           <div class="q-mb-xs">
-            <span class="h6 text-weight-bold q-mr-sm">Cost Price:</span><span>Nrs. {{ data.cost_price }}</span>
+            <span class="h6 text-weight-bold q-mr-sm">Cost Price:</span>
+            <span>Nrs. {{ data.cost_price }}</span>
           </div>
           <div class="q-mb-xs">
-            <span class="h6 text-weight-bold q-mr-sm">Selling Price:</span><span>Nrs. {{ data.selling_price }}</span>
+            <span class="h6 text-weight-bold q-mr-sm">Selling Price:</span>
+            <span>Nrs. {{ data.selling_price }}</span>
           </div>
           <div class="q-mb-xs" v-if="data.brand?.id">
             <span class="h6 text-weight-bold q-mr-sm">Brand:</span>
-            <router-link :to="`/brand/${data.brand?.id}`"><span class="link">
+            <router-link :to="`/brand/${data.brand?.id}`">
+              <span class="link">
                 {{ data.brand?.name }}
-              </span></router-link>
+              </span>
+            </router-link>
           </div>
           <div v-if="data.description" class="q-my-lg">
             {{ data.description }}
@@ -49,19 +52,25 @@
         </div>
       </div>
     </div>
-    <q-table class="q-my-lg" :columns="[
-      { name: 'ac', field: 'ac', label: 'Account', align: 'left' },
-      { name: 'dr', field: 'dr', label: 'DR.', align: 'left' },
-      { name: 'cr', field: 'cr', label: 'CR.', align: 'left' },
-      { name: 'bal', field: 'bal', label: 'Balance', align: 'left' },
-    ]" :rows="[
-  {
-    ac: 'asvahsv',
-    dr: 120,
-    cr: 150,
-    bal: 30,
-  },
-]" title="Accounts" hide-bottom>
+    <q-table
+      class="q-my-lg"
+      :columns="[
+        { name: 'ac', field: 'ac', label: 'Account', align: 'left' },
+        { name: 'dr', field: 'dr', label: 'DR.', align: 'left' },
+        { name: 'cr', field: 'cr', label: 'CR.', align: 'left' },
+        { name: 'bal', field: 'bal', label: 'Balance', align: 'left' },
+      ]"
+      :rows="[
+        {
+          ac: 'asvahsv',
+          dr: 120,
+          cr: 150,
+          bal: 30,
+        },
+      ]"
+      title="Accounts"
+      hide-bottom
+    >
       <!-- :rows="[
         {
           ac: 'asvahsv',
@@ -83,55 +92,37 @@
           <q-td><router-link :to="`/inventory-account/detail/${data.account?.id}/`">Stock</router-link></q-td>
           <q-td>{{ data.account?.amounts.dr }}</q-td>
           <q-td>{{ data.account?.amounts.cr }}</q-td>
-          <q-td>{{
-            (data.account?.amounts.dr || 0) - (data.account?.amounts.cr || 0)
-          }}</q-td>
+          <q-td>{{ (data.account?.amounts.dr || 0) - (data.account?.amounts.cr || 0) }}</q-td>
         </q-tr>
         <q-tr :props="props">
           <q-td><router-link :to="`/account/${data.sales_account?.id}/view/`">Sales</router-link></q-td>
           <q-td>{{ data.sales_account?.amounts.dr }}</q-td>
           <q-td>{{ data.sales_account?.amounts.cr }}</q-td>
-          <q-td>{{
-            (data.sales_account?.amounts.dr || 0) -
-            (data.sales_account?.amounts.cr || 0)
-          }}</q-td>
+          <q-td>{{ (data.sales_account?.amounts.dr || 0) - (data.sales_account?.amounts.cr || 0) }}</q-td>
         </q-tr>
         <q-tr :props="props" v-if="data.purchase_account">
           <q-td><router-link :to="`/account/${data.purchase_account?.id}/view/`">Purchase</router-link></q-td>
           <q-td>{{ data.purchase_account?.amounts.dr }}</q-td>
           <q-td>{{ data.purchase_account?.amounts.cr }}</q-td>
-          <q-td>{{
-            (data.purchase_account?.amounts.dr || 0) -
-            (data.purchase_account?.amounts.cr || 0)
-          }}</q-td>
+          <q-td>{{ (data.purchase_account?.amounts.dr || 0) - (data.purchase_account?.amounts.cr || 0) }}</q-td>
         </q-tr>
         <q-tr :props="props" v-if="data.expense_account">
           <q-td><router-link :to="`/account/${data.expense_account?.id}/view/`">Expenses</router-link></q-td>
           <q-td>{{ data.expense_account?.amounts.dr }}</q-td>
           <q-td>{{ data.expense_account?.amounts.cr }}</q-td>
-          <q-td>{{
-            (data.expense_account?.amounts.dr || 0) -
-            (data.expense_account?.amounts.cr || 0)
-          }}</q-td>
+          <q-td>{{ (data.expense_account?.amounts.dr || 0) - (data.expense_account?.amounts.cr || 0) }}</q-td>
         </q-tr>
         <q-tr :props="props" v-if="data.fixed_asset_account">
           <q-td><router-link :to="`/account/${data.fixed_asset_account?.id}/view`">Fixed Assets</router-link></q-td>
           <q-td>{{ data.fixed_asset_account?.amounts.dr }}</q-td>
           <q-td>{{ data.fixed_asset_account?.amounts.cr }}</q-td>
-          <q-td>{{
-            (data.fixed_asset_account?.amounts.dr || 0) -
-            (data.fixed_asset_account?.amounts.cr || 0)
-          }}</q-td>
+          <q-td>{{ (data.fixed_asset_account?.amounts.dr || 0) - (data.fixed_asset_account?.amounts.cr || 0) }}</q-td>
         </q-tr>
         <q-tr :props="props" v-if="data.discount_received_account">
-          <q-td><router-link :to="`/account/${data.discount_received_account?.id}/view`">Discount
-              Received</router-link></q-td>
+          <q-td><router-link :to="`/account/${data.discount_received_account?.id}/view`">Discount Received</router-link></q-td>
           <q-td>{{ $nf(data.discount_received_account?.amounts.dr) }}</q-td>
           <q-td>{{ $nf(data.discount_received_account?.amounts.cr) }}</q-td>
-          <q-td>{{
-            $nf((data.discount_received_account?.amounts.dr || 0) -
-              (data.discount_received_account?.amounts.cr || 0))
-          }}</q-td>
+          <q-td>{{ $nf((data.discount_received_account?.amounts.dr || 0) - (data.discount_received_account?.amounts.cr || 0)) }}</q-td>
         </q-tr>
       </template>
     </q-table>

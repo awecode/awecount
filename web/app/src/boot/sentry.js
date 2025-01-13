@@ -1,5 +1,5 @@
-import { boot } from 'quasar/wrappers';
-import * as Sentry from '@sentry/vue';
+import { boot } from 'quasar/wrappers'
+import * as Sentry from '@sentry/vue'
 // import { BrowserTracing } from '@sentry/tracing';
 
 export default boot(({ app }) => {
@@ -9,5 +9,5 @@ export default boot(({ app }) => {
     enabled: process.env.NODE_ENV !== 'development',
     integrations: [],
     trackComponents: true,
-  });
-});
+  })
+})

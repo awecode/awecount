@@ -1,16 +1,7 @@
 <template>
-  <q-expansion-item
-    v-if="children && !hideParent"
-    :icon="icon || 'menu_open'"
-    :label="title"
-  >
+  <q-expansion-item v-if="children && !hideParent" :icon="icon || 'menu_open'" :label="title">
     <template v-for="child in children" :key="child.title">
-      <EssentialLink
-        v-if="!child.hide"
-        :level="level + 1"
-        v-bind="child"
-        :style="`padding-left:${level * 2 + 3}em !important`"
-      />
+      <EssentialLink v-if="!child.hide" :level="level + 1" v-bind="child" :style="`padding-left:${level * 2 + 3}em !important`" />
     </template>
   </q-expansion-item>
   <!-- <q-item v-else clickable :to="link" :style="style"> -->

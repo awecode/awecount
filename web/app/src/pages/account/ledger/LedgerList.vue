@@ -1,12 +1,10 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('AccountCreate')" color="green" to="/account/add/" label="New Account"
-        class="add-btn" icon-right="add" />
+      <q-btn v-if="checkPermissions('AccountCreate')" color="green" to="/account/add/" label="New Account" class="add-btn" icon-right="add" />
     </div>
 
-    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
-      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
           <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
@@ -28,8 +26,7 @@
                     <q-checkbox v-model="filters.has_balance" label="Has Balance?" :false-value="null"></q-checkbox>
                   </div>
                   <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.category" :fetchOnMount="true" endpoint="v1/categories/choices/"
-                      label="Category" />
+                    <n-auto-complete-v2 v-model="filters.category" :fetchOnMount="true" endpoint="v1/categories/choices/" label="Category" />
                   </div>
                 </div>
                 <div class="q-mx-md flex gap-4 q-mb-md">
@@ -44,20 +41,14 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="blue" dense flat to="" /> -->
-          <q-btn v-if="checkPermissions('AccountView')" color="blue"
-            class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View"
-            :to="`/account/${props.row.id}/view/`" />
-          <q-btn v-if="checkPermissions('AccountModify')" label="Edit" color="orange-6"
-            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px"
-            :to="`/account/${props.row.id}/edit/`" />
+          <q-btn v-if="checkPermissions('AccountView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View" :to="`/account/${props.row.id}/view/`" />
+          <q-btn v-if="checkPermissions('AccountModify')" label="Edit" color="orange-6" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/account/${props.row.id}/edit/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-category="props">
-        <q-td :props="props" style="padding: 0;">
-          <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
-            class="text-blue" :to="`/account-category/${props.row.category.id}/`">{{ props.row.category.name
-            }}</router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">{{ props.row.category.name }}</span>
+        <q-td :props="props" style="padding: 0">
+          <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue" :to="`/account-category/${props.row.category.id}/`">{{ props.row.category.name }}</router-link>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.category.name }}</span>
         </q-td>
       </template>
       <template v-slot:body-cell-dr="props">
@@ -76,12 +67,11 @@
         </q-td>
       </template>
       <template v-slot:body-cell-name="props">
-        <q-td :props="props" style="padding: 0;">
-          <router-link v-if="checkPermissions('AccountView')" :to="`/account/${props.row.id}/view/`"
-          style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;" class="text-blue">
+        <q-td :props="props" style="padding: 0">
+          <router-link v-if="checkPermissions('AccountView')" :to="`/account/${props.row.id}/view/`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue">
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">{{ props.row.name }}</span>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.name }}</span>
         </q-td>
       </template>
     </q-table>
@@ -103,21 +93,21 @@ export default {
         label: 'Code',
         align: 'left',
         field: 'code',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'name',
         label: 'Name',
         align: 'left',
         field: 'name',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'category',
         label: 'Category',
         align: 'left',
         field: 'category',
-        sortable: true
+        sortable: true,
       },
       // {
       //   name: 'dr',
@@ -147,28 +137,32 @@ export default {
       },
     ]
     const listData = useList(endpoint)
-    watch(() => route.query, () => {
-      if (route.path === '/account/') {
-        const queryParams = { ...route.query }
-        if (queryParams.hasOwnProperty('search') && typeof queryParams.search === 'string') {
-          listData.searchQuery.value = queryParams.search
-        } else listData.searchQuery.value = null
-        delete queryParams.search
-        let cleanedFilterValues = Object.fromEntries(
-          Object.entries(queryParams).map(([k, v]) => {
-            if (v === 'true') {
-              return [k, true]
-            } else if (v === 'false') {
-              return [k, false]
-            }
-            return [k, isNaN(v) ? v : parseFloat(v)]
-          })
-        )
-        listData.filters.value = cleanedFilterValues
-      }
-    }, {
-      deep: true
-    })
+    watch(
+      () => route.query,
+      () => {
+        if (route.path === '/account/') {
+          const queryParams = { ...route.query }
+          if (queryParams.hasOwnProperty('search') && typeof queryParams.search === 'string') {
+            listData.searchQuery.value = queryParams.search
+          } else listData.searchQuery.value = null
+          delete queryParams.search
+          let cleanedFilterValues = Object.fromEntries(
+            Object.entries(queryParams).map(([k, v]) => {
+              if (v === 'true') {
+                return [k, true]
+              } else if (v === 'false') {
+                return [k, false]
+              }
+              return [k, isNaN(v) ? v : parseFloat(v)]
+            }),
+          )
+          listData.filters.value = cleanedFilterValues
+        }
+      },
+      {
+        deep: true,
+      },
+    )
     return { ...listData, newColumn, checkPermissions }
   },
 }

@@ -42,8 +42,8 @@
       <div v-if="changeModes" class="col-12 col-md-6 row">
         <div class="col-6">Payment Mode</div>
         <div class="col-6">
-          <span class="q-mr-sm">{{ paymentModeComputed }}</span><q-btn @click="() => (isChangeOpen = true)" icon="edit"
-            size="sm"></q-btn>
+          <span class="q-mr-sm">{{ paymentModeComputed }}</span>
+          <q-btn @click="() => (isChangeOpen = true)" icon="edit" size="sm"></q-btn>
         </div>
       </div>
       <div v-else class="col-12 col-md-6 row">
@@ -69,13 +69,10 @@
         </q-card-section>
         <q-card-section class="q-mx-md">
           <div class="text-right q-mt-lg row justify-between q-mx-lg">
-            <q-select v-model="paymentModeValue" label="Payment Mode" class="col-12"
-              :options="[{ id: null, name: 'Credit' }, ...props.paymentModeOptions]" option-value="id"
-              option-label="name" map-options emit-value></q-select>
+            <q-select v-model="paymentModeValue" label="Payment Mode" class="col-12" :options="[{ id: null, name: 'Credit' }, ...props.paymentModeOptions]" option-value="id" option-label="name" map-options emit-value></q-select>
           </div>
           <div class="row q-mt-lg justify-end">
-            <q-btn label="update" color="orange-5" class="q-mt-md"
-              @click="() => submitChangeModes(props.fields.id)"></q-btn>
+            <q-btn label="update" color="orange-5" class="q-mt-md" @click="() => submitChangeModes(props.fields.id)"></q-btn>
           </div>
         </q-card-section>
       </q-card>
@@ -122,19 +119,14 @@ export default {
       () => props.fields?.payment_mode,
       (newValue) => {
         paymentModeValue.value = newValue
-      }
+      },
     )
     const dateComputed = computed(() => {
-      return DateConverter.getRepresentation(
-        props.fields?.date,
-        store.isCalendarInAD ? 'ad' : 'bs'
-      )
+      return DateConverter.getRepresentation(props.fields?.date, store.isCalendarInAD ? 'ad' : 'bs')
     })
     const paymentModeComputed: Ref<string> = computed(() => {
       if (typeof props.fields?.payment_mode === 'number') {
-        const index: number = props.paymentModeOptions.findIndex(
-          (item) => item.id === props.fields?.payment_mode
-        )
+        const index: number = props.paymentModeOptions.findIndex((item) => item.id === props.fields?.payment_mode)
         return props.paymentModeOptions[index].name
       } else if (props.fields?.payment_mode === null) {
         return 'Credit'
@@ -142,17 +134,9 @@ export default {
     })
     const discountComputed = computed(() => {
       if (props.fields?.discount_obj) {
-        return (
-          `${props.fields.discount_obj.value}` +
-          ' ' +
-          `${props.fields.discount_obj.type === 'Amount' ? '-/' : '%'}`
-        )
+        return `${props.fields.discount_obj.value}` + ' ' + `${props.fields.discount_obj.type === 'Amount' ? '-/' : '%'}`
       } else if (props.fields?.discount) {
-        return (
-          `${props.fields.discount}` +
-          ' ' +
-          `${props.fields.discount_type === 'Amount' ? '-/' : '%'}`
-        )
+        return `${props.fields.discount}` + ' ' + `${props.fields.discount_type === 'Amount' ? '-/' : '%'}`
       } else return false
     })
     const submitChangeModes = (id: number) => {

@@ -12,24 +12,18 @@
         <q-card-section>
           <div class="grid md:grid-cols-2 q-col-gutter-md">
             <div>
-              <n-auto-complete-v2 v-if="!isEdit" v-model="fields.account" endpoint="v1/account-opening-balance/create-defaults/accounts"
-                :staticOption="fields.selected_account_obj" :options="formDefaults.collections?.accounts" label="Account *"
-                :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null" :error="errors?.account" />
-              <q-input v-else label="Account *" disable :model-value="fields.name" class="mb-4" ></q-input>
+              <n-auto-complete-v2 v-if="!isEdit" v-model="fields.account" endpoint="v1/account-opening-balance/create-defaults/accounts" :staticOption="fields.selected_account_obj" :options="formDefaults.collections?.accounts" label="Account *" :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null" :error="errors?.account" />
+              <q-input v-else label="Account *" disable :model-value="fields.name" class="mb-4"></q-input>
             </div>
           </div>
           <div class="grid md:grid-cols-2 q-col-gutter-md">
-            <q-input v-model="fields.opening_dr" type="number" label="Opening Dr" class="col-6"
-              :error-message="errors.opening_dr" :error="!!errors.opening_dr" />
-            <q-input v-model="fields.opening_cr" type="number" label="Opening Cr" class="col-6"
-              :error-message="errors.opening_cr || errors.detail" :error="!!errors.opening_cr || !!errors.detail" />
+            <q-input v-model="fields.opening_dr" type="number" label="Opening Dr" class="col-6" :error-message="errors.opening_dr" :error="!!errors.opening_dr" />
+            <q-input v-model="fields.opening_cr" type="number" label="Opening Cr" class="col-6" :error-message="errors.opening_cr || errors.detail" :error="!!errors.opening_cr || !!errors.detail" />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('AccountOpeningBalanceCreate') && !isEdit" @click.prevent="submitForm"
-            color="green" label="Create" class="q-ml-auto" type="submit" :loading="loading" />
-          <q-btn v-if="checkPermissions('AccountOpeningBalanceModify') && isEdit" @click.prevent="submitForm"
-            color="green" label="Update" class="q-ml-auto" type="submit" :loading="loading" />
+          <q-btn v-if="checkPermissions('AccountOpeningBalanceCreate') && !isEdit" @click.prevent="submitForm" color="green" label="Create" class="q-ml-auto" type="submit" :loading="loading" />
+          <q-btn v-if="checkPermissions('AccountOpeningBalanceModify') && isEdit" @click.prevent="submitForm" color="green" label="Update" class="q-ml-auto" type="submit" :loading="loading" />
         </div>
       </q-card>
     </q-card>
@@ -50,16 +44,13 @@ export default {
     })
     useMeta(() => {
       return {
-        title:
-          (formData.isEdit?.value
-            ? 'Update Account Opening Balances'
-            : 'Add Account Opening Balances') + ' | Awecount',
+        title: (formData.isEdit?.value ? 'Update Account Opening Balances' : 'Add Account Opening Balances') + ' | Awecount',
       }
     })
     return {
       ...formData,
       LedgerForm,
-      checkPermissions
+      checkPermissions,
     }
   },
 }

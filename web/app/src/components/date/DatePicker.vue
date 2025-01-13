@@ -1,9 +1,6 @@
 <template>
   <div>
-    <q-input :model-value="getDateValue" @onClick="this.select()" :error="!!props.error"
-      :error-message="props.errorMessage" :hint="props.hint" :placeholder="props.placeholder" :disable="props.disable"
-      @update:model-value="onDateInput" :label="props.label" type="text" class="full-width" mask="####-##-##"
-      debounce="1000">
+    <q-input :model-value="getDateValue" @onClick="this.select()" :error="!!props.error" :error-message="props.errorMessage" :hint="props.hint" :placeholder="props.placeholder" :disable="props.disable" @update:model-value="onDateInput" :label="props.label" type="text" class="full-width" mask="####-##-##" debounce="1000">
       <template v-slot:append v-if="notRequired && !!getDateValue">
         <q-icon class="cursor-pointer" name="close" @click="onDateInput('')" />
       </template>
@@ -22,18 +19,7 @@ import { useLoginStore } from 'src/stores/login-info'
 
 const menuRef = ref(null)
 const store = useLoginStore()
-const props = defineProps([
-  'toLimit',
-  'modelValue',
-  'label',
-  'error',
-  'errorMessage',
-  'hint',
-  'placeholder',
-  'disable',
-  'dateType',
-  'notRequired'
-])
+const props = defineProps(['toLimit', 'modelValue', 'label', 'error', 'errorMessage', 'hint', 'placeholder', 'disable', 'dateType', 'notRequired'])
 const date = ref(props.modelValue)
 const error = ref(props.error)
 const errorMessage = ref(props.errorMessage)
@@ -49,8 +35,7 @@ const isCalendarInAD = computed(() => {
 
 watch(date, (val) => {
   if (val === null && props.notRequired) {
-  }
-  else if (isCalendarInAD.value) {
+  } else if (isCalendarInAD.value) {
     if (DateConverter.isValidAD(val)) {
       error.value = false
       errorMessage.value = null
@@ -69,14 +54,11 @@ watch(
   () => props.modelValue,
   (val) => {
     date.value = val
-  }
+  },
 )
 
 const getDateValue = computed(() => {
-  const convertedDate = DateConverter.getRepresentation(
-    date.value,
-    isCalendarInAD.value ? 'ad' : 'bs'
-  )
+  const convertedDate = DateConverter.getRepresentation(date.value, isCalendarInAD.value ? 'ad' : 'bs')
   return convertedDate
 })
 
@@ -111,8 +93,7 @@ const onDateInput = (text) => {
 
 const toDateValidation = (date) => {
   if (props.toLimit) {
-    return (date >= props.toLimit.replaceAll('-', '/')) || ('1944/04/13' < date && date < '2033/04/14')
-  }
-  else return '1944/04/13' < date && date < '2033/04/14'
+    return date >= props.toLimit.replaceAll('-', '/') || ('1944/04/13' < date && date < '2033/04/14')
+  } else return '1944/04/13' < date && date < '2033/04/14'
 }
 </script>

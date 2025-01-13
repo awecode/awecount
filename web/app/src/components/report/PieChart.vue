@@ -12,7 +12,7 @@ const dataComputed = computed(() => {
   let data = {
     labels: [],
     data: [],
-    colors: []
+    colors: [],
   }
   props.data.forEach((item) => {
     data.labels.push(item.label)
@@ -23,13 +23,15 @@ const dataComputed = computed(() => {
 })
 const pieData = {
   labels: dataComputed.value.labels,
-  datasets: [{
-    // label: 'My First Dataset',
-    data: dataComputed.value.data,
-    backgroundColor: dataComputed.value.colors,
-    hoverOffset: 4
-  }]
-};
+  datasets: [
+    {
+      // label: 'My First Dataset',
+      data: dataComputed.value.data,
+      backgroundColor: dataComputed.value.colors,
+      hoverOffset: 4,
+    },
+  ],
+}
 
 onMounted(() => {
   new Chart(chartRef.value, {

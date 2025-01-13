@@ -3,8 +3,7 @@
     <div class="row q-gutter-x-md justify-end" v-if="checkPermissions('ChallanCreate')">
       <q-btn color="green" to="/challan/add/" label="New Challan" icon-right="add" class="add-btn" />
     </div>
-    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
-      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
           <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
@@ -39,14 +38,16 @@
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center">
-            <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
-              ? 'bg-blue-2 text-blue-10'
-              : props.row.status == 'Resolved'
-                ? 'bg-green-2 text-green-10'
-                : props.row.status == 'Draft'
-                  ? 'bg-orange-2 text-orange-10'
-                  : 'bg-red-2 text-red-10'
-              " style="border-radius: 8px; padding: 2px 10px">
+            <div
+              class="text-white text-subtitle row items-center justify-center"
+              :class="
+                props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
+                : props.row.status == 'Resolved' ? 'bg-green-2 text-green-10'
+                : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
+                : 'bg-red-2 text-red-10'
+              "
+              style="border-radius: 8px; padding: 2px 10px"
+            >
               {{ props.row.status }}
             </div>
           </div>
@@ -57,9 +58,7 @@
         <q-td :props="props">
           <div v-if="props.row.party_name">
             <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
-            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
-              props.row.party_name
-            }}</span>
+            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{ props.row.party_name }}</span>
           </div>
           <div v-else class="row align-center text-subtitle2 text-grey-8">
             {{ props.row.customer_name }}
@@ -69,28 +68,22 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <div class="row q-gutter-x-md">
-            <q-btn v-if="checkPermissions('ChallanModify')" color="orange" label="Edit"
-              class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px"
-              :to="`/challan/${props.row.id}/`" />
+            <q-btn v-if="checkPermissions('ChallanModify')" color="orange" label="Edit" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/challan/${props.row.id}/`" />
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-voucher_no="props">
-  <q-td :props="props" style="padding: 0;">
-    <span v-if="props.row.voucher_no">
-      <router-link 
-        v-if="checkPermissions('ChallanModify')" 
-        :to="`/challan/${props.row.id}/`"
-        style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;" 
-        class="text-blue">
-        {{ props.row.voucher_no }}
-      </router-link>
-      <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
-        {{ props.row.voucher_no }}
-      </span>
-    </span>
-  </q-td>
-</template>
+        <q-td :props="props" style="padding: 0">
+          <span v-if="props.row.voucher_no">
+            <router-link v-if="checkPermissions('ChallanModify')" :to="`/challan/${props.row.id}/`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue">
+              {{ props.row.voucher_no }}
+            </router-link>
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+              {{ props.row.voucher_no }}
+            </span>
+          </span>
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>
@@ -112,7 +105,7 @@ export default {
         label: 'Voucher no',
         align: 'left',
         field: 'voucher_no',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'party_name',

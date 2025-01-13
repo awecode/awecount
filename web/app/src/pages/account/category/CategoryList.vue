@@ -1,11 +1,9 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('CategoryCreate')" color="green" to="/account-category/add/" label="New Category"
-        class="add-btn" icon-right="add" />
+      <q-btn v-if="checkPermissions('CategoryCreate')" color="green" to="/account-category/add/" label="New Category" class="add-btn" icon-right="add" />
     </div>
-    <q-table title="Income Items" :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery"
-      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table title="Income Items" :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
           <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
@@ -35,8 +33,7 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('CategoryModify')" color="orange-7" label="Edit"
-            :to="`/account-category/${props.row.id}/`" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" />
+          <q-btn v-if="checkPermissions('CategoryModify')" color="orange-7" label="Edit" :to="`/account-category/${props.row.id}/`" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" />
         </q-td>
       </template>
       <template v-slot:body-cell-default="props">
@@ -61,26 +58,17 @@ const newColumns = [
     label: 'Code.',
     align: 'left',
     field: 'code',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'name',
     label: 'Name',
     align: 'left',
     field: 'name',
-    sortable: true
+    sortable: true,
   },
-  { name: 'default', label: 'Default', align: 'center', field: 'default', sortable: true},
+  { name: 'default', label: 'Default', align: 'center', field: 'default', sortable: true },
   { name: 'actions', label: 'Actions', align: 'center' },
 ]
-const {
-  rows,
-  resetFilters,
-  filters,
-  loading,
-  searchQuery,
-  pagination,
-  onRequest,
-  onFilterUpdate,
-} = useList(endpoint)
+const { rows, resetFilters, filters, loading, searchQuery, pagination, onRequest, onFilterUpdate } = useList(endpoint)
 </script>

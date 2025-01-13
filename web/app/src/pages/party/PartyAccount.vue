@@ -15,15 +15,9 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-if="fields.supplier_account &&
-            (fields.supplier_account.amounts.dr != null ||
-              fields.supplier_account.amounts.cr != null)
-            ">
+          <tr v-if="fields.supplier_account && (fields.supplier_account.amounts.dr != null || fields.supplier_account.amounts.cr != null)">
             <td class="text-left">
-              <router-link :to="`/account/${fields.supplier_account?.id}/view/`" class="text-blue"
-                style="text-decoration: none">
-                Vendor (Payable)
-              </router-link>
+              <router-link :to="`/account/${fields.supplier_account?.id}/view/`" class="text-blue" style="text-decoration: none">Vendor (Payable)</router-link>
             </td>
             <td class="text-left">{{ fields.supplier_account.code }}</td>
             <td class="text-left">
@@ -33,21 +27,12 @@
               {{ $nf(fields.supplier_account.amounts.cr, 2) }}
             </td>
             <td class="text-left">
-              {{
-                $nf((fields.supplier_account.amounts.dr || 0) -
-                  (fields.supplier_account.amounts.cr || 0), 2)
-              }}
+              {{ $nf((fields.supplier_account.amounts.dr || 0) - (fields.supplier_account.amounts.cr || 0), 2) }}
             </td>
           </tr>
-          <tr v-if="fields.customer_account &&
-              (fields.customer_account.amounts.dr != null ||
-                fields.customer_account.amounts.cr != null)
-              ">
+          <tr v-if="fields.customer_account && (fields.customer_account.amounts.dr != null || fields.customer_account.amounts.cr != null)">
             <td class="text-left">
-              <router-link :to="`/account/${fields.customer_account?.id}/view/`" class="text-blue"
-                style="text-decoration: none">
-                Customer (Receivable)
-              </router-link>
+              <router-link :to="`/account/${fields.customer_account?.id}/view/`" class="text-blue" style="text-decoration: none">Customer (Receivable)</router-link>
             </td>
             <td class="text-left">{{ fields.customer_account.code }}</td>
             <td class="text-left">
@@ -57,35 +42,19 @@
               {{ $nf(fields.customer_account.amounts.cr, 2) }}
             </td>
             <td class="text-left">
-              {{
-                $nf((fields.customer_account.amounts.dr || 0) -
-                  (fields.customer_account.amounts.cr || 0), 2)
-              }}
+              {{ $nf((fields.customer_account.amounts.dr || 0) - (fields.customer_account.amounts.cr || 0), 2) }}
             </td>
           </tr>
           <tr v-if="fields.supplier_account && fields.customer_account">
             <td colspan="2"></td>
             <th class="text-left">
-              {{
-                $nf((fields.supplier_account.amounts.dr ||
-                  0) + (fields.customer_account.amounts.dr ||
-                    0), 2)
-              }}
+              {{ $nf((fields.supplier_account.amounts.dr || 0) + (fields.customer_account.amounts.dr || 0), 2) }}
             </th>
             <th class="text-left">
-              {{
-                $nf((fields.supplier_account.amounts.cr ||
-                  0) + (fields.customer_account.amounts.cr ||
-                    0), 2)
-              }}
+              {{ $nf((fields.supplier_account.amounts.cr || 0) + (fields.customer_account.amounts.cr || 0), 2) }}
             </th>
             <th class="text-left">
-              {{
-                $nf((fields.supplier_account.amounts.dr || 0) -
-                  (fields.supplier_account.amounts.cr || 0) +
-                  (fields.customer_account.amounts.dr || 0) -
-                  (fields.customer_account.amounts.cr || 0), 2)
-              }}
+              {{ $nf((fields.supplier_account.amounts.dr || 0) - (fields.supplier_account.amounts.cr || 0) + (fields.customer_account.amounts.dr || 0) - (fields.customer_account.amounts.cr || 0), 2) }}
             </th>
           </tr>
         </tbody>
@@ -94,11 +63,9 @@
     <q-card class="q-mt-md q-pa-md">
       <h5 class="q-ma-none">Transactions</h5>
       <div class="row items-center q-mx-sm print-hide">
-        <DateRangePicker v-model:startDate="dateRef.start_date" v-model:endDate="dateRef.end_date" :hide-btns="true"
-          class="q-mr-md" />
+        <DateRangePicker v-model:startDate="dateRef.start_date" v-model:endDate="dateRef.end_date" :hide-btns="true" class="q-mr-md" />
         <span class="row items-end q-gutter-y-sm">
-          <q-btn v-if="dateRef.start_date && dateRef.end_date" @click="resetDate" color="red" icon="close"
-            class="q-mr-sm"></q-btn>
+          <q-btn v-if="dateRef.start_date && dateRef.end_date" @click="resetDate" color="red" icon="close" class="q-mr-sm"></q-btn>
           <q-btn @click="filter" :disable="!(dateRef.start_date && dateRef.end_date)" label="filter" color="blue"></q-btn>
         </span>
       </div>
@@ -136,16 +103,14 @@ export default {
     }
     const fields: Ref<null | Fields> = ref(null)
     interface DateRef {
-      start_date: string | null,
+      start_date: string | null
       end_date: string | null
     }
     const dateRef: Ref<DateRef> = ref({
       start_date: null,
-      end_date: null
+      end_date: null,
     })
-    const endpoint = ref(
-      withQuery(`/v1/parties/${route.params.id}/transactions/`, route.query)
-    )
+    const endpoint = ref(withQuery(`/v1/parties/${route.params.id}/transactions/`, route.query))
     function fetchData() {
       if (fields?.value?.transactions.results) fields.value.transactions.results = null
       useApi(endpoint.value, { method: 'GET' })
@@ -186,7 +151,7 @@ export default {
       },
       {
         deep: true,
-      }
+      },
     )
     watch(
       () => route.params.id,
@@ -196,7 +161,8 @@ export default {
           const updatedEndpoint = withQuery(url, {})
           endpoint.value = updatedEndpoint
         }
-      })
+      },
+    )
     const filter = () => {
       if (!dateRef.value.start_date || !dateRef.value.end_date) {
         $q.notify({
@@ -205,9 +171,7 @@ export default {
           icon: 'report_problem',
         })
       } else {
-        router.push(
-          `/parties/account/${route.params.id}/?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`
-        )
+        router.push(`/parties/account/${route.params.id}/?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`)
       }
     }
     return {
@@ -218,14 +182,14 @@ export default {
       dateRef,
       resetDate,
       endpoint,
-      filter
+      filter,
     }
   },
   created() {
     if (this.$route.query.start_date && this.$route.query.end_date) {
       this.dateRef = {
         start_date: this.$route.query.start_date,
-        end_date: this.$route.query.end_date
+        end_date: this.$route.query.end_date,
       }
     }
     useApi(this.endpoint, { method: 'GET' })
@@ -243,7 +207,6 @@ export default {
 
 <style scoped>
 @media print {
-
   td,
   th {
     padding: 5px;

@@ -4,13 +4,10 @@
       <div class="flex items-center justify-between gap-2">
         <div class="flex gap-x-6 gap-y-2 items-center">
           <div>
-            <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date" :hide-btns="true"
-              :focusOnMount="true" />
+            <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date" :hide-btns="true" :focusOnMount="true" />
           </div>
-          <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
-            @click="fields = { start_date: null, end_date: null }" class="f-reset-btn"></q-btn>
-          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch"
-            @click="updateData" class="f-submit-btn"></q-btn>
+          <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close" @click="fields = { start_date: null, end_date: null }" class="f-reset-btn"></q-btn>
+          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch" @click="updateData" class="f-submit-btn"></q-btn>
         </div>
         <div class="flex gap-6" v-if="showData">
           <q-btn icon="settings" title="Config">
@@ -30,12 +27,10 @@
                     <q-checkbox v-model="config.hide_sums" label="Hide Sums?"></q-checkbox>
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox v-model="config.show_opening_closing_dr_cr"
-                      label="Show Opening Closing Dr/Cr?"></q-checkbox>
+                    <q-checkbox v-model="config.show_opening_closing_dr_cr" label="Show Opening Closing Dr/Cr?"></q-checkbox>
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox v-model="config.hide_zero_transactions"
-                      label="Hide accounts without transactions?"></q-checkbox>
+                    <q-checkbox v-model="config.hide_zero_transactions" label="Hide accounts without transactions?"></q-checkbox>
                   </div>
                 </div>
               </div>
@@ -50,13 +45,9 @@
         <thead>
           <tr>
             <th class="text-left"><strong>Name</strong></th>
-            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
-              Opening
-            </th>
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">Opening</th>
             <th class="text-left" colspan="2">Transactions</th>
-            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
-              Closing
-            </th>
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">Closing</th>
           </tr>
           <tr>
             <th class="text-left"></th>
@@ -78,8 +69,7 @@
         </thead>
         <tbody>
           <template v-if="showData">
-            <TableNode v-for="category in categoryTree" :key="category.id" :item="category" :root="true"
-              :accounts="accounts" :category_accounts="category_accounts" :config="config"></TableNode>
+            <TableNode v-for="category in categoryTree" :key="category.id" :item="category" :root="true" :accounts="accounts" :category_accounts="category_accounts" :config="config"></TableNode>
           </template>
           <tr>
             <td class="text-weight-medium"><span>Total</span></td>
@@ -158,9 +148,7 @@ export default {
       end_date: null,
     })
     const calculateNet = (obj, type) => {
-      const net = parseFloat(
-        (obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2)
-      )
+      const net = parseFloat((obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2))
       if (net === 0) {
         return 0
       } else if (net > 0) {
@@ -210,8 +198,7 @@ export default {
             localAccounts[obj.id] = acc
 
             // Create this.category_accounts[obj.category_id] if doesn't exist
-            !(obj.category_id in category_accounts.value) &&
-              (category_accounts.value[obj.category_id] = [])
+            !(obj.category_id in category_accounts.value) && (category_accounts.value[obj.category_id] = [])
             category_accounts.value[obj.category_id].push(obj.id)
           })
           // TODO make unreactive
@@ -222,7 +209,7 @@ export default {
         .catch((err) => console.log(err))
       // TODO: add 404 error routing
     }
-    const onDownloadXls = async() => {
+    const onDownloadXls = async () => {
       // TODO: add download xls link
       const XLSX = await import('xlsx-js-style')
       const elt = document.getElementById('tableRef').children[0]
@@ -231,22 +218,24 @@ export default {
       // adding styles
       const worksheet = XLSX.utils.table_to_sheet(elt)
       for (const i in worksheet) {
-        if (typeof (worksheet[i]) != 'object') continue
+        if (typeof worksheet[i] != 'object') continue
         let cell = XLSX.utils.decode_cell(i)
         worksheet[i].s = {
-          font: { name: 'Courier', sz: 12 }
+          font: { name: 'Courier', sz: 12 },
         }
-        if (cell.r == 0) { // first row
+        if (cell.r == 0) {
+          // first row
           worksheet[i].s.font.bold = true
         }
-        if (cell.c == 0) { // first row
+        if (cell.c == 0) {
+          // first row
           const td = elt.rows[cell.r].cells[cell.c]
           worksheet[i].s.font.italic = getComputedStyle(td).fontStyle === 'italic'
           //get color and apply to excel
           const hexCode = getComputedStyle(td).color
           const hexArray = hexCode.slice(4, hexCode.length - 1).split(',')
           const numsArray = hexArray.map((e) => Number(e))
-          const rgbValue = (1 << 24 | numsArray[0] << 16 | numsArray[1] << 8 | numsArray[2]).toString(16).slice(1)
+          const rgbValue = ((1 << 24) | (numsArray[0] << 16) | (numsArray[1] << 8) | numsArray[2]).toString(16).slice(1)
           worksheet[i].s.font.color = { rgb: `${rgbValue}` }
         }
         if (cell.r > -1) {
@@ -254,9 +243,9 @@ export default {
           if (td instanceof HTMLElement) worksheet[i].s.font.bold = Number(getComputedStyle(td).fontWeight) >= 500
         }
       }
-      worksheet['!cols'] = [{ width: 50 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 },]
+      worksheet['!cols'] = [{ width: 50 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }]
       const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'sheet_name_here');
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'sheet_name_here')
       // const excelBuffer = XLSX.write(workbook, {
       //   type: 'buffer',
       //   cellStyles: true,
@@ -298,7 +287,7 @@ export default {
       showData,
       config,
       calculateNet,
-      updateData
+      updateData,
     }
   },
   created() {

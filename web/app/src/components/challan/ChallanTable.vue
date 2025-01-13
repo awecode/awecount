@@ -3,9 +3,7 @@
     <q-card class="min-w-[600px] pt-6">
       <div class="q-pa-lg q-col-gutter-md scroll">
         <div class="row text-subtitle2 hr q-py-sm no-wrap">
-          <div class="col-5 row">
-            Particular(s)
-          </div>
+          <div class="col-5 row">Particular(s)</div>
           <div class="col-3 text-center">Qty</div>
           <div class="col-3 text-center">Unit</div>
           <div class="col-1 text-center"></div>
@@ -13,46 +11,72 @@
         <div v-for="(row, index) in modalValue" :key="index">
           <div class="row q-col-gutter-md no-wrap">
             <div class="col-5">
-              <n-auto-complete-v2 v-model="modalValue[index].item_id" :options="itemOptions"
-                 :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/items`"
-                 :staticOption="modalValue[index].selected_item_obj"
-                label="Item" :error="!!errors?.[index]
-                  ? errors[index].item_id
-                    ? errors[index].item_id[0]
-                    : rowEmpty ? 'This field is required' : ''
-                  : ''
-                  " :modal-component="ItemAdd" @update:modelValue="onItemChange(index)" />
-            </div>
-            <div class="col-3">
-              <q-input v-model.number="modalValue[index].quantity" label="Quantity" type="number" :error-message="!!errors?.[index]
-                ? errors[index].quantity
-                  ? errors[index].quantity[0]
-                  : ''
-                : ''
-                " :error="!!errors?.[index]
-                  ? errors[index].quantity
-                    ? true
-                    : false
-                  : false
-                  "></q-input>
-            </div>
-            <div class="col-3">
-              <n-auto-complete-v2 v-model="modalValue[index].unit_id" :options="unitOptions" label="Unit" :staticOption="modalValue[index].selected_unit_obj"
-                :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`" option-value="id" option-label="name" emit-value
-                map-options :error-message="!!errors?.[index]
-                  ? errors[index].unit_id
-                    ? 'Please Select an Option'
+              <n-auto-complete-v2
+                v-model="modalValue[index].item_id"
+                :options="itemOptions"
+                :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/items`"
+                :staticOption="modalValue[index].selected_item_obj"
+                label="Item"
+                :error="
+                  !!errors?.[index] ?
+                    errors[index].item_id ? errors[index].item_id[0]
+                    : rowEmpty ? 'This field is required'
                     : ''
                   : ''
-                  " :error="!!errors?.[index]
-                    ? errors[index].unit_id
-                      ? true
-                      : false
+                "
+                :modal-component="ItemAdd"
+                @update:modelValue="onItemChange(index)"
+              />
+            </div>
+            <div class="col-3">
+              <q-input
+                v-model.number="modalValue[index].quantity"
+                label="Quantity"
+                type="number"
+                :error-message="
+                  !!errors?.[index] ?
+                    errors[index].quantity ?
+                      errors[index].quantity[0]
+                    : ''
+                  : ''
+                "
+                :error="
+                  !!errors?.[index] ?
+                    errors[index].quantity ?
+                      true
                     : false
-                    ">
+                  : false
+                "
+              ></q-input>
+            </div>
+            <div class="col-3">
+              <n-auto-complete-v2
+                v-model="modalValue[index].unit_id"
+                :options="unitOptions"
+                label="Unit"
+                :staticOption="modalValue[index].selected_unit_obj"
+                :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`"
+                option-value="id"
+                option-label="name"
+                emit-value
+                map-options
+                :error-message="
+                  !!errors?.[index] ?
+                    errors[index].unit_id ?
+                      'Please Select an Option'
+                    : ''
+                  : ''
+                "
+                :error="
+                  !!errors?.[index] ?
+                    errors[index].unit_id ?
+                      true
+                    : false
+                  : false
+                "
+              >
                 <template v-slot:append v-if="modalValue[index].unit_id">
-                  <q-icon name="close" size="xs" @click.stop.prevent="modalValue[index].unit_id = null"
-                    class="cursor-pointer" />
+                  <q-icon name="close" size="xs" @click.stop.prevent="modalValue[index].unit_id = null" class="cursor-pointer" />
                 </template>
               </n-auto-complete-v2>
             </div>
@@ -91,7 +115,7 @@ export default {
     },
     errors: {
       type: [Array, String],
-      default: () => []
+      default: () => [],
     },
     modelValue: {
       type: Array,
@@ -111,7 +135,7 @@ export default {
     usedIn: {
       type: String,
       default: 'challan',
-    }
+    },
   },
   emits: ['update:modelValue', 'deleteRow'],
   setup(props, { emit }) {
@@ -121,21 +145,21 @@ export default {
       () => props.modelValue,
       (newValue) => {
         modalValue.value = newValue
-      }
+      },
     )
     watch(
       () => props.errors,
       (newValue) => {
         if (newValue === 'This field is required.') rowEmpty.value = true
         else rowEmpty.value = false
-      }
+      },
     )
     watch(
       () => modalValue,
       (newValue) => {
         emit('update:modelValue', newValue)
       },
-      { deep: true }
+      { deep: true },
     )
     const addRow = () => {
       modalValue.value.push({
@@ -146,12 +170,7 @@ export default {
       })
     }
     const removeRow = (index) => {
-      if (props.errors || props.isEdit)
-        emit(
-          'deleteRow',
-          index,
-          modalValue.value[index]?.id ? modalValue.value[index] : null
-        )
+      if (props.errors || props.isEdit) emit('deleteRow', index, modalValue.value[index]?.id ? modalValue.value[index] : null)
       modalValue.value.splice(index, 1)
     }
     const onItemChange = (index) => {
@@ -175,7 +194,7 @@ export default {
       useCalcDiscount,
       rowEmpty,
       onItemChange,
-      choiceEndpointBaseComputed
+      choiceEndpointBaseComputed,
     }
   },
 }

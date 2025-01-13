@@ -23,8 +23,8 @@ export default {
     },
     index: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
@@ -38,7 +38,7 @@ export default {
     })
     watch(
       () => props.modelValue,
-      (newValue) => (modalValue.value = newValue)
+      (newValue) => (modalValue.value = newValue),
     )
     return {
       modalValue,

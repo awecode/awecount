@@ -8,16 +8,15 @@ interface StatementInfo {
   account: {
     name: string
     id: number
-  },
+  }
   date: {
-    start: string,
+    start: string
     end: string
-  },
-  total_reconciled: number,
+  }
+  total_reconciled: number
   total_unreconciled: number
 }
 const $q = useQuasar()
-
 
 const statementInfo: Ref<StatementInfo | null> = ref(null)
 
@@ -26,17 +25,7 @@ useApi(`v1/bank-reconciliation/${route.params.id}/statement-info/`).then((respon
 })
 
 const endpoint = `v1/bank-reconciliation/${route.params.id}/`
-const {
-  rows,
-  filters,
-  loading,
-  searchQuery,
-  pagination,
-  onFilterUpdate,
-  resetFilters,
-  onRequest,
-  loadData
-} = useList(endpoint)
+const { rows, filters, loading, searchQuery, pagination, onFilterUpdate, resetFilters, onRequest, loadData } = useList(endpoint)
 
 type align = 'left' | 'center' | 'right'
 const columns = [
@@ -45,72 +34,71 @@ const columns = [
     align: 'center' as align,
     label: 'Dates',
     field: 'date',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'description',
     align: 'left' as align,
     label: 'Description',
     field: 'description',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'Debit',
     align: 'left' as align,
     label: 'Debit',
     field: 'dr_amount',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'Credit',
     align: 'left' as align,
     label: 'Credit',
     field: 'cr_amount',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'SystemTransactions',
     align: 'left' as align,
     label: 'System Transactions',
     field: 'system_transactions',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'status',
     align: 'center' as align,
     label: 'Status',
     field: 'status',
-    sortable: true
+    sortable: true,
   },
   // Action section
   {
     name: 'actions',
     align: 'center' as align,
     label: 'Actions',
-    field: 'actions'
-  }
+    field: 'actions',
+  },
 ]
 
 type SystemTransactionData = {
-  id: number,
-  source_id: number | null,
-  source_type: string,
-  description: string,
-  dr_amount: string | null,
-  cr_amount: string | null,
-  status: string,
-  counterpart_accounts: { dr_amount: string | null, cr_amount: string | null }[]
+  id: number
+  source_id: number | null
+  source_type: string
+  description: string
+  dr_amount: string | null
+  cr_amount: string | null
+  status: string
+  counterpart_accounts: { dr_amount: string | null; cr_amount: string | null }[]
 }
 
-
 type StatementTransactionData = {
-  id: number,
-  date: string,
-  description: string,
-  dr_amount: string | null,
-  cr_amount: string | null,
-  status: string,
-  transaction_ids: number[],
+  id: number
+  date: string
+  description: string
+  dr_amount: string | null
+  cr_amount: string | null
+  status: string
+  transaction_ids: number[]
 }
 
 const calculateTotalFromCounterparts = (transactions: SystemTransactionData[]) => {
@@ -129,18 +117,19 @@ const calculateTotalFromCounterparts = (transactions: SystemTransactionData[]) =
   return (dr_amount - cr_amount).toFixed(2)
 }
 
-
-const filterSources = (systemTransactions: SystemTransactionData[]): { source_id: number, url: string, source_type: string }[] => {
-  const sourceMap = new Map<number, { source_id: number, url: string, source_type: string }>()
+const filterSources = (systemTransactions: SystemTransactionData[]): { source_id: number; url: string; source_type: string }[] => {
+  const sourceMap = new Map<number, { source_id: number; url: string; source_type: string }>()
 
   systemTransactions.forEach((transaction: SystemTransactionData) => {
     if (transaction.source_id) {
       // check permission
       if (checkPermissions(getPermissionFromSourceType(transaction.source_type))) {
-        const url = getVoucherUrl(transaction as {
-          source_id: number,
-          source_type: string
-        })
+        const url = getVoucherUrl(
+          transaction as {
+            source_id: number
+            source_type: string
+          },
+        )
         if (url) {
           // Use source_id as the unique key
           if (!sourceMap.has(transaction.source_id)) {
@@ -168,25 +157,27 @@ const unmatchTransactions = async (transactions: StatementTransactionData[]) => 
     useApi('v1/bank-reconciliation/unmatch-transactions/', {
       method: 'POST',
       body: {
-        statement_ids: transactions.map(t => t.id),
-      }
-    }).then(() => {
-      loadData()
-      $q.notify({
-        color: 'green-6',
-        message: 'Transaction unmatched successfully',
-        icon: 'check_circle',
-        position: 'top-right',
-      })
-    }).catch((error) => {
-      console.log(error)
-      $q.notify({
-        color: 'red-6',
-        message: 'Failed to unmatch the transaction',
-        icon: 'error',
-        position: 'top-right',
-      })
+        statement_ids: transactions.map((t) => t.id),
+      },
     })
+      .then(() => {
+        loadData()
+        $q.notify({
+          color: 'green-6',
+          message: 'Transaction unmatched successfully',
+          icon: 'check_circle',
+          position: 'top-right',
+        })
+      })
+      .catch((error) => {
+        console.log(error)
+        $q.notify({
+          color: 'red-6',
+          message: 'Failed to unmatch the transaction',
+          icon: 'error',
+          position: 'top-right',
+        })
+      })
   })
 }
 
@@ -200,28 +191,29 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
     useApi('v1/bank-reconciliation/unmatch-transactions/', {
       method: 'POST',
       body: {
-        statement_ids: transactions.map(t => t.id),
-      }
-    }).then(() => {
-      loadData()
-      $q.notify({
-        color: 'green-6',
-        message: 'Transaction removed successfully',
-        icon: 'check_circle',
-        position: 'top-right',
-      })
-    }).catch((error) => {
-      console.log(error)
-      $q.notify({
-        color: 'red-6',
-        message: 'Failed to remove the transaction',
-        icon: 'error',
-        position: 'top-right',
-      })
+        statement_ids: transactions.map((t) => t.id),
+      },
     })
+      .then(() => {
+        loadData()
+        $q.notify({
+          color: 'green-6',
+          message: 'Transaction removed successfully',
+          icon: 'check_circle',
+          position: 'top-right',
+        })
+      })
+      .catch((error) => {
+        console.log(error)
+        $q.notify({
+          color: 'red-6',
+          message: 'Failed to remove the transaction',
+          icon: 'error',
+          position: 'top-right',
+        })
+      })
   })
 }
-
 </script>
 
 <template>
@@ -244,8 +236,7 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
             </div>
           </div>
 
-
-          <div class=" flex flex-col gap-4 items-center">
+          <div class="flex flex-col gap-4 items-center">
             <!-- Summary Info -->
             <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
               <!-- Reconciled -->
@@ -264,14 +255,12 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
               </div>
             </div>
             <div class="w-full">
-              <q-btn v-if="!!statementInfo?.total_unreconciled" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn w-full" style="font-size: 12px" label="Reconcile remaining"
-                :to="`/bank-reconciliation/reconcile/?account_id=${statementInfo.account.id}&start_date=${statementInfo?.date.start}&end_date=${statementInfo?.date.end}`" />
+              <q-btn v-if="!!statementInfo?.total_unreconciled" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn w-full" style="font-size: 12px" label="Reconcile remaining" :to="`/bank-reconciliation/reconcile/?account_id=${statementInfo.account.id}&start_date=${statementInfo?.date.start}&end_date=${statementInfo?.date.end}`" />
             </div>
           </div>
         </div>
       </div>
     </div>
-
 
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
@@ -330,7 +319,7 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
         <template v-slot:body-cell-Credit="props">
           <td>
             <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
-              <div class="text-green-500 font-medium"> {{ transaction.cr_amount?.toFixed(2) }}</div>
+              <div class="text-green-500 font-medium">{{ transaction.cr_amount?.toFixed(2) }}</div>
             </div>
           </td>
         </template>
@@ -339,15 +328,15 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
             <div>
               <div v-if="props.row.system_transactions.length" class="flex justify-between items-center">
                 <div>
-                  <div v-for="source, index in filterSources(props.row.system_transactions)" :key="source.source_id">
+                  <div v-for="(source, index) in filterSources(props.row.system_transactions)" :key="source.source_id">
                     <router-link target="_blank" :to="source.url" class="text-blue-800 decoration-none text-xs">
                       {{ source.source_type }}
                     </router-link>
-                    <span v-if="index < filterSources(props.row.system_transactions).length - 1">, </span>
+                    <span v-if="index < filterSources(props.row.system_transactions).length - 1">,</span>
                   </div>
                 </div>
-                <div class="px-4 py-2  font-medium">
-                  <div class="space-y-1" style="border-bottom: 1px solid gray;">
+                <div class="px-4 py-2 font-medium">
+                  <div class="space-y-1" style="border-bottom: 1px solid gray">
                     <div v-for="transactionData in props.row.system_transactions" :key="transactionData.id">
                       <div v-for="counterpart in transactionData.counterpart_accounts" :key="counterpart.account_id" class="flex justify-between items-center text-xs">
                         <div class="text-gray-700 truncate pr-2">
@@ -355,53 +344,46 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
                         </div>
 
                         <div class="flex space-x-2">
-                          <span v-if="counterpart.dr_amount" class="text-red-600 font-medium">
-                            -{{ counterpart.dr_amount }}
-                          </span>
-                          <span v-if="counterpart.cr_amount" class="text-green-600 font-medium">
-                            +{{ counterpart.cr_amount }}
-                          </span>
+                          <span v-if="counterpart.dr_amount" class="text-red-600 font-medium">-{{ counterpart.dr_amount }}</span>
+                          <span v-if="counterpart.cr_amount" class="text-green-600 font-medium">+{{ counterpart.cr_amount }}</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div v-if="props.row.system_transactions.length" class="text-right w-full"
-                    :class="Number(calculateTotalFromCounterparts(props.row.system_transactions)) < 0 ? 'text-green-500' : 'text-red-500'">{{
-                      calculateTotalFromCounterparts(props.row.system_transactions).replaceAll('-', '')
-                    }}</div>
+                  <div v-if="props.row.system_transactions.length" class="text-right w-full" :class="Number(calculateTotalFromCounterparts(props.row.system_transactions)) < 0 ? 'text-green-500' : 'text-red-500'">{{ calculateTotalFromCounterparts(props.row.system_transactions).replaceAll('-', '') }}</div>
                 </div>
               </div>
-              <div v-else class="px-4 py-2  font-medium">
-                -
-              </div>
+              <div v-else class="px-4 py-2 font-medium">-</div>
             </div>
           </td>
         </template>
 
         <template v-slot:body-cell-status="props">
           <td class="text-center">
-            <q-chip :color="props.row.statement_transactions[0].status === 'Reconciled' ? 'green' : props.row.statement_transactions[0].status === 'Matched' ? 'orange' : 'red'" class="text-white"
-              :label="props.row.statement_transactions[0].status" />
+            <q-chip
+              :color="
+                props.row.statement_transactions[0].status === 'Reconciled' ? 'green'
+                : props.row.statement_transactions[0].status === 'Matched' ? 'orange'
+                : 'red'
+              "
+              class="text-white"
+              :label="props.row.statement_transactions[0].status"
+            />
           </td>
         </template>
         <template v-slot:body-cell-actions="props">
           <td class="text-end">
-            <q-btn v-if="props.row.statement_transactions[0].status === 'Matched' || props.row.statement_transactions[0].status === 'Reconciled'" color="blue" label="Unmatch"
-              @click="unmatchTransactions(props.row.statement_transactions)" />
+            <q-btn v-if="props.row.statement_transactions[0].status === 'Matched' || props.row.statement_transactions[0].status === 'Reconciled'" color="blue" label="Unmatch" @click="unmatchTransactions(props.row.statement_transactions)" />
             <q-btn color="red" icon="delete" class="ml-2" @click="deleteTransactions(props.row.statement_transactions)" />
           </td>
         </template>
       </q-table>
     </div>
 
-
     <!-- No Transactions State -->
     <div v-if="rows?.length === 0" class="text-center py-10 text-gray-500">
-      <p class="text-sm font-medium">
-        No transactions found.
-      </p>
+      <p class="text-sm font-medium">No transactions found.</p>
     </div>
   </div>
-
 </template>

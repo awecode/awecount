@@ -11,19 +11,15 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.name" label="Name *" class="col-12 lg:col-6" :error-message="errors.name"
-              :error="!!errors.name" />
+            <q-input v-model="fields.name" label="Name *" class="col-12 lg:col-6" :error-message="errors.name" :error="!!errors.name" />
           </div>
           <div>
-            <q-input v-model="fields.description" label="Description" class="col-6" :error-message="errors.description"
-              :error="!!errors.description" type="textarea" />
+            <q-input v-model="fields.description" label="Description" class="col-6" :error-message="errors.description" :error="!!errors.description" type="textarea" />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('BrandModify') && isEdit" :loading="loading" @click.prevent="submitForm"
-            color="green" label="Update" class="q-ml-auto" type="submit" />
-          <q-btn v-if="!isEdit && checkPermissions('BrandCreate')" :loading="loading" @click.prevent="submitForm"
-            color="green" label="Create" class="q-ml-auto" type="submit" />
+          <q-btn v-if="checkPermissions('BrandModify') && isEdit" :loading="loading" @click.prevent="submitForm" color="green" label="Update" class="q-ml-auto" type="submit" />
+          <q-btn v-if="!isEdit && checkPermissions('BrandCreate')" :loading="loading" @click.prevent="submitForm" color="green" label="Create" class="q-ml-auto" type="submit" />
         </div>
       </q-card>
     </q-card>
@@ -45,7 +41,8 @@ export default {
       ...useForm(endpoint, {
         getDefaults: false,
         successRoute: '/brand/list/',
-      }), checkPermissions
+      }),
+      checkPermissions,
     }
   },
 }

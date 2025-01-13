@@ -11,23 +11,18 @@
       <q-card class="q-mx-lg q-mb-lg">
         <q-card-section>
           <div class="q-col-gutter-md grid lg:grid-cols-2">
-            <q-input v-model="fields.name" label="Name *" :error-message="errors.name"
-              :error="!!errors.name" />
-            <q-input v-model="fields.code" label="Code" :error-message="errors.code"
-              :error="!!errors.code" />
+            <q-input v-model="fields.name" label="Name *" :error-message="errors.name" :error="!!errors.name" />
+            <q-input v-model="fields.code" label="Code" :error-message="errors.code" :error="!!errors.code" />
           </div>
           <div class="q-col-gutter-md grid lg:grid-cols-2">
             <div class="lg:col-6 col-12">
-              <n-auto-complete-v2 v-model="fields.parent" :options="formDefaults.collections?.categories" label="Parent *"
-                :error="errors?.parent" :staticOption="fields.selected_parent_obj" endpoint="v1/categories/create-defaults/categories" />
+              <n-auto-complete-v2 v-model="fields.parent" :options="formDefaults.collections?.categories" label="Parent *" :error="errors?.parent" :staticOption="fields.selected_parent_obj" endpoint="v1/categories/create-defaults/categories" />
             </div>
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('CategoryModify') && !isEdit" type="submit" @click.prevent="submitForm" color="green" :loading="loading"
-            label="Create" class="q-ml-auto" />
-          <q-btn v-if="checkPermissions('CategoryModify') && isEdit" type="submit" @click.prevent="submitForm" color="green" :loading="loading"
-            label="Update" class="q-ml-auto" />
+          <q-btn v-if="checkPermissions('CategoryModify') && !isEdit" type="submit" @click.prevent="submitForm" color="green" :loading="loading" label="Create" class="q-ml-auto" />
+          <q-btn v-if="checkPermissions('CategoryModify') && isEdit" type="submit" @click.prevent="submitForm" color="green" :loading="loading" label="Update" class="q-ml-auto" />
         </div>
       </q-card>
     </q-card>
@@ -47,10 +42,7 @@ export default {
     })
     useMeta(() => {
       return {
-        title:
-          (formData.isEdit?.value
-            ? 'Account Category Update'
-            : 'Account Category Add') + ' | Awecount',
+        title: (formData.isEdit?.value ? 'Account Category Update' : 'Account Category Add') + ' | Awecount',
       }
     })
     // console.log()
@@ -60,7 +52,7 @@ export default {
     // formData.fields.value.id
     return {
       ...formData,
-      checkPermissions
+      checkPermissions,
     }
   },
 }

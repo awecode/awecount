@@ -36,30 +36,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'opening/',
         name: 'Stock Opening',
-        component: () =>
-          import(
-            'src/pages/inventory/item/opening-balance/ItemOpeningBalanceList.vue'
-          ),
+        component: () => import('src/pages/inventory/item/opening-balance/ItemOpeningBalanceList.vue'),
         meta: {
           breadcrumb: ['Home', 'Items', 'Stock Opening'],
         },
       },
       {
         path: 'opening/add',
-        component: () =>
-          import(
-            'src/pages/inventory/item/opening-balance/ItemOpeningBalanceForm.vue'
-          ),
+        component: () => import('src/pages/inventory/item/opening-balance/ItemOpeningBalanceForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Items', 'Stock Opening', 'Create'],
         },
       },
       {
         path: 'opening/:id',
-        component: () =>
-          import(
-            'src/pages/inventory/item/opening-balance/ItemOpeningBalanceForm.vue'
-          ),
+        component: () => import('src/pages/inventory/item/opening-balance/ItemOpeningBalanceForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Items', 'Stock Opening', 'Update'],
         },
@@ -67,40 +58,28 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'inventory-adjustment/list',
         name: 'Inventory Adjustment',
-        component: () =>
-          import(
-            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentList.vue'
-          ),
+        component: () => import('src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentList.vue'),
         meta: {
           breadcrumb: ['Home', 'Items', 'Inventory Adjustment'],
         },
       },
       {
         path: 'inventory-adjustment/add',
-        component: () =>
-          import(
-            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentForm.vue'
-          ),
+        component: () => import('src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Items', 'Inventory Adjustment', 'Create'],
         },
       },
       {
         path: 'inventory-adjustment/:id',
-        component: () =>
-          import(
-            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentForm.vue'
-          ),
+        component: () => import('src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Items', 'Inventory Adjustment', 'Update'],
         },
       },
       {
         path: 'inventory-adjustment/:id/view',
-        component: () =>
-          import(
-            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentView.vue'
-          ),
+        component: () => import('src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentView.vue'),
         meta: {
           breadcrumb: ['Home', 'Items', 'Inventory Adjustment', 'Details'],
         },
@@ -260,20 +239,17 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Brands',
-        component: () =>
-          import('src/pages/inventory/product/brand/BrandList.vue'),
+        component: () => import('src/pages/inventory/product/brand/BrandList.vue'),
         meta: { breadcrumb: ['Home', 'Brands'] },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/inventory/product/brand/BrandForm.vue'),
+        component: () => import('src/pages/inventory/product/brand/BrandForm.vue'),
         meta: { breadcrumb: ['Home', 'Brands', 'Update'] },
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/inventory/product/brand/BrandForm.vue'),
+        component: () => import('src/pages/inventory/product/brand/BrandForm.vue'),
         meta: { breadcrumb: ['Home', 'Brands', 'Create'] },
       },
     ],
@@ -285,30 +261,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Inventory Categories',
-        component: () =>
-          import(
-            'src/pages/inventory/product/category/InventoryCategoryList.vue'
-          ),
+        component: () => import('src/pages/inventory/product/category/InventoryCategoryList.vue'),
         meta: {
           breadcrumb: ['Home', 'Inventory Categories'],
         },
       },
       {
         path: 'add/',
-        component: () =>
-          import(
-            'src/pages/inventory/product/category/InventoryCategoryForm.vue'
-          ),
+        component: () => import('src/pages/inventory/product/category/InventoryCategoryForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Inventory Categories', 'Create'],
         },
       },
       {
         path: ':id',
-        component: () =>
-          import(
-            'src/pages/inventory/product/category/InventoryCategoryForm.vue'
-          ),
+        component: () => import('src/pages/inventory/product/category/InventoryCategoryForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Inventory Categories', 'Update'],
         },
@@ -322,10 +289,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Inventory Accounts',
-        component: () =>
-          import(
-            'src/pages/inventory/product/inventory-account/InventoryAccountList.vue'
-          ),
+        component: () => import('src/pages/inventory/product/inventory-account/InventoryAccountList.vue'),
         meta: {
           breadcrumb: ['Home', 'Inventory Accounts'],
         },
@@ -333,10 +297,7 @@ const routes: RouteRecordRaw[] = [
       //
       {
         path: 'detail/:id/',
-        component: () =>
-          import(
-            'src/pages/inventory/product/inventory-account/InventoryAccountDetail.vue'
-          ),
+        component: () => import('src/pages/inventory/product/inventory-account/InventoryAccountDetail.vue'),
         meta: {
           breadcrumb: ['Home', 'Inventory Accounts', 'Detail'],
         },
@@ -350,24 +311,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: '/sales-voucher/recurring-template/list/',
         name: 'Recurring Sales Invoice Templates',
-        component: () =>
-          import('src/pages/sales/sales-voucher/RecurringTemplateList.vue'),
+        component: () => import('src/pages/sales/sales-voucher/RecurringTemplateList.vue'),
         meta: {
           breadcrumb: ['Home', 'Recurring Sales Invoice Templates'],
         },
       },
       {
         path: '/sales-voucher/recurring-template/add/',
-        component: () =>
-          import('src/pages/sales/sales-voucher/RecurringTemplateForm.vue'),
+        component: () => import('src/pages/sales/sales-voucher/RecurringTemplateForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Recurring Sales Invoice Templates', 'Create'],
         },
       },
       {
         path: '/sales-voucher/recurring-template/:id/',
-        component: () =>
-          import('src/pages/sales/sales-voucher/RecurringTemplateForm.vue'),
+        component: () => import('src/pages/sales/sales-voucher/RecurringTemplateForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Recurring Sales Invoice Templates', 'Update'],
         },
@@ -375,40 +333,35 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Sales Invoices',
-        component: () =>
-          import('src/pages/sales/sales-voucher/SalesVoucherList.vue'),
+        component: () => import('src/pages/sales/sales-voucher/SalesVoucherList.vue'),
         meta: {
           breadcrumb: ['Home', 'Sales Invoices'],
         },
       },
       {
         path: '/sales-voucher/add/',
-        component: () =>
-          import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
+        component: () => import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Sales Invoices', 'Create'],
         },
       },
       {
         path: '/sales-voucher/:id/view/',
-        component: () =>
-          import('src/pages/sales/sales-voucher/SalesVoucherView.vue'),
+        component: () => import('src/pages/sales/sales-voucher/SalesVoucherView.vue'),
         meta: {
           breadcrumb: ['Home', 'Sales Invoices', 'View'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
+        component: () => import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Sales Invoices', 'Update'],
         },
       },
       {
         path: '/sales-voucher/:id/mv/',
-        component: () =>
-          import('src/pages/sales/sales-voucher/SalesVoucherMV.vue'),
+        component: () => import('src/pages/sales/sales-voucher/SalesVoucherMV.vue'),
         meta: {
           breadcrumb: ['Home', 'Sales Invoices', 'Materialized View'],
         },
@@ -422,32 +375,28 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Payment Receipts',
-        component: () =>
-          import('src/pages/payment-receipt/PaymentReceiptList.vue'),
+        component: () => import('src/pages/payment-receipt/PaymentReceiptList.vue'),
         meta: {
           breadcrumb: ['Home', 'Payment Receipts'],
         },
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
+        component: () => import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Payment Receipts', 'Create'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
+        component: () => import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Payment Receipts', 'Update'],
         },
       },
       {
         path: ':id/view/',
-        component: () =>
-          import('src/pages/payment-receipt/PaymentReceiptView.vue'),
+        component: () => import('src/pages/payment-receipt/PaymentReceiptView.vue'),
         meta: {
           breadcrumb: ['Home', 'Payment Receipts', 'View'],
         },
@@ -461,32 +410,28 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Credit Notes',
-        component: () =>
-          import('src/pages/sales/credit-note/CreditNoteList.vue'),
+        component: () => import('src/pages/sales/credit-note/CreditNoteList.vue'),
         meta: {
           breadcrumb: ['Home', 'Credit Notes'],
         },
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/sales/credit-note/CreditNoteForm.vue'),
+        component: () => import('src/pages/sales/credit-note/CreditNoteForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Credit Notes', 'Create'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/sales/credit-note/CreditNoteForm.vue'),
+        component: () => import('src/pages/sales/credit-note/CreditNoteForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Credit Notes', 'Update'],
         },
       },
       {
         path: ':id/view/',
-        component: () =>
-          import('src/pages/sales/credit-note/CreditNoteView.vue'),
+        component: () => import('src/pages/sales/credit-note/CreditNoteView.vue'),
         meta: {
           breadcrumb: ['Home', 'Credit Notes', 'View'],
         },
@@ -528,24 +473,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Sales Discounts',
-        component: () =>
-          import('src/pages/sales/discount/SalesDiscountList.vue'),
+        component: () => import('src/pages/sales/discount/SalesDiscountList.vue'),
         meta: {
           breadcrumb: ['Home', 'Sales Discounts'],
         },
       },
       {
         path: '/sales-discount/add/',
-        component: () =>
-          import('src/pages/sales/discount/SalesDiscountForm.vue'),
+        component: () => import('src/pages/sales/discount/SalesDiscountForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Sales Discounts', 'Create'],
         },
       },
       {
         path: '/sales-discount/:id/',
-        component: () =>
-          import('src/pages/sales/discount/SalesDiscountForm.vue'),
+        component: () => import('src/pages/sales/discount/SalesDiscountForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Sales Discounts', 'Update'],
         },
@@ -586,8 +528,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'list/',
-        component: () =>
-          import('src/pages/purchase/purchase-voucher/PurchaseVoucherList.vue'),
+        component: () => import('src/pages/purchase/purchase-voucher/PurchaseVoucherList.vue'),
         name: 'Purchases/Expenses',
         meta: {
           breadcrumb: ['Home', 'Purchases/Expenses'],
@@ -595,24 +536,21 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: '/purchase-voucher/add/',
-        component: () =>
-          import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
+        component: () => import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Purchases/Expenses', 'Create'],
         },
       },
       {
         path: '/purchase-voucher/:id/view/',
-        component: () =>
-          import('src/pages/purchase/purchase-voucher/PurchaseVoucherView.vue'),
+        component: () => import('src/pages/purchase/purchase-voucher/PurchaseVoucherView.vue'),
         meta: {
           breadcrumb: ['Home', 'Purchases/Expenses', 'View'],
         },
       },
       {
         path: '/purchase-voucher/:id/',
-        component: () =>
-          import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
+        component: () => import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Purchases/Expenses', 'Update'],
         },
@@ -620,24 +558,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: '/purchase-voucher/recurring-template/list/',
         name: 'Recurring Purchase Invoice Templates',
-        component: () =>
-          import('src/pages/purchase/purchase-voucher/RecurringTemplateList.vue'),
+        component: () => import('src/pages/purchase/purchase-voucher/RecurringTemplateList.vue'),
         meta: {
           breadcrumb: ['Home', 'Recurring Purchase Invoice Templates'],
         },
       },
       {
         path: '/purchase-voucher/recurring-template/add/',
-        component: () =>
-          import('src/pages/purchase/purchase-voucher/RecurringTemplateForm.vue'),
+        component: () => import('src/pages/purchase/purchase-voucher/RecurringTemplateForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Recurring Purchase Invoice Templates', 'Create'],
         },
       },
       {
         path: '/purchase-voucher/recurring-template/:id/',
-        component: () =>
-          import('src/pages/purchase/purchase-voucher/RecurringTemplateForm.vue'),
+        component: () => import('src/pages/purchase/purchase-voucher/RecurringTemplateForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Recurring Purchase Invoice Templates', 'Update'],
         },
@@ -650,8 +585,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'list/',
-        component: () =>
-          import('src/pages/purchase/purchase-order/PurchaseOrderList.vue'),
+        component: () => import('src/pages/purchase/purchase-order/PurchaseOrderList.vue'),
         name: 'Purchase Orders',
         meta: {
           breadcrumb: ['Home', 'Purchase Orders'],
@@ -659,16 +593,14 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/purchase/purchase-order/PurchaseOrderForm.vue'),
+        component: () => import('src/pages/purchase/purchase-order/PurchaseOrderForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Purchase Orders', 'Create'],
         },
       },
       {
         path: '/purchase-order/:id',
-        component: () =>
-          import('src/pages/purchase/purchase-order/PurchaseOrderForm.vue'),
+        component: () => import('src/pages/purchase/purchase-order/PurchaseOrderForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Purchase Orders', 'Update'],
         },
@@ -681,8 +613,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'list/',
-        component: () =>
-          import('src/pages/purchase/debit-notes/DebitNotesList.vue'),
+        component: () => import('src/pages/purchase/debit-notes/DebitNotesList.vue'),
         name: 'Debit Notes',
         meta: {
           breadcrumb: ['Home', 'Debit Notes'],
@@ -690,24 +621,21 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/purchase/debit-notes/DebitNotesForm.vue'),
+        component: () => import('src/pages/purchase/debit-notes/DebitNotesForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Debit Notes', 'Create'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/purchase/debit-notes/DebitNotesForm.vue'),
+        component: () => import('src/pages/purchase/debit-notes/DebitNotesForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Debit Notes', 'Update'],
         },
       },
       {
         path: ':id/view/',
-        component: () =>
-          import('src/pages/purchase/debit-notes/DebitNotesView.vue'),
+        component: () => import('src/pages/purchase/debit-notes/DebitNotesView.vue'),
         meta: {
           breadcrumb: ['Home', 'Debit Notes', 'View'],
         },
@@ -720,8 +648,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'list/',
-        component: () =>
-          import('src/pages/purchase/discounts/PurchaseDiscountList.vue'),
+        component: () => import('src/pages/purchase/discounts/PurchaseDiscountList.vue'),
         name: 'Purchase Discounts',
         meta: {
           breadcrumb: ['Home', 'Purchase Discounts'],
@@ -729,16 +656,14 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
+        component: () => import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Purchase Discounts', 'Create'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
+        component: () => import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Purchase Discounts', 'Update'],
         },
@@ -751,8 +676,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'list/',
-        component: () =>
-          import('src/pages/purchase/row/PurchaseVoucherRowList.vue'),
+        component: () => import('src/pages/purchase/row/PurchaseVoucherRowList.vue'),
         name: 'PurchaseVoucher Rows',
         meta: {
           breadcrumb: ['Home', 'Purchase Rows'],
@@ -766,8 +690,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'list/',
-        component: () =>
-          import('src/pages/purchase/purchase-book/PurchaseBookList.vue'),
+        component: () => import('src/pages/purchase/purchase-book/PurchaseBookList.vue'),
         name: 'Purchase Books',
         meta: {
           breadcrumb: ['Home', 'Purchase Books'],
@@ -781,8 +704,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'list/',
-        component: () =>
-          import('src/pages/purchase/purchase-book/PurchaseBookList.vue'),
+        component: () => import('src/pages/purchase/purchase-book/PurchaseBookList.vue'),
         name: 'Purchase Books',
         meta: {
           breadcrumb: ['Home', 'Purchase Books'],
@@ -860,8 +782,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        component: () =>
-          import('src/pages/account/journal-voucher/JournalVoucherList.vue'),
+        component: () => import('src/pages/account/journal-voucher/JournalVoucherList.vue'),
         name: 'Journal Vouchers',
         meta: {
           breadcrumb: ['Home', 'Journal Vouchers'],
@@ -869,16 +790,14 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/account/journal-voucher/JournalVoucherForm.vue'),
+        component: () => import('src/pages/account/journal-voucher/JournalVoucherForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Journal Vouchers', 'Create'],
         },
       },
       {
         path: ':id/view/',
-        component: () =>
-          import('src/pages/account/journal-voucher/JournalVoucherDetails.vue'),
+        component: () => import('src/pages/account/journal-voucher/JournalVoucherDetails.vue'),
         meta: {
           breadcrumb: ['Home', 'Journal Vouchers', 'View'],
         },
@@ -886,8 +805,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: ':id/edit/',
-        component: () =>
-          import('src/pages/account/journal-voucher/JournalVoucherForm.vue'),
+        component: () => import('src/pages/account/journal-voucher/JournalVoucherForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Journal Vouchers', 'Update'],
         },
@@ -900,8 +818,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        component: () =>
-          import('src/pages/account/opening-balance/OpeningBalanceList.vue'),
+        component: () => import('src/pages/account/opening-balance/OpeningBalanceList.vue'),
         name: 'Account Opening Balances',
         meta: {
           breadcrumb: ['Home', 'Account Opening Balances'],
@@ -909,16 +826,14 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/account/opening-balance/OpeningBalanceForm.vue'),
+        component: () => import('src/pages/account/opening-balance/OpeningBalanceForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Account Opening Balances', 'Create'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/account/opening-balance/OpeningBalanceForm.vue'),
+        component: () => import('src/pages/account/opening-balance/OpeningBalanceForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Account Opening Balances', 'Update'],
         },
@@ -1057,24 +972,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Cheque Issues',
-        component: () =>
-          import('src/pages/bank/cheque-issue/ChequeIssueList.vue'),
+        component: () => import('src/pages/bank/cheque-issue/ChequeIssueList.vue'),
         meta: {
           breadcrumb: ['Home', 'Cheque Issues'],
         },
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
+        component: () => import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Cheque Issues', 'Create'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
+        component: () => import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Cheque Issues', 'Update'],
         },
@@ -1088,24 +1000,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Cheque Issues',
-        component: () =>
-          import('src/pages/bank/cheque-issue/ChequeIssueList.vue'),
+        component: () => import('src/pages/bank/cheque-issue/ChequeIssueList.vue'),
         meta: {
           breadcrumb: ['Home', 'Cheque Issues'],
         },
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
+        component: () => import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Cheque Issues', 'Create'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
+        component: () => import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Cheque Issues', 'Update'],
         },
@@ -1119,8 +1028,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Cheque Deposits',
-        component: () =>
-          import('src/pages/bank/cheque-deposit/ChequeDepositList.vue'),
+        component: () => import('src/pages/bank/cheque-deposit/ChequeDepositList.vue'),
         meta: {
           breadcrumb: ['Home', 'Cheque Deposits'],
         },
@@ -1128,24 +1036,21 @@ const routes: RouteRecordRaw[] = [
 
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/bank/cheque-deposit/ChequeDepositForm.vue'),
+        component: () => import('src/pages/bank/cheque-deposit/ChequeDepositForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Cheque Deposits', 'Create'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/bank/cheque-deposit/ChequeDepositForm.vue'),
+        component: () => import('src/pages/bank/cheque-deposit/ChequeDepositForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Cheque Deposits', 'Update'],
         },
       },
       {
         path: ':id/view/',
-        component: () =>
-          import('src/pages/bank/cheque-deposit/ChequeDepositDetail.vue'),
+        component: () => import('src/pages/bank/cheque-deposit/ChequeDepositDetail.vue'),
         meta: {
           breadcrumb: ['Home', 'Cheque Deposits', 'View'],
         },
@@ -1160,24 +1065,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Cash Deposits',
-        component: () =>
-          import('src/pages/bank/cash-deposit/CashDepositList.vue'),
+        component: () => import('src/pages/bank/cash-deposit/CashDepositList.vue'),
         meta: {
           breadcrumb: ['Home', 'Cash Deposits'],
         },
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
+        component: () => import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Cash Deposits', 'Add'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
+        component: () => import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Cash Deposits', 'Create'],
         },
@@ -1191,24 +1093,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Cash Deposits',
-        component: () =>
-          import('src/pages/bank/cash-deposit/CashDepositList.vue'),
+        component: () => import('src/pages/bank/cash-deposit/CashDepositList.vue'),
         meta: {
           breadcrumb: ['Home', 'Cash Deposits'],
         },
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
+        component: () => import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Cash Deposits', 'Add'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
+        component: () => import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Cash Deposits', 'Create'],
         },
@@ -1222,24 +1121,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         name: 'Fund Transfers',
-        component: () =>
-          import('src/pages/bank/fund-transfer/FundTransferList.vue'),
+        component: () => import('src/pages/bank/fund-transfer/FundTransferList.vue'),
         meta: {
           breadcrumb: ['Home', 'Fund Transfers'],
         },
       },
       {
         path: 'add/',
-        component: () =>
-          import('src/pages/bank/fund-transfer/FundTransferForm.vue'),
+        component: () => import('src/pages/bank/fund-transfer/FundTransferForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Fund Transfers', 'Create'],
         },
       },
       {
         path: ':id/',
-        component: () =>
-          import('src/pages/bank/fund-transfer/FundTransferForm.vue'),
+        component: () => import('src/pages/bank/fund-transfer/FundTransferForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Fund Transfers', 'Update'],
         },
@@ -1273,7 +1169,7 @@ const routes: RouteRecordRaw[] = [
         meta: {
           breadcrumb: ['Home', 'Bank Reconciliation', 'Statement Detail'],
         },
-      }
+      },
     ],
   },
   {
@@ -1431,8 +1327,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: '/audit-log/:id/',
-        component: () =>
-          import('src/pages/settings/auditlog/AuditLogDetails.vue'),
+        component: () => import('src/pages/settings/auditlog/AuditLogDetails.vue'),
         meta: {
           breadcrumb: ['Home', 'Audit Logs', 'Detail'],
         },

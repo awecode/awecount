@@ -2,8 +2,7 @@
   <q-field :label="label" stack-label :error="!!props.error" :error-message="props.error">
     <div class="relative flex flex-wrap items-center p-3 w-full" @click="onFieldClick">
       <div v-for="(file, index) in fileList" :key="index" class="relative w-32 h-32 m-2 flex items-center">
-        <q-img v-if="file.isImage" :src="file.preview" class="w-full h-full object-cover rounded overflow-hidden"
-          alt="Preview" />
+        <q-img v-if="file.isImage" :src="file.preview" class="w-full h-full object-cover rounded overflow-hidden" alt="Preview" />
         <div v-else class="grid place-content-center w-full h-full">
           <q-icon name="mdi-file" class="mx-auto" size="lg" color="grey" />
         </div>
@@ -13,8 +12,7 @@
         </div>
       </div>
     </div>
-    <input :accept="[...allowedImageExtensions, ...allowedFileExtensions].join(',')" :multiple="multiple" ref="imageRef"
-      type="file" class="hidden" @change="handleFileChange" />
+    <input :accept="[...allowedImageExtensions, ...allowedFileExtensions].join(',')" :multiple="multiple" ref="imageRef" type="file" class="hidden" @change="handleFileChange" />
   </q-field>
 </template>
 
@@ -62,14 +60,14 @@ watch(
   () => {
     processFiles(props.modelValue)
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 function handleFileChange(event) {
   const target = event.target
   if (target.files) {
     const files = Array.from(target.files)
-    if (files.some(file => file.size > props.maxFileSize)) {
+    if (files.some((file) => file.size > props.maxFileSize)) {
       $q.notify({
         type: 'negative',
         message: `Please upload files with size less than ${(props.maxFileSize / (1024 * 1024)).toFixed(2)}MB`,

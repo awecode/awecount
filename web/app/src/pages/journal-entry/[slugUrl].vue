@@ -4,8 +4,10 @@
       <q-card>
         <q-card-section class="bg-grey-4 text-black">
           <div class="text-h6">
-            <span>Journal Entries for
-              <span class="text-capitalize">{{ fields[0]?.voucher_type }}</span> #
+            <span>
+              Journal Entries for
+              <span class="text-capitalize">{{ fields[0]?.voucher_type }}</span>
+              #
               {{ fields[0]?.voucher_no || '-' }}
             </span>
           </div>
@@ -18,12 +20,7 @@
             <div class="text-subtitle2 text-grey-8">Date :&nbsp;</div>
             <div class="text-bold text-grey-9">{{ getDate[0] || '-' }}</div>
           </div>
-          <router-link v-if="this.$route.params.slug === 'purchase-vouchers' ||
-    this.$route.params.slug === 'sales-voucher'
-    " style="text-decoration: none" :to="`/${this.$route.params.slug === 'purchase-vouchers'
-    ? 'purchase-voucher'
-    : this.$route.params.slug
-    }/${fields[0]?.source_id}/view`">
+          <router-link v-if="this.$route.params.slug === 'purchase-vouchers' || this.$route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${this.$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : this.$route.params.slug}/${fields[0]?.source_id}/view`">
             <div class="row items-center text-blue">Source</div>
           </router-link>
         </div>
@@ -41,17 +38,14 @@
               <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
               <div class="row q-col-gutter-md">
                 <div class="col-grow">
-                  <router-link style="text-decoration: none" class="text-blue"
-                    :to="`/account/${row.account.id}/view`">{{
-    row.account.name }}</router-link>
+                  <router-link style="text-decoration: none" class="text-blue" :to="`/account/${row.account.id}/view`">{{ row.account.name }}</router-link>
                 </div>
                 <div class="col-3" data-testid="dr">{{ $nf(row.dr_amount) || null }}</div>
                 <div class="col-3" data-testid="cr">{{ $nf(row.cr_amount) || null }}</div>
               </div>
             </template>
           </div>
-          <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center"
-            style="margin-left: -20px; margin-right: -20px">
+          <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center" style="margin-left: -20px; margin-right: -20px">
             <div class="col-grow">Total</div>
             <div class="col-3">
               {{ $nf(sameTransactionsData.total_dr) }}
@@ -69,8 +63,10 @@
       <q-card>
         <q-card-section class="bg-grey-4 text-black">
           <div class="text-h6">
-            <span>Journal Entries for
-              <span class="text-capitalize">{{ voucher.voucher_type }}</span> #
+            <span>
+              Journal Entries for
+              <span class="text-capitalize">{{ voucher.voucher_type }}</span>
+              #
               {{ voucher?.voucher_no || '-' }}
             </span>
           </div>
@@ -83,12 +79,7 @@
             <div class="text-subtitle2 text-grey-8">Date :&nbsp;</div>
             <div class="text-bold text-grey-9">{{ getDate[index] || '-' }}</div>
           </div>
-          <router-link v-if="this.$route.params.slug === 'purchase-vouchers' ||
-    this.$route.params.slug === 'sales-voucher'
-    " style="text-decoration: none" :to="`/${this.$route.params.slug === 'purchase-vouchers'
-    ? 'purchase-voucher'
-    : this.$route.params.slug
-    }/${voucher?.source_id}/view`">
+          <router-link v-if="this.$route.params.slug === 'purchase-vouchers' || this.$route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${this.$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : this.$route.params.slug}/${voucher?.source_id}/view`">
             <div class="row items-center text-blue">Source</div>
           </router-link>
         </div>
@@ -104,15 +95,13 @@
             <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
             <div class="row q-col-gutter-md">
               <div class="col-grow">
-                <router-link style="text-decoration: none" class="text-blue" :to="`/account/${row.account.id}/view`">{{
-    row.account.name }}</router-link>
+                <router-link style="text-decoration: none" class="text-blue" :to="`/account/${row.account.id}/view`">{{ row.account.name }}</router-link>
               </div>
               <div class="col-3" data-testid="dr">{{ $nf(row.dr_amount) || null }}</div>
               <div class="col-3" data-testid="cr">{{ $nf(row.cr_amount) || null }}</div>
             </div>
           </div>
-          <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center"
-            style="margin-left: -20px; margin-right: -20px">
+          <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center" style="margin-left: -20px; margin-right: -20px">
             <div class="col-grow">Sub Total</div>
             <div class="col-3">
               {{ $nf(getAmount?.voucherTally[index].dr_amount) }}
@@ -166,12 +155,12 @@
             {{ $nf(sameTransactionsData.total_cr) }}
           </div>
         </div>
-      </q-card-section></q-card>
+      </q-card-section>
+    </q-card>
   </template>
   <template v-if="sameTransactionsData && fields?.length > 1">
     <div class="q-ma-md flex justify-end">
-      <q-btn @click="seprateTransactions = !seprateTransactions"
-        :label="seprateTransactions ? 'View Merged Transactions' : 'View Sperate Transactions'" color="green"></q-btn>
+      <q-btn @click="seprateTransactions = !seprateTransactions" :label="seprateTransactions ? 'View Merged Transactions' : 'View Sperate Transactions'" color="green"></q-btn>
     </div>
   </template>
 </template>
@@ -208,10 +197,7 @@ export default {
     const getDate = computed(() => {
       if (Array.isArray(fields.value) && fields.value.length > 0) {
         const dateArray = fields?.value.map((element) => {
-          return DateConverter.getRepresentation(
-            element.date,
-            store.isCalendarInAD ? 'ad' : 'bs'
-          )
+          return DateConverter.getRepresentation(element.date, store.isCalendarInAD ? 'ad' : 'bs')
         })
         return dateArray
       } else return null
@@ -219,18 +205,8 @@ export default {
     const getAmount = computed(() => {
       if (Array.isArray(fields.value) && fields.value.length > 0) {
         const data = fields?.value.map((element) => {
-          const dr =
-            element.transactions?.reduce(
-              (accum: number, item: Record<string, any>) =>
-                accum + Number(item.dr_amount),
-              0
-            ) || 0
-          const cr =
-            element.transactions?.reduce(
-              (accum: number, item: Record<string, any>) =>
-                accum + Number(item.cr_amount),
-              0
-            ) || 0
+          const dr = element.transactions?.reduce((accum: number, item: Record<string, any>) => accum + Number(item.dr_amount), 0) || 0
+          const cr = element.transactions?.reduce((accum: number, item: Record<string, any>) => accum + Number(item.cr_amount), 0) || 0
           return {
             dr_amount: dr,
             cr_amount: cr,
@@ -239,18 +215,8 @@ export default {
         const totalData = {
           voucherTally: data,
           totalAmount: {
-            total_dr:
-              data?.reduce(
-                (accum: number, item: Record<string, any>) =>
-                  accum + Number(item.dr_amount),
-                0
-              ) || 0,
-            total_cr:
-              data?.reduce(
-                (accum: number, item: Record<string, any>) =>
-                  accum + Number(item.cr_amount),
-                0
-              ) || 0,
+            total_dr: data?.reduce((accum: number, item: Record<string, any>) => accum + Number(item.dr_amount), 0) || 0,
+            total_cr: data?.reduce((accum: number, item: Record<string, any>) => accum + Number(item.cr_amount), 0) || 0,
           },
         }
         return totalData
@@ -260,14 +226,14 @@ export default {
     const sameTransactionsData = computed(() => {
       if (Array.isArray(fields.value) && fields.value.length > 0) {
         const status = fields.value.every((item) => {
-          return (item.date === fields.value[0]?.date) && (item.voucher_no === fields.value[0]?.voucher_no) && (item.source_id === fields.value[0]?.source_id)
+          return item.date === fields.value[0]?.date && item.voucher_no === fields.value[0]?.voucher_no && item.source_id === fields.value[0]?.source_id
         })
         let newTransactionObj
         if (status) {
           newTransactionObj = {}
           const fieldsConst = JSON.parse(JSON.stringify(fields.value))
           fieldsConst.forEach((parent) => {
-            parent.transactions.forEach(transaction => {
+            parent.transactions.forEach((transaction) => {
               if (newTransactionObj[`${transaction.account.id}`]) {
                 newTransactionObj[`${transaction.account.id}`].cr_amount += transaction.cr_amount
                 newTransactionObj[`${transaction.account.id}`].dr_amount += transaction.dr_amount
@@ -276,14 +242,12 @@ export default {
                   if (netAmount >= 0) {
                     newTransactionObj[`${transaction.account.id}`].cr_amount = netAmount
                     newTransactionObj[`${transaction.account.id}`].dr_amount = null
-                  }
-                  else {
+                  } else {
                     newTransactionObj[`${transaction.account.id}`].cr_amount = null
-                    newTransactionObj[`${transaction.account.id}`].dr_amount = (netAmount * -1)
+                    newTransactionObj[`${transaction.account.id}`].dr_amount = netAmount * -1
                   }
                 }
-              }
-              else {
+              } else {
                 newTransactionObj[`${transaction.account.id}`] = transaction
               }
             })
@@ -316,15 +280,14 @@ export default {
           newTransactionObj.total_cr = totalCrAmount
         }
         return newTransactionObj || false
-      }
-      else return false
+      } else return false
     })
     return {
       fields,
       getDate,
       getAmount,
       sameTransactionsData,
-      seprateTransactions
+      seprateTransactions,
     }
   },
   created() {

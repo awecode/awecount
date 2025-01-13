@@ -80,35 +80,33 @@ export default (endpoint, config) => {
     }
     if (config.getDefaults) {
       isGetDefaultLoading.value = true
-      useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then(
-        (data) => {
-          if (data.fields) {
-            if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
-          }
-
-          if (defaultFieldsData) {
-            for (const key in defaultFieldsData) {
-              fields.value[key] = defaultFieldsData[key]
-            }
-          }
-
-          // From drop down branch
-          // TODO: resolve and remove this
-          // delete data.collections
-          // Object.assign(formDefaults.value, data)
-          // Object.assign(fields.value, data.fields)
-          // From drop down branch
-
-          // From main
-          formDefaults.value = data
-          isGetDefaultLoading.value = false
-          if (!isGetEditLoading.value) {
-            store.isLoading = false
-            setModalLoadingFalse()
-          }
-          // From main
+      useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then((data) => {
+        if (data.fields) {
+          if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
         }
-      )
+
+        if (defaultFieldsData) {
+          for (const key in defaultFieldsData) {
+            fields.value[key] = defaultFieldsData[key]
+          }
+        }
+
+        // From drop down branch
+        // TODO: resolve and remove this
+        // delete data.collections
+        // Object.assign(formDefaults.value, data)
+        // Object.assign(fields.value, data.fields)
+        // From drop down branch
+
+        // From main
+        formDefaults.value = data
+        isGetDefaultLoading.value = false
+        if (!isGetEditLoading.value) {
+          store.isLoading = false
+          setModalLoadingFalse()
+        }
+        // From main
+      })
     }
   })
   const getDefaultsFetchUrl = () => {
@@ -182,12 +180,8 @@ export default (endpoint, config) => {
           loading.value = false
         } else if (data.status === 422) {
           $q.dialog({
-            title: `<span class="text-orange">${humanizeWord(
-              data.data?.code
-            )}!</span>`,
-            message:
-              `<span class="text-grey-8">Reason: ${data.data.detail}` +
-              '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
+            title: `<span class="text-orange">${humanizeWord(data.data?.code)}!</span>`,
+            message: `<span class="text-grey-8">Reason: ${data.data.detail}` + '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
             cancel: true,
             html: true,
           })
@@ -253,9 +247,7 @@ export default (endpoint, config) => {
 
   const cancelForm = () => {
     if (isEdit.value) {
-      const cancelEndPoint = withTrailingSlash(
-        joinURL(endpoint, id.value, 'cancel')
-      )
+      const cancelEndPoint = withTrailingSlash(joinURL(endpoint, id.value, 'cancel'))
       useApi(cancelEndPoint, {
         method: 'POST',
       })
@@ -285,8 +277,7 @@ export default (endpoint, config) => {
   }
   onUnmounted(() => {
     if (isModal) {
-      if (modalFormLoading.hasOwnProperty(`${modalId}`))
-        delete modalFormLoading[modalId]
+      if (modalFormLoading.hasOwnProperty(`${modalId}`)) delete modalFormLoading[modalId]
     } else store.isLoading = false
   })
 

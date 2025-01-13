@@ -1,12 +1,10 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('TaxPaymentCreate')" color="green" to="/tax-payment/add/" label="New Tax Payment"
-        class="add-btn" icon-right="add" />
+      <q-btn v-if="checkPermissions('TaxPaymentCreate')" color="green" to="/tax-payment/add/" label="New Tax Payment" class="add-btn" icon-right="add" />
     </div>
 
-    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
-      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
           <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
@@ -40,14 +38,16 @@
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center">
-            <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
-              ? 'bg-blue-2 text-blue-10'
-              : props.row.status == 'Paid'
-                ? 'bg-green-2 text-green-10'
-                : props.row.status == 'Draft'
-                  ? 'bg-orange-2 text-orange-10'
-                  : 'bg-red-2 text-red-10'
-              " style="border-radius: 8px; padding: 2px 10px">
+            <div
+              class="text-white text-subtitle row items-center justify-center"
+              :class="
+                props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
+                : props.row.status == 'Paid' ? 'bg-green-2 text-green-10'
+                : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
+                : 'bg-red-2 text-red-10'
+              "
+              style="border-radius: 8px; padding: 2px 10px"
+            >
               {{ props.row.status }}
             </div>
           </div>
@@ -55,11 +55,8 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('TaxPaymentModify')" color="orange-6"
-            class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit"
-            :to="`/tax-payment/${props.row.id}/`" />
-          <q-btn :disable="props.row.status === 'Cancelled'" color="blue" class="q-py-none q-px-md font-size-sm l-view-btn"
-            style="font-size: 12px" label="Journal entries" :to="`/journal-entries/tax-payments/${props.row.id}/`" />
+          <q-btn v-if="checkPermissions('TaxPaymentModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit" :to="`/tax-payment/${props.row.id}/`" />
+          <q-btn :disable="props.row.status === 'Cancelled'" color="blue" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" label="Journal entries" :to="`/journal-entries/tax-payments/${props.row.id}/`" />
         </q-td>
       </template>
     </q-table>
@@ -83,28 +80,28 @@ export default {
         label: 'Voucher No.',
         align: 'left',
         field: 'voucher_no',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'date',
         label: 'Date',
         align: 'left',
         field: 'date',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'tax_scheme_name',
         label: 'Tax Scheme',
         align: 'left',
         field: 'tax_scheme_name',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'amount',
         label: 'Amount',
         align: 'left',
         field: 'amount',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'cr_account_name',
@@ -117,7 +114,7 @@ export default {
         label: 'Status',
         align: 'center',
         field: 'status',
-        sortable: true
+        sortable: true,
       },
       {
         name: 'actions',

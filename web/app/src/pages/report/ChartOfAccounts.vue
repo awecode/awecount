@@ -2,13 +2,7 @@
   <div class="q-pa-md">
     <div class="row justify-end q-mb-md gap-4">
       <q-btn icon="settings" title="Config">
-        <q-badge
-          v-if="Object.values(config).filter(Boolean).length"
-          floating
-          color="primary"
-          class="q-p-md"
-          style="top: -10px; right: -10px; padding: 6px 8px"
-        >
+        <q-badge v-if="Object.values(config).filter(Boolean).length" floating color="primary" class="q-p-md" style="top: -10px; right: -10px; padding: 6px 8px">
           {{ Object.values(config).filter(Boolean).length }}
         </q-badge>
         <q-menu>
@@ -18,75 +12,27 @@
             </div>
             <div class="q-ma-sm">
               <div class="q-pb-sm">
-                <q-checkbox
-                  v-model="config.hide_accounts"
-                  label="Hide Accounts?"
-                ></q-checkbox>
+                <q-checkbox v-model="config.hide_accounts" label="Hide Accounts?"></q-checkbox>
               </div>
               <div class="q-pb-sm">
-                <q-checkbox
-                  v-model="config.hide_categories"
-                  label="Hide Categories?"
-                ></q-checkbox>
+                <q-checkbox v-model="config.hide_categories" label="Hide Categories?"></q-checkbox>
               </div>
               <div class="q-pb-sm">
-                <q-checkbox
-                  v-model="config.hide_zero_transactions"
-                  label="Hide accounts/categories without transactions?"
-                ></q-checkbox>
+                <q-checkbox v-model="config.hide_zero_transactions" label="Hide accounts/categories without transactions?"></q-checkbox>
               </div>
             </div>
           </div>
         </q-menu>
       </q-btn>
-      <q-btn
-        v-if="checkPermissions('AccountCreate')"
-        color="green"
-        label="Add Account"
-        class="add-btn"
-        icon-right="add"
-        @click="addAccountModalOpen = true"
-      />
+      <q-btn v-if="checkPermissions('AccountCreate')" color="green" label="Add Account" class="add-btn" icon-right="add" @click="addAccountModalOpen = true" />
 
-      <q-btn
-        v-if="checkPermissions('CategoryCreate')"
-        color="green"
-        label="Add Category"
-        icon-right="add"
-        @click="addCategoryModalOpen = true"
-      />
+      <q-btn v-if="checkPermissions('CategoryCreate')" color="green" label="Add Category" icon-right="add" @click="addCategoryModalOpen = true" />
     </div>
 
     <q-markup-table>
-      <q-table
-        :columns="columns"
-        virual-scroll
-        :virtual-scroll-item-size="50"
-        class="w-full"
-        :rows="chartOfAccounts"
-        :hide-pagination="true"
-        :rows-per-page-options="[0]"
-      >
+      <q-table :columns="columns" virual-scroll :virtual-scroll-item-size="50" class="w-full" :rows="chartOfAccounts" :hide-pagination="true" :rows-per-page-options="[0]">
         <template v-slot:body="props">
-          <COATableNode
-            v-if="
-              props.row.id === 0 ||
-              !(
-                config.hide_zero_transactions &&
-                props.row.total_transactions === 0
-              )
-            "
-            :row="props.row"
-            @drag-event="handleDragEvent"
-            @edit-row="editRow"
-            @add-category="handleAddCategoryEmitEvent"
-            @add-account="handleAddAccountEmitEvent"
-            v-model:currentTarget="currentTarget"
-            v-model:draggingItem="draggingItem"
-            :droppable-categories="droppableCategories"
-            :config="config"
-            root
-          />
+          <COATableNode v-if="props.row.id === 0 || !(config.hide_zero_transactions && props.row.total_transactions === 0)" :row="props.row" @drag-event="handleDragEvent" @edit-row="editRow" @add-category="handleAddCategoryEmitEvent" @add-account="handleAddAccountEmitEvent" v-model:currentTarget="currentTarget" v-model:draggingItem="draggingItem" :droppable-categories="droppableCategories" :config="config" root />
         </template>
       </q-table>
     </q-markup-table>
@@ -97,14 +43,7 @@
           <div class="text-h6 text-white">
             <span>Are you sure?</span>
           </div>
-          <q-btn
-            icon="close"
-            class="text-red-700 bg-slate-200 opacity-95"
-            flat
-            round
-            dense
-            v-close-popup
-          />
+          <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
         </q-card-section>
 
         <q-card-section>
@@ -122,25 +61,13 @@
 
     <q-dialog v-model="addCategoryModalOpen" transition-hide="none">
       <q-card style="min-width: 80vw">
-        <CategoryForm
-          :is-modal="true"
-          @modalSignal="onCategoryAdd"
-          :edit-id="categoryUpdateId"
-          @closeModal="closeAccountModal()"
-          :default-fields="addCategoryDefaults"
-        />
+        <CategoryForm :is-modal="true" @modalSignal="onCategoryAdd" :edit-id="categoryUpdateId" @closeModal="closeAccountModal()" :default-fields="addCategoryDefaults" />
       </q-card>
     </q-dialog>
 
     <q-dialog v-model="addAccountModalOpen" transition-hide="none">
       <q-card style="min-width: 80vw">
-        <AccountForm
-          :is-modal="true"
-          @modalSignal="onAccountAdd"
-          :edit-id="accountUpdateId"
-          @closeModal="closeAccountModal()"
-          :default-fields="addAccountDefaults"
-        />
+        <AccountForm :is-modal="true" @modalSignal="onAccountAdd" :edit-id="accountUpdateId" @closeModal="closeAccountModal()" :default-fields="addAccountDefaults" />
       </q-card>
     </q-dialog>
   </div>
@@ -207,8 +134,7 @@ watchEffect(() => {
     ...route.query,
     hide_accounts: config.value.hide_accounts === true ? 'true' : undefined,
     hide_categories: config.value.hide_categories === true ? 'true' : undefined,
-    hide_zero_transactions:
-      config.value.hide_zero_transactions === true ? 'true' : undefined,
+    hide_zero_transactions: config.value.hide_zero_transactions === true ? 'true' : undefined,
   }
   router.replace({ query: newQuery })
 })
@@ -267,15 +193,9 @@ const dragDropUpdateType = ref<'category' | 'account' | null>(null)
 const dragDropTargetCategoryId = ref<number | null>(null)
 
 function confirmAction() {
-  const apiEndpoint =
-    dragDropUpdateType.value === 'category'
-      ? `/v1/categories/${dragDropUpdateItemId.value}/`
-      : `/v1/accounts/${dragDropUpdateItemId.value}/`
+  const apiEndpoint = dragDropUpdateType.value === 'category' ? `/v1/categories/${dragDropUpdateItemId.value}/` : `/v1/accounts/${dragDropUpdateItemId.value}/`
 
-  const data =
-    dragDropUpdateType.value === 'category'
-      ? { parent: dragDropTargetCategoryId.value }
-      : { category: dragDropTargetCategoryId.value }
+  const data = dragDropUpdateType.value === 'category' ? { parent: dragDropTargetCategoryId.value } : { category: dragDropTargetCategoryId.value }
 
   useApi(apiEndpoint, {
     method: 'PATCH',
@@ -339,18 +259,11 @@ const chartOfAccounts = computed(() => {
     categoryAccountsMap[account.category_id].push(account)
   })
 
-  const calculateTransactions = (
-    category: CategoryTree,
-    level: number,
-    parent_id?: number
-  ): number => {
+  const calculateTransactions = (category: CategoryTree, level: number, parent_id?: number): number => {
     let totalTransactions = 0
 
     if (categoryAccountsMap[category.id]) {
-      totalTransactions += categoryAccountsMap[category.id].reduce(
-        (sum, account) => sum + account.total_transactions,
-        0
-      )
+      totalTransactions += categoryAccountsMap[category.id].reduce((sum, account) => sum + account.total_transactions, 0)
       category.accounts = categoryAccountsMap[category.id]
     } else {
       category.accounts = []
@@ -358,19 +271,13 @@ const chartOfAccounts = computed(() => {
 
     if (category.children && category.children.length > 0) {
       category.children.forEach((child) => {
-        totalTransactions += calculateTransactions(
-          child,
-          level + 1,
-          category.id
-        )
+        totalTransactions += calculateTransactions(child, level + 1, category.id)
       })
     }
 
     category.total_transactions = totalTransactions
     category.level = level
-    category.isExpandable =
-      (category.children && category.children.length > 0) ||
-      (!config.value.hide_accounts && category.accounts.length > 0)
+    category.isExpandable = (category.children && category.children.length > 0) || (!config.value.hide_accounts && category.accounts.length > 0)
     category.parent_id = parent_id
     return totalTransactions
   }
@@ -392,13 +299,7 @@ const chartOfAccounts = computed(() => {
   return categoriesCopy
 })
 
-const handleDragEvent = ({
-  source,
-  target,
-}: {
-  source: { type: 'category' | 'account'; id: number }
-  target: number | null
-}) => {
+const handleDragEvent = ({ source, target }: { source: { type: 'category' | 'account'; id: number }; target: number | null }) => {
   if (source.type === 'category') {
     const sourceRow = findRowById(chartOfAccounts.value, source.id)!
     const targetRow = target ? findRowById(chartOfAccounts.value, target) : null
@@ -407,9 +308,7 @@ const handleDragEvent = ({
       return
     }
 
-    dragDropConfirmationMessage.value = targetRow
-      ? `Set category '${targetRow.name}' as parent of category '${sourceRow.name}'?`
-      : `Set category '${sourceRow.name}' as root category?`
+    dragDropConfirmationMessage.value = targetRow ? `Set category '${targetRow.name}' as parent of category '${sourceRow.name}'?` : `Set category '${sourceRow.name}' as root category?`
   } else {
     const account = findAccountById(chartOfAccounts.value, source.id)
     const targetRow = findRowById(chartOfAccounts.value, target!)
@@ -453,12 +352,7 @@ const canBeDropped = function (targetRow: CategoryTree) {
   const { type: draggingType, row: draggingRow } = draggingItem.value
 
   if (draggingType === 'category') {
-    if (
-      targetRow.tree_id === draggingRow.tree_id &&
-      targetRow.rght < draggingRow.rght &&
-      targetRow.lft > draggingRow.lft &&
-      targetRow.level! > draggingRow.level!
-    ) {
+    if (targetRow.tree_id === draggingRow.tree_id && targetRow.rght < draggingRow.rght && targetRow.lft > draggingRow.lft && targetRow.level! > draggingRow.level!) {
       return false
     }
     if (targetRow.id === draggingRow.parent_id || draggingRow.id === 0) {
@@ -470,17 +364,11 @@ const canBeDropped = function (targetRow: CategoryTree) {
     }
   }
 
-  if (
-    (draggingType === 'account' ||
-      draggingRow.level === 0 ||
-      !draggingRow.default) &&
-    targetRow.id === 0
-  ) {
+  if ((draggingType === 'account' || draggingRow.level === 0 || !draggingRow.default) && targetRow.id === 0) {
     return false
   }
 
-  const sourceId =
-    draggingType === 'category' ? draggingRow.id : draggingRow.category_id
+  const sourceId = draggingType === 'category' ? draggingRow.id : draggingRow.category_id
   return sourceId !== targetRow.id
 }
 
@@ -489,10 +377,7 @@ const droppableCategories = computed(() => {
 
   const { type: draggingType, row: draggingRow } = draggingItem.value
 
-  if (
-    (draggingType === 'category' && !checkPermissions('CategoryModify')) ||
-    (draggingType === 'account' && !checkPermissions('AccountModify'))
-  ) {
+  if ((draggingType === 'category' && !checkPermissions('CategoryModify')) || (draggingType === 'account' && !checkPermissions('AccountModify'))) {
     return []
   }
 

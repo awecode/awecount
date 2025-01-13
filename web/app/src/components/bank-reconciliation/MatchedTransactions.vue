@@ -30,34 +30,31 @@ interface StatementTransactionData {
 const props = defineProps({
   startDate: {
     type: String,
-    required: true
+    required: true,
   },
   endDate: {
     type: String,
-    required: true
+    required: true,
   },
   accountId: {
     type: Number,
-    required: true
+    required: true,
   },
   filterSources: {
     type: Function,
-    required: true
+    required: true,
   },
   calculateTotal: {
     type: Function,
-    required: true
+    required: true,
   },
   calculateTotalFromCounterparts: {
     type: Function,
-    required: true
-  }
+    required: true,
+  },
 })
 
 const emit = defineEmits(['unmatchTransactions', 'hasNoMatches'])
-
-
-
 
 interface GroupedTransaction {
   statement_transactions: StatementTransactionData[]
@@ -75,25 +72,27 @@ const data: Ref<Response> = ref({
   results: [],
   pagination: {
     page: 1,
-    pages: 1
-  }
+    pages: 1,
+  },
 })
 const page = ref(1)
 const infiniteScroll = ref<any>(null)
 
 const fetchData = async () => {
   const endpoint = `/v1/bank-reconciliation/matched-transactions/?start_date=${props.startDate}&end_date=${props.endDate}&account_id=${props.accountId}&page=${page.value}`
-  await useApi(endpoint).then((response) => {
-    data.value.results = [...data.value.results, ...response.results]
-    data.value.pagination = response.pagination
-    page.value = response.pagination.page
-    if (response.results.length === 0) {
-      emit('hasNoMatches')
-    }
-  }).catch((error) => {
-    console.log(error)
-    data.value.results = []
-  })
+  await useApi(endpoint)
+    .then((response) => {
+      data.value.results = [...data.value.results, ...response.results]
+      data.value.pagination = response.pagination
+      page.value = response.pagination.page
+      if (response.results.length === 0) {
+        emit('hasNoMatches')
+      }
+    })
+    .catch((error) => {
+      console.log(error)
+      data.value.results = []
+    })
 }
 
 fetchData()
@@ -109,76 +108,69 @@ const loadMore = async (index: number, done: any) => {
   done()
 }
 
-
-
-const reconcileMatchedTransactions = (matchedTransaction: {
-  statement_transactions: StatementTransactionData[]
-  system_transactions: SystemTransactionData[]
-}) => {
+const reconcileMatchedTransactions = (matchedTransaction: { statement_transactions: StatementTransactionData[]; system_transactions: SystemTransactionData[] }) => {
   console.log('Reconciling:', matchedTransaction)
   useApi('v1/bank-reconciliation/reconcile-transactions/', {
     method: 'POST',
     body: {
-      statement_ids: matchedTransaction.statement_transactions.map(t => t.id),
-      transaction_ids: matchedTransaction.system_transactions.map(t => t.id),
-    }
-  }).then(() => {
-    const index = data.value?.results.findIndex(group => group === matchedTransaction)
-    if (index > -1) {
-      data.value?.results.splice(index, 1)
-    }
-    $q.notify({
-      color: 'green-6',
-      message: 'Transactions reconciled successfully',
-      icon: 'check_circle',
-      position: 'top-right',
-    })
-  }).catch((error) => {
-    console.log(error)
-    $q.notify({
-      color: 'red-6',
-      message: 'Failed to reconcile transactions',
-      icon: 'error',
-      position: 'top-right',
-    })
+      statement_ids: matchedTransaction.statement_transactions.map((t) => t.id),
+      transaction_ids: matchedTransaction.system_transactions.map((t) => t.id),
+    },
   })
+    .then(() => {
+      const index = data.value?.results.findIndex((group) => group === matchedTransaction)
+      if (index > -1) {
+        data.value?.results.splice(index, 1)
+      }
+      $q.notify({
+        color: 'green-6',
+        message: 'Transactions reconciled successfully',
+        icon: 'check_circle',
+        position: 'top-right',
+      })
+    })
+    .catch((error) => {
+      console.log(error)
+      $q.notify({
+        color: 'red-6',
+        message: 'Failed to reconcile transactions',
+        icon: 'error',
+        position: 'top-right',
+      })
+    })
 }
 
-
-const unmatchMatchedTransactions = (matchedTransaction: {
-  statement_transactions: StatementTransactionData[]
-  system_transactions: SystemTransactionData[]
-}) => {
+const unmatchMatchedTransactions = (matchedTransaction: { statement_transactions: StatementTransactionData[]; system_transactions: SystemTransactionData[] }) => {
   console.log('Unmatching:', matchedTransaction)
   useApi('v1/bank-reconciliation/unmatch-transactions/', {
     method: 'POST',
     body: {
-      statement_ids: matchedTransaction.statement_transactions.map(t => t.id),
-    }
-  }).then(() => {
-    emit('unmatchTransactions', matchedTransaction)
-    const index = data.value?.results.findIndex(group => group === matchedTransaction)
-    if (index > -1) {
-      data.value?.results.splice(index, 1)
-    }
-    $q.notify({
-      color: 'green-6',
-      message: 'Transactions unmatched successfully',
-      icon: 'check_circle',
-      position: 'top-right',
-    })
-  }).catch((error) => {
-    console.log(error)
-    $q.notify({
-      color: 'red-6',
-      message: 'Failed to unmatch transactions',
-      icon: 'error',
-      position: 'top-right',
-    })
+      statement_ids: matchedTransaction.statement_transactions.map((t) => t.id),
+    },
   })
+    .then(() => {
+      emit('unmatchTransactions', matchedTransaction)
+      const index = data.value?.results.findIndex((group) => group === matchedTransaction)
+      if (index > -1) {
+        data.value?.results.splice(index, 1)
+      }
+      $q.notify({
+        color: 'green-6',
+        message: 'Transactions unmatched successfully',
+        icon: 'check_circle',
+        position: 'top-right',
+      })
+    })
+    .catch((error) => {
+      console.log(error)
+      $q.notify({
+        color: 'red-6',
+        message: 'Failed to unmatch transactions',
+        icon: 'error',
+        position: 'top-right',
+      })
+    })
 }
-
-
 </script>
 
 <template>
@@ -191,9 +183,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
               <!-- Statement Transactions -->
               <div class="flex flex-col">
                 <div class="bg-white border rounded-lg shadow-sm overflow-hidden grow">
-                  <div class="px-4 py-2 border-b bg-blue-50 text-blue-700 font-semibold">
-                    Statement
-                  </div>
+                  <div class="px-4 py-2 border-b bg-blue-50 text-blue-700 font-semibold">Statement</div>
                   <div class="divide-y text-xs">
                     <div v-for="transaction in data.statement_transactions" :key="transaction.id" class="px-4 py-2.5">
                       <div class="flex justify-between mb-1">
@@ -206,7 +196,6 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                       <div class="text-gray-600">{{ transaction.description }}</div>
                     </div>
                   </div>
-
                 </div>
                 <div class="px-4 py-2 text-right">
                   <span :class="Number(calculateTotal(data.statement_transactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotal(data.statement_transactions, true) }}</span>
@@ -219,18 +208,15 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                   <div class="px-4 py-2 border-b bg-green-50 text-green-700 font-semibold">
                     System
                     <!-- Add links -->
-                    <span v-for="source, index in filterSources(data.system_transactions)" :key="source.source_id">
+                    <span v-for="(source, index) in filterSources(data.system_transactions)" :key="source.source_id">
                       <router-link target="_blank" :to="source.url" class="text-blue-800 decoration-none text-xs">
                         {{ source.source_type }}
                       </router-link>
-                      <span v-if="index < filterSources(data.system_transactions).length - 1">, </span>
+                      <span v-if="index < filterSources(data.system_transactions).length - 1">,</span>
                     </span>
-
                   </div>
                   <div class="divide-y text-sm">
-                    <div v-for="transaction, index in data.system_transactions" :key="transaction.id" class="px-4 py-3  border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative group"
-                      :class="{ 'border-b': index !== data.system_transactions.length - 1 }">
-
+                    <div v-for="(transaction, index) in data.system_transactions" :key="transaction.id" class="px-4 py-3 border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative group" :class="{ 'border-b': index !== data.system_transactions.length - 1 }">
                       <div class="text-xs">
                         <div class="text-gray-500">{{ transaction.date }}</div>
 
@@ -239,12 +225,8 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                             {{ counterpart.account_name }}
                           </div>
                           <div class="flex space-x-2">
-                            <span v-if="counterpart.dr_amount" class="text-red-600 font-medium">
-                              -{{ counterpart.dr_amount }}
-                            </span>
-                            <span v-if="counterpart.cr_amount" class="text-green-600 font-medium">
-                              +{{ counterpart.cr_amount }}
-                            </span>
+                            <span v-if="counterpart.dr_amount" class="text-red-600 font-medium">-{{ counterpart.dr_amount }}</span>
+                            <span v-if="counterpart.cr_amount" class="text-green-600 font-medium">+{{ counterpart.cr_amount }}</span>
                           </div>
                         </div>
                       </div>
@@ -252,20 +234,13 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                   </div>
                 </div>
                 <div class="px-4 py-2 text-right">
-                  <span :class="Number(calculateTotalFromCounterparts(data.system_transactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotalFromCounterparts(data.system_transactions)
-                    }}</span>
+                  <span :class="Number(calculateTotalFromCounterparts(data.system_transactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotalFromCounterparts(data.system_transactions) }}</span>
                 </div>
               </div>
             </div>
             <div class="flex justify-end space-x-3">
-              <button @click="
-                reconcileMatchedTransactions(data)
-                " class="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors">
-                Reconcile
-              </button>
-              <button @click="unmatchMatchedTransactions(data)" class="px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors">
-                Unmatch
-              </button>
+              <button @click="reconcileMatchedTransactions(data)" class="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors">Reconcile</button>
+              <button @click="unmatchMatchedTransactions(data)" class="px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors">Unmatch</button>
             </div>
           </div>
           <template v-slot:loading>
@@ -278,8 +253,6 @@ const unmatchMatchedTransactions = (matchedTransaction: {
     </div>
   </div>
 </template>
-
-
 
 <style scoped>
 .border {

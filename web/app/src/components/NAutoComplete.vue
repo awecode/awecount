@@ -1,9 +1,6 @@
 <template>
   <div class="row no-wrap">
-    <q-select :autofocus="focusOnMount" v-model="modalValue" input-debounce="0" :label="label" use-input
-      :options="filteredOptions" @filter="filterFn" :option-value="optionValue" option-label="name" map-options emit-value
-      class="q-mr-xs col" @update:modelValue="valUpdated" :disable="props.disabled" :error-message="props?.error"
-      :error="!!props?.error" clearable clear-icon="close">
+    <q-select :autofocus="focusOnMount" v-model="modalValue" input-debounce="0" :label="label" use-input :options="filteredOptions" @filter="filterFn" :option-value="optionValue" option-label="name" map-options emit-value class="q-mr-xs col" @update:modelValue="valUpdated" :disable="props.disabled" :error-message="props?.error" :error="!!props?.error" clearable clear-icon="close">
       <template #no-option>
         <div class="py-3 px-4 bg-slate-1">No Results Found</div>
       </template>
@@ -14,15 +11,28 @@
   </div>
   <q-dialog v-model="isModalOpen" transition-hide="none">
     <q-card style="min-width: 80vw">
-      <q-btn style="position: absolute; right: 8px; top: 8px; z-index: 50" push color="red" text-color="white" round dense
-        icon="close" @click="closeModal" />
-      <div :class="modalFormLoading.hasOwnProperty(`${modalId}`) ? modalFormLoading[modalId] ? '' : 'hidden' : ''">
+      <q-btn style="position: absolute; right: 8px; top: 8px; z-index: 50" push color="red" text-color="white" round dense icon="close" @click="closeModal" />
+      <div
+        :class="
+          modalFormLoading.hasOwnProperty(`${modalId}`) ?
+            modalFormLoading[modalId] ?
+              ''
+            : 'hidden'
+          : ''
+        "
+      >
         <component :is="FormSkeleton"></component>
       </div>
-      <div :class="modalFormLoading.hasOwnProperty(`${modalId}`) ? modalFormLoading[modalId] ? 'hidden' : '' : 'hidden'">
-        <component :is="modalComponent" :is-modal="true" @modalSignal="handleModalSignal" @closeModal="closeModal"
-          @getModalId="(id) => modalId = id">
-        </component>
+      <div
+        :class="
+          modalFormLoading.hasOwnProperty(`${modalId}`) ?
+            modalFormLoading[modalId] ?
+              'hidden'
+            : ''
+          : 'hidden'
+        "
+      >
+        <component :is="modalComponent" :is-modal="true" @modalSignal="handleModalSignal" @closeModal="closeModal" @getModalId="(id) => (modalId = id)"></component>
       </div>
     </q-card>
   </q-dialog>
@@ -61,11 +71,11 @@ export default {
     },
     focusOnMount: {
       type: Boolean,
-      default: false
+      default: false,
     },
     optionValue: {
       type: String,
-      default: 'id'
+      default: 'id',
     },
   },
   emits: ['update:modelValue'],
@@ -84,7 +94,7 @@ export default {
       () => props.modelValue,
       (newValue) => {
         modalValue.value = newValue
-      }
+      },
     )
 
     watch(
@@ -92,7 +102,7 @@ export default {
       (newValue) => {
         allOptions.value = newValue
         filteredOptions.value = newValue
-      }
+      },
     )
 
     const filterFn = (val, update) => {
@@ -104,9 +114,7 @@ export default {
       }
       update(() => {
         const needle = val.toLowerCase()
-        filteredOptions.value = allOptions.value.filter(
-          (v) => v.name.toLowerCase().indexOf(needle) > -1
-        )
+        filteredOptions.value = allOptions.value.filter((v) => v.name.toLowerCase().indexOf(needle) > -1)
       })
     }
 
@@ -136,7 +144,7 @@ export default {
       modalValue,
       FormSkeleton,
       modalFormLoading,
-      modalId
+      modalId,
     }
   },
 }

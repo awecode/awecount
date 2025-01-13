@@ -12,8 +12,8 @@ export const useLoginStore = defineStore('loginStore', {
     chartOfAccountsExpandId: [],
     userInfo: null,
     dateRange: {
-      start_date : null,
-      end_date: null
+      start_date: null,
+      end_date: null,
     },
     posData: null,
     isFormLoading: false,
@@ -29,12 +29,12 @@ export const useLoginStore = defineStore('loginStore', {
     updateDateRange(start_date, end_date) {
       this.dateRange.start_date = start_date
       this.dateRange.end_date = end_date
-    }
+    },
   },
   getters: {
     isLoggedIn() {
       return !!this.token
-    }
+    },
   },
   persist: true,
 })

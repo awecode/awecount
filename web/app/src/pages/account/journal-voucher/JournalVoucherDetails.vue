@@ -4,7 +4,8 @@
       <q-card>
         <q-card-section class="bg-green text-white">
           <div class="text-h6">
-            <span>Journal Voucher | #{{ fields?.voucher_no || '-' }} |
+            <span>
+              Journal Voucher | #{{ fields?.voucher_no || '-' }} |
               {{ fields?.status || '-' }}
             </span>
           </div>
@@ -19,9 +20,7 @@
               </div>
               <div class="col-6 row">
                 <div class="col-6">Date</div>
-                <div class="col-6">{{ store.isCalendarInAD ? fields?.date : DateConverter.getRepresentation(
-                  fields?.date, 'bs'
-                ) }}</div>
+                <div class="col-6">{{ store.isCalendarInAD ? fields?.date : DateConverter.getRepresentation(fields?.date, 'bs') }}</div>
               </div>
             </div>
           </q-card-section>
@@ -46,8 +45,7 @@
               <div class="col-2">{{ index + 1 }}</div>
               <div class="col-2">{{ row.type }}</div>
               <div class="col-grow">
-                <router-link class="text-blue text-weight-medium" style="text-decoration: none"
-                  :to="`/account/${row.account_id}/view/`">{{ row.account_name }}</router-link>
+                <router-link class="text-blue text-weight-medium" style="text-decoration: none" :to="`/account/${row.account_id}/view/`">{{ row.account_name }}</router-link>
               </div>
               <div class="col-2">{{ row.dr_amount || 0 }}</div>
               <div class="col-2">{{ row.cr_amount || 0 }}</div>
@@ -60,14 +58,10 @@
             <div class="col-2"></div>
             <div class="col-grow">Total</div>
             <div class="col-2">
-              {{
-                $nf(getTotalDrAmount)
-              }}
+              {{ $nf(getTotalDrAmount) }}
             </div>
             <div class="col-2">
-              {{
-                $nf(getTotalCrAmount)
-              }}
+              {{ $nf(getTotalCrAmount) }}
             </div>
           </div>
         </q-card-section>
@@ -85,8 +79,7 @@
       </q-card>
       <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
         <div>
-          <q-btn v-if="checkPermissions('JournalVoucherModify') && fields?.status !== 'Cancelled'"
-            :to="`/journal-voucher/${props.id}/edit/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
+          <q-btn v-if="checkPermissions('JournalVoucherModify') && fields?.status !== 'Cancelled'" :to="`/journal-voucher/${props.id}/edit/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
         </div>
         <div v-if="fields?.status == 'Approved' && checkPermissions('JournalVoucherCancel')">
           <q-btn @click.prevent="isDeleteOpen = true" color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" />
@@ -94,40 +87,32 @@
       </div>
     </q-form>
     <div class="print-only mt-1">
-      <div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
+      <div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif">
         <div>
-          <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500;">{{
-            store?.companyInfo.name
-          }} </h1>
+          <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500">{{ store?.companyInfo.name }}</h1>
           <div>{{ store?.companyInfo.address }}</div>
-          <div>Tax Reg. No. <strong>{{ store.companyInfo.tax_registration_number }}</strong></div>
+          <div>
+            Tax Reg. No.
+            <strong>{{ store.companyInfo.tax_registration_number }}</strong>
+          </div>
         </div>
 
-        <div style="
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        align-items: flex-end;
-      ">
-          <div style="margin-bottom: 5px;">
-            <img v-if="store?.companyInfo.logo_url" :src="store?.companyInfo.logo_url" alt="Compony Logo"
-              style="height: 70px; max-width: 200px; object-fit: contain;" />
+        <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end">
+          <div style="margin-bottom: 5px">
+            <img v-if="store?.companyInfo.logo_url" :src="store?.companyInfo.logo_url" alt="Compony Logo" style="height: 70px; max-width: 200px; object-fit: contain" />
           </div>
           <div style="display: flex; align-items: center">
             <img src="/icons/telephone-fill.svg" alt="Email" style="margin-right: 10px; width: 14px" />
             <span style="color: skyblue">{{ store?.companyInfo.contact_no }}</span>
           </div>
           <div style="display: flex; align-items: center" v-if="store?.companyInfo?.emails?.length > 0">
-            <img src="/icons/envelope-fill.svg" alt="Call" style="margin-right: 10px; width: 14px" /><span
-              style="color: skyblue">{{ (store?.companyInfo.emails && store.companyInfo.emails.length) ?
-                store.companyInfo.emails.join(',&nbsp;') : '' }}</span>
+            <img src="/icons/envelope-fill.svg" alt="Call" style="margin-right: 10px; width: 14px" />
+            <span style="color: skyblue">{{ store?.companyInfo.emails && store.companyInfo.emails.length ? store.companyInfo.emails.join(',&nbsp;') : '' }}</span>
           </div>
         </div>
       </div>
       <hr style="margin: 20px 0" />
-      <div class="text-center text-bold text-subtitle1 q-mb-md">
-        Journal Voucher
-      </div>
+      <div class="text-center text-bold text-subtitle1 q-mb-md">Journal Voucher</div>
       <div class="row justify-between">
         <div>Date: {{ fields?.date || '-' }}</div>
         <div>J.V. No.: {{ fields?.voucher_no }}</div>
@@ -205,8 +190,7 @@
           <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
         </q-card-section>
         <q-card-section class="q-ma-md">
-          <q-input autofocus v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message"
-            :error-message="errors?.message"> </q-input>
+          <q-input autofocus v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"></q-input>
           <div class="text-right q-mt-lg">
             <q-btn label="Confirm" @click="onCancelClick"></q-btn>
           </div>
@@ -289,25 +273,10 @@ const onCancelClick = () => {
 //       // console.log('I am triggered on both OK and Cancel')
 //     })
 // }
-const getTotalCrAmount = computed(
-  () =>
-    fields.value?.rows?.reduce(
-      (accum, item) => accum + Number(item.cr_amount),
-      0
-    ) || 0
-)
+const getTotalCrAmount = computed(() => fields.value?.rows?.reduce((accum, item) => accum + Number(item.cr_amount), 0) || 0)
 
-const getTotalDrAmount = computed(
-  () =>
-    fields.value?.rows?.reduce(
-      (accum, item) => accum + Number(item.dr_amount),
-      0
-    ) || 0
-)
-const today = DateConverter.getRepresentation(
-  new Date().toISOString().slice(0, 10),
-  store.isCalendarInAD ? 'ad' : 'bs'
-)
+const getTotalDrAmount = computed(() => fields.value?.rows?.reduce((accum, item) => accum + Number(item.dr_amount), 0) || 0)
+const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 10), store.isCalendarInAD ? 'ad' : 'bs')
 </script>
 
 <style scoped>
@@ -327,8 +296,8 @@ const today = DateConverter.getRepresentation(
     margin: 0px;
   }
 
-  .q-col-gutter-y-md>*,
-  .q-col-gutter-md>* {
+  .q-col-gutter-y-md > *,
+  .q-col-gutter-md > * {
     padding: 0px;
   }
 
@@ -418,4 +387,5 @@ td {
 
 td {
   padding: 3px;
-}</style>
+}
+</style>

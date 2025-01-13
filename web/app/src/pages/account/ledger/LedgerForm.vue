@@ -11,23 +11,16 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="q-col-gutter-md grid lg:grid-cols-2">
-            <q-input v-model="fields.name" label="Name *" :error-message="errors.name"
-              :error="!!errors.name" />
-            <q-input v-model="fields.code" label="Code" :error-message="errors.code"
-              :error="!!errors.code" />
-            <n-auto-complete-v2 v-if="accountChoices" endpoint="v1/accounts/choices" v-model="fields.parent"
-              :options="accountChoices" label="Parent" :error="errors?.parent" :staticOption="fields.selected_parent_obj" />
-            <n-auto-complete-v2 v-if="categoryChoices" endpoint="v1/categories/choices" v-model="fields.category" :options="categoryChoices"
-            label="Category *" :staticOption="fields.selected_category_obj" :modal-component="checkPermissions('CategoryCreate') ? CategoryForm : null" :error="errors?.category" />
-            <n-auto-complete-v2 v-if="accountChoices" endpoint="v1/accounts/choices" v-model="fields.source"
-            :options="accountChoices" label="Source" :error="errors?.source" :staticOption="fields.selected_source_obj" />
+            <q-input v-model="fields.name" label="Name *" :error-message="errors.name" :error="!!errors.name" />
+            <q-input v-model="fields.code" label="Code" :error-message="errors.code" :error="!!errors.code" />
+            <n-auto-complete-v2 v-if="accountChoices" endpoint="v1/accounts/choices" v-model="fields.parent" :options="accountChoices" label="Parent" :error="errors?.parent" :staticOption="fields.selected_parent_obj" />
+            <n-auto-complete-v2 v-if="categoryChoices" endpoint="v1/categories/choices" v-model="fields.category" :options="categoryChoices" label="Category *" :staticOption="fields.selected_category_obj" :modal-component="checkPermissions('CategoryCreate') ? CategoryForm : null" :error="errors?.category" />
+            <n-auto-complete-v2 v-if="accountChoices" endpoint="v1/accounts/choices" v-model="fields.source" :options="accountChoices" label="Source" :error="errors?.source" :staticOption="fields.selected_source_obj" />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('AccountCreate') && !isEdit" @click.prevent="submitForm" color="green" :loading="loading"
-            label="Create" class="q-ml-auto" type="submit" />
-          <q-btn v-if="checkPermissions('AccountModify') && isEdit" @click.prevent="submitForm" color="green" :loading="loading"
-            label="Update" class="q-ml-auto" type="submit" />
+          <q-btn v-if="checkPermissions('AccountCreate') && !isEdit" @click.prevent="submitForm" color="green" :loading="loading" label="Create" class="q-ml-auto" type="submit" />
+          <q-btn v-if="checkPermissions('AccountModify') && isEdit" @click.prevent="submitForm" color="green" :loading="loading" label="Update" class="q-ml-auto" type="submit" />
         </div>
       </q-card>
     </q-card>
@@ -48,9 +41,7 @@ export default {
     })
     useMeta(() => {
       return {
-        title:
-          (formData.isEdit?.value ? 'Account Update' : 'Account Add') +
-          ' | Awecount',
+        title: (formData.isEdit?.value ? 'Account Update' : 'Account Add') + ' | Awecount',
       }
     })
     const categoryChoices = ref(null)
@@ -61,7 +52,7 @@ export default {
       CategoryForm,
       categoryChoices,
       accountChoices,
-      checkPermissions
+      checkPermissions,
     }
   },
   created() {
