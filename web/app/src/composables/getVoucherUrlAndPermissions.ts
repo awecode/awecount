@@ -1,4 +1,4 @@
-function getVoucherUrl(row: { source_type: string; source_id: string | number }) {
+function getVoucherUrl(row: { source_type: string, source_id: string | number }) {
   if (!row.source_id) return ''
   const source_type = row.source_type
   if (source_type === 'Sales Voucher') return `/sales-voucher/${row.source_id}/view/`
@@ -19,7 +19,7 @@ function getVoucherUrl(row: { source_type: string; source_id: string | number })
   if (source_type === 'Bank Cash Deposit') return `/bank/cash/cash-deposit/${row.source_id}/edit/`
   if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
   if (source_type === 'Inventory Adjustment Voucher') return `/items/inventory-adjustment/${row.source_id}/view/`
-  console.error(source_type + ' not handled!')
+  console.error(`${source_type} not handled!`)
 }
 const getPermissionsWithSourceType = {
   'Sales Voucher': 'SalesView',
@@ -30,12 +30,12 @@ const getPermissionsWithSourceType = {
   'Cheque Deposit': 'ChequeDepositView',
   'Payment Receipt': 'PaymentReceiptView',
   'Cheque Issue': 'ChequeIssueModify',
-  Challan: 'ChallanModify',
+  'Challan': 'ChallanModify',
   'Account Opening Balance': 'AccountOpeningBalanceModify',
   'Fund Transfer': 'FundTransferModify',
   'Bank Cash Deposit': 'BankCashDepositModify',
   'Tax Payment': 'TaxPaymentModify',
-  Item: 'ItemView',
+  'Item': 'ItemView',
   'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView',
 } as const
 
@@ -43,4 +43,4 @@ const getPermissionFromSourceType = (sourceType: string) => {
   return getPermissionsWithSourceType[sourceType as keyof typeof getPermissionsWithSourceType]
 }
 
-export { getVoucherUrl, getPermissionFromSourceType, getPermissionsWithSourceType }
+export { getPermissionFromSourceType, getPermissionsWithSourceType, getVoucherUrl }

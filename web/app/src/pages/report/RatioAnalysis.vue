@@ -1,8 +1,143 @@
+<script setup lang="ts">
+const data: Record<string, number> = {
+  current_assets: 154658,
+  current_liabilities: 65467,
+  total_assets: 194956,
+  total_liabilites: 89599,
+  cash: 12450,
+  equity: 24567,
+}
+const ratiosComputed = computed(() => {
+  // const ratiosData = {
+  //     current_ratio: {}
+  // }
+  const ratioData = {
+    liquidity_ratios: {
+      group_name: 'Liquidity Ratios',
+      ratios: {},
+    },
+    debit_ratios: {
+      group_name: 'Debt Ratios',
+      ratios: {},
+    },
+  }
+  ratioData.liquidity_ratios.ratios.current_ratio = {
+    card_name: 'Current Ratio',
+    total: Number.parseFloat(((data.current_assets / data.current_liabilities) * 100).toFixed(2)),
+    byData: {
+      top: {
+        label: 'Current Assets',
+        amount: data.current_assets,
+      },
+      bottom: {
+        label: 'Current Liabilites',
+        amount: data.current_liabilities,
+      },
+    },
+    chart_data: [
+      {
+        label: 'Current Assets',
+        amount: data.current_assets,
+        color: 'rgb(54, 162, 235)',
+      },
+      {
+        label: 'Current Liabilites',
+        amount: data.current_liabilities,
+        color: 'rgb(255, 99, 132)',
+      },
+    ],
+  }
+  ratioData.liquidity_ratios.ratios.cash_ratio = {
+    total: Number.parseFloat(((data.cash / data.current_liabilities) * 100).toFixed(2)),
+    card_name: 'Cash Ratio',
+    byData: {
+      top: {
+        label: 'Cash',
+        amount: data.cash,
+      },
+      bottom: {
+        label: 'Current Liabilites',
+        amount: data.current_liabilities,
+      },
+    },
+    chart_data: [
+      {
+        label: 'Cash',
+        amount: data.cash,
+        color: 'rgb(54, 162, 155)',
+      },
+      {
+        label: 'Current Liabilites',
+        amount: data.current_liabilities,
+        color: 'rgb(255, 99, 132)',
+      },
+    ],
+  }
+  ratioData.debit_ratios.ratios.debt_ratio = {
+    total: Number.parseFloat(((data.total_liabilites / data.total_assets) * 100).toFixed(2)),
+    card_name: 'Debt Ratio',
+    byData: {
+      top: {
+        label: 'Total Liabilites',
+        amount: data.total_liabilites,
+      },
+      bottom: {
+        label: 'Total Assets',
+        amount: data.total_assets,
+      },
+    },
+    chart_data: [
+      {
+        label: 'Total Liabilites',
+        amount: data.total_liabilites,
+        color: 'rgb(178, 56, 136)',
+      },
+      {
+        label: 'Total Assets',
+        amount: data.total_assets,
+        color: 'rgb(40, 140, 185)',
+      },
+    ],
+  }
+  ratioData.debit_ratios.ratios.debt_to_equity = {
+    total: Number.parseFloat(((data.total_liabilites / data.equity) * 100).toFixed(2)),
+    card_name: 'Debt to Equity Ratio',
+    byData: {
+      top: {
+        label: 'Total Liabilites',
+        amount: data.total_liabilites,
+      },
+      bottom: {
+        label: 'Shareholder Equity',
+        amount: data.equity,
+      },
+    },
+    chart_data: [
+      {
+        label: 'Total Liabilites',
+        amount: data.total_liabilites,
+        color: 'rgb(178, 56, 136)',
+      },
+      {
+        label: 'Shareholder Equity',
+        amount: data.current_liabilities,
+        color: 'rgb(255, 156, 85)',
+      },
+    ],
+  }
+  return ratioData
+})
+</script>
+
 <template>
   <div class="q-mx-md">
-    <h6 class="q-mt-lg text-grey-9">Ratio Analysis</h6>
+    <h6 class="q-mt-lg text-grey-9">
+      Ratio Analysis
+    </h6>
     <div v-for="(parentObj, index) in ratiosComputed" :key="index">
-      <h6 class="text-weight-medium text-subtitle q-mb-lg text-grey-8">{{ parentObj.group_name }}</h6>
+      <h6 class="text-weight-medium text-subtitle q-mb-lg text-grey-8">
+        {{ parentObj.group_name }}
+      </h6>
       <div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
           <q-card v-for="(ratioData, index) in parentObj.ratios" :key="index" class="col-6 q-pa-md">
@@ -37,134 +172,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-const data: Record<string, number> = {
-  current_assets: 154658,
-  current_liabilities: 65467,
-  total_assets: 194956,
-  total_liabilites: 89599,
-  cash: 12450,
-  equity: 24567,
-}
-const ratiosComputed = computed(() => {
-  // const ratiosData = {
-  //     current_ratio: {}
-  // }
-  const ratioData = {
-    liquidity_ratios: {
-      group_name: 'Liquidity Ratios',
-      ratios: {},
-    },
-    debit_ratios: {
-      group_name: 'Debt Ratios',
-      ratios: {},
-    },
-  }
-  ratioData.liquidity_ratios.ratios.current_ratio = {
-    card_name: 'Current Ratio',
-    total: parseFloat(((data.current_assets / data.current_liabilities) * 100).toFixed(2)),
-    byData: {
-      top: {
-        label: 'Current Assets',
-        amount: data.current_assets,
-      },
-      bottom: {
-        label: 'Current Liabilites',
-        amount: data.current_liabilities,
-      },
-    },
-    chart_data: [
-      {
-        label: 'Current Assets',
-        amount: data.current_assets,
-        color: 'rgb(54, 162, 235)',
-      },
-      {
-        label: 'Current Liabilites',
-        amount: data.current_liabilities,
-        color: 'rgb(255, 99, 132)',
-      },
-    ],
-  }
-  ratioData.liquidity_ratios.ratios.cash_ratio = {
-    total: parseFloat(((data.cash / data.current_liabilities) * 100).toFixed(2)),
-    card_name: 'Cash Ratio',
-    byData: {
-      top: {
-        label: 'Cash',
-        amount: data.cash,
-      },
-      bottom: {
-        label: 'Current Liabilites',
-        amount: data.current_liabilities,
-      },
-    },
-    chart_data: [
-      {
-        label: 'Cash',
-        amount: data.cash,
-        color: 'rgb(54, 162, 155)',
-      },
-      {
-        label: 'Current Liabilites',
-        amount: data.current_liabilities,
-        color: 'rgb(255, 99, 132)',
-      },
-    ],
-  }
-  ratioData.debit_ratios.ratios.debt_ratio = {
-    total: parseFloat(((data.total_liabilites / data.total_assets) * 100).toFixed(2)),
-    card_name: 'Debt Ratio',
-    byData: {
-      top: {
-        label: 'Total Liabilites',
-        amount: data.total_liabilites,
-      },
-      bottom: {
-        label: 'Total Assets',
-        amount: data.total_assets,
-      },
-    },
-    chart_data: [
-      {
-        label: 'Total Liabilites',
-        amount: data.total_liabilites,
-        color: 'rgb(178, 56, 136)',
-      },
-      {
-        label: 'Total Assets',
-        amount: data.total_assets,
-        color: 'rgb(40, 140, 185)',
-      },
-    ],
-  }
-  ratioData.debit_ratios.ratios.debt_to_equity = {
-    total: parseFloat(((data.total_liabilites / data.equity) * 100).toFixed(2)),
-    card_name: 'Debt to Equity Ratio',
-    byData: {
-      top: {
-        label: 'Total Liabilites',
-        amount: data.total_liabilites,
-      },
-      bottom: {
-        label: 'Shareholder Equity',
-        amount: data.equity,
-      },
-    },
-    chart_data: [
-      {
-        label: 'Total Liabilites',
-        amount: data.total_liabilites,
-        color: 'rgb(178, 56, 136)',
-      },
-      {
-        label: 'Shareholder Equity',
-        amount: data.current_liabilities,
-        color: 'rgb(255, 156, 85)',
-      },
-    ],
-  }
-  return ratioData
-})
-</script>

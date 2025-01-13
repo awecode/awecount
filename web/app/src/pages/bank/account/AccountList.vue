@@ -1,19 +1,3 @@
-<template>
-  <div class="q-pa-md w-full">
-    <div class="row justify-end">
-      <q-btn v-if="checkPermissions('BankAccountCreate')" color="green" to="/bank-accounts/add/" label="New Account" class="q-ml-lg add-btn" icon-right="add" />
-    </div>
-    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props">
-          <q-btn color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="Account" :to="`/account/${props.row.ledger}/view/`" />
-          <q-btn v-if="checkPermissions('BankAccountModify')" label="Edit" color="orange-6" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/bank-accounts/${props.row.id}/`" />
-        </q-td>
-      </template>
-    </q-table>
-  </div>
-</template>
-
 <script>
 export default {
   setup() {
@@ -55,3 +39,49 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pa-md w-full">
+    <div class="row justify-end">
+      <q-btn
+        v-if="checkPermissions('BankAccountCreate')"
+        class="q-ml-lg add-btn"
+        color="green"
+        icon-right="add"
+        label="New Account"
+        to="/bank-accounts/add/"
+      />
+    </div>
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
+      <template #body-cell-actions="props">
+        <q-td :props="props">
+          <q-btn
+            class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
+            color="blue"
+            label="Account"
+            style="font-size: 12px"
+            :to="`/account/${props.row.ledger}/view/`"
+          />
+          <q-btn
+            v-if="checkPermissions('BankAccountModify')"
+            class="q-py-none q-px-md font-size-sm l-edit-btn"
+            color="orange-6"
+            label="Edit"
+            style="font-size: 12px"
+            :to="`/bank-accounts/${props.row.id}/`"
+          />
+        </q-td>
+      </template>
+    </q-table>
+  </div>
+</template>

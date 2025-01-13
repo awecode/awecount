@@ -1,14 +1,27 @@
+<script setup>
+const data = ref({})
+useMeta(() => {
+  return {
+    title: `${data.value.name || 'Item'}| Awecount`,
+  }
+})
+const route = useRoute()
+useGetDataAuth(`/v1/items/${route.params.id}/details/`, {
+  method: 'GET',
+}).then(res => (data.value = res))
+</script>
+
 <template>
   <q-card class="q-ma-lg q-pa-lg">
     <div v-if="data.front_image?.length > 0 || data.back_image?.length > 0" class="row q-gutter-x-lg pb-8">
-      <div class="col-4" v-if="data.front_image?.length > 0">
-        <a :href="data.front_image" target="_blank" class="q-full-width">
+      <div v-if="data.front_image?.length > 0" class="col-4">
+        <a class="q-full-width" target="_blank" :href="data.front_image">
           <img :src="data.front_image" />
         </a>
       </div>
-      <div class="col-4" v-if="data.back_image?.length > 0">
-        <a :href="data.back_image" target="_blank" class="q-full-width">
-          <img :src="data.back_image" class="q-full-width" />
+      <div v-if="data.back_image?.length > 0" class="col-4">
+        <a class="q-full-width" target="_blank" :href="data.back_image">
+          <img class="q-full-width" :src="data.back_image" />
         </a>
       </div>
     </div>
@@ -30,7 +43,7 @@
             <span class="h6 text-weight-bold q-mr-sm">Selling Price:</span>
             <span>Nrs. {{ data.selling_price }}</span>
           </div>
-          <div class="q-mb-xs" v-if="data.brand?.id">
+          <div v-if="data.brand?.id" class="q-mb-xs">
             <span class="h6 text-weight-bold q-mr-sm">Brand:</span>
             <router-link :to="`/brand/${data.brand?.id}`">
               <span class="link">
@@ -43,17 +56,31 @@
           </div>
         </div>
         <div>
-          <q-chip v-if="data.can_be_sold">Can be Sold</q-chip>
-          <q-chip v-if="data.can_be_purchased">Can be Purchased</q-chip>
-          <q-chip v-if="data.track_inventory">Inventory is Tracked</q-chip>
-          <q-chip v-if="data.fixed_asset">Is a Fixed Asset</q-chip>
-          <q-chip v-if="data.direct_expense">Is a Direct Expense</q-chip>
-          <q-chip v-if="data.indirect_expense">Is an Indirect Expense</q-chip>
+          <q-chip v-if="data.can_be_sold">
+            Can be Sold
+          </q-chip>
+          <q-chip v-if="data.can_be_purchased">
+            Can be Purchased
+          </q-chip>
+          <q-chip v-if="data.track_inventory">
+            Inventory is Tracked
+          </q-chip>
+          <q-chip v-if="data.fixed_asset">
+            Is a Fixed Asset
+          </q-chip>
+          <q-chip v-if="data.direct_expense">
+            Is a Direct Expense
+          </q-chip>
+          <q-chip v-if="data.indirect_expense">
+            Is an Indirect Expense
+          </q-chip>
         </div>
       </div>
     </div>
     <q-table
+      hide-bottom
       class="q-my-lg"
+      title="Accounts"
       :columns="[
         { name: 'ac', field: 'ac', label: 'Account', align: 'left' },
         { name: 'dr', field: 'dr', label: 'DR.', align: 'left' },
@@ -68,8 +95,6 @@
           bal: 30,
         },
       ]"
-      title="Accounts"
-      hide-bottom
     >
       <!-- :rows="[
         {
@@ -87,63 +112,76 @@
             (data.sales_account?.amounts.cr || 0),
         },
       ]" -->
-      <template v-slot:body="props">
-        <q-tr :props="props" v-if="data.account">
-          <q-td><router-link :to="`/inventory-account/detail/${data.account?.id}/`">Stock</router-link></q-td>
+      <template #body="props">
+        <q-tr v-if="data.account" :props="props">
+          <q-td>
+            <router-link :to="`/inventory-account/detail/${data.account?.id}/`">
+              Stock
+            </router-link>
+          </q-td>
           <q-td>{{ data.account?.amounts.dr }}</q-td>
           <q-td>{{ data.account?.amounts.cr }}</q-td>
           <q-td>{{ (data.account?.amounts.dr || 0) - (data.account?.amounts.cr || 0) }}</q-td>
         </q-tr>
         <q-tr :props="props">
-          <q-td><router-link :to="`/account/${data.sales_account?.id}/view/`">Sales</router-link></q-td>
+          <q-td>
+            <router-link :to="`/account/${data.sales_account?.id}/view/`">
+              Sales
+            </router-link>
+          </q-td>
           <q-td>{{ data.sales_account?.amounts.dr }}</q-td>
           <q-td>{{ data.sales_account?.amounts.cr }}</q-td>
           <q-td>{{ (data.sales_account?.amounts.dr || 0) - (data.sales_account?.amounts.cr || 0) }}</q-td>
         </q-tr>
-        <q-tr :props="props" v-if="data.purchase_account">
-          <q-td><router-link :to="`/account/${data.purchase_account?.id}/view/`">Purchase</router-link></q-td>
+        <q-tr v-if="data.purchase_account" :props="props">
+          <q-td>
+            <router-link :to="`/account/${data.purchase_account?.id}/view/`">
+              Purchase
+            </router-link>
+          </q-td>
           <q-td>{{ data.purchase_account?.amounts.dr }}</q-td>
           <q-td>{{ data.purchase_account?.amounts.cr }}</q-td>
           <q-td>{{ (data.purchase_account?.amounts.dr || 0) - (data.purchase_account?.amounts.cr || 0) }}</q-td>
         </q-tr>
-        <q-tr :props="props" v-if="data.expense_account">
-          <q-td><router-link :to="`/account/${data.expense_account?.id}/view/`">Expenses</router-link></q-td>
+        <q-tr v-if="data.expense_account" :props="props">
+          <q-td>
+            <router-link :to="`/account/${data.expense_account?.id}/view/`">
+              Expenses
+            </router-link>
+          </q-td>
           <q-td>{{ data.expense_account?.amounts.dr }}</q-td>
           <q-td>{{ data.expense_account?.amounts.cr }}</q-td>
           <q-td>{{ (data.expense_account?.amounts.dr || 0) - (data.expense_account?.amounts.cr || 0) }}</q-td>
         </q-tr>
-        <q-tr :props="props" v-if="data.fixed_asset_account">
-          <q-td><router-link :to="`/account/${data.fixed_asset_account?.id}/view`">Fixed Assets</router-link></q-td>
+        <q-tr v-if="data.fixed_asset_account" :props="props">
+          <q-td>
+            <router-link :to="`/account/${data.fixed_asset_account?.id}/view`">
+              Fixed Assets
+            </router-link>
+          </q-td>
           <q-td>{{ data.fixed_asset_account?.amounts.dr }}</q-td>
           <q-td>{{ data.fixed_asset_account?.amounts.cr }}</q-td>
           <q-td>{{ (data.fixed_asset_account?.amounts.dr || 0) - (data.fixed_asset_account?.amounts.cr || 0) }}</q-td>
         </q-tr>
-        <q-tr :props="props" v-if="data.discount_received_account">
-          <q-td><router-link :to="`/account/${data.discount_received_account?.id}/view`">Discount Received</router-link></q-td>
+        <q-tr v-if="data.discount_received_account" :props="props">
+          <q-td>
+            <router-link :to="`/account/${data.discount_received_account?.id}/view`">
+              Discount Received
+            </router-link>
+          </q-td>
           <q-td>{{ $nf(data.discount_received_account?.amounts.dr) }}</q-td>
           <q-td>{{ $nf(data.discount_received_account?.amounts.cr) }}</q-td>
           <q-td>{{ $nf((data.discount_received_account?.amounts.dr || 0) - (data.discount_received_account?.amounts.cr || 0)) }}</q-td>
         </q-tr>
       </template>
     </q-table>
-    <router-link :to="`/items/${data.id}/`" class="no-underline">
-      <q-btn color="orange-7" class="q-mt-md q-px-lg no-underline">Edit</q-btn>
+    <router-link class="no-underline" :to="`/items/${data.id}/`">
+      <q-btn class="q-mt-md q-px-lg no-underline" color="orange-7">
+        Edit
+      </q-btn>
     </router-link>
   </q-card>
 </template>
-
-<script setup>
-const data = ref({})
-useMeta(() => {
-  return {
-    title: (data.value.name || 'Item') + '| Awecount',
-  }
-})
-const route = useRoute()
-useGetDataAuth(`/v1/items/${route.params.id}/details/`, {
-  method: 'GET',
-}).then((res) => (data.value = res))
-</script>
 
 <style scoped>
 img {

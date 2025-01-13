@@ -1,80 +1,8 @@
-<template>
-  <q-tr
-    v-if="!config.hide_categories"
-    class="hover:bg-gray-50 q-virtual-scroll--skip"
-    :class="{
-      'bg-gray-100': canBeDropped,
-      'bg-gray-200': currentTarget && currentTarget.id === row.id && canBeDropped,
-    }"
-    :draggable="checkPermissions('CategoryModify') && row.id ? true : false"
-    @dragstart="handleDragStart({ type: 'category', row })"
-    @dragover.prevent
-    @dragend="handleDragEnd"
-    @drop="
-      handleDrop(
-        row.id ?
-          {
-            type: 'category',
-            row,
-          }
-        : null,
-      )
-    "
-    @dragenter="handleDragEnter(row)"
-  >
-    <q-td class="flex items-center" :style="`padding-left: ${15 + 30 * (row.level || 0)}px;`">
-      <RouterLink style="text-decoration: none" target="_blank" :to="`/account/?has_balance=true&category=${row.id}`" class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">{{ row.name }}</RouterLink>
-      <q-btn dense flat round class="expand-btn" :class="expandStatus ? 'expanded' : ''" @click="changeExpandStatus(row.id)" v-if="row.isExpandable">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
-          <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
-        </svg>
-      </q-btn>
-    </q-td>
-    <q-td>{{ row.code }}</q-td>
-    <q-td>{{ row.system_code }}</q-td>
-    <q-td>{{ row.id !== 0 ? row.total_transactions : '' }}</q-td>
-    <q-td class="text-center">
-      <q-btn-dropdown v-if="row.id" v-model="dropdown" class="text-blue-6" size="sm" flat round dropdown-icon="more_vert">
-        <q-list>
-          <q-item v-if="checkPermissions('CategoryModify')" clickable v-close-popup @click="editRow('category', row.id)">
-            <q-item-section>Edit Category</q-item-section>
-          </q-item>
-          <q-item v-if="checkPermissions('CategoryCreate')" clickable v-close-popup @click="addSubCategory(row.id)">
-            <q-item-section>Add Sub-Category</q-item-section>
-          </q-item>
-          <q-item v-if="checkPermissions('AccountCreate')" clickable v-close-popup @click="addAccount(row.id)">
-            <q-item-section>Add Account</q-item-section>
-          </q-item>
-        </q-list>
-      </q-btn-dropdown>
-    </q-td>
-  </q-tr>
-  <template v-if="config.hide_categories || expandStatus">
-    <template v-for="child in row.children" :key="`coa-child-${child.id}`">
-      <COATableNode v-if="!(config.hide_zero_transactions && child.total_transactions === 0)" :row="child" @drag-event="$emit('drag-event', $event)" @add-category="$emit('add-category', $event)" @add-account="$emit('add-account', $event)" v-model:current-target="currentTarget" v-model:draggingItem="draggingItem" :droppable-categories="droppableCategories" @edit-row="handleEditRowEmit" :config="config" />
-    </template>
-    <template v-if="!config.hide_accounts">
-      <template v-for="account in row.accounts" :key="account.id">
-        <q-tr class="q-virtual-scroll--with-prev" v-if="!(config.hide_zero_transactions && account.total_transactions === 0)" :draggable="checkPermissions('AccountModify') && !config.hide_categories ? true : false" @dragstart="handleDragStart({ type: 'account', row: account })" @dragover.prevent>
-          <q-td :style="`padding-left: ${15 + (!config.hide_categories ? 30 * ((row.level || 0) + 1) : 0)}px`">
-            <RouterLink target="_blank" style="text-decoration: none" :to="`/account/${account.id}/view/`" class="text-blue-7 text-italic text-weight-regular">{{ account.name }}</RouterLink>
-          </q-td>
-          <q-td>{{ account.id }}</q-td>
-          <q-td>{{ account.system_code }}</q-td>
-          <q-td>{{ account.total_transactions }}</q-td>
-          <q-td class="text-center">
-            <q-btn v-if="checkPermissions('AccountModify')" dense flat round icon="edit" size="sm" class="text-blue-6" @click="editRow('account', account.id)" />
-          </q-td>
-        </q-tr>
-      </template>
-    </template>
-  </template>
-</template>
-
 <script setup lang="ts">
+import type { PropType } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from 'src/stores/login-info'
-import { PropType, ref } from 'vue'
+import { ref } from 'vue'
 
 interface Account {
   id: number
@@ -99,8 +27,6 @@ interface CategoryTree {
   parent_id: number
 }
 
-const emit = defineEmits(['drag-event', 'edit-row', 'add-category', 'add-account'])
-
 const props = defineProps({
   row: {
     type: Object as PropType<CategoryTree>,
@@ -121,17 +47,19 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['drag-event', 'edit-row', 'add-category', 'add-account'])
+
 const canBeDropped = computed(() => props.droppableCategories.includes(props.row.id))
 
 type DragItem =
   | {
-      type: 'category'
-      row: CategoryTree
-    }
+    type: 'category'
+    row: CategoryTree
+  }
   | {
-      type: 'account'
-      row: Account
-    }
+    type: 'account'
+    row: Account
+  }
 
 const draggingItem = defineModel<DragItem | null>('draggingItem')
 
@@ -185,11 +113,11 @@ const handleDrop = (target: DragItem | null) => {
       id: draggingItem.value!.row.id,
     },
     target:
-      target ?
-        target.type === 'account' ?
-          target.row.category_id
-        : target.row.id
-      : null,
+      target
+        ? target.type === 'account'
+          ? target.row.category_id
+          : target.row.id
+        : null,
   })
 
   draggingItem.value = null
@@ -217,9 +145,9 @@ const changeExpandStatus = (id: number, type: 'open' | 'close' | null = null) =>
 }
 
 const expandStatus = computed(() => {
-  const newTotalObjStatus =
+  const newTotalObjStatus
     // @ts-expect-error loginStore is js store
-    props.row.id && loginStore.chartOfAccountsExpandId.includes(props.row.id)
+    = props.row.id && loginStore.chartOfAccountsExpandId.includes(props.row.id)
   return newTotalObjStatus
 })
 
@@ -241,3 +169,154 @@ const addAccount = (id: number) => {
   emit('add-account', id)
 }
 </script>
+
+<template>
+  <q-tr
+    v-if="!config.hide_categories"
+    class="hover:bg-gray-50 q-virtual-scroll--skip"
+    :class="{
+      'bg-gray-100': canBeDropped,
+      'bg-gray-200': currentTarget && currentTarget.id === row.id && canBeDropped,
+    }"
+    :draggable="checkPermissions('CategoryModify') && row.id ? true : false"
+    @dragend="handleDragEnd"
+    @dragenter="handleDragEnter(row)"
+    @dragover.prevent
+    @dragstart="handleDragStart({ type: 'category', row })"
+    @drop="
+      handleDrop(
+        row.id
+          ? {
+            type: 'category',
+            row,
+          }
+          : null,
+      )
+    "
+  >
+    <q-td class="flex items-center" :style="`padding-left: ${15 + 30 * (row.level || 0)}px;`">
+      <RouterLink
+        class="text-blue-6"
+        style="text-decoration: none"
+        target="_blank"
+        :class="props.root ? 'text-weight-bold' : ''"
+        :to="`/account/?has_balance=true&category=${row.id}`"
+      >
+        {{ row.name }}
+      </RouterLink>
+      <q-btn
+        v-if="row.isExpandable"
+        dense
+        flat
+        round
+        class="expand-btn"
+        :class="expandStatus ? 'expanded' : ''"
+        @click="changeExpandStatus(row.id)"
+      >
+        <svg
+          class="text-grey-7"
+          height="32"
+          viewBox="0 0 24 24"
+          width="32"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" fill="currentColor" />
+        </svg>
+      </q-btn>
+    </q-td>
+    <q-td>{{ row.code }}</q-td>
+    <q-td>{{ row.system_code }}</q-td>
+    <q-td>{{ row.id !== 0 ? row.total_transactions : '' }}</q-td>
+    <q-td class="text-center">
+      <q-btn-dropdown
+        v-if="row.id"
+        v-model="dropdown"
+        flat
+        round
+        class="text-blue-6"
+        dropdown-icon="more_vert"
+        size="sm"
+      >
+        <q-list>
+          <q-item
+            v-if="checkPermissions('CategoryModify')"
+            v-close-popup
+            clickable
+            @click="editRow('category', row.id)"
+          >
+            <q-item-section>Edit Category</q-item-section>
+          </q-item>
+          <q-item
+            v-if="checkPermissions('CategoryCreate')"
+            v-close-popup
+            clickable
+            @click="addSubCategory(row.id)"
+          >
+            <q-item-section>Add Sub-Category</q-item-section>
+          </q-item>
+          <q-item
+            v-if="checkPermissions('AccountCreate')"
+            v-close-popup
+            clickable
+            @click="addAccount(row.id)"
+          >
+            <q-item-section>Add Account</q-item-section>
+          </q-item>
+        </q-list>
+      </q-btn-dropdown>
+    </q-td>
+  </q-tr>
+  <template v-if="config.hide_categories || expandStatus">
+    <template v-for="child in row.children" :key="`coa-child-${child.id}`">
+      <COATableNode
+        v-if="!(config.hide_zero_transactions && child.total_transactions === 0)"
+        v-model:current-target="currentTarget"
+        v-model:dragging-item="draggingItem"
+        :config="config"
+        :droppable-categories="droppableCategories"
+        :row="child"
+        @add-account="$emit('add-account', $event)"
+        @add-category="$emit('add-category', $event)"
+        @drag-event="$emit('drag-event', $event)"
+        @edit-row="handleEditRowEmit"
+      />
+    </template>
+    <template v-if="!config.hide_accounts">
+      <template v-for="account in row.accounts" :key="account.id">
+        <q-tr
+          v-if="!(config.hide_zero_transactions && account.total_transactions === 0)"
+          class="q-virtual-scroll--with-prev"
+          :draggable="checkPermissions('AccountModify') && !config.hide_categories ? true : false"
+          @dragover.prevent
+          @dragstart="handleDragStart({ type: 'account', row: account })"
+        >
+          <q-td :style="`padding-left: ${15 + (!config.hide_categories ? 30 * ((row.level || 0) + 1) : 0)}px`">
+            <RouterLink
+              class="text-blue-7 text-italic text-weight-regular"
+              style="text-decoration: none"
+              target="_blank"
+              :to="`/account/${account.id}/view/`"
+            >
+              {{ account.name }}
+            </RouterLink>
+          </q-td>
+          <q-td>{{ account.id }}</q-td>
+          <q-td>{{ account.system_code }}</q-td>
+          <q-td>{{ account.total_transactions }}</q-td>
+          <q-td class="text-center">
+            <q-btn
+              v-if="checkPermissions('AccountModify')"
+              dense
+              flat
+              round
+              class="text-blue-6"
+              icon="edit"
+              size="sm"
+              @click="editRow('account', account.id)"
+            />
+          </q-td>
+        </q-tr>
+      </template>
+    </template>
+  </template>
+</template>

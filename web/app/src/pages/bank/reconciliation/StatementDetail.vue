@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Ref } from 'vue'
+import type { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
-import { getVoucherUrl, getPermissionFromSourceType } from 'src/composables/getVoucherUrlAndPermissions'
+import { getPermissionFromSourceType, getVoucherUrl } from 'src/composables/getVoucherUrlAndPermissions'
+
 const route = useRoute()
 
 interface StatementInfo {
@@ -80,7 +81,7 @@ const columns = [
   },
 ]
 
-type SystemTransactionData = {
+interface SystemTransactionData {
   id: number
   source_id: number | null
   source_type: string
@@ -88,10 +89,10 @@ type SystemTransactionData = {
   dr_amount: string | null
   cr_amount: string | null
   status: string
-  counterpart_accounts: { dr_amount: string | null; cr_amount: string | null }[]
+  counterpart_accounts: { dr_amount: string | null, cr_amount: string | null }[]
 }
 
-type StatementTransactionData = {
+interface StatementTransactionData {
   id: number
   date: string
   description: string
@@ -104,8 +105,8 @@ type StatementTransactionData = {
 const calculateTotalFromCounterparts = (transactions: SystemTransactionData[]) => {
   let cr_amount = 0
   let dr_amount = 0
-  for (let transaction of transactions) {
-    for (let counterpart of transaction.counterpart_accounts) {
+  for (const transaction of transactions) {
+    for (const counterpart of transaction.counterpart_accounts) {
       if (counterpart.cr_amount) {
         cr_amount += Number(counterpart.cr_amount)
       }
@@ -117,8 +118,8 @@ const calculateTotalFromCounterparts = (transactions: SystemTransactionData[]) =
   return (dr_amount - cr_amount).toFixed(2)
 }
 
-const filterSources = (systemTransactions: SystemTransactionData[]): { source_id: number; url: string; source_type: string }[] => {
-  const sourceMap = new Map<number, { source_id: number; url: string; source_type: string }>()
+const filterSources = (systemTransactions: SystemTransactionData[]): { source_id: number, url: string, source_type: string }[] => {
+  const sourceMap = new Map<number, { source_id: number, url: string, source_type: string }>()
 
   systemTransactions.forEach((transaction: SystemTransactionData) => {
     if (transaction.source_id) {
@@ -157,7 +158,7 @@ const unmatchTransactions = async (transactions: StatementTransactionData[]) => 
     useApi('v1/bank-reconciliation/unmatch-transactions/', {
       method: 'POST',
       body: {
-        statement_ids: transactions.map((t) => t.id),
+        statement_ids: transactions.map(t => t.id),
       },
     })
       .then(() => {
@@ -191,7 +192,7 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
     useApi('v1/bank-reconciliation/unmatch-transactions/', {
       method: 'POST',
       body: {
-        statement_ids: transactions.map((t) => t.id),
+        statement_ids: transactions.map(t => t.id),
       },
     })
       .then(() => {
@@ -229,8 +230,19 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
             </h2>
 
             <div class="flex items-center justify-center md:justify-start text-gray-500 mt-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg
+                class="h-5 w-5 mr-2 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                />
               </svg>
               <span class="text-sm">{{ statementInfo?.date.start }} - {{ statementInfo?.date.end }}</span>
             </div>
@@ -255,7 +267,14 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
               </div>
             </div>
             <div class="w-full">
-              <q-btn v-if="!!statementInfo?.total_unreconciled" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn w-full" style="font-size: 12px" label="Reconcile remaining" :to="`/bank-reconciliation/reconcile/?account_id=${statementInfo.account.id}&start_date=${statementInfo?.date.start}&end_date=${statementInfo?.date.end}`" />
+              <q-btn
+                v-if="!!statementInfo?.total_unreconciled"
+                class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn w-full"
+                color="blue"
+                label="Reconcile remaining"
+                style="font-size: 12px"
+                :to="`/bank-reconciliation/reconcile/?account_id=${statementInfo.account.id}&start_date=${statementInfo?.date.start}&end_date=${statementInfo?.date.end}`"
+              />
             </div>
           </div>
         </div>
@@ -263,11 +282,27 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
     </div>
 
     <div class="q-pa-md">
-      <q-table :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-        <template v-slot:top>
+      <q-table
+        v-model:pagination="pagination"
+        class="q-mt-md"
+        row-key="id"
+        :columns="columns"
+        :filter="searchQuery"
+        :loading="loading"
+        :rows="rows"
+        :rows-per-page-options="[20]"
+        @request="onRequest"
+      >
+        <template #top>
           <div class="search-bar">
-            <q-input dense debounce="500" v-model="searchQuery as string" placeholder="Search" class="full-width search-input">
-              <template v-slot:append>
+            <q-input
+              v-model="searchQuery as string"
+              dense
+              class="full-width search-input"
+              debounce="500"
+              placeholder="Search"
+            >
+              <template #append>
                 <q-icon name="search" />
               </template>
             </q-input>
@@ -275,19 +310,31 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
               <q-menu>
                 <div class="menu-wrapper" style="width: min(500px, 90vw)">
                   <div style="border-bottom: 1px solid lightgrey">
-                    <h6 class="q-ma-md text-grey-9">Filters</h6>
+                    <h6 class="q-ma-md text-grey-9">
+                      Filters
+                    </h6>
                   </div>
                   <div class="q-ma-sm">
                     <div class="q-ma-sm">
-                      <MultiSelectChip :options="['Reconciled', 'Matched', 'Unreconciled']" v-model="filters.status" />
+                      <MultiSelectChip v-model="filters.status" :options="['Reconciled', 'Matched', 'Unreconciled']" />
                     </div>
                     <div class="q-mx-md">
-                      <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
+                      <DateRangePicker v-model:end-date="filters.end_date" v-model:start-date="filters.start_date" />
                     </div>
                   </div>
                   <div class="q-mx-md flex gap-4 q-mb-md">
-                    <q-btn color="green" label="Filter" @click="onFilterUpdate" class="f-submit-btn"></q-btn>
-                    <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
+                    <q-btn
+                      class="f-submit-btn"
+                      color="green"
+                      label="Filter"
+                      @click="onFilterUpdate"
+                    />
+                    <q-btn
+                      class="f-reset-btn"
+                      color="red"
+                      icon="close"
+                      @click="resetFilters"
+                    />
                   </div>
                 </div>
               </q-menu>
@@ -295,41 +342,49 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
           </div>
         </template>
         <!--  -->
-        <template v-slot:body-cell-date="props">
+        <template #body-cell-date="props">
           <td class="text-center">
             <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
-              <div class="text-gray-800">{{ transaction.date }}</div>
+              <div class="text-gray-800">
+                {{ transaction.date }}
+              </div>
             </div>
           </td>
         </template>
-        <template v-slot:body-cell-description="props">
+        <template #body-cell-description="props">
           <td>
             <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
-              <div class="text-gray-800">{{ transaction.description }}</div>
+              <div class="text-gray-800">
+                {{ transaction.description }}
+              </div>
             </div>
           </td>
         </template>
-        <template v-slot:body-cell-Debit="props">
+        <template #body-cell-Debit="props">
           <td>
             <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
-              <div class="text-red-500 font-medium">{{ transaction.dr_amount?.toFixed(2) || '-' }}</div>
+              <div class="text-red-500 font-medium">
+                {{ transaction.dr_amount?.toFixed(2) || '-' }}
+              </div>
             </div>
           </td>
         </template>
-        <template v-slot:body-cell-Credit="props">
+        <template #body-cell-Credit="props">
           <td>
             <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
-              <div class="text-green-500 font-medium">{{ transaction.cr_amount?.toFixed(2) }}</div>
+              <div class="text-green-500 font-medium">
+                {{ transaction.cr_amount?.toFixed(2) }}
+              </div>
             </div>
           </td>
         </template>
-        <template v-slot:body-cell-SystemTransactions="props">
+        <template #body-cell-SystemTransactions="props">
           <td>
             <div>
               <div v-if="props.row.system_transactions.length" class="flex justify-between items-center">
                 <div>
                   <div v-for="(source, index) in filterSources(props.row.system_transactions)" :key="source.source_id">
-                    <router-link target="_blank" :to="source.url" class="text-blue-800 decoration-none text-xs">
+                    <router-link class="text-blue-800 decoration-none text-xs" target="_blank" :to="source.url">
                       {{ source.source_type }}
                     </router-link>
                     <span v-if="index < filterSources(props.row.system_transactions).length - 1">,</span>
@@ -351,31 +406,45 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
                     </div>
                   </div>
 
-                  <div v-if="props.row.system_transactions.length" class="text-right w-full" :class="Number(calculateTotalFromCounterparts(props.row.system_transactions)) < 0 ? 'text-green-500' : 'text-red-500'">{{ calculateTotalFromCounterparts(props.row.system_transactions).replaceAll('-', '') }}</div>
+                  <div v-if="props.row.system_transactions.length" class="text-right w-full" :class="Number(calculateTotalFromCounterparts(props.row.system_transactions)) < 0 ? 'text-green-500' : 'text-red-500'">
+                    {{ calculateTotalFromCounterparts(props.row.system_transactions).replaceAll('-', '') }}
+                  </div>
                 </div>
               </div>
-              <div v-else class="px-4 py-2 font-medium">-</div>
+              <div v-else class="px-4 py-2 font-medium">
+                -
+              </div>
             </div>
           </td>
         </template>
 
-        <template v-slot:body-cell-status="props">
+        <template #body-cell-status="props">
           <td class="text-center">
             <q-chip
+              class="text-white"
               :color="
                 props.row.statement_transactions[0].status === 'Reconciled' ? 'green'
                 : props.row.statement_transactions[0].status === 'Matched' ? 'orange'
-                : 'red'
+                  : 'red'
               "
-              class="text-white"
               :label="props.row.statement_transactions[0].status"
             />
           </td>
         </template>
-        <template v-slot:body-cell-actions="props">
+        <template #body-cell-actions="props">
           <td class="text-end">
-            <q-btn v-if="props.row.statement_transactions[0].status === 'Matched' || props.row.statement_transactions[0].status === 'Reconciled'" color="blue" label="Unmatch" @click="unmatchTransactions(props.row.statement_transactions)" />
-            <q-btn color="red" icon="delete" class="ml-2" @click="deleteTransactions(props.row.statement_transactions)" />
+            <q-btn
+              v-if="props.row.statement_transactions[0].status === 'Matched' || props.row.statement_transactions[0].status === 'Reconciled'"
+              color="blue"
+              label="Unmatch"
+              @click="unmatchTransactions(props.row.statement_transactions)"
+            />
+            <q-btn
+              class="ml-2"
+              color="red"
+              icon="delete"
+              @click="deleteTransactions(props.row.statement_transactions)"
+            />
           </td>
         </template>
       </q-table>
@@ -383,7 +452,9 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
 
     <!-- No Transactions State -->
     <div v-if="rows?.length === 0" class="text-center py-10 text-gray-500">
-      <p class="text-sm font-medium">No transactions found.</p>
+      <p class="text-sm font-medium">
+        No transactions found.
+      </p>
     </div>
   </div>
 </template>

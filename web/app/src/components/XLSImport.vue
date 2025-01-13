@@ -1,46 +1,5 @@
-<template>
-  <q-dialog v-model="showImportModal">
-    <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
-      <q-card-section class="bg-primary flex justify-between">
-        <div class="text-h6 text-white">
-          <span>{{ props.title }}</span>
-        </div>
-        <q-btn icon="close" class="text-primary bg-slate-200 opacity-95" flat round dense @click="closeImportModal" />
-      </q-card-section>
-
-      <q-card-section class="q-ma-md">
-        <p class="text-caption">
-          {{ props.helpText || 'Please select a file to import. The file should be in .xlsx format.' }}
-          <a v-if="props.sampleFileUrl" :href="props.sampleFileUrl" download class="text-primary">Download sample file</a>
-        </p>
-        <q-file @input="validateImportFile" v-model="fileToImport" accept=".xlsx" label="Select file" color="primary" flat dense :disable="isImporting"></q-file>
-        <p v-if="importFileParseError" class="text-red-600">
-          {{ importFileParseError }}
-        </p>
-        <div class="text-right q-mt-lg">
-          <q-btn label="Import" color="primary" @click="importXLS()" :disabled="isImporting || !fileToImport || importFileParseError"></q-btn>
-        </div>
-      </q-card-section>
-    </q-card>
-  </q-dialog>
-</template>
-
 <script setup>
 import * as XLSX from 'xlsx'
-
-const showImportModal = defineModel('showImportModal')
-const fileToImport = ref(null)
-const importFileParseError = ref(null)
-const isImporting = ref(false)
-
-const $q = useQuasar()
-
-watch(
-  () => showImportModal.value,
-  () => {
-    fileToImport.value = null
-  },
-)
 
 const props = defineProps({
   title: {
@@ -64,6 +23,20 @@ const props = defineProps({
     required: true,
   },
 })
+const showImportModal = defineModel('showImportModal')
+const fileToImport = ref(null)
+const importFileParseError = ref(null)
+const isImporting = ref(false)
+
+const $q = useQuasar()
+
+watch(
+  () => showImportModal.value,
+  () => {
+    fileToImport.value = null
+  },
+)
+
 function validateImportFile(event) {
   importFileParseError.value = null
   const file = event.target.files[0]
@@ -128,3 +101,56 @@ function closeImportModal() {
   showImportModal.value = false
 }
 </script>
+
+<template>
+  <q-dialog v-model="showImportModal">
+    <q-card class="overflow-visible" style="min-width: min(40vw, 500px)">
+      <q-card-section class="bg-primary flex justify-between">
+        <div class="text-h6 text-white">
+          <span>{{ props.title }}</span>
+        </div>
+        <q-btn
+          dense
+          flat
+          round
+          class="text-primary bg-slate-200 opacity-95"
+          icon="close"
+          @click="closeImportModal"
+        />
+      </q-card-section>
+
+      <q-card-section class="q-ma-md">
+        <p class="text-caption">
+          {{ props.helpText || 'Please select a file to import. The file should be in .xlsx format.' }}
+          <a
+            v-if="props.sampleFileUrl"
+            download
+            class="text-primary"
+            :href="props.sampleFileUrl"
+          >Download sample file</a>
+        </p>
+        <q-file
+          v-model="fileToImport"
+          dense
+          flat
+          accept=".xlsx"
+          color="primary"
+          label="Select file"
+          :disable="isImporting"
+          @input="validateImportFile"
+        />
+        <p v-if="importFileParseError" class="text-red-600">
+          {{ importFileParseError }}
+        </p>
+        <div class="text-right q-mt-lg">
+          <q-btn
+            color="primary"
+            label="Import"
+            :disabled="isImporting || !fileToImport || importFileParseError"
+            @click="importXLS()"
+          />
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+</template>

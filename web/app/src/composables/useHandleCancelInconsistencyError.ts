@@ -20,8 +20,8 @@ export default (
       cancel: true,
     })
       .onOk(() => {
-        useApi(url + `?${response.data?.code}=true`, {
-          method: method,
+        useApi(`${url}?${response.data?.code}=true`, {
+          method,
           body,
         }).then((data) => {
           resolve(data)

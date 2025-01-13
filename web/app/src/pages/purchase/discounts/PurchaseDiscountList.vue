@@ -1,57 +1,3 @@
-<template>
-  <div class="q-pa-md">
-    <div class="row q-gutter-x-md justify-end">
-      <q-btn v-if="checkPermissions('PurchaseDiscountCreate')" color="green" to="/purchase-discount/add/" label="New Purchase Discount" icon-right="add" class="add-btn" />
-    </div>
-    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-      <template v-slot:top>
-        <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-          <q-btn class="f-open-btn" icon="mdi-filter-variant">
-            <q-menu>
-              <div class="menu-wrapper" style="width: min(500px, 90vw)">
-                <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Filters</h6>
-                </div>
-                <div class="q-ma-sm">
-                  <div class="q-ma-sm">
-                    <MultiSelectChip v-model="filters.type" :options="['Percent', 'Amount']" />
-                  </div>
-                  <div class="q-mt-md">
-                    <q-checkbox v-model="filters.trade_discount" label="Is Trade Discount?" :false-value="null"></q-checkbox>
-                  </div>
-                </div>
-                <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
-                </div>
-              </div>
-            </q-menu>
-          </q-btn>
-        </div>
-      </template>
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props">
-          <div class="row q-gutter-x-md items-center">
-            <q-btn v-if="checkPermissions('PurchaseDiscountModify')" color="orange-7" label="Edit" :to="`/purchase-discount/${props.row.id}/`" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" />
-          </div>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-trade_discount="props">
-        <q-td :props="props">
-          <div class="row justify-center">
-            <ShowListBoolean :value="props.row.trade_discount" />
-          </div>
-        </q-td>
-      </template>
-    </q-table>
-  </div>
-</template>
-
 <script>
 export default {
   setup() {
@@ -63,8 +9,8 @@ export default {
     const listData = useList(endpoint)
     const onDownloadXls = () => {
       useApi('v1/sales-voucher/export')
-        .then((data) => usedownloadFile(data, 'application/vnd.ms-excel', 'Credit_Notes'))
-        .catch((err) => console.log('Error Due To', err))
+        .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Credit_Notes'))
+        .catch(err => console.log('Error Due To', err))
     }
     const newColumn = [
       {
@@ -90,3 +36,100 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <div class="row q-gutter-x-md justify-end">
+      <q-btn
+        v-if="checkPermissions('PurchaseDiscountCreate')"
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="New Purchase Discount"
+        to="/purchase-discount/add/"
+      />
+    </div>
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      title="Income Items"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
+      <template #top>
+        <div class="search-bar">
+          <q-input
+            v-model="searchQuery"
+            dense
+            class="full-width search-input"
+            debounce="500"
+            placeholder="Search"
+          >
+            <template #append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(500px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">
+                    Filters
+                  </h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-ma-sm">
+                    <MultiSelectChip v-model="filters.type" :options="['Percent', 'Amount']" />
+                  </div>
+                  <div class="q-mt-md">
+                    <q-checkbox v-model="filters.trade_discount" label="Is Trade Discount?" :false-value="null" />
+                  </div>
+                </div>
+                <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
+                  <q-btn
+                    class="f-submit-btn"
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  />
+                  <q-btn
+                    class="f-reset-btn"
+                    color="red"
+                    icon="close"
+                    @click="resetFilters"
+                  />
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
+        </div>
+      </template>
+      <template #body-cell-actions="props">
+        <q-td :props="props">
+          <div class="row q-gutter-x-md items-center">
+            <q-btn
+              v-if="checkPermissions('PurchaseDiscountModify')"
+              class="q-py-none q-px-md font-size-sm l-edit-btn"
+              color="orange-7"
+              label="Edit"
+              style="font-size: 12px"
+              :to="`/purchase-discount/${props.row.id}/`"
+            />
+          </div>
+        </q-td>
+      </template>
+      <template #body-cell-trade_discount="props">
+        <q-td :props="props">
+          <div class="row justify-center">
+            <ShowListBoolean :value="props.row.trade_discount" />
+          </div>
+        </q-td>
+      </template>
+    </q-table>
+  </div>
+</template>

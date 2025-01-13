@@ -1,13 +1,3 @@
-<template>
-  <h6 class="q-mt-lg q-mb-md" v-if="modalValue && modalValue.length > 0">Aliases</h6>
-  <q-card v-for="(alias, index) in modalValue" :key="index" class="q-pa-md q-mb-md">
-    <div class="flex flex-col gap-y-4">
-      <div class="row q-col-gutter-md">
-        <q-input v-model="modalValue[index]" label="Name" class="col-12 col-md-6" :error="rowErrorComp" @change="updateVal" />
-      </div>
-    </div>
-  </q-card>
-</template>
 <script>
 export default {
   props: {
@@ -38,7 +28,7 @@ export default {
     })
     watch(
       () => props.modelValue,
-      (newValue) => (modalValue.value = newValue),
+      newValue => (modalValue.value = newValue),
     )
     return {
       modalValue,
@@ -48,3 +38,22 @@ export default {
   },
 }
 </script>
+
+<template>
+  <h6 v-if="modalValue && modalValue.length > 0" class="q-mt-lg q-mb-md">
+    Aliases
+  </h6>
+  <q-card v-for="(alias, index) in modalValue" :key="index" class="q-pa-md q-mb-md">
+    <div class="flex flex-col gap-y-4">
+      <div class="row q-col-gutter-md">
+        <q-input
+          v-model="modalValue[index]"
+          class="col-12 col-md-6"
+          label="Name"
+          :error="rowErrorComp"
+          @change="updateVal"
+        />
+      </div>
+    </div>
+  </q-card>
+</template>

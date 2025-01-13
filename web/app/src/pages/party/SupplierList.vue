@@ -1,42 +1,3 @@
-<template>
-  <div class="q-pa-md">
-    <div class="row justify-end">
-      <q-btn v-if="checkPermissions('PartyCreate')" color="green" to="/party/add/" label="New party" class="add-btn" icon-right="add" />
-    </div>
-
-    <q-table title="Accounts" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-      <template v-slot:top>
-        <q-input class="full-width search-input" dense debounce="500" v-model="searchQuery" placeholder="Search">
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </template>
-      <template v-slot:body-cell-email="props">
-        <q-td :props="props">
-          <a :href="'mailto:' + `${props.row.email}`" style="text-decoration: none" class="text-blue">{{ props.row.email }}</a>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props">
-          <q-btn v-if="checkPermissions('PartyModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-view-btn" style="font-size: 12px" label="edit" :to="`/party/${props.row.id}/`" />
-          <q-btn color="blue" v-if="checkPermissions('PartyView')" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="Account" :to="`/parties/account/${props.row.id}/`" />
-        </q-td>
-      </template>
-      <template v-slot:body-cell-name="props">
-        <q-td :props="props" style="padding: 0">
-          <router-link v-if="checkPermissions('PartyView')" :to="`/parties/account/${props.row.id}/`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 16px 8px 8px 16px" class="text-blue block">
-            {{ props.row.name }}
-          </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 16px 8px 8px 16px">
-            {{ props.row.name }}
-          </span>
-        </q-td>
-      </template>
-    </q-table>
-  </div>
-</template>
-
 <script>
 export default {
   setup() {
@@ -110,3 +71,85 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <div class="row justify-end">
+      <q-btn
+        v-if="checkPermissions('PartyCreate')"
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="New party"
+        to="/party/add/"
+      />
+    </div>
+
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      title="Accounts"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
+      <template #top>
+        <q-input
+          v-model="searchQuery"
+          dense
+          class="full-width search-input"
+          debounce="500"
+          placeholder="Search"
+        >
+          <template #append>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+      </template>
+      <template #body-cell-email="props">
+        <q-td :props="props">
+          <a class="text-blue" style="text-decoration: none" :href="'mailto:' + `${props.row.email}`">{{ props.row.email }}</a>
+        </q-td>
+      </template>
+      <template #body-cell-actions="props">
+        <q-td :props="props">
+          <q-btn
+            v-if="checkPermissions('PartyModify')"
+            class="q-py-none q-px-md font-size-sm q-mr-sm l-view-btn"
+            color="orange-6"
+            label="edit"
+            style="font-size: 12px"
+            :to="`/party/${props.row.id}/`"
+          />
+          <q-btn
+            v-if="checkPermissions('PartyView')"
+            class="q-py-none q-px-md font-size-sm l-edit-btn"
+            color="blue"
+            label="Account"
+            style="font-size: 12px"
+            :to="`/parties/account/${props.row.id}/`"
+          />
+        </q-td>
+      </template>
+      <template #body-cell-name="props">
+        <q-td style="padding: 0" :props="props">
+          <router-link
+            v-if="checkPermissions('PartyView')"
+            class="text-blue block"
+            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 16px 8px 8px 16px"
+            :to="`/parties/account/${props.row.id}/`"
+          >
+            {{ props.row.name }}
+          </router-link>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 16px 8px 8px 16px">
+            {{ props.row.name }}
+          </span>
+        </q-td>
+      </template>
+    </q-table>
+  </div>
+</template>

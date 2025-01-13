@@ -1,83 +1,3 @@
-<template>
-  <div class="q-pa-md">
-    <div class="row justify-end">
-      <q-btn v-if="checkPermissions('AccountCreate')" color="green" to="/account/add/" label="New Account" class="add-btn" icon-right="add" />
-    </div>
-
-    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-      <template v-slot:top>
-        <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-          <q-btn class="f-open-btn" icon="mdi-filter-variant">
-            <q-menu>
-              <div class="menu-wrapper" style="width: min(300px, 90vw)">
-                <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Filters</h6>
-                </div>
-                <div class="q-ma-sm">
-                  <div class="q-mb-sm">
-                    <q-checkbox v-model="filters.default" label="Is Default?" :false-value="null"></q-checkbox>
-                  </div>
-                  <div>
-                    <q-checkbox v-model="filters.has_balance" label="Has Balance?" :false-value="null"></q-checkbox>
-                  </div>
-                  <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.category" :fetchOnMount="true" endpoint="v1/categories/choices/" label="Category" />
-                  </div>
-                </div>
-                <div class="q-mx-md flex gap-4 q-mb-md">
-                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters"></q-btn>
-                </div>
-              </div>
-            </q-menu>
-          </q-btn>
-        </div>
-      </template>
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="blue" dense flat to="" /> -->
-          <q-btn v-if="checkPermissions('AccountView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View" :to="`/account/${props.row.id}/view/`" />
-          <q-btn v-if="checkPermissions('AccountModify')" label="Edit" color="orange-6" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/account/${props.row.id}/edit/`" />
-        </q-td>
-      </template>
-      <template v-slot:body-cell-category="props">
-        <q-td :props="props" style="padding: 0">
-          <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue" :to="`/account-category/${props.row.category.id}/`">{{ props.row.category.name }}</router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.category.name }}</span>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-dr="props">
-        <q-td :props="props">
-          {{ parseInt(props.row.dr || 0) }}
-        </q-td>
-      </template>
-      <template v-slot:body-cell-cr="props">
-        <q-td :props="props">
-          {{ parseInt(props.row.cr || 0) }}
-        </q-td>
-      </template>
-      <template v-slot:body-cell-balance="props">
-        <q-td :props="props">
-          {{ parseInt(props.row.computed_balance || 0) }}
-        </q-td>
-      </template>
-      <template v-slot:body-cell-name="props">
-        <q-td :props="props" style="padding: 0">
-          <router-link v-if="checkPermissions('AccountView')" :to="`/account/${props.row.id}/view/`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue">
-            {{ props.row.name }}
-          </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.name }}</span>
-        </q-td>
-      </template>
-    </q-table>
-  </div>
-</template>
-
 <script>
 export default {
   setup() {
@@ -144,16 +64,18 @@ export default {
           const queryParams = { ...route.query }
           if (queryParams.hasOwnProperty('search') && typeof queryParams.search === 'string') {
             listData.searchQuery.value = queryParams.search
-          } else listData.searchQuery.value = null
+          } else {
+            listData.searchQuery.value = null
+          }
           delete queryParams.search
-          let cleanedFilterValues = Object.fromEntries(
+          const cleanedFilterValues = Object.fromEntries(
             Object.entries(queryParams).map(([k, v]) => {
               if (v === 'true') {
                 return [k, true]
               } else if (v === 'false') {
                 return [k, false]
               }
-              return [k, isNaN(v) ? v : parseFloat(v)]
+              return [k, isNaN(v) ? v : Number.parseFloat(v)]
             }),
           )
           listData.filters.value = cleanedFilterValues
@@ -167,3 +89,149 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <div class="row justify-end">
+      <q-btn
+        v-if="checkPermissions('AccountCreate')"
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="New Account"
+        to="/account/add/"
+      />
+    </div>
+
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
+      <template #top>
+        <div class="search-bar">
+          <q-input
+            v-model="searchQuery"
+            dense
+            class="full-width search-input"
+            debounce="500"
+            placeholder="Search"
+          >
+            <template #append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(300px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">
+                    Filters
+                  </h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-mb-sm">
+                    <q-checkbox v-model="filters.default" label="Is Default?" :false-value="null" />
+                  </div>
+                  <div>
+                    <q-checkbox v-model="filters.has_balance" label="Has Balance?" :false-value="null" />
+                  </div>
+                  <div class="q-mx-sm">
+                    <n-auto-complete-v2
+                      v-model="filters.category"
+                      endpoint="v1/categories/choices/"
+                      label="Category"
+                      :fetch-on-mount="true"
+                    />
+                  </div>
+                </div>
+                <div class="q-mx-md flex gap-4 q-mb-md">
+                  <q-btn
+                    class="f-submit-btn"
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  />
+                  <q-btn
+                    class="f-reset-btn"
+                    color="red"
+                    icon="close"
+                    @click="resetFilters"
+                  />
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
+        </div>
+      </template>
+      <template #body-cell-actions="props">
+        <q-td :props="props">
+          <!-- <q-btn icon="visibility" color="blue" dense flat to="" /> -->
+          <q-btn
+            v-if="checkPermissions('AccountView')"
+            class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
+            color="blue"
+            label="View"
+            style="font-size: 12px"
+            :to="`/account/${props.row.id}/view/`"
+          />
+          <q-btn
+            v-if="checkPermissions('AccountModify')"
+            class="q-py-none q-px-md font-size-sm l-edit-btn"
+            color="orange-6"
+            label="Edit"
+            style="font-size: 12px"
+            :to="`/account/${props.row.id}/edit/`"
+          />
+        </q-td>
+      </template>
+      <template #body-cell-category="props">
+        <q-td style="padding: 0" :props="props">
+          <router-link
+            v-if="checkPermissions('CategoryModify')"
+            class="text-blue"
+            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+            :to="`/account-category/${props.row.category.id}/`"
+          >
+            {{ props.row.category.name }}
+          </router-link>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.category.name }}</span>
+        </q-td>
+      </template>
+      <template #body-cell-dr="props">
+        <q-td :props="props">
+          {{ parseInt(props.row.dr || 0) }}
+        </q-td>
+      </template>
+      <template #body-cell-cr="props">
+        <q-td :props="props">
+          {{ parseInt(props.row.cr || 0) }}
+        </q-td>
+      </template>
+      <template #body-cell-balance="props">
+        <q-td :props="props">
+          {{ parseInt(props.row.computed_balance || 0) }}
+        </q-td>
+      </template>
+      <template #body-cell-name="props">
+        <q-td style="padding: 0" :props="props">
+          <router-link
+            v-if="checkPermissions('AccountView')"
+            class="text-blue"
+            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+            :to="`/account/${props.row.id}/view/`"
+          >
+            {{ props.row.name }}
+          </router-link>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.name }}</span>
+        </q-td>
+      </template>
+    </q-table>
+  </div>
+</template>

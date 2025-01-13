@@ -3,9 +3,9 @@ function formatNumberWithCommas(number, toFixed) {
     number = 0
   }
   if (typeof number !== 'number') {
-    number = parseFloat(number)
+    number = Number.parseFloat(number)
   }
-  const multiplier = Math.pow(10, toFixed || 2)
+  const multiplier = 10 ** (toFixed || 2)
   const roundNumber = Math.round(number * multiplier) / multiplier
   // Convert the number to a string
   const numStr = roundNumber.toString()
@@ -14,7 +14,7 @@ function formatNumberWithCommas(number, toFixed) {
   const parts = numStr.split('.')
   const integers = parts[0].split('').reverse()
   let tempGroup = ''
-  let commaCount = 0
+  const commaCount = 0
   const numbersArray = []
   for (let i = 0; i <= integers.length - 1; i++) {
     tempGroup = tempGroup + integers[i]
@@ -30,6 +30,6 @@ function formatNumberWithCommas(number, toFixed) {
   }
   // Join the groups with commas and return the formatted string
   const totalString = numbersArray.join(',')
-  return totalString.split('').reverse().join('') + `${parts[1] ? '.' + parts[1] : ''}`
+  return `${totalString.split('').reverse().join('')}${parts[1] ? `.${parts[1]}` : ''}`
 }
 export default formatNumberWithCommas

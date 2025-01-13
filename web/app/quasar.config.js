@@ -9,13 +9,13 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 const { sentryVitePlugin } = require('@sentry/vite-plugin')
 const UnoCSS = require('unocss/vite').default
+const { configure } = require('quasar/wrappers')
+
 // const { presetAttributify, presetUno } = require('unocss')
 // import presetWind from '@unocss/preset-wind'
 const { presetWind } = require('unocss')
 
-const { configure } = require('quasar/wrappers')
-
-module.exports = configure(function (ctx) {
+module.exports = configure((ctx) => {
   return {
     eslint: {
       // fix: true,

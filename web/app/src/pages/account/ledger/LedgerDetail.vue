@@ -1,59 +1,7 @@
-<template>
-  <div class="q-py-lg q-pl-lg q-mr-xl">
-    <div class="flex justify-between">
-      <div class="text-h5">
-        <span class="text-bold">{{ fields?.name || '-' }}</span>
-        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7">
-          <q-tooltip>Category</q-tooltip>
-          ({{ fields?.category_name || '-' }})
-        </span>
-      </div>
-      <div>
-        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block">[Code: {{ fields?.code }}]</span>
-      </div>
-    </div>
-    <div class="mt-8">
-      <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
-        <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Dr Amount</div>
-          <div class="q-px-md">
-            {{ $nf(fields?.amounts?.dr) || '-' }}
-          </div>
-        </div>
-
-        <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Cr Amount</div>
-          <div class="q-px-md">{{ $nf(fields?.amounts?.cr) || '-' }}</div>
-        </div>
-
-        <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Closing Balance</div>
-          <div class="q-px-md">
-            {{ $nf((fields?.amounts?.dr || 0) - (fields?.amounts?.cr || 0)) }}
-          </div>
-        </div>
-      </div>
-      <div class="sm:mt-6 mb-4 sm:mb-0 mt-2 px-2">
-        <div class="row q-col-gutter-md print-hide items-center">
-          <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" />
-          <div v-if="startDate != null || endDate != null">
-            <q-btn @click.prevent="resetDate" square color="red" icon="fa-solid fa-xmark" class="q-mt-md" />
-          </div>
-          <div>
-            <q-btn @click.prevent="filter" color="primary" label="FILTER" class="sm:q-mt-md" />
-          </div>
-        </div>
-      </div>
-      <transaction-table :fields="fields" v-if="fields?.transactions.results?.length > 0">
-        <TablePagination :fields="fields"></TablePagination>
-      </transaction-table>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import useApi from 'src/composables/useApi'
 import { withQuery } from 'ufo'
+
 const fields = ref(null)
 const route = useRoute()
 const router = useRouter()
@@ -133,6 +81,78 @@ onMounted(() => {
   }
 })
 </script>
+
+<template>
+  <div class="q-py-lg q-pl-lg q-mr-xl">
+    <div class="flex justify-between">
+      <div class="text-h5">
+        <span class="text-bold">{{ fields?.name || '-' }}</span>
+        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7">
+          <q-tooltip>Category</q-tooltip>
+          ({{ fields?.category_name || '-' }})
+        </span>
+      </div>
+      <div>
+        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block">[Code: {{ fields?.code }}]</span>
+      </div>
+    </div>
+    <div class="mt-8">
+      <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
+        <div class="row justify-between q-py-sm b">
+          <div class="q-px-md text-grey-8">
+            Dr Amount
+          </div>
+          <div class="q-px-md">
+            {{ $nf(fields?.amounts?.dr) || '-' }}
+          </div>
+        </div>
+
+        <div class="row justify-between q-py-sm b">
+          <div class="q-px-md text-grey-8">
+            Cr Amount
+          </div>
+          <div class="q-px-md">
+            {{ $nf(fields?.amounts?.cr) || '-' }}
+          </div>
+        </div>
+
+        <div class="row justify-between q-py-sm b">
+          <div class="q-px-md text-grey-8">
+            Closing Balance
+          </div>
+          <div class="q-px-md">
+            {{ $nf((fields?.amounts?.dr || 0) - (fields?.amounts?.cr || 0)) }}
+          </div>
+        </div>
+      </div>
+      <div class="sm:mt-6 mb-4 sm:mb-0 mt-2 px-2">
+        <div class="row q-col-gutter-md print-hide items-center">
+          <DateRangePicker v-model:end-date="endDate" v-model:start-date="startDate" :hide-btns="true" />
+          <div v-if="startDate != null || endDate != null">
+            <q-btn
+              square
+              class="q-mt-md"
+              color="red"
+              icon="fa-solid fa-xmark"
+              @click.prevent="resetDate"
+            />
+          </div>
+          <div>
+            <q-btn
+              class="sm:q-mt-md"
+              color="primary"
+              label="FILTER"
+              @click.prevent="filter"
+            />
+          </div>
+        </div>
+      </div>
+      <transaction-table v-if="fields?.transactions.results?.length > 0" :fields="fields">
+        <TablePagination :fields="fields" />
+      </transaction-table>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 hr {

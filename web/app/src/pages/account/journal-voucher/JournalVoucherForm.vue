@@ -1,66 +1,3 @@
-<template>
-  <q-form class="q-pa-lg" autofocus>
-    <q-card class="q-pa-xs">
-      <q-card-section>
-        <q-card>
-          <q-card-section class="bg-green text-white">
-            <div class="text-h6">
-              <span v-if="isEdit">Update Journal Voucher | {{ fields.status }}</span>
-              <span v-else>New Journal Voucher</span>
-            </div>
-          </q-card-section>
-          <q-card class="q-pt-md">
-            <div class="row q-col-gutter-md q-px-md q-pb-md">
-              <q-input v-model="fields.voucher_no" label="Voucher No." class="col-6" :error-message="errors?.voucher_no" :error="!!errors?.voucher_no" />
-              <DatePicker v-model="fields.date" class="col-6" label="Date" :error-message="errors?.date" :error="!!errors?.date"></DatePicker>
-            </div>
-          </q-card>
-        </q-card>
-        <q-card class="q-mt-xs overflow-y-auto">
-          <q-card-section class="q-pt-md min-w-[650px]">
-            <div class="row q-col-gutter-md q-py-sm">
-              <div class="text-center">SN</div>
-              <div class="row q-col-gutter-md" style="flex-grow: 1">
-                <div class="col-2">Type</div>
-                <div class="col-4">Account</div>
-                <div class="col-2">Dr Amount</div>
-                <div class="col-2">Cr Amount</div>
-                <div class="col-2"></div>
-              </div>
-            </div>
-            <div v-for="(voucher, index) in fields.rows" :key="voucher.id">
-              <VoucherRow :voucher="voucher" :index="index" :options="formDefaults.collections?.accounts" :errors="errors?.rows ? errors.rows : null" @deleteVoucher="(index) => deleteVoucher(index, errors)" @checkAddVoucher="checkAddVoucher" />
-            </div>
-            <div class="row q-col-gutter-md q-py-sm text-right text-bold">
-              <div class="q-mr-md"></div>
-              <div class="col-2"></div>
-              <div class="col-3" style="text-align: right">Total</div>
-              <div class="col-2" style="text-align: right">
-                {{ amountComputed.dr }}
-              </div>
-              <div class="col-2" style="text-align: right">
-                {{ amountComputed.cr }}
-              </div>
-              <div class="col-2"></div>
-            </div>
-            <q-btn @click.prevent="addNewVoucher" outline style="color: green" label="ADD NEW ROW" class="q-mt-lg" />
-          </q-card-section>
-        </q-card>
-      </q-card-section>
-
-      <div class="row">
-        <q-input v-model="fields.narration" type="textarea" autogrow label="Narration *" class="col-12 q-pa-md q-mb-md" :error-message="errors?.narration" :error="!!errors?.narration" />
-      </div>
-      <div class="row q-ma-md justify-end">
-        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit" @click.prevent="onSubmitClick('Unapproved')" color="orange-7" icon="fa-solid fa-pen-to-square" label="Draft" class="q-mr-md q-py-sm" type="submit" />
-        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit && fields.status === 'Draft'" @click.prevent="onSubmitClick('Unapproved')" color="orange-7" icon="fa-solid fa-pen-to-square" label="Save Draft" class="q-mr-md q-py-sm" type="submit" />
-        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit" @click.prevent="onSubmitClick('Approved')" color="green-8" icon="fa-solid fa-floppy-disk" label="Save" />
-        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit" @click.prevent="onSubmitClick('Approved')" color="green-8" icon="fa-solid fa-floppy-disk" label="Update" type="submit" />
-      </div>
-    </q-card>
-  </q-form>
-</template>
-
 <script>
 import Decimal from 'decimal.js'
 
@@ -116,7 +53,7 @@ export default {
     })
     useMeta(() => {
       return {
-        title: (formData.isEdit?.value ? 'Update Journal Voucher' : 'Add Journal Voucher') + ' | Awecount',
+        title: `${formData.isEdit?.value ? 'Update Journal Voucher' : 'Add Journal Voucher'} | Awecount`,
       }
     })
     formData.fields.value.voucher_no = formData?.formDefaults?.value.voucher_no || null
@@ -139,7 +76,7 @@ export default {
 
     formData.fields.value.voucher_no = formData.formDefaults.value?.fields?.voucher_no
     const amountComputed = computed(() => {
-      let amount = { dr: 0, cr: 0 }
+      const amount = { dr: 0, cr: 0 }
       formData.fields.value.rows.forEach((item) => {
         if (item.type === 'Dr') {
           amount.dr = add(amount.dr, Number(item.dr_amount))
@@ -173,3 +110,140 @@ export default {
   },
 }
 </script>
+
+<template>
+  <q-form autofocus class="q-pa-lg">
+    <q-card class="q-pa-xs">
+      <q-card-section>
+        <q-card>
+          <q-card-section class="bg-green text-white">
+            <div class="text-h6">
+              <span v-if="isEdit">Update Journal Voucher | {{ fields.status }}</span>
+              <span v-else>New Journal Voucher</span>
+            </div>
+          </q-card-section>
+          <q-card class="q-pt-md">
+            <div class="row q-col-gutter-md q-px-md q-pb-md">
+              <q-input
+                v-model="fields.voucher_no"
+                class="col-6"
+                label="Voucher No."
+                :error="!!errors?.voucher_no"
+                :error-message="errors?.voucher_no"
+              />
+              <DatePicker
+                v-model="fields.date"
+                class="col-6"
+                label="Date"
+                :error="!!errors?.date"
+                :error-message="errors?.date"
+              />
+            </div>
+          </q-card>
+        </q-card>
+        <q-card class="q-mt-xs overflow-y-auto">
+          <q-card-section class="q-pt-md min-w-[650px]">
+            <div class="row q-col-gutter-md q-py-sm">
+              <div class="text-center">
+                SN
+              </div>
+              <div class="row q-col-gutter-md" style="flex-grow: 1">
+                <div class="col-2">
+                  Type
+                </div>
+                <div class="col-4">
+                  Account
+                </div>
+                <div class="col-2">
+                  Dr Amount
+                </div>
+                <div class="col-2">
+                  Cr Amount
+                </div>
+                <div class="col-2"></div>
+              </div>
+            </div>
+            <div v-for="(voucher, index) in fields.rows" :key="voucher.id">
+              <VoucherRow
+                :errors="errors?.rows ? errors.rows : null"
+                :index="index"
+                :options="formDefaults.collections?.accounts"
+                :voucher="voucher"
+                @check-add-voucher="checkAddVoucher"
+                @delete-voucher="(index) => deleteVoucher(index, errors)"
+              />
+            </div>
+            <div class="row q-col-gutter-md q-py-sm text-right text-bold">
+              <div class="q-mr-md"></div>
+              <div class="col-2"></div>
+              <div class="col-3" style="text-align: right">
+                Total
+              </div>
+              <div class="col-2" style="text-align: right">
+                {{ amountComputed.dr }}
+              </div>
+              <div class="col-2" style="text-align: right">
+                {{ amountComputed.cr }}
+              </div>
+              <div class="col-2"></div>
+            </div>
+            <q-btn
+              outline
+              class="q-mt-lg"
+              label="ADD NEW ROW"
+              style="color: green"
+              @click.prevent="addNewVoucher"
+            />
+          </q-card-section>
+        </q-card>
+      </q-card-section>
+
+      <div class="row">
+        <q-input
+          v-model="fields.narration"
+          autogrow
+          class="col-12 q-pa-md q-mb-md"
+          label="Narration *"
+          type="textarea"
+          :error="!!errors?.narration"
+          :error-message="errors?.narration"
+        />
+      </div>
+      <div class="row q-ma-md justify-end">
+        <q-btn
+          v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
+          class="q-mr-md q-py-sm"
+          color="orange-7"
+          icon="fa-solid fa-pen-to-square"
+          label="Draft"
+          type="submit"
+          @click.prevent="onSubmitClick('Unapproved')"
+        />
+        <q-btn
+          v-if="checkPermissions('JournalVoucherModify') && isEdit && fields.status === 'Draft'"
+          class="q-mr-md q-py-sm"
+          color="orange-7"
+          icon="fa-solid fa-pen-to-square"
+          label="Save Draft"
+          type="submit"
+          @click.prevent="onSubmitClick('Unapproved')"
+        />
+        <q-btn
+          v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
+          color="green-8"
+          icon="fa-solid fa-floppy-disk"
+          label="Save"
+          @click.prevent="onSubmitClick('Approved')"
+        />
+        <q-btn
+          v-if="checkPermissions('JournalVoucherModify') && isEdit"
+          color="green-8"
+          icon="fa-solid fa-floppy-disk"
+          label="Update"
+          type="submit"
+          @click.prevent="onSubmitClick('Approved')"
+        />
+      </div>
+    </q-card>
+  </q-form>
+</template>

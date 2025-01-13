@@ -1,8 +1,8 @@
-import useApi from './useApi'
-import { withQuery } from 'ufo'
-import { withTrailingSlash, joinURL } from 'ufo'
-import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
+import { joinURL, withQuery, withTrailingSlash } from 'ufo'
+import useApi from './useApi'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+
 const store = useLoginStore()
 
 const sortOnKeys = (dict) => {
@@ -46,7 +46,7 @@ export default (endpoint, predefinedColumns = null) => {
   const columns = ref([])
   const data = ref(null)
 
-  let cleanedFilterValues = Object.fromEntries(
+  const cleanedFilterValues = Object.fromEntries(
     Object.entries(filterQueryValues).map(([k, v]) => {
       if (v === 'true') {
         return [k, true]
@@ -54,9 +54,9 @@ export default (endpoint, predefinedColumns = null) => {
         return [k, false]
       } else if (k === 'status' && typeof v === 'string') {
         // TODO: added as an temproary solution need to confirm with dipesh sir
-        return [k, isNaN(v) ? v : parseFloat(v)]
+        return [k, isNaN(v) ? v : Number.parseFloat(v)]
       }
-      return [k, isNaN(v) ? v : parseFloat(v)]
+      return [k, isNaN(v) ? v : Number.parseFloat(v)]
     }),
   )
   // let cleanedFilterValues = Object.fromEntries(
@@ -104,7 +104,7 @@ export default (endpoint, predefinedColumns = null) => {
         if (predefinedColumns) {
           columns.value = predefinedColumns
         } else if (response.results?.length) {
-          const fields = Object.keys(response.results[0]).filter((f) => f !== 'id')
+          const fields = Object.keys(response.results[0]).filter(f => f !== 'id')
           const columnList = fields.map((f) => {
             return {
               name: f,
@@ -147,7 +147,7 @@ export default (endpoint, predefinedColumns = null) => {
         }
         $q.notify({
           color: 'red-6',
-          message: message,
+          message,
           icon: 'report_problem',
         })
         loading.value = false
@@ -170,7 +170,7 @@ export default (endpoint, predefinedColumns = null) => {
       url = withQuery(url, { search: undefined })
     }
     if (filters.value && Object.keys(filters.value).length > 0) {
-      let totalFilters = { ...filters.value }
+      const totalFilters = { ...filters.value }
       // TODO: check with dipesh sir
       let cleanedFilters = Object.fromEntries(
         Object.entries(totalFilters).map(([k, v]) => {
@@ -216,7 +216,7 @@ export default (endpoint, predefinedColumns = null) => {
   const onFilterUpdate = () => {
     let url = route.path
     // TODO: check with dipesh sir
-    let totalFilters = { ...filters.value }
+    const totalFilters = { ...filters.value }
     totalFilters.search = searchQuery.value
     // TODO: check with dipesh sir
     let cleanedFilters = Object.fromEntries(
@@ -242,7 +242,7 @@ export default (endpoint, predefinedColumns = null) => {
   }
   const rows = computed(() => {
     if (unCalculatedrows.value?.length > 0) {
-      let newData = []
+      const newData = []
       unCalculatedrows.value.forEach((item) => {
         const updatedItem = { ...item }
         if (!store.isCalendarInAD && unCalculatedrows.value[0].hasOwnProperty('date')) {
@@ -259,7 +259,9 @@ export default (endpoint, predefinedColumns = null) => {
         newData.push(updatedItem)
       })
       return newData
-    } else return unCalculatedrows.value
+    } else {
+      return unCalculatedrows.value
+    }
   })
 
   // watch(filters.value, () => {
@@ -278,7 +280,7 @@ export default (endpoint, predefinedColumns = null) => {
       cancel: true,
       html: true,
     }).onOk(() => {
-      const deleteEndpoint = withTrailingSlash(joinURL(endpoint, id + ''))
+      const deleteEndpoint = withTrailingSlash(joinURL(endpoint, `${id}`))
       useApi(deleteEndpoint, {
         method: 'DELETE',
       }).then(() => {

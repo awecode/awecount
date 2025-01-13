@@ -1,82 +1,7 @@
-<template>
-  <div class="q-pa-md">
-    <div class="row justify-end q-mb-md gap-4">
-      <q-btn icon="settings" title="Config">
-        <q-badge v-if="Object.values(config).filter(Boolean).length" floating color="primary" class="q-p-md" style="top: -10px; right: -10px; padding: 6px 8px">
-          {{ Object.values(config).filter(Boolean).length }}
-        </q-badge>
-        <q-menu>
-          <div class="menu-wrapper" style="width: min(300px, 90vw)">
-            <div style="border-bottom: 1px solid lightgrey">
-              <h6 class="q-ma-md text-grey-9">Config</h6>
-            </div>
-            <div class="q-ma-sm">
-              <div class="q-pb-sm">
-                <q-checkbox v-model="config.hide_accounts" label="Hide Accounts?"></q-checkbox>
-              </div>
-              <div class="q-pb-sm">
-                <q-checkbox v-model="config.hide_categories" label="Hide Categories?"></q-checkbox>
-              </div>
-              <div class="q-pb-sm">
-                <q-checkbox v-model="config.hide_zero_transactions" label="Hide accounts/categories without transactions?"></q-checkbox>
-              </div>
-            </div>
-          </div>
-        </q-menu>
-      </q-btn>
-      <q-btn v-if="checkPermissions('AccountCreate')" color="green" label="Add Account" class="add-btn" icon-right="add" @click="addAccountModalOpen = true" />
-
-      <q-btn v-if="checkPermissions('CategoryCreate')" color="green" label="Add Category" icon-right="add" @click="addCategoryModalOpen = true" />
-    </div>
-
-    <q-markup-table>
-      <q-table :columns="columns" virual-scroll :virtual-scroll-item-size="50" class="w-full" :rows="chartOfAccounts" :hide-pagination="true" :rows-per-page-options="[0]">
-        <template v-slot:body="props">
-          <COATableNode v-if="props.row.id === 0 || !(config.hide_zero_transactions && props.row.total_transactions === 0)" :row="props.row" @drag-event="handleDragEvent" @edit-row="editRow" @add-category="handleAddCategoryEmitEvent" @add-account="handleAddAccountEmitEvent" v-model:currentTarget="currentTarget" v-model:draggingItem="draggingItem" :droppable-categories="droppableCategories" :config="config" root />
-        </template>
-      </q-table>
-    </q-markup-table>
-
-    <q-dialog v-model="dragDropConfirmDialog" class="overflow-visible">
-      <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
-        <q-card-section class="bg-primary text-white flex justify-between">
-          <div class="text-h6 text-white">
-            <span>Are you sure?</span>
-          </div>
-          <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
-        </q-card-section>
-
-        <q-card-section>
-          <div class="text-subtitle1">
-            {{ dragDropConfirmationMessage }}
-          </div>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn flat label="Confirm" color="primary" @click="confirmAction" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-    <q-dialog v-model="addCategoryModalOpen" transition-hide="none">
-      <q-card style="min-width: 80vw">
-        <CategoryForm :is-modal="true" @modalSignal="onCategoryAdd" :edit-id="categoryUpdateId" @closeModal="closeAccountModal()" :default-fields="addCategoryDefaults" />
-      </q-card>
-    </q-dialog>
-
-    <q-dialog v-model="addAccountModalOpen" transition-hide="none">
-      <q-card style="min-width: 80vw">
-        <AccountForm :is-modal="true" @modalSignal="onAccountAdd" :edit-id="accountUpdateId" @closeModal="closeAccountModal()" :default-fields="addAccountDefaults" />
-      </q-card>
-    </q-dialog>
-  </div>
-</template>
-
 <script setup lang="ts">
 import checkPermissions from 'src/composables/checkPermissions'
-import CategoryForm from '../account/category/CategoryForm.vue'
 import AccountForm from 'src/pages/account/ledger/LedgerForm.vue'
+import CategoryForm from '../account/category/CategoryForm.vue'
 
 interface Account {
   id: number
@@ -106,15 +31,15 @@ interface CategoryTree {
 
 type DragItem =
   | {
-      type: 'category'
-      row: CategoryTree
-    }
+    type: 'category'
+    row: CategoryTree
+  }
   | {
-      type: 'account'
-      row: Account
-    }
+    type: 'account'
+    row: Account
+  }
 
-type Config = {
+interface Config {
   hide_accounts: boolean
   hide_categories: boolean
   hide_zero_transactions: boolean
@@ -299,7 +224,7 @@ const chartOfAccounts = computed(() => {
   return categoriesCopy
 })
 
-const handleDragEvent = ({ source, target }: { source: { type: 'category' | 'account'; id: number }; target: number | null }) => {
+const handleDragEvent = ({ source, target }: { source: { type: 'category' | 'account', id: number }, target: number | null }) => {
   if (source.type === 'category') {
     const sourceRow = findRowById(chartOfAccounts.value, source.id)!
     const targetRow = target ? findRowById(chartOfAccounts.value, target) : null
@@ -339,7 +264,7 @@ const findRowById = (rows: CategoryTree[], id: number): CategoryTree | null => {
 const findAccountById = (rows: CategoryTree[], id: number): Account | null => {
   for (const row of rows) {
     if (row.accounts) {
-      const account = row.accounts.find((account) => account.id === id)
+      const account = row.accounts.find(account => account.id === id)
       if (account) return account
     }
     const childAccount = findAccountById(row.children || [], id)
@@ -444,3 +369,148 @@ function handleAddAccountEmitEvent(id: number) {
   addAccountDefaults.value = { category: id }
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <div class="row justify-end q-mb-md gap-4">
+      <q-btn icon="settings" title="Config">
+        <q-badge
+          v-if="Object.values(config).filter(Boolean).length"
+          floating
+          class="q-p-md"
+          color="primary"
+          style="top: -10px; right: -10px; padding: 6px 8px"
+        >
+          {{ Object.values(config).filter(Boolean).length }}
+        </q-badge>
+        <q-menu>
+          <div class="menu-wrapper" style="width: min(300px, 90vw)">
+            <div style="border-bottom: 1px solid lightgrey">
+              <h6 class="q-ma-md text-grey-9">
+                Config
+              </h6>
+            </div>
+            <div class="q-ma-sm">
+              <div class="q-pb-sm">
+                <q-checkbox v-model="config.hide_accounts" label="Hide Accounts?" />
+              </div>
+              <div class="q-pb-sm">
+                <q-checkbox v-model="config.hide_categories" label="Hide Categories?" />
+              </div>
+              <div class="q-pb-sm">
+                <q-checkbox v-model="config.hide_zero_transactions" label="Hide accounts/categories without transactions?" />
+              </div>
+            </div>
+          </div>
+        </q-menu>
+      </q-btn>
+      <q-btn
+        v-if="checkPermissions('AccountCreate')"
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="Add Account"
+        @click="addAccountModalOpen = true"
+      />
+
+      <q-btn
+        v-if="checkPermissions('CategoryCreate')"
+        color="green"
+        icon-right="add"
+        label="Add Category"
+        @click="addCategoryModalOpen = true"
+      />
+    </div>
+
+    <q-markup-table>
+      <q-table
+        virual-scroll
+        class="w-full"
+        :columns="columns"
+        :hide-pagination="true"
+        :rows="chartOfAccounts"
+        :rows-per-page-options="[0]"
+        :virtual-scroll-item-size="50"
+      >
+        <template #body="props">
+          <COATableNode
+            v-if="props.row.id === 0 || !(config.hide_zero_transactions && props.row.total_transactions === 0)"
+            v-model:current-target="currentTarget"
+            v-model:dragging-item="draggingItem"
+            root
+            :config="config"
+            :droppable-categories="droppableCategories"
+            :row="props.row"
+            @add-account="handleAddAccountEmitEvent"
+            @add-category="handleAddCategoryEmitEvent"
+            @drag-event="handleDragEvent"
+            @edit-row="editRow"
+          />
+        </template>
+      </q-table>
+    </q-markup-table>
+
+    <q-dialog v-model="dragDropConfirmDialog" class="overflow-visible">
+      <q-card class="overflow-visible" style="min-width: min(40vw, 500px)">
+        <q-card-section class="bg-primary text-white flex justify-between">
+          <div class="text-h6 text-white">
+            <span>Are you sure?</span>
+          </div>
+          <q-btn
+            v-close-popup
+            dense
+            flat
+            round
+            class="text-red-700 bg-slate-200 opacity-95"
+            icon="close"
+          />
+        </q-card-section>
+
+        <q-card-section>
+          <div class="text-subtitle1">
+            {{ dragDropConfirmationMessage }}
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            v-close-popup
+            flat
+            color="primary"
+            label="Cancel"
+          />
+          <q-btn
+            flat
+            color="primary"
+            label="Confirm"
+            @click="confirmAction"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="addCategoryModalOpen" transition-hide="none">
+      <q-card style="min-width: 80vw">
+        <CategoryForm
+          :default-fields="addCategoryDefaults"
+          :edit-id="categoryUpdateId"
+          :is-modal="true"
+          @close-modal="closeAccountModal()"
+          @modal-signal="onCategoryAdd"
+        />
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="addAccountModalOpen" transition-hide="none">
+      <q-card style="min-width: 80vw">
+        <AccountForm
+          :default-fields="addAccountDefaults"
+          :edit-id="accountUpdateId"
+          :is-modal="true"
+          @close-modal="closeAccountModal()"
+          @modal-signal="onAccountAdd"
+        />
+      </q-card>
+    </q-dialog>
+  </div>
+</template>

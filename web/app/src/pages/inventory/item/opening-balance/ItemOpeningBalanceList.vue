@@ -1,38 +1,7 @@
-<template>
-  <div class="q-pa-md">
-    <div class="row" v-if="checkPermissions('AccountOpeningBalanceCreate')">
-      <q-btn color="green" to="/items/opening/add" label="New Opening Balance" class="q-ml-auto add-btn" icon-right="add" />
-    </div>
-    <q-table :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-      <template v-slot:top>
-        <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width">
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </template>
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props">
-          <q-btn v-if="checkPermissions('AccountOpeningBalanceModify')" color="orange-6" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="EDIT" :to="`/items/opening/${props.row.id}/`" />
-        </q-td>
-      </template>
-      <template v-slot:body-cell-name="props">
-        <q-td :props="props" style="padding: 0">
-          <router-link v-if="checkPermissions('ItemModify')" :to="`/items/${props.row.item_id}/`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue">
-            {{ props.row.name }}
-          </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
-            {{ props.row.name }}
-          </span>
-        </q-td>
-      </template>
-    </q-table>
-  </div>
-</template>
-
 <script>
-import useList from '/src/composables/useList'
 import checkPermissions from 'src/composables/checkPermissions'
+import useList from '/src/composables/useList'
+
 export default {
   setup() {
     const endpoint = '/v1/item-opening-balance/'
@@ -63,3 +32,69 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <div v-if="checkPermissions('AccountOpeningBalanceCreate')" class="row">
+      <q-btn
+        class="q-ml-auto add-btn"
+        color="green"
+        icon-right="add"
+        label="New Opening Balance"
+        to="/items/opening/add"
+      />
+    </div>
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      :columns="newColumns"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
+      <template #top>
+        <q-input
+          v-model="searchQuery"
+          dense
+          class="full-width"
+          debounce="500"
+          placeholder="Search"
+        >
+          <template #append>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+      </template>
+      <template #body-cell-actions="props">
+        <q-td :props="props">
+          <q-btn
+            v-if="checkPermissions('AccountOpeningBalanceModify')"
+            class="q-py-none q-px-md font-size-sm l-edit-btn"
+            color="orange-6"
+            label="EDIT"
+            style="font-size: 12px"
+            :to="`/items/opening/${props.row.id}/`"
+          />
+        </q-td>
+      </template>
+      <template #body-cell-name="props">
+        <q-td style="padding: 0" :props="props">
+          <router-link
+            v-if="checkPermissions('ItemModify')"
+            class="text-blue"
+            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+            :to="`/items/${props.row.item_id}/`"
+          >
+            {{ props.row.name }}
+          </router-link>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+            {{ props.row.name }}
+          </span>
+        </q-td>
+      </template>
+    </q-table>
+  </div>
+</template>

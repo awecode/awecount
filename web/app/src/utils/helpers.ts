@@ -4,7 +4,9 @@ function parseErrors(errors: Record<string, any>) {
       let val = v
       if (Array.isArray(val)) {
         if (typeof val[0] === 'object') {
-        } else val = val.join(' ')
+        } else {
+          val = val.join(' ')
+        }
       }
       return [k, val]
     }),

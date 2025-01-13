@@ -1,5 +1,5 @@
-import { boot } from 'quasar/wrappers'
 import * as Sentry from '@sentry/vue'
+import { boot } from 'quasar/wrappers'
 // import { BrowserTracing } from '@sentry/tracing';
 
 export default boot(({ app }) => {

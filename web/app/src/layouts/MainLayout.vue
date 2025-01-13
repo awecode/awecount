@@ -1,165 +1,12 @@
-<template>
-  <q-layout view="lHh Lpr lFf" :class="{ 'container-padding-left': store.isLoggedIn }">
-    <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
-    <q-header v-if="store.isLoggedIn" elevated class="bg-white text-grey-8 q-pa-sm d-print-none print-hide q-pl-md">
-      <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-        <q-toolbar-title class="flex items-center" style="gap: 16px">
-          <RouterLink v-if="store.companyInfo?.logo_url" to="/" style="max-width: 60px; max-height: 40px">
-            <img style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url" alt="Company Logo" />
-          </RouterLink>
-          <q-breadcrumbs class="gt-xs" gutter="sm">
-            <q-breadcrumbs-el v-for="breadCrum in breadCrums" :key="breadCrum" :label="breadCrum" :to="{ name: breadCrum }" />
-            <!-- :class="breadCrums?.length - 1 === index cursor-pointer" -->
-          </q-breadcrumbs>
-        </q-toolbar-title>
-        <div>
-          <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
-             -->
-          <div class="row btns-Con">
-            <q-btn class="gt-sm">
-              {{ store.companyInfo?.current_fiscal_year }}
-              <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Yaar</q-tooltip>
-            </q-btn>
-            <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2" @click="store.isCalendarInAD = !store.isCalendarInAD">
-              {{ activeDateFormat }}
-              <q-tooltip :delay="1000" :offset="[0, 10]">Change Date Format</q-tooltip>
-            </q-btn>
-            <a target="_blank" href="https://docs.awecount.com/" style="color: inherit">
-              <q-btn class="gt-sm">
-                <q-icon name="mdi-help-circle-outline"></q-icon>
-                <q-tooltip :delay="1000" :offset="[0, 10]">Help</q-tooltip>
-              </q-btn>
-            </a>
-            <q-btn @click="logoutDiologueOpen = true">
-              <q-icon name="mdi-logout" />
-              <q-tooltip :delay="1000" :offset="[0, 10]">Logout</q-tooltip>
-            </q-btn>
-            <q-dialog v-model="logoutDiologueOpen">
-              <q-card style="min-width: min(40vw, 450px)">
-                <div style="margin: 20px 30px 10px">
-                  <div class="text-h6 text-grey-9">
-                    <span>Are you sure you want to logout?</span>
-                  </div>
-                  <div class="q-mb-md" style="margin-top: 40px">
-                    <div class="text-right text-blue-6 row justify-end q-gutter-x-lg">
-                      <q-btn flat label="Cancel" class="text-grey-8" @click="logoutDiologueOpen = false"></q-btn>
-                      <q-btn flat label="Yes" class="text-red" @click="onLogoutClick()"></q-btn>
-                    </div>
-                  </div>
-                </div>
-              </q-card>
-            </q-dialog>
-          </div>
-        </div>
-        <!-- <div>ERP v{{ $q.version }}</div> -->
-      </q-toolbar>
-    </q-header>
-    <q-drawer v-if="store.isLoggedIn" drawer persistent overlay show-if-above :mini="miniState" @mouseover="miniState = false" @mouseout="miniState = true" v-model="leftDrawerOpen" class="shadow-6">
-      <q-list class="icon-grey d-print-none print-hide">
-        <!-- <q-item-label header> Menu </q-item-label> -->
-        <!-- <q-img src="../assets/background-image.png" style="height: 90px">
-            <div class="absolute-bottom bg-transparent text-black">
-              <div class="text-weight-bold text-h6 text-grey-10">{{ store.username }}</div>
-            </div>
-          </q-img> -->
-
-        <div class="q-mb-md"></div>
-        <template v-for="link in essentialLinks" :key="link.title">
-          <EssentialLink v-if="!link.hide" v-bind="link" />
-        </template>
-      </q-list>
-    </q-drawer>
-    <q-page-container>
-      <!-- <template v-if="store.isLoading">
-        <div class="absolute bg-white/80 h-screen w-full left-0 top-0 flex items-center justify-center text-black z-10">
-          <q-spinner color="primary" size="3em" />
-        </div>
-      </template>
-      <RouterView /> -->
-      <div v-if="store.isLoading" class="relative">
-        <div class="bg-white q-pa-lg -mt-2 transition-all absolute top-0 left-0 w-full h-full">
-          <q-card class="mt-2">
-            <q-skeleton height="64px" square class="bg-green" />
-            <q-card class="q-mx-lg q-pt-md pb-8 px-3">
-              <div class="grid lg:grid-cols-2 grid-cols-1 gap-y-12 gap-x-6 py-6">
-                <div class="flex gap-4">
-                  <div class="flex grow gap-1">
-                    <q-skeleton height="45px" type="rect" class="grow"></q-skeleton>
-                    <q-skeleton height="45px" width="45px" type="QBtn" square></q-skeleton>
-                  </div>
-                  <q-skeleton height="45px" width="65px" type="QBtn" square></q-skeleton>
-                </div>
-                <q-skeleton height="45px" type="QInput"></q-skeleton>
-                <q-skeleton height="45px" type="QInput"></q-skeleton>
-                <q-skeleton height="45px" type="QInput"></q-skeleton>
-                <div class="flex gap-4">
-                  <q-skeleton height="45px" type="rect" class="grow"></q-skeleton>
-                  <q-skeleton height="45px" width="65px" type="QBtn" square></q-skeleton>
-                </div>
-                <div></div>
-                <q-skeleton height="45px" type="QInput"></q-skeleton>
-                <div></div>
-              </div>
-              <div class="pb-10">
-                <q-card>
-                  <q-card-section class="q-pa-lg">
-                    <div class="pt-8 pb-6">
-                      <hr class="h-[2px] bg-gray-300 b-0" />
-                    </div>
-                    <div class="grid grid-cols-12 gap-6">
-                      <div class="flex grow gap-1 col-span-5">
-                        <q-skeleton height="45px" type="rect" class="grow"></q-skeleton>
-                        <q-skeleton height="45px" width="45px" type="QBtn" square></q-skeleton>
-                      </div>
-                      <div class="col-span-2">
-                        <q-skeleton height="45px" type="rect"></q-skeleton>
-                      </div>
-                      <div class="col-span-2">
-                        <q-skeleton height="45px" type="rect"></q-skeleton>
-                      </div>
-                      <div class="col-span-2">
-                        <q-skeleton height="45px" type="rect"></q-skeleton>
-                      </div>
-                      <div class="col-span-1 grid grid-cols-2 gap-2">
-                        <q-skeleton type="rect"></q-skeleton>
-                        <q-skeleton type="rect"></q-skeleton>
-                      </div>
-                    </div>
-                    <div class="sm:grid grid-cols-8 py-8">
-                      <div class="col-span-5"></div>
-                      <div class="col-span-3 grid grid-cols-2 gap-x-4">
-                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
-                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
-                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
-                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
-                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
-                        <q-skeleton type="text" height="30px" class="w-"></q-skeleton>
-                      </div>
-                    </div>
-                  </q-card-section>
-                </q-card>
-              </div>
-              <div class="flex justify-right">
-                <q-skeleton type="QBtn" class="bg-green" height="36px"></q-skeleton>
-              </div>
-            </q-card>
-          </q-card>
-        </div>
-      </div>
-      <RouterView :class="store.isLoading ? 'opacity-0' : ''" class="transition-all" />
-    </q-page-container>
-  </q-layout>
-</template>
-
 <script setup lang="ts">
-import { EssentialLinkProps } from 'components/EssentialLink.vue'
-import { useLoginStore } from '../stores/login-info.js'
-import checkPermissions from 'src/composables/checkPermissions'
+import type { EssentialLinkProps } from 'components/EssentialLink.vue'
 // import useApi from 'src/composables/useApi'
-import { Ref } from 'vue'
+import type { Ref } from 'vue'
+import checkPermissions from 'src/composables/checkPermissions'
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useLoginStore } from '../stores/login-info.js'
+
 const miniState: Ref<boolean> = ref(true)
 const router = useRouter()
 const route = useRoute()
@@ -681,6 +528,219 @@ watch(route, () => {
 //     })
 // }
 </script>
+
+<template>
+  <q-layout view="lHh Lpr lFf" :class="{ 'container-padding-left': store.isLoggedIn }">
+    <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
+    <q-header v-if="store.isLoggedIn" elevated class="bg-white text-grey-8 q-pa-sm d-print-none print-hide q-pl-md">
+      <q-toolbar>
+        <q-btn
+          dense
+          flat
+          round
+          aria-label="Menu"
+          icon="menu"
+          @click="toggleLeftDrawer"
+        />
+        <q-toolbar-title class="flex items-center" style="gap: 16px">
+          <RouterLink v-if="store.companyInfo?.logo_url" style="max-width: 60px; max-height: 40px" to="/">
+            <img alt="Company Logo" style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url" />
+          </RouterLink>
+          <q-breadcrumbs class="gt-xs" gutter="sm">
+            <q-breadcrumbs-el
+              v-for="breadCrum in breadCrums"
+              :key="breadCrum"
+              :label="breadCrum"
+              :to="{ name: breadCrum }"
+            />
+            <!-- :class="breadCrums?.length - 1 === index cursor-pointer" -->
+          </q-breadcrumbs>
+        </q-toolbar-title>
+        <div>
+          <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
+             -->
+          <div class="row btns-Con">
+            <q-btn class="gt-sm">
+              {{ store.companyInfo?.current_fiscal_year }}
+              <q-tooltip :delay="1000" :offset="[0, 10]">
+                Fiscal Yaar
+              </q-tooltip>
+            </q-btn>
+            <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2" @click="store.isCalendarInAD = !store.isCalendarInAD">
+              {{ activeDateFormat }}
+              <q-tooltip :delay="1000" :offset="[0, 10]">
+                Change Date Format
+              </q-tooltip>
+            </q-btn>
+            <a href="https://docs.awecount.com/" style="color: inherit" target="_blank">
+              <q-btn class="gt-sm">
+                <q-icon name="mdi-help-circle-outline" />
+                <q-tooltip :delay="1000" :offset="[0, 10]">Help</q-tooltip>
+              </q-btn>
+            </a>
+            <q-btn @click="logoutDiologueOpen = true">
+              <q-icon name="mdi-logout" />
+              <q-tooltip :delay="1000" :offset="[0, 10]">
+                Logout
+              </q-tooltip>
+            </q-btn>
+            <q-dialog v-model="logoutDiologueOpen">
+              <q-card style="min-width: min(40vw, 450px)">
+                <div style="margin: 20px 30px 10px">
+                  <div class="text-h6 text-grey-9">
+                    <span>Are you sure you want to logout?</span>
+                  </div>
+                  <div class="q-mb-md" style="margin-top: 40px">
+                    <div class="text-right text-blue-6 row justify-end q-gutter-x-lg">
+                      <q-btn
+                        flat
+                        class="text-grey-8"
+                        label="Cancel"
+                        @click="logoutDiologueOpen = false"
+                      />
+                      <q-btn
+                        flat
+                        class="text-red"
+                        label="Yes"
+                        @click="onLogoutClick()"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </q-card>
+            </q-dialog>
+          </div>
+        </div>
+        <!-- <div>ERP v{{ $q.version }}</div> -->
+      </q-toolbar>
+    </q-header>
+    <q-drawer
+      v-if="store.isLoggedIn"
+      v-model="leftDrawerOpen"
+      drawer
+      overlay
+      persistent
+      show-if-above
+      class="shadow-6"
+      :mini="miniState"
+      @mouseout="miniState = true"
+      @mouseover="miniState = false"
+    >
+      <q-list class="icon-grey d-print-none print-hide">
+        <!-- <q-item-label header> Menu </q-item-label> -->
+        <!-- <q-img src="../assets/background-image.png" style="height: 90px">
+            <div class="absolute-bottom bg-transparent text-black">
+              <div class="text-weight-bold text-h6 text-grey-10">{{ store.username }}</div>
+            </div>
+          </q-img> -->
+
+        <div class="q-mb-md"></div>
+        <template v-for="link in essentialLinks" :key="link.title">
+          <EssentialLink v-if="!link.hide" v-bind="link" />
+        </template>
+      </q-list>
+    </q-drawer>
+    <q-page-container>
+      <!-- <template v-if="store.isLoading">
+        <div class="absolute bg-white/80 h-screen w-full left-0 top-0 flex items-center justify-center text-black z-10">
+          <q-spinner color="primary" size="3em" />
+        </div>
+      </template>
+      <RouterView /> -->
+      <div v-if="store.isLoading" class="relative">
+        <div class="bg-white q-pa-lg -mt-2 transition-all absolute top-0 left-0 w-full h-full">
+          <q-card class="mt-2">
+            <q-skeleton square class="bg-green" height="64px" />
+            <q-card class="q-mx-lg q-pt-md pb-8 px-3">
+              <div class="grid lg:grid-cols-2 grid-cols-1 gap-y-12 gap-x-6 py-6">
+                <div class="flex gap-4">
+                  <div class="flex grow gap-1">
+                    <q-skeleton class="grow" height="45px" type="rect" />
+                    <q-skeleton
+                      square
+                      height="45px"
+                      type="QBtn"
+                      width="45px"
+                    />
+                  </div>
+                  <q-skeleton
+                    square
+                    height="45px"
+                    type="QBtn"
+                    width="65px"
+                  />
+                </div>
+                <q-skeleton height="45px" type="QInput" />
+                <q-skeleton height="45px" type="QInput" />
+                <q-skeleton height="45px" type="QInput" />
+                <div class="flex gap-4">
+                  <q-skeleton class="grow" height="45px" type="rect" />
+                  <q-skeleton
+                    square
+                    height="45px"
+                    type="QBtn"
+                    width="65px"
+                  />
+                </div>
+                <div></div>
+                <q-skeleton height="45px" type="QInput" />
+                <div></div>
+              </div>
+              <div class="pb-10">
+                <q-card>
+                  <q-card-section class="q-pa-lg">
+                    <div class="pt-8 pb-6">
+                      <hr class="h-[2px] bg-gray-300 b-0" />
+                    </div>
+                    <div class="grid grid-cols-12 gap-6">
+                      <div class="flex grow gap-1 col-span-5">
+                        <q-skeleton class="grow" height="45px" type="rect" />
+                        <q-skeleton
+                          square
+                          height="45px"
+                          type="QBtn"
+                          width="45px"
+                        />
+                      </div>
+                      <div class="col-span-2">
+                        <q-skeleton height="45px" type="rect" />
+                      </div>
+                      <div class="col-span-2">
+                        <q-skeleton height="45px" type="rect" />
+                      </div>
+                      <div class="col-span-2">
+                        <q-skeleton height="45px" type="rect" />
+                      </div>
+                      <div class="col-span-1 grid grid-cols-2 gap-2">
+                        <q-skeleton type="rect" />
+                        <q-skeleton type="rect" />
+                      </div>
+                    </div>
+                    <div class="sm:grid grid-cols-8 py-8">
+                      <div class="col-span-5"></div>
+                      <div class="col-span-3 grid grid-cols-2 gap-x-4">
+                        <q-skeleton class="w-" height="30px" type="text" />
+                        <q-skeleton class="w-" height="30px" type="text" />
+                        <q-skeleton class="w-" height="30px" type="text" />
+                        <q-skeleton class="w-" height="30px" type="text" />
+                        <q-skeleton class="w-" height="30px" type="text" />
+                        <q-skeleton class="w-" height="30px" type="text" />
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+              <div class="flex justify-right">
+                <q-skeleton class="bg-green" height="36px" type="QBtn" />
+              </div>
+            </q-card>
+          </q-card>
+        </div>
+      </div>
+      <RouterView class="transition-all" :class="store.isLoading ? 'opacity-0' : ''" />
+    </q-page-container>
+  </q-layout>
+</template>
 
 <style scoped>
 .icon-grey i {

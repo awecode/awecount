@@ -1,72 +1,9 @@
-<template>
-  <div class="q-py-lg q-pl-lg q-mr-xl">
-    <div class="flex justify-between">
-      <div class="text-h5">
-        <router-link v-if="checkPermissions('InventoryAccountView')" :to="`/items/details/${fields?.item}/`" style="font-weight: 500; text-decoration: none" class="text-blue">
-          {{ fields?.name }}
-        </router-link>
-        <span v-else class="text-bold">{{ fields?.name || '-' }}</span>
-        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7">
-          ({{ fields?.category_name || '-' }})
-          <q-tooltip>Category</q-tooltip>
-        </span>
-      </div>
-      <div>
-        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block">[Code: {{ fields.code }}]</span>
-      </div>
-    </div>
-    <div class="mt-8">
-      <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
-        <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Current Balance</div>
-          <div class="q-px-md">
-            {{ $nf(fields?.current_balance) || '-' }}
-          </div>
-        </div>
-
-        <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Opening Balance</div>
-          <div class="q-px-md">{{ $nf(fields?.opening_balance) || '-' }}</div>
-        </div>
-
-        <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Closing Balance</div>
-          <div class="q-px-md">
-            {{ $nf(fields?.closing_balance) || '-' }}
-          </div>
-        </div>
-      </div>
-      <div class="mt-8 px-2">
-        <div class="flex gap-x-2 mb-4 items-center">
-          <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" />
-          <div>
-            <q-btn @click.prevent="filter" color="primary" label="FILTER" :disabled="!(startDate && endDate)" />
-          </div>
-        </div>
-      </div>
-      <q-table :columns="columnList" :rows="rows" :loading="loading" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-xs" :binary-state-sort="true" :rows-per-page-options="[20]">
-        <template v-slot:body-cell-voucher_no="props">
-          <q-td :props="props">
-            <router-link v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type])" :to="getVoucherUrl(props.row)" class="text-blue text-weight-medium" style="text-decoration: none">{{ props.row.voucher_no }}</router-link>
-            <span v-else>{{ props.row.voucher_no }}</span>
-          </q-td>
-        </template>
-
-        <template v-slot:body-cell-voucher_type="props">
-          <q-td :props="props">
-            <span>{{ props.row.source_type === 'Item' ? 'Opening' : props.row.source_type }}</span>
-          </q-td>
-        </template>
-      </q-table>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import useApi from 'src/composables/useApi'
-import DateConverter from '/src/components/date/VikramSamvat.js'
-import { useLoginStore } from 'src/stores/login-info'
 import checkPermissions from 'src/composables/checkPermissions'
+import useApi from 'src/composables/useApi'
+import { useLoginStore } from 'src/stores/login-info'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+
 const metaData = {
   title: 'Inventory Accounts Details | Awecount',
 }
@@ -99,7 +36,7 @@ const columnList = [
     name: 'date',
     label: 'Date',
     align: 'left',
-    field: (row) => DateConverter.getRepresentation(row.date, store.isCalendarInAD ? 'ad' : 'bs'),
+    field: row => DateConverter.getRepresentation(row.date, store.isCalendarInAD ? 'ad' : 'bs'),
   },
   {
     name: 'voucher_type',
@@ -158,7 +95,7 @@ function loadData() {
 }
 
 function onRequest(prop) {
-  endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/?${startDate.value && endDate.value ? 'start_date=' + startDate.value + '&end_date=' + endDate.value : ''}${startDate.value && endDate.value ? '&page=' + prop.pagination.page : 'page=' + prop.pagination.page}`
+  endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/?${startDate.value && endDate.value ? `start_date=${startDate.value}&end_date=${endDate.value}` : ''}${startDate.value && endDate.value ? `&page=${prop.pagination.page}` : `page=${prop.pagination.page}`}`
   getData()
 }
 // TODO: add permissions
@@ -183,7 +120,7 @@ function getVoucherUrl(row) {
   if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
   if (source_type === 'Inventory Adjustment Voucher') return `/items/inventory-adjustment/${row.source_id}/view/`
   if (source_type === 'Inventory Conversion Voucher') return `/items/inventory-conversion/${row.source_id}/view/`
-  console.error(source_type + ' not handled!')
+  console.error(`${source_type} not handled!`)
 }
 const getPermissionsWithSourceType = {
   'Sales Voucher': 'SalesView',
@@ -194,13 +131,112 @@ const getPermissionsWithSourceType = {
   'Cheque Deposit': 'ChequeDepositView',
   'Payment Receipt': 'PaymentReceiptView',
   'Cheque Issue': 'ChequeIssueModify',
-  Challan: 'ChallanModify',
+  'Challan': 'ChallanModify',
   'Account Opening Balance': 'AccountOpeningBalanceModify',
   'Fund Transfer': 'FundTransferModify',
   'Bank Cash Deposit': 'BankCashDepositModify',
   'Tax Payment': 'TaxPaymentModify',
-  Item: 'ItemView',
+  'Item': 'ItemView',
   'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView',
   'Inventory Conversion Voucher': 'InventoryConversionVoucherView',
 }
 </script>
+
+<template>
+  <div class="q-py-lg q-pl-lg q-mr-xl">
+    <div class="flex justify-between">
+      <div class="text-h5">
+        <router-link
+          v-if="checkPermissions('InventoryAccountView')"
+          class="text-blue"
+          style="font-weight: 500; text-decoration: none"
+          :to="`/items/details/${fields?.item}/`"
+        >
+          {{ fields?.name }}
+        </router-link>
+        <span v-else class="text-bold">{{ fields?.name || '-' }}</span>
+        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7">
+          ({{ fields?.category_name || '-' }})
+          <q-tooltip>Category</q-tooltip>
+        </span>
+      </div>
+      <div>
+        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block">[Code: {{ fields.code }}]</span>
+      </div>
+    </div>
+    <div class="mt-8">
+      <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
+        <div class="row justify-between q-py-sm b">
+          <div class="q-px-md text-grey-8">
+            Current Balance
+          </div>
+          <div class="q-px-md">
+            {{ $nf(fields?.current_balance) || '-' }}
+          </div>
+        </div>
+
+        <div class="row justify-between q-py-sm b">
+          <div class="q-px-md text-grey-8">
+            Opening Balance
+          </div>
+          <div class="q-px-md">
+            {{ $nf(fields?.opening_balance) || '-' }}
+          </div>
+        </div>
+
+        <div class="row justify-between q-py-sm b">
+          <div class="q-px-md text-grey-8">
+            Closing Balance
+          </div>
+          <div class="q-px-md">
+            {{ $nf(fields?.closing_balance) || '-' }}
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 px-2">
+        <div class="flex gap-x-2 mb-4 items-center">
+          <DateRangePicker v-model:end-date="endDate" v-model:start-date="startDate" />
+          <div>
+            <q-btn
+              color="primary"
+              label="FILTER"
+              :disabled="!(startDate && endDate)"
+              @click.prevent="filter"
+            />
+          </div>
+        </div>
+      </div>
+      <q-table
+        v-model:pagination="pagination"
+        class="q-mt-xs"
+        row-key="id"
+        :binary-state-sort="true"
+        :columns="columnList"
+        :loading="loading"
+        :rows="rows"
+        :rows-per-page-options="[20]"
+        @request="onRequest"
+      >
+        <template #body-cell-voucher_no="props">
+          <q-td :props="props">
+            <router-link
+              v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type])"
+              class="text-blue text-weight-medium"
+              style="text-decoration: none"
+              :to="getVoucherUrl(props.row)"
+            >
+              {{ props.row.voucher_no }}
+            </router-link>
+            <span v-else>{{ props.row.voucher_no }}</span>
+          </q-td>
+        </template>
+
+        <template #body-cell-voucher_type="props">
+          <q-td :props="props">
+            <span>{{ props.row.source_type === 'Item' ? 'Opening' : props.row.source_type }}</span>
+          </q-td>
+        </template>
+      </q-table>
+    </div>
+  </div>
+</template>

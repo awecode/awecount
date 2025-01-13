@@ -1,128 +1,6 @@
-<template>
-  <div v-if="fields">
-    <print-header></print-header>
-    <div>
-      <q-card class="q-ma-lg q-mb-sm">
-        <q-card-section class="bg-green text-white">
-          <div class="text-h6 d-print-none">
-            <span>
-              Inventory Adjustment Voucher | {{ fields?.status }}
-              <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no }}</span>
-            </span>
-          </div>
-        </q-card-section>
-        <div class="q-mx-lg q-pa-lg row text-grey-8 text-body2 grid grid-cols-2 gap-5">
-          <div class="grid grid-cols-2">
-            <div class="">Date</div>
-            <div class="">
-              {{ fields.date }}
-            </div>
-          </div>
-          <div class="grid grid-cols-2">
-            <div class="">Status</div>
-            <div class="">
-              {{ fields.status }}
-            </div>
-          </div>
-          <div class="grid grid-cols-2">
-            <div class="">Purpose</div>
-            <div class="">
-              {{ fields.purpose }}
-            </div>
-          </div>
-        </div>
-      </q-card>
-      <q-card class="q-mx-lg" id="to_print">
-        <q-card-section>
-          <q-markup-table flat bordered>
-            <thead>
-              <q-tr class="text-left">
-                <q-th data-testid="SN">SN</q-th>
-                <q-th data-testid="Particular">Particular</q-th>
-                <q-th data-testid="Qty">Qty</q-th>
-                <q-th data-testid="Rate">Rate</q-th>
-                <q-th data-testid="Amount" class="text-right">Amount</q-th>
-              </q-tr>
-            </thead>
-            <tbody class="text-left">
-              <q-tr v-for="(row, index) in fields?.rows" :key="index">
-                <q-td>
-                  {{ index + 1 }}
-                </q-td>
-                <q-td>
-                  {{ row.item_name }}
-                  <br />
-                  <span v-if="row.description" style="font-size: 11px" class="text-grey-8">
-                    <div v-for="(des, index) in row.description.split('\n')" :key="index" class="whitespace-normal">
-                      {{ des }}
-                    </div>
-                  </span>
-                </q-td>
-                <q-td>
-                  <span>
-                    {{ row.quantity }}
-                    <span class="text-grey-9">({{ row.unit_name }})</span>
-                  </span>
-                </q-td>
-                <q-td>
-                  <span>{{ $nf(row.rate) }}</span>
-                </q-td>
-                <q-td class="text-right">
-                  <span>{{ $nf(row.rate * row.quantity) }}</span>
-                </q-td>
-              </q-tr>
-              <q-tr class="text-subtitle2">
-                <q-td></q-td>
-                <q-td></q-td>
-                <q-td></q-td>
-                <q-td>Total</q-td>
-                <q-td class="text-right">{{ formatNumberWithComma(fields?.total_amount) }}</q-td>
-              </q-tr>
-            </tbody>
-          </q-markup-table>
-        </q-card-section>
-      </q-card>
-      <q-card class="q-mx-lg q-my-md" v-if="fields?.remarks">
-        <q-card-section>
-          <span class="text-subtitle2 text-grey-9">Remarks:</span>
-          <span class="text-grey-9">{{ fields?.remarks }}</span>
-        </q-card-section>
-      </q-card>
-      <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
-        <div>
-          <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherModify') && fields?.status !== 'Cancelled'" color="orange-5" label="Edit" icon="edit" :to="`/items/inventory-adjustment/${fields?.id}/`" />
-            <q-btn v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" :loading="loading" />
-          </div>
-        </div>
-        <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`" icon="print" />
-          <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7" label="Journal Entries" icon="books" :to="`/journal-entries/inventory-adjustment/${fields.id}/`" />
-        </div>
-        <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}" class="overflow-visible">
-          <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
-            <q-card-section class="bg-red-6 flex justify-between">
-              <div class="text-h6 text-white">
-                <span>Confirm Cancellation?</span>
-              </div>
-              <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
-            </q-card-section>
-
-            <q-card-section class="q-ma-md">
-              <q-input autofocus v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"></q-input>
-              <div class="text-right q-mt-lg">
-                <q-btn label="Confirm" @click="onCancelClick"></q-btn>
-              </div>
-            </q-card-section>
-          </q-card>
-        </q-dialog>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script lang="ts">
-import { Ref } from 'vue'
+import type { Ref } from 'vue'
+
 export default {
   setup() {
     const metaData = {
@@ -153,7 +31,7 @@ export default {
             icon: 'check_circle',
           })
           fields.value.status = 'Cancelled'
-          fields.value.remarks = '\nReason for cancellation: ' + deleteMsg.value
+          fields.value.remarks = `\nReason for cancellation: ${deleteMsg.value}`
           isDeleteOpen.value = false
           loading.value = false
         })
@@ -167,7 +45,7 @@ export default {
                   icon: 'check_circle',
                 })
                 fields.value.status = 'Cancelled'
-                fields.value.remarks = '\nReason for cancellation: ' + deleteMsg.value
+                fields.value.remarks = `\nReason for cancellation: ${deleteMsg.value}`
                 isDeleteOpen.value = false
                 loading.value = false
               })
@@ -232,6 +110,180 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div v-if="fields">
+    <print-header />
+    <div>
+      <q-card class="q-ma-lg q-mb-sm">
+        <q-card-section class="bg-green text-white">
+          <div class="text-h6 d-print-none">
+            <span>
+              Inventory Adjustment Voucher | {{ fields?.status }}
+              <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no }}</span>
+            </span>
+          </div>
+        </q-card-section>
+        <div class="q-mx-lg q-pa-lg row text-grey-8 text-body2 grid grid-cols-2 gap-5">
+          <div class="grid grid-cols-2">
+            <div class="">
+              Date
+            </div>
+            <div class="">
+              {{ fields.date }}
+            </div>
+          </div>
+          <div class="grid grid-cols-2">
+            <div class="">
+              Status
+            </div>
+            <div class="">
+              {{ fields.status }}
+            </div>
+          </div>
+          <div class="grid grid-cols-2">
+            <div class="">
+              Purpose
+            </div>
+            <div class="">
+              {{ fields.purpose }}
+            </div>
+          </div>
+        </div>
+      </q-card>
+      <q-card id="to_print" class="q-mx-lg">
+        <q-card-section>
+          <q-markup-table bordered flat>
+            <thead>
+              <q-tr class="text-left">
+                <q-th data-testid="SN">
+                  SN
+                </q-th>
+                <q-th data-testid="Particular">
+                  Particular
+                </q-th>
+                <q-th data-testid="Qty">
+                  Qty
+                </q-th>
+                <q-th data-testid="Rate">
+                  Rate
+                </q-th>
+                <q-th class="text-right" data-testid="Amount">
+                  Amount
+                </q-th>
+              </q-tr>
+            </thead>
+            <tbody class="text-left">
+              <q-tr v-for="(row, index) in fields?.rows" :key="index">
+                <q-td>
+                  {{ index + 1 }}
+                </q-td>
+                <q-td>
+                  {{ row.item_name }}
+                  <br />
+                  <span v-if="row.description" class="text-grey-8" style="font-size: 11px">
+                    <div v-for="(des, index) in row.description.split('\n')" :key="index" class="whitespace-normal">
+                      {{ des }}
+                    </div>
+                  </span>
+                </q-td>
+                <q-td>
+                  <span>
+                    {{ row.quantity }}
+                    <span class="text-grey-9">({{ row.unit_name }})</span>
+                  </span>
+                </q-td>
+                <q-td>
+                  <span>{{ $nf(row.rate) }}</span>
+                </q-td>
+                <q-td class="text-right">
+                  <span>{{ $nf(row.rate * row.quantity) }}</span>
+                </q-td>
+              </q-tr>
+              <q-tr class="text-subtitle2">
+                <q-td />
+                <q-td />
+                <q-td />
+                <q-td>Total</q-td>
+                <q-td class="text-right">
+                  {{ formatNumberWithComma(fields?.total_amount) }}
+                </q-td>
+              </q-tr>
+            </tbody>
+          </q-markup-table>
+        </q-card-section>
+      </q-card>
+      <q-card v-if="fields?.remarks" class="q-mx-lg q-my-md">
+        <q-card-section>
+          <span class="text-subtitle2 text-grey-9">Remarks:</span>
+          <span class="text-grey-9">{{ fields?.remarks }}</span>
+        </q-card-section>
+      </q-card>
+      <div v-if="fields" class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none">
+        <div>
+          <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
+            <q-btn
+              v-if="checkPermissions('InventoryAdjustmentVoucherModify') && fields?.status !== 'Cancelled'"
+              color="orange-5"
+              icon="edit"
+              label="Edit"
+              :to="`/items/inventory-adjustment/${fields?.id}/`"
+            />
+            <q-btn
+              v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'"
+              color="red-5"
+              icon="cancel"
+              label="Cancel"
+              :loading="loading"
+              @click.prevent="() => (isDeleteOpen = true)"
+            />
+          </div>
+        </div>
+        <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
+          <q-btn icon="print" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`" @click="() => onPrintclick(false, fields?.status === 'Draft')" />
+          <q-btn
+            v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
+            color="blue-7"
+            icon="books"
+            label="Journal Entries"
+            :to="`/journal-entries/inventory-adjustment/${fields.id}/`"
+          />
+        </div>
+        <q-dialog v-model="isDeleteOpen" class="overflow-visible" @before-hide="errors = {}">
+          <q-card class="overflow-visible" style="min-width: min(40vw, 500px)">
+            <q-card-section class="bg-red-6 flex justify-between">
+              <div class="text-h6 text-white">
+                <span>Confirm Cancellation?</span>
+              </div>
+              <q-btn
+                v-close-popup
+                dense
+                flat
+                round
+                class="text-red-700 bg-slate-200 opacity-95"
+                icon="close"
+              />
+            </q-card-section>
+
+            <q-card-section class="q-ma-md">
+              <q-input
+                v-model="deleteMsg"
+                autofocus
+                outlined
+                type="textarea"
+                :error="!!errors?.message"
+                :error-message="errors?.message"
+              />
+              <div class="text-right q-mt-lg">
+                <q-btn label="Confirm" @click="onCancelClick" />
+              </div>
+            </q-card-section>
+          </q-card>
+        </q-dialog>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped lang="scss">
 @media print {

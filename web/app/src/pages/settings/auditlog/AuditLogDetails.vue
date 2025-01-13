@@ -1,3 +1,33 @@
+<script>
+import useApi from 'src/composables/useApi'
+
+export default {
+  setup() {
+    const fields = ref(null)
+    useMeta(() => {
+      return {
+        title: `${fields.value?.content_type_name ? fields.value.content_type_name : 'Audit Logs Details'} | Awecount`,
+      }
+    })
+    return {
+      fields,
+    }
+  },
+  created() {
+    const endpoint = `v1/log-entries/${this.$route.params.id}/`
+    useApi(endpoint, { method: 'GET' })
+      .then((data) => {
+        this.fields = data
+      })
+      .catch((error) => {
+        if (error.response && error.response.status == 404) {
+          this.$router.replace({ path: '/ErrorNotFound' })
+        }
+      })
+  },
+}
+</script>
+
 <template>
   <div v-if="fields">
     <q-card class="q-ma-lg text-grey-8">
@@ -20,7 +50,7 @@
           <span class="text-weight-medium text-grey-9">Remote Address:</span>
           <span>{{ fields.remote_addr }}</span>
         </div>
-        <q-markup-table flat bordered class="q-mt-md">
+        <q-markup-table bordered flat class="q-mt-md">
           <thead>
             <q-tr class="text-left">
               <q-th>Field</q-th>
@@ -46,35 +76,6 @@
     </q-card>
   </div>
 </template>
-
-<script>
-import useApi from 'src/composables/useApi'
-export default {
-  setup() {
-    const fields = ref(null)
-    useMeta(() => {
-      return {
-        title: (fields.value?.content_type_name ? fields.value.content_type_name : 'Audit Logs Details') + ' | Awecount',
-      }
-    })
-    return {
-      fields,
-    }
-  },
-  created() {
-    const endpoint = `v1/log-entries/${this.$route.params.id}/`
-    useApi(endpoint, { method: 'GET' })
-      .then((data) => {
-        this.fields = data
-      })
-      .catch((error) => {
-        if (error.response && error.response.status == 404) {
-          this.$router.replace({ path: '/ErrorNotFound' })
-        }
-      })
-  },
-}
-</script>
 
 <style>
 .search-bar {

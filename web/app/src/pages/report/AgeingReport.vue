@@ -1,27 +1,6 @@
-<template>
-  <div class="q-pa-md">
-    <div class="row q-gutter-x-md justify-end">
-      <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" class="export-btn" />
-    </div>
-    <q-table title="Income Items" :rows="reportData" :columns="newColumns" :loading="loading" row-key="id" @request="onRequest" v-model:pagination="pagination" class="q-mt-md" :rows-per-page-options="[20]">
-      <template v-slot:top>
-        <div class="flex items-end gap-6">
-          <DatePicker label="Date" v-model="date"></DatePicker>
-          <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onUpdate"></q-btn>
-        </div>
-      </template>
-      <template v-slot:body-cell-party="props">
-        <q-td :props="props" style="padding: 0">
-          <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue l-view-btn" :to="`/parties/account/${props.row.party_id}/`">{{ props.row.party_name }}</router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.party_name }}</span>
-        </q-td>
-      </template>
-    </q-table>
-  </div>
-</template>
-
 <script>
 import { withQuery } from 'ufo'
+
 export default {
   setup() {
     const route = useRoute()
@@ -37,9 +16,9 @@ export default {
     useMeta(metaData)
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/report/export-ageing-report/' + query)
-        .then((data) => usedownloadFile(data, 'application/vnd.ms-excel', 'Customer_Ageing_Report'))
-        .catch((err) => console.log('Error Due To', err))
+      useApi(`v1/report/export-ageing-report/${query}`)
+        .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Customer_Ageing_Report'))
+        .catch(err => console.log('Error Due To', err))
     }
     const fetchData = () => {
       const endpoint = `/v1/report/ageing-report/?date=${date.value}${route.query.page ? `&page=${route.query.page}` : ''}`
@@ -128,3 +107,53 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <div class="row q-gutter-x-md justify-end">
+      <q-btn
+        class="export-btn"
+        color="blue"
+        icon-right="download"
+        label="Export XLS"
+        @click="onDownloadXls"
+      />
+    </div>
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      title="Income Items"
+      :columns="newColumns"
+      :loading="loading"
+      :rows="reportData"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
+      <template #top>
+        <div class="flex items-end gap-6">
+          <DatePicker v-model="date" label="Date" />
+          <q-btn
+            class="q-mr-md f-submit-btn"
+            color="green"
+            label="Filter"
+            @click="onUpdate"
+          />
+        </div>
+      </template>
+      <template #body-cell-party="props">
+        <q-td style="padding: 0" :props="props">
+          <router-link
+            v-if="checkPermissions('CategoryModify')"
+            class="text-blue l-view-btn"
+            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+            :to="`/parties/account/${props.row.party_id}/`"
+          >
+            {{ props.row.party_name }}
+          </router-link>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.party_name }}</span>
+        </q-td>
+      </template>
+    </q-table>
+  </div>
+</template>

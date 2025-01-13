@@ -1,25 +1,5 @@
-<template>
-  <div class="q-pt-md">
-    <div class="text-grey-8 q-pb-xs">{{ label }}</div>
-    <div class="row q-gutter-sm">
-      <!-- style="border-radius: 1rem; padding: 4px 12px" -->
-      <q-btn @click="() => onStatusClick(statuses)" style="border-radius: 1rem; padding: 4px 12px" size="sm" class="text-subtitle2" v-for="(statuses, index) in options" :key="index" :class="modalValue.includes(statuses) ? 'bg-blue-1 text-blue-9' : 'bg-grey-4 text-grey-9'">
-        <!-- TODO: add animation -->
-        <div class="row items-center">
-          <Transition>
-            <q-icon style="height: 22px" v-if="modalValue.includes(statuses)" name="check" size="sm" color="blue" class="q-mr-xs"></q-icon>
-          </Transition>
-          <span style="font-size: 0.85rem; text-transform: capitalize">
-            {{ statuses }}
-          </span>
-        </div>
-      </q-btn>
-    </div>
-  </div>
-</template>
-
 <script lang="ts">
-import { Ref } from 'vue'
+import type { Ref } from 'vue'
 
 export default {
   props: {
@@ -50,7 +30,7 @@ export default {
           modalValue.value = [status, modalValue.value]
         }
       } else {
-        const index: number = modalValue.value.findIndex((item) => item === status)
+        const index: number = modalValue.value.findIndex(item => item === status)
         if (index >= 0) {
           modalValue.value.splice(index, 1)
         } else {
@@ -82,6 +62,44 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pt-md">
+    <div class="text-grey-8 q-pb-xs">
+      {{ label }}
+    </div>
+    <div class="row q-gutter-sm">
+      <!-- style="border-radius: 1rem; padding: 4px 12px" -->
+      <q-btn
+        v-for="(statuses, index) in options"
+        :key="index"
+        class="text-subtitle2"
+        size="sm"
+        style="border-radius: 1rem; padding: 4px 12px"
+        :class="modalValue.includes(statuses) ? 'bg-blue-1 text-blue-9' : 'bg-grey-4 text-grey-9'"
+        @click="() => onStatusClick(statuses)"
+      >
+        <!-- TODO: add animation -->
+        <div class="row items-center">
+          <Transition>
+            <q-icon
+              v-if="modalValue.includes(statuses)"
+              class="q-mr-xs"
+              color="blue"
+              name="check"
+              size="sm"
+              style="height: 22px"
+            />
+          </Transition>
+          <span style="font-size: 0.85rem; text-transform: capitalize">
+            {{ statuses }}
+          </span>
+        </div>
+      </q-btn>
+    </div>
+  </div>
+</template>
+
 <style>
 .v-enter-active,
 .v-leave-active {

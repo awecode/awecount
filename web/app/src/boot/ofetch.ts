@@ -1,5 +1,5 @@
-import { boot } from 'quasar/wrappers'
 import { ofetch } from 'ofetch'
+import { boot } from 'quasar/wrappers'
 
 // console.log(store.token)
 

@@ -1,19 +1,17 @@
 <script setup lang="ts">
-import { Ref } from 'vue'
+import type { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
-import { getVoucherUrl, getPermissionFromSourceType } from 'src/composables/getVoucherUrlAndPermissions'
+import { getPermissionFromSourceType, getVoucherUrl } from 'src/composables/getVoucherUrlAndPermissions'
 import ChequeIssueForm from 'src/pages/bank/cheque-issue/ChequeIssueForm.vue'
 import FundTransferForm from 'src/pages/bank/fund-transfer/FundTransferForm.vue'
 
-type AccountDetails = {
+interface AccountDetails {
   ledger_id: number
   id: number
   name: string
   account_number: string
   cheque_no: string
 }
-const $q = useQuasar()
-
 const props = defineProps({
   acceptableDifference: {
     type: Number,
@@ -36,6 +34,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+const $q = useQuasar()
 
 interface SystemTransactionData {
   id: number
@@ -62,7 +62,7 @@ interface StatementTransactionData {
   transaction_ids: number[]
 }
 
-type StatementResponse = {
+interface StatementResponse {
   results: StatementTransactionData[]
   pagination: {
     page: number
@@ -71,7 +71,7 @@ type StatementResponse = {
   }
 }
 
-type SystemResponse = {
+interface SystemResponse {
   results: SystemTransactionData[]
   pagination: {
     page: number
@@ -120,7 +120,7 @@ const fetchUnmatchedBankTransactions = async () => {
   if (!props.startDate || !props.endDate || !props.accountDetails.ledger_id) {
     return
   }
-  await useApi('v1/bank-reconciliation/unreconciled-bank-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountDetails.ledger_id + '&search=' + statementSearchBy.value + '&sort_by=' + statementSortBy.value + '&sort_dir=' + statementSortDir.value + '&page=' + statementPage.value)
+  await useApi(`v1/bank-reconciliation/unreconciled-bank-transactions/?start_date=${props.startDate}&end_date=${props.endDate}&account_id=${props.accountDetails.ledger_id}&search=${statementSearchBy.value}&sort_by=${statementSortBy.value}&sort_dir=${statementSortDir.value}&page=${statementPage.value}`)
     .then((response) => {
       if (response.pagination.page === 1) {
         statementResponse.value.results = response.results
@@ -128,7 +128,7 @@ const fetchUnmatchedBankTransactions = async () => {
         statementResponse.value.results = [
           ...statementResponse.value.results,
           ...response.results.filter((result: StatementTransactionData) => {
-            return !statementResponse.value.results.some((r) => r.id === result.id)
+            return !statementResponse.value.results.some(r => r.id === result.id)
           }),
         ]
       }
@@ -153,7 +153,7 @@ const fetchUnmatchedSystemTransactions = async () => {
   if (!props.startDate || !props.endDate || !props.accountDetails.ledger_id) {
     return
   }
-  await useApi('v1/bank-reconciliation/unreconciled-system-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountDetails.ledger_id + '&search=' + systemSearchBy.value + '&sort_by=' + systemSortBy.value + '&sort_dir=' + systemSortDir.value + '&page=' + systemPage.value)
+  await useApi(`v1/bank-reconciliation/unreconciled-system-transactions/?start_date=${props.startDate}&end_date=${props.endDate}&account_id=${props.accountDetails.ledger_id}&search=${systemSearchBy.value}&sort_by=${systemSortBy.value}&sort_dir=${systemSortDir.value}&page=${systemPage.value}`)
     .then((response) => {
       // systemResponse.value.results = []
       if (response.pagination.page === 1) {
@@ -162,7 +162,7 @@ const fetchUnmatchedSystemTransactions = async () => {
         systemResponse.value.results = [
           ...systemResponse.value.results,
           ...response.results.filter((result: SystemTransactionData) => {
-            return !systemResponse.value.results.some((r) => r.id === result.id)
+            return !systemResponse.value.results.some(r => r.id === result.id)
           }),
         ]
       }
@@ -203,7 +203,7 @@ const sortBy = [
 const calculateTotal = (transactions: SystemTransactionData[] | StatementTransactionData[], forStatement = false) => {
   let cr_amount = 0
   let dr_amount = 0
-  for (let transaction of transactions) {
+  for (const transaction of transactions) {
     if (transaction.cr_amount) {
       cr_amount += Number(transaction.cr_amount)
     }
@@ -217,10 +217,10 @@ const calculateTotal = (transactions: SystemTransactionData[] | StatementTransac
   return (dr_amount - cr_amount).toFixed(2)
 }
 
-const calculateTotalFromCounterparts = (counterparts: { dr_amount: string | null; cr_amount: string | null }[]) => {
+const calculateTotalFromCounterparts = (counterparts: { dr_amount: string | null, cr_amount: string | null }[]) => {
   let cr_amount = 0
   let dr_amount = 0
-  for (let counterpart of counterparts) {
+  for (const counterpart of counterparts) {
     if (counterpart.cr_amount) {
       cr_amount += Number(counterpart.cr_amount)
     }
@@ -231,8 +231,8 @@ const calculateTotalFromCounterparts = (counterparts: { dr_amount: string | null
   return (dr_amount - cr_amount).toFixed(2)
 }
 
-const filterSources = (systemTransactions: SystemTransactionData[]): { source_id: number; url: string; source_type: string }[] => {
-  const sourceMap = new Map<number, { source_id: number; url: string; source_type: string }>()
+const filterSources = (systemTransactions: SystemTransactionData[]): { source_id: number, url: string, source_type: string }[] => {
+  const sourceMap = new Map<number, { source_id: number, url: string, source_type: string }>()
 
   systemTransactions.forEach((transaction: SystemTransactionData) => {
     if (transaction.source_id) {
@@ -267,7 +267,7 @@ const allSystemSelected = computed(() => selectedSystemTransactions.value.length
 
 // Toggle individual transactions
 const toggleStatementTransaction = (transaction: StatementTransactionData) => {
-  const index = selectedStatementTransactions.value.findIndex((t) => t.id === transaction.id)
+  const index = selectedStatementTransactions.value.findIndex(t => t.id === transaction.id)
   if (index > -1) {
     selectedStatementTransactions.value.splice(index, 1)
   } else {
@@ -276,7 +276,7 @@ const toggleStatementTransaction = (transaction: StatementTransactionData) => {
 }
 
 const toggleSystemTransaction = (transaction: SystemTransactionData) => {
-  const index = selectedSystemTransactions.value.findIndex((t) => t.id === transaction.id)
+  const index = selectedSystemTransactions.value.findIndex(t => t.id === transaction.id)
   if (index > -1) {
     selectedSystemTransactions.value.splice(index, 1)
   } else {
@@ -302,9 +302,9 @@ const toggleAllSystemTransactions = () => {
 }
 
 // Check if a specific transaction is selected
-const isStatementTransactionSelected = (transaction: StatementTransactionData) => selectedStatementTransactions.value.some((t) => t.id === transaction.id)
+const isStatementTransactionSelected = (transaction: StatementTransactionData) => selectedStatementTransactions.value.some(t => t.id === transaction.id)
 
-const isSystemTransactionSelected = (transaction: SystemTransactionData) => selectedSystemTransactions.value.some((t) => t.id === transaction.id)
+const isSystemTransactionSelected = (transaction: SystemTransactionData) => selectedSystemTransactions.value.some(t => t.id === transaction.id)
 
 const canReconcile = computed(
   () => {
@@ -324,21 +324,21 @@ const reconcile = () => {
     useApi(endpoint, {
       method: 'POST',
       body: {
-        statement_ids: selectedStatementTransactions.value.map((t) => t.id),
-        transaction_ids: selectedSystemTransactions.value.map((t) => t.id),
+        statement_ids: selectedStatementTransactions.value.map(t => t.id),
+        transaction_ids: selectedSystemTransactions.value.map(t => t.id),
         narration: 'Test Narration',
       },
     })
       .then(() => {
         // remove from both unmatched lists
         selectedStatementTransactions.value.forEach((t) => {
-          const index = statementResponse.value.results.findIndex((ut) => ut === t)
+          const index = statementResponse.value.results.findIndex(ut => ut === t)
           if (index > -1) {
             statementResponse.value.results.splice(index, 1)
           }
         })
         selectedSystemTransactions.value.forEach((t) => {
-          const index = systemResponse.value.results.findIndex((ut) => ut === t)
+          const index = systemResponse.value.results.findIndex(ut => ut === t)
           if (index > -1) {
             systemResponse.value.results.splice(index, 1)
           }
@@ -383,7 +383,7 @@ const loadMoreStatementTransactions = async (index: number, done: any) => {
   done()
 }
 
-const unmatchTransactions = (transaction: { statement_transactions: StatementTransactionData[]; system_transactions: SystemTransactionData[] }) => {
+const unmatchTransactions = (transaction: { statement_transactions: StatementTransactionData[], system_transactions: SystemTransactionData[] }) => {
   statementResponse.value.results.unshift(
     ...transaction.statement_transactions.map((t) => {
       return {
@@ -397,11 +397,11 @@ const unmatchTransactions = (transaction: { statement_transactions: StatementTra
 
 const removeBankTransactions = (transaction: StatementTransactionData[]) => {
   transaction.forEach((t) => {
-    const index = statementResponse.value.results.findIndex((ut) => ut.id === t.id)
+    const index = statementResponse.value.results.findIndex(ut => ut.id === t.id)
     if (index > -1) {
       statementResponse.value.results.splice(index, 1)
     }
-    const selectedTransactionIndex = selectedStatementTransactions.value.findIndex((ut) => ut.id === t.id)
+    const selectedTransactionIndex = selectedStatementTransactions.value.findIndex(ut => ut.id === t.id)
     if (selectedTransactionIndex > -1) {
       selectedStatementTransactions.value.splice(selectedTransactionIndex, 1)
     }
@@ -409,11 +409,11 @@ const removeBankTransactions = (transaction: StatementTransactionData[]) => {
 }
 
 const isAllStatementCredit = computed(() => {
-  return selectedStatementTransactions.value.every((t) => t.cr_amount)
+  return selectedStatementTransactions.value.every(t => t.cr_amount)
 })
 
 const isAllStatementDebit = computed(() => {
-  return selectedStatementTransactions.value.every((t) => t.dr_amount)
+  return selectedStatementTransactions.value.every(t => t.dr_amount)
 })
 
 const findLatestDate = (transactions: SystemTransactionData[] | StatementTransactionData[]) => {
@@ -428,13 +428,14 @@ const findLatestDate = (transactions: SystemTransactionData[] | StatementTransac
 
 const onFundTransferChequeIssueSuccess = () => {
   statementResponse.value.results = statementResponse.value.results.filter((t) => {
-    return !selectedStatementTransactions.value.some((st) => st.id === t.id)
+    return !selectedStatementTransactions.value.some(st => st.id === t.id)
   })
   unselectAll()
   isFundTransferModalOpen.value = false
   isChequeIssueModalOpen.value = false
 }
 </script>
+
 <template>
   <div class="max-h-[800px]">
     <!-- Unmatched section -->
@@ -444,17 +445,31 @@ const onFundTransferChequeIssueSuccess = () => {
           <div class="flex space-x-3 w-fit ml-auto">
             <div v-if="selectedStatementTransactions.length && !selectedSystemTransactions.length && (isAllStatementCredit || isAllStatementDebit)">
               <div v-if="isAllStatementCredit">
-                <button @click="openSalesInvoiceModal = true" v-if="selectedStatementTransactions.length && !selectedSystemTransactions.length" class="px-4 py-2 bg-green-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm cursor-pointer">Find Sales Invoices</button>
+                <button v-if="selectedStatementTransactions.length && !selectedSystemTransactions.length" class="px-4 py-2 bg-green-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm cursor-pointer" @click="openSalesInvoiceModal = true">
+                  Find Sales Invoices
+                </button>
               </div>
               <div v-else>
-                <button class="px-4 py-2 bg-yellow-200 cursor-pointer text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm mr-3" @click="isFundTransferModalOpen = true">Fund Transfer</button>
-                <button @click="isChequeIssueModalOpen = true" class="px-4 cursor-pointer py-2 bg-yellow-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">Cheque Issue</button>
+                <button class="px-4 py-2 bg-yellow-200 cursor-pointer text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm mr-3" @click="isFundTransferModalOpen = true">
+                  Fund Transfer
+                </button>
+                <button class="px-4 cursor-pointer py-2 bg-yellow-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm" @click="isChequeIssueModalOpen = true">
+                  Cheque Issue
+                </button>
               </div>
             </div>
-            <button @click="unselectAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors cursor-pointer text-sm">Unselect All</button>
-            <button v-if="canReconcile" @click="reconcile" class="px-4 cursor-pointer py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">Reconcile</button>
-            <button v-else-if="selectedStatementTransactions.length && selectedSystemTransactions.length && Math.abs(Number(calculateTotal(selectedStatementTransactions, true)) - Number(calculateTotal(selectedSystemTransactions))) <= props.adjustmentThreshold" @click="reconcile" class="px-4 py-2 bg-blue-500 cursor-pointer text-white rounded-md hover:bg-blue-600 transition-colors text-sm">Reconcile with Adjustment</button>
-            <button disabled v-else class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">Reconcile</button>
+            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors cursor-pointer text-sm" @click="unselectAll">
+              Unselect All
+            </button>
+            <button v-if="canReconcile" class="px-4 cursor-pointer py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm" @click="reconcile">
+              Reconcile
+            </button>
+            <button v-else-if="selectedStatementTransactions.length && selectedSystemTransactions.length && Math.abs(Number(calculateTotal(selectedStatementTransactions, true)) - Number(calculateTotal(selectedSystemTransactions))) <= props.adjustmentThreshold" class="px-4 py-2 bg-blue-500 cursor-pointer text-white rounded-md hover:bg-blue-600 transition-colors text-sm" @click="reconcile">
+              Reconcile with Adjustment
+            </button>
+            <button v-else disabled class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              Reconcile
+            </button>
           </div>
 
           <div class="flex justify-between mt-4 space-x-6">
@@ -477,7 +492,7 @@ const onFundTransferChequeIssueSuccess = () => {
             <!-- Show difference -->
             <div class="text-sm text-center flex flex-col justify-center space-y-1">
               <span class="font-semibold">Difference:</span>
-              <div :class="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)) - Number(calculateTotal(selectedSystemTransactions))) > props.acceptableDifference ? 'text-red-600' : 'text-green-600'" class="font-medium">
+              <div class="font-medium" :class="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)) - Number(calculateTotal(selectedSystemTransactions))) > props.acceptableDifference ? 'text-red-600' : 'text-green-600'">
                 {{ Math.abs(Number(calculateTotal(selectedStatementTransactions, true)) - Number(calculateTotal(selectedSystemTransactions))) }}
               </div>
             </div>
@@ -507,22 +522,65 @@ const onFundTransferChequeIssueSuccess = () => {
             <div class="flex gap-4">
               <!-- q-select -->
               <div class="flex space-x-2 text-gray-700">
-                <q-select v-model="statementSortBy" :options="sortBy" outlined dense label="Sort by" class="w-32" option-value="value" option-label="label" emit-value @update:model-value="(statementPage = 1), fetchUnmatchedBankTransactions()" />
+                <q-select
+                  v-model="statementSortBy"
+                  dense
+                  emit-value
+                  outlined
+                  class="w-32"
+                  label="Sort by"
+                  option-label="label"
+                  option-value="value"
+                  :options="sortBy"
+                  @update:model-value="(statementPage = 1), fetchUnmatchedBankTransactions()"
+                />
                 <div class="flex items-center pb-2 cursor-pointer">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="20" viewBox="0 0 12 20" :class="statementSortDir === 'asc' ? 'transform rotate-180' : ''" @click="(statementSortDir = statementSortDir === 'asc' ? 'desc' : 'asc'), (statementPage = 1), fetchUnmatchedBankTransactions()">
-                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                      <path stroke-dasharray="20" stroke-dashoffset="20" d="M6 3l0 17.5">
-                        <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.2s" values="20;0" />
+                  <svg
+                    height="20"
+                    viewBox="0 0 12 20"
+                    width="10"
+                    xmlns="http://www.w3.org/2000/svg"
+                    :class="statementSortDir === 'asc' ? 'transform rotate-180' : ''"
+                    @click="(statementSortDir = statementSortDir === 'asc' ? 'desc' : 'asc'), (statementPage = 1), fetchUnmatchedBankTransactions()"
+                  >
+                    <g
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                    >
+                      <path d="M6 3l0 17.5" stroke-dasharray="20" stroke-dashoffset="20">
+                        <animate
+                          attributeName="stroke-dashoffset"
+                          dur="0.2s"
+                          fill="freeze"
+                          values="20;0"
+                        />
                       </path>
-                      <path stroke-dasharray="12" stroke-dashoffset="12" d="M6 21l5 -5M6 21l-5 -5">
-                        <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.2s" dur="0.2s" values="12;0" />
+                      <path d="M6 21l5 -5M6 21l-5 -5" stroke-dasharray="12" stroke-dashoffset="12">
+                        <animate
+                          attributeName="stroke-dashoffset"
+                          begin="0.2s"
+                          dur="0.2s"
+                          fill="freeze"
+                          values="12;0"
+                        />
                       </path>
                     </g>
                   </svg>
                 </div>
               </div>
               <!-- Arrow icon to show asc and desc -->
-              <q-input v-model="statementSearchBy" :debounce="500" @update:model-value="(statementPage = 1), fetchUnmatchedBankTransactions()" outlined dense placeholder="Search..." class="grow mb-2" />
+              <q-input
+                v-model="statementSearchBy"
+                dense
+                outlined
+                class="grow mb-2"
+                placeholder="Search..."
+                :debounce="500"
+                @update:model-value="(statementPage = 1), fetchUnmatchedBankTransactions()"
+              />
             </div>
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
               <div class="px-4 py-3 border-b bg-blue-50">
@@ -532,7 +590,12 @@ const onFundTransferChequeIssueSuccess = () => {
                 </h3>
                 <div class="flex items-center justify-between mt-2">
                   <div>
-                    <input type="checkbox" class="px-4 h-4 w-4 text-blue-600 rounded" :checked="allStatementSelected" @change="toggleAllStatementTransactions" />
+                    <input
+                      class="px-4 h-4 w-4 text-blue-600 rounded"
+                      type="checkbox"
+                      :checked="allStatementSelected"
+                      @change="toggleAllStatementTransactions"
+                    />
                     <span class="ml-2 text-sm text-gray-600">Select All</span>
                   </div>
                   <!-- <div>
@@ -544,9 +607,19 @@ const onFundTransferChequeIssueSuccess = () => {
               </div>
 
               <div v-if="statementResponse.results.length" class="divide-y overflow-y-auto text-xs bank-section max-h-[500px]">
-                <q-infinite-scroll ref="bankScrollSection" @load="loadMoreStatementTransactions" :offset="250" scroll-target=".bank-section">
-                  <div v-for="data in statementResponse.results" :key="data.id" class="px-4 hover:bg-gray-50 flex flex-nowrap items-center space-x-3 border-b cursor-pointer" @click="toggleStatementTransaction(data)">
-                    <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="isStatementTransactionSelected(data)" />
+                <q-infinite-scroll
+                  ref="bankScrollSection"
+                  scroll-target=".bank-section"
+                  :offset="250"
+                  @load="loadMoreStatementTransactions"
+                >
+                  <div
+                    v-for="data in statementResponse.results"
+                    :key="data.id"
+                    class="px-4 hover:bg-gray-50 flex flex-nowrap items-center space-x-3 border-b cursor-pointer"
+                    @click="toggleStatementTransaction(data)"
+                  >
+                    <input class="px-4 h-4 w-4 text-green-600 rounded" type="checkbox" :checked="isStatementTransactionSelected(data)" />
                     <div :key="data.id" class="py-3 pl-2 pr-0 border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative grow">
                       <div class="flex justify-between mb-1">
                         <span class="text-gray-500">{{ data.date }}</span>
@@ -555,10 +628,12 @@ const onFundTransferChequeIssueSuccess = () => {
                           <span v-if="data.cr_amount" class="text-green-500">+{{ data.cr_amount }}</span>
                         </div>
                       </div>
-                      <div class="text-gray-600">{{ data.description }}</div>
+                      <div class="text-gray-600">
+                        {{ data.description }}
+                      </div>
                     </div>
                   </div>
-                  <template v-slot:loading>
+                  <template #loading>
                     <div class="row justify-center q-my-md">
                       <q-spinner-dots color="primary" size="40px" />
                     </div>
@@ -572,22 +647,65 @@ const onFundTransferChequeIssueSuccess = () => {
           <div>
             <div class="flex gap-4">
               <div class="flex space-x-2">
-                <q-select v-model="systemSortBy" :options="sortBy" outlined dense label="Sort by" class="w-32" @update:model-value="(systemPage = 1), fetchUnmatchedSystemTransactions()" option-value="value" option-label="label" emit-value />
+                <q-select
+                  v-model="systemSortBy"
+                  dense
+                  emit-value
+                  outlined
+                  class="w-32"
+                  label="Sort by"
+                  option-label="label"
+                  option-value="value"
+                  :options="sortBy"
+                  @update:model-value="(systemPage = 1), fetchUnmatchedSystemTransactions()"
+                />
                 <div class="flex items-center pb-2 cursor-pointer text-gray-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="20" viewBox="0 0 12 20" :class="systemSortDir === 'asc' ? 'transform rotate-180' : ''" @click="(systemSortDir = systemSortDir === 'asc' ? 'desc' : 'asc'), (systemPage = 1), fetchUnmatchedSystemTransactions()">
-                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                      <path stroke-dasharray="20" stroke-dashoffset="20" d="M6 3l0 17.5">
-                        <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.2s" values="20;0" />
+                  <svg
+                    height="20"
+                    viewBox="0 0 12 20"
+                    width="10"
+                    xmlns="http://www.w3.org/2000/svg"
+                    :class="systemSortDir === 'asc' ? 'transform rotate-180' : ''"
+                    @click="(systemSortDir = systemSortDir === 'asc' ? 'desc' : 'asc'), (systemPage = 1), fetchUnmatchedSystemTransactions()"
+                  >
+                    <g
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                    >
+                      <path d="M6 3l0 17.5" stroke-dasharray="20" stroke-dashoffset="20">
+                        <animate
+                          attributeName="stroke-dashoffset"
+                          dur="0.2s"
+                          fill="freeze"
+                          values="20;0"
+                        />
                       </path>
-                      <path stroke-dasharray="12" stroke-dashoffset="12" d="M6 21l5 -5M6 21l-5 -5">
-                        <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.2s" dur="0.2s" values="12;0" />
+                      <path d="M6 21l5 -5M6 21l-5 -5" stroke-dasharray="12" stroke-dashoffset="12">
+                        <animate
+                          attributeName="stroke-dashoffset"
+                          begin="0.2s"
+                          dur="0.2s"
+                          fill="freeze"
+                          values="12;0"
+                        />
                       </path>
                     </g>
                   </svg>
                 </div>
               </div>
 
-              <q-input v-model="systemSearchBy" :debounce="500" @update:model-value="(systemPage = 1), fetchUnmatchedSystemTransactions()" outlined dense placeholder="Search..." class="grow mb-2" />
+              <q-input
+                v-model="systemSearchBy"
+                dense
+                outlined
+                class="grow mb-2"
+                placeholder="Search..."
+                :debounce="500"
+                @update:model-value="(systemPage = 1), fetchUnmatchedSystemTransactions()"
+              />
             </div>
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
               <div class="px-4 py-3 border-b bg-green-50">
@@ -597,7 +715,12 @@ const onFundTransferChequeIssueSuccess = () => {
                 </h3>
                 <div class="flex items-center justify-between mt-2">
                   <div class="flex items-centers">
-                    <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="allSystemSelected" @change="toggleAllSystemTransactions" />
+                    <input
+                      class="px-4 h-4 w-4 text-green-600 rounded"
+                      type="checkbox"
+                      :checked="allSystemSelected"
+                      @change="toggleAllSystemTransactions"
+                    />
                     <span class="ml-2 text-sm text-gray-600">Select All</span>
                   </div>
                   <!-- <div>
@@ -609,16 +732,32 @@ const onFundTransferChequeIssueSuccess = () => {
               </div>
 
               <div v-if="systemResponse.results.length" class="divide-y overflow-y-auto system-section max-h-[500px]">
-                <q-infinite-scroll ref="systemScrollSection" @load="loadMoreSystemTransactions" :offset="250" scroll-target=".system-section">
-                  <div v-for="data in systemResponse.results" :key="data.id" class="flex items-center border-b px-3 py-3 hover:bg-gray-50 transition-colors duration-200 cursor-pointer" @click="toggleSystemTransaction(data)">
-                    <input type="checkbox" class="h-5 w-5 mr-3 text-green-600 rounded focus:ring-2 focus:ring-green-500" :checked="isSystemTransactionSelected(data)" />
+                <q-infinite-scroll
+                  ref="systemScrollSection"
+                  scroll-target=".system-section"
+                  :offset="250"
+                  @load="loadMoreSystemTransactions"
+                >
+                  <div
+                    v-for="data in systemResponse.results"
+                    :key="data.id"
+                    class="flex items-center border-b px-3 py-3 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                    @click="toggleSystemTransaction(data)"
+                  >
+                    <input class="h-5 w-5 mr-3 text-green-600 rounded focus:ring-2 focus:ring-green-500" type="checkbox" :checked="isSystemTransactionSelected(data)" />
 
                     <div class="flex-grow min-w-0">
                       <!-- Transaction Header -->
                       <div class="flex justify-between items-center mb-2">
                         <span class="text-xs text-gray-500">{{ data.date }}</span>
 
-                        <router-link @click.stop v-if="data.source_type && data.source_id && checkPermissions(getPermissionFromSourceType(data.source_type))" :to="getVoucherUrl(data) as string" target="_blank" class="text-blue-800 text-xs hover:underline">
+                        <router-link
+                          v-if="data.source_type && data.source_id && checkPermissions(getPermissionFromSourceType(data.source_type))"
+                          class="text-blue-800 text-xs hover:underline"
+                          target="_blank"
+                          :to="getVoucherUrl(data) as string"
+                          @click.stop
+                        >
                           {{ data.source_type }}
                         </router-link>
                       </div>
@@ -644,7 +783,7 @@ const onFundTransferChequeIssueSuccess = () => {
                       </div>
                     </div>
                   </div>
-                  <template v-slot:loading>
+                  <template #loading>
                     <div class="row justify-center q-my-md">
                       <q-spinner-dots color="primary" size="40px" />
                     </div>
@@ -656,25 +795,43 @@ const onFundTransferChequeIssueSuccess = () => {
         </div>
       </div>
 
-      <MatchedTransactions :startDate="startDate" :endDate="endDate" :accountId="accountDetails.ledger_id" :filterSources="filterSources" :calculateTotal="calculateTotal" :calculateTotalFromCounterparts="calculateTotalFromCounterparts" @unmatchTransactions="unmatchTransactions" @hasNoMatches="hasNoMatches = true" />
+      <MatchedTransactions
+        :account-id="accountDetails.ledger_id"
+        :calculate-total="calculateTotal"
+        :calculate-total-from-counterparts="calculateTotalFromCounterparts"
+        :end-date="endDate"
+        :filter-sources="filterSources"
+        :start-date="startDate"
+        @has-no-matches="hasNoMatches = true"
+        @unmatch-transactions="unmatchTransactions"
+      />
     </div>
   </div>
-  <ReconciliationSalesInvoicesModal v-if="openSalesInvoiceModal" v-model="openSalesInvoiceModal" :statementTransactions="selectedStatementTransactions" :startDate="startDate" :endDate="endDate" :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" @removeBankTransactions="removeBankTransactions" />
+  <ReconciliationSalesInvoicesModal
+    v-if="openSalesInvoiceModal"
+    v-model="openSalesInvoiceModal"
+    :acceptable-difference="acceptableDifference"
+    :adjustment-threshold="adjustmentThreshold"
+    :end-date="endDate"
+    :start-date="startDate"
+    :statement-transactions="selectedStatementTransactions"
+    @remove-bank-transactions="removeBankTransactions"
+  />
 
   <q-dialog v-model="isFundTransferModalOpen">
     <div class="min-w-[900px]">
       <FundTransferForm
         class="w-full"
-        :is-modal="true"
-        :fromAccount="{
+        endpoint="v1/bank-reconciliation/reconcile-transactions-with-funds-transfer/"
+        :amount="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)))"
+        :date="findLatestDate(selectedStatementTransactions)"
+        :from-account="{
           id: accountDetails.ledger_id,
           name: accountDetails.name,
         }"
-        :amount="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)))"
-        :date="findLatestDate(selectedStatementTransactions)"
-        :statementIds="selectedStatementTransactions.map((t) => t.id)"
-        :endpoint="'v1/bank-reconciliation/reconcile-transactions-with-funds-transfer/'"
-        @modalSignal="onFundTransferChequeIssueSuccess"
+        :is-modal="true"
+        :statement-ids="selectedStatementTransactions.map((t) => t.id)"
+        @modal-signal="onFundTransferChequeIssueSuccess"
       />
       />
     </div>
@@ -684,18 +841,18 @@ const onFundTransferChequeIssueSuccess = () => {
     <div class="min-w-[900px]">
       <ChequeIssueForm
         class="w-full"
-        :is-modal="true"
-        :bankAccount="{
+        endpoint="v1/bank-reconciliation/reconcile-transactions-with-cheque-issue/"
+        :amount="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)))"
+        :bank-account="{
           id: accountDetails.id,
           name: accountDetails.name,
           account_number: accountDetails.account_number,
           cheque_no: accountDetails.cheque_no,
         }"
-        :amount="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)))"
         :date="findLatestDate(selectedStatementTransactions)"
-        :statementIds="selectedStatementTransactions.map((t) => t.id)"
-        :endpoint="'v1/bank-reconciliation/reconcile-transactions-with-cheque-issue/'"
-        @modalSignal="onFundTransferChequeIssueSuccess"
+        :is-modal="true"
+        :statement-ids="selectedStatementTransactions.map((t) => t.id)"
+        @modal-signal="onFundTransferChequeIssueSuccess"
       />
     </div>
   </q-dialog>

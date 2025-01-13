@@ -6,13 +6,15 @@ export default boot(({ app }) => {
       amount = 0
     }
     if (typeof amount !== 'number') {
-      amount = parseFloat(amount)
+      amount = Number.parseFloat(amount)
     }
     // return amount.toFixed(2);
     const returnAmount = Math.round((amount + Number.EPSILON) * 100) / 100
     if (toFixed === undefined) {
       return returnAmount
-    } else return returnAmount.toFixed(toFixed)
+    } else {
+      return returnAmount.toFixed(toFixed)
+    }
   }
   app.config.globalProperties.$nf = $nf
 })

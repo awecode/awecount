@@ -1,11 +1,6 @@
-<template>
-  <div>
-    <canvas id="chartDiagram" ref="chartDiagram" style="max-height: 300px; width: 100%"></canvas>
-  </div>
-</template>
-
 <script>
 import Chart from 'chart.js/auto'
+
 export default {
   props: {
     data: {
@@ -44,17 +39,17 @@ export default {
     })
     const multiplyArray = (arr, n) => {
       let newArr = []
-      ;[...Array(n)].forEach(() => {
+      ;[...new Array(n)].forEach(() => {
         newArr = newArr.concat(arr)
       })
       return newArr
     }
     const datacomputed = computed(() => {
-      let data = props.data
+      const data = props.data
       if (data && data.datasets && data.datasets.length) {
         data.datasets.forEach((dataset, index) => {
           if (isSeries.value) {
-            let colorIndex = index % colors.length
+            const colorIndex = index % colors.length
             dataset.backgroundColor = colors[colorIndex]
             dataset.borderColor = colors[colorIndex]
             dataset.lineTension = 0
@@ -83,3 +78,9 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div>
+    <canvas id="chartDiagram" ref="chartDiagram" style="max-height: 300px; width: 100%"></canvas>
+  </div>
+</template>

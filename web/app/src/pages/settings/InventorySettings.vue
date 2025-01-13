@@ -1,32 +1,6 @@
-<template>
-  <q-form class="q-pa-lg" v-if="fields" autofocus>
-    <q-card>
-      <q-card-section class="bg-green text-white">
-        <div class="text-h6">
-          <span>Inventory Settings</span>
-        </div>
-      </q-card-section>
-      <q-card-section>
-        <div>
-          <div class="column q-gutter-y-sm q-mb-sm">
-            <div>
-              <q-checkbox v-model="fields.enable_fifo" label="Enable FIFO?"></q-checkbox>
-            </div>
-            <div>
-              <q-checkbox v-model="fields.enable_negative_stock_check" label="Enable Negative Stock Alert?"></q-checkbox>
-            </div>
-          </div>
-        </div>
-      </q-card-section>
-      <div class="q-ma-md row q-pb-lg">
-        <q-btn @click.prevent="() => onUpdateClick(fields)" color="green" label="Update" type="submit" />
-      </div>
-    </q-card>
-  </q-form>
-</template>
-
 <script>
 import useForm from '/src/composables/useForm'
+
 export default {
   setup() {
     const $q = useQuasar()
@@ -64,7 +38,7 @@ export default {
           }
         })
     }
-    watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
+    watch(formData.formDefaults, newValue => (fields.value = newValue.fields))
     return {
       ...formData,
       fields,
@@ -73,3 +47,35 @@ export default {
   },
 }
 </script>
+
+<template>
+  <q-form v-if="fields" autofocus class="q-pa-lg">
+    <q-card>
+      <q-card-section class="bg-green text-white">
+        <div class="text-h6">
+          <span>Inventory Settings</span>
+        </div>
+      </q-card-section>
+      <q-card-section>
+        <div>
+          <div class="column q-gutter-y-sm q-mb-sm">
+            <div>
+              <q-checkbox v-model="fields.enable_fifo" label="Enable FIFO?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.enable_negative_stock_check" label="Enable Negative Stock Alert?" />
+            </div>
+          </div>
+        </div>
+      </q-card-section>
+      <div class="q-ma-md row q-pb-lg">
+        <q-btn
+          color="green"
+          label="Update"
+          type="submit"
+          @click.prevent="() => onUpdateClick(fields)"
+        />
+      </div>
+    </q-card>
+  </q-form>
+</template>

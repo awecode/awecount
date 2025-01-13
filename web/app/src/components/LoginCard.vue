@@ -1,60 +1,10 @@
-<template>
-  <div class="row justify-center items-center bg-white q-pa-md">
-    <div class="full-width q-px-md">
-      <q-form class="text-sm" @submit="onLoginSubmit" autofocus>
-        <!-- <q-input label="Email" class="q-mb-lg" :hide-bottom-space="true"></q-input> -->
-        <q-input
-          v-model="username"
-          label="Email"
-          input-class="text-body1"
-          :error="Boolean(errorMessage?.email ? true : false)"
-          :error-message="
-            errorMessage ?
-              errorMessage.email ?
-                errorMessage.email[0]
-              : null
-            : null
-          "
-        >
-          <template v-slot:before>
-            <q-icon name="fa-solid fa-envelope" />
-          </template>
-        </q-input>
-        <q-input
-          v-model="password"
-          :type="showPasswordStatus ? 'text' : 'password'"
-          label="Password"
-          input-class="text-body1"
-          :error="Boolean(errorMessage?.password ? true : false)"
-          :error-message="
-            errorMessage ?
-              errorMessage.password ?
-                errorMessage.password[0]
-              : null
-            : null
-          "
-        >
-          <template v-slot:before>
-            <q-icon name="fa-solid fa-lock" />
-          </template>
-          <template v-slot:append>
-            <q-icon :name="showPasswordStatus ? 'mdi-eye' : 'mdi-eye-off'" @click="showPasswordStatus = !showPasswordStatus" class="cursor-pointer" />
-          </template>
-        </q-input>
-        <div class="text-center q-mt-xl">
-          <q-btn type="submit" class="bg-blue full-width text-white q-px-lg">Login</q-btn>
-        </div>
-      </q-form>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue'
-import useApi from '/src/composables/useApi'
 import { useQuasar } from 'quasar'
-import { useLoginStore } from '/src/stores/login-info.js'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import useApi from '/src/composables/useApi'
+import { useLoginStore } from '/src/stores/login-info.js'
+
 const router = useRouter()
 const loginStore = useLoginStore()
 const $q = useQuasar()
@@ -95,3 +45,56 @@ const onLoginSubmit = async () => {
     })
 }
 </script>
+
+<template>
+  <div class="row justify-center items-center bg-white q-pa-md">
+    <div class="full-width q-px-md">
+      <q-form autofocus class="text-sm" @submit="onLoginSubmit">
+        <!-- <q-input label="Email" class="q-mb-lg" :hide-bottom-space="true"></q-input> -->
+        <q-input
+          v-model="username"
+          input-class="text-body1"
+          label="Email"
+          :error="Boolean(errorMessage?.email ? true : false)"
+          :error-message="
+            errorMessage
+              ? errorMessage.email
+                ? errorMessage.email[0]
+                : null
+              : null
+          "
+        >
+          <template #before>
+            <q-icon name="fa-solid fa-envelope" />
+          </template>
+        </q-input>
+        <q-input
+          v-model="password"
+          input-class="text-body1"
+          label="Password"
+          :error="Boolean(errorMessage?.password ? true : false)"
+          :error-message="
+            errorMessage
+              ? errorMessage.password
+                ? errorMessage.password[0]
+                : null
+              : null
+          "
+          :type="showPasswordStatus ? 'text' : 'password'"
+        >
+          <template #before>
+            <q-icon name="fa-solid fa-lock" />
+          </template>
+          <template #append>
+            <q-icon class="cursor-pointer" :name="showPasswordStatus ? 'mdi-eye' : 'mdi-eye-off'" @click="showPasswordStatus = !showPasswordStatus" />
+          </template>
+        </q-input>
+        <div class="text-center q-mt-xl">
+          <q-btn class="bg-blue full-width text-white q-px-lg" type="submit">
+            Login
+          </q-btn>
+        </div>
+      </q-form>
+    </div>
+  </div>
+</template>

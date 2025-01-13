@@ -7,7 +7,7 @@ const useGetDataAuth = async (endpoint, body, omitToken) => {
   const options = {}
   if (omitToken !== true) {
     options.headers = {
-      Authorization: `${loginStore.token ? 'Token ' + loginStore.token : ''}`,
+      Authorization: `${loginStore.token ? `Token ${loginStore.token}` : ''}`,
       // mode: "no-cors", // no-cors, *cors, same-origin
     }
   }

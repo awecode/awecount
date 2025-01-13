@@ -1,28 +1,6 @@
 <script setup lang="ts">
-import { Ref } from 'vue'
+import type { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
-
-const $q = useQuasar()
-
-interface StatementTransactionData {
-  id: number
-  date: string
-  dr_amount: string | null
-  cr_amount: string | null
-  balance: string
-  description: string
-  transaction_ids: number[]
-}
-
-type Invoice = {
-  id: number
-  date: string
-  party_name: string | null
-  total_amount: number
-  customer_name: string | null
-  remarks: string | null
-  selected: boolean
-}
 
 const props = defineProps({
   statementTransactions: {
@@ -50,7 +28,31 @@ const props = defineProps({
     default: 1,
   },
 })
+
 const emit = defineEmits(['update:modelValue', 'removeBankTransactions'])
+
+const $q = useQuasar()
+
+interface StatementTransactionData {
+  id: number
+  date: string
+  dr_amount: string | null
+  cr_amount: string | null
+  balance: string
+  description: string
+  transaction_ids: number[]
+}
+
+interface Invoice {
+  id: number
+  date: string
+  party_name: string | null
+  total_amount: number
+  customer_name: string | null
+  remarks: string | null
+  selected: boolean
+}
+
 const prompt = ref(props.modelValue)
 
 const sortOptions = ref([
@@ -77,7 +79,7 @@ const closeTDSAndRemarks = () => {
   tdsAndRemarks.value = false
 }
 
-type SalesInvoiceResponse = {
+interface SalesInvoiceResponse {
   results: Invoice[]
   pagination: {
     page: number
@@ -101,7 +103,7 @@ const filterEndDate = ref(props.endDate)
 const page = ref(1)
 
 const searchInvoice = async () => {
-  await useApi('v1/bank-reconciliation/sales-vouchers/?start_date=' + filterStartDate.value + '&end_date=' + filterEndDate.value + '&search=' + search.value + '&sort_by=' + sortBy.value + '&sort_dir=' + sortDir.value + '&page=' + page.value).then((responseData: SalesInvoiceResponse) => {
+  await useApi(`v1/bank-reconciliation/sales-vouchers/?start_date=${filterStartDate.value}&end_date=${filterEndDate.value}&search=${search.value}&sort_by=${sortBy.value}&sort_dir=${sortDir.value}&page=${page.value}`).then((responseData: SalesInvoiceResponse) => {
     if (responseData.pagination.page === 1) {
       response.value.results = responseData.results.map((invoice) => {
         return {
@@ -169,23 +171,23 @@ const toggleAllStatementTransactions = () => {
 }
 
 const isStatementTransactionSelected = (transaction: StatementTransactionData) => {
-  return selectedStatementTransactions.value.some((selectedTransaction) => selectedTransaction.id === transaction.id)
+  return selectedStatementTransactions.value.some(selectedTransaction => selectedTransaction.id === transaction.id)
 }
 const toggleStatementTransaction = (transaction: StatementTransactionData) => {
   if (isStatementTransactionSelected(transaction)) {
-    selectedStatementTransactions.value = selectedStatementTransactions.value.filter((selectedTransaction) => selectedTransaction.id !== transaction.id)
+    selectedStatementTransactions.value = selectedStatementTransactions.value.filter(selectedTransaction => selectedTransaction.id !== transaction.id)
   } else {
     selectedStatementTransactions.value = [...selectedStatementTransactions.value, transaction]
   }
 }
 
 const isInvoiceSelected = (transaction: Invoice) => {
-  return selectedInvoiceTransactions.value.some((selectedTransaction) => selectedTransaction.id === transaction.id)
+  return selectedInvoiceTransactions.value.some(selectedTransaction => selectedTransaction.id === transaction.id)
 }
 
 const toggleInvoiceSelection = (transaction: Invoice) => {
   if (isInvoiceSelected(transaction)) {
-    selectedInvoiceTransactions.value = selectedInvoiceTransactions.value.filter((selectedTransaction) => selectedTransaction.id !== transaction.id)
+    selectedInvoiceTransactions.value = selectedInvoiceTransactions.value.filter(selectedTransaction => selectedTransaction.id !== transaction.id)
   } else {
     selectedInvoiceTransactions.value = [...selectedInvoiceTransactions.value, transaction]
   }
@@ -225,18 +227,18 @@ const reconcile = () => {
     useApi(endpoint, {
       method: 'POST',
       body: {
-        statement_ids: selectedStatementTransactions.value.map((t) => t.id),
-        invoice_ids: selectedInvoiceTransactions.value.map((t) => t.id),
+        statement_ids: selectedStatementTransactions.value.map(t => t.id),
+        invoice_ids: selectedInvoiceTransactions.value.map(t => t.id),
         remarks: remarks.value,
         tds_amount: tds.value,
       },
     })
       .then(() => {
         allStatementTransactions.value = allStatementTransactions.value.filter((transaction) => {
-          return !selectedStatementTransactions.value.some((selectedTransaction) => selectedTransaction.id === transaction.id)
+          return !selectedStatementTransactions.value.some(selectedTransaction => selectedTransaction.id === transaction.id)
         })
         response.value.results = response.value.results.filter((invoice) => {
-          return !selectedInvoiceTransactions.value.some((selectedTransaction) => selectedTransaction.id === invoice.id)
+          return !selectedInvoiceTransactions.value.some(selectedTransaction => selectedTransaction.id === invoice.id)
         })
         emit('removeBankTransactions', selectedStatementTransactions.value)
         unselectAll()
@@ -281,7 +283,7 @@ const canReconcile = computed(() => {
 const calculateStatementTotal = (transactions: StatementTransactionData[]) => {
   let cr_amount = 0
   let dr_amount = 0
-  for (let transaction of transactions) {
+  for (const transaction of transactions) {
     if (transaction.cr_amount) {
       cr_amount += Number(transaction.cr_amount)
     }
@@ -311,15 +313,25 @@ const loadSalesInvoice = async (index: number, done: any) => {
 </script>
 
 <template>
-  <q-dialog no-shake v-model="prompt" @update:model-value="updatePrompt">
-    <q-card style="min-width: 1000px; height: 90vh" class="p-5 space-y-3 overflow-hidden">
-      <div class="text-xl text-gray-700 font-bold">Find Sales Invoices</div>
+  <q-dialog v-model="prompt" no-shake @update:model-value="updatePrompt">
+    <q-card class="p-5 space-y-3 overflow-hidden" style="min-width: 1000px; height: 90vh">
+      <div class="text-xl text-gray-700 font-bold">
+        Find Sales Invoices
+      </div>
       <div class="bg-gray-100 p-4 rounded-lg">
         <div class="flex space-x-3 w-fit ml-auto">
-          <button @click="unselectAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">Unselect All</button>
-          <button v-if="canReconcile" @click="tdsAndRemarks = true" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">Reconcile</button>
-          <button v-else-if="selectedStatementTransactions.length && selectedInvoiceTransactions.length && Math.abs(Number(calculateStatementTotal(selectedStatementTransactions)) - Number(calculateInvoiceTotal(selectedInvoiceTransactions))) <= props.adjustmentThreshold" @click="tdsAndRemarks = true" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">Reconcile with Adjustment</button>
-          <button disabled v-else class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">Reconcile</button>
+          <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm" @click="unselectAll">
+            Unselect All
+          </button>
+          <button v-if="canReconcile" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm" @click="tdsAndRemarks = true">
+            Reconcile
+          </button>
+          <button v-else-if="selectedStatementTransactions.length && selectedInvoiceTransactions.length && Math.abs(Number(calculateStatementTotal(selectedStatementTransactions)) - Number(calculateInvoiceTotal(selectedInvoiceTransactions))) <= props.adjustmentThreshold" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm" @click="tdsAndRemarks = true">
+            Reconcile with Adjustment
+          </button>
+          <button v-else disabled class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            Reconcile
+          </button>
         </div>
 
         <div class="flex justify-between mt-4 space-x-6">
@@ -342,7 +354,7 @@ const loadSalesInvoice = async (index: number, done: any) => {
           <!-- Show difference -->
           <div class="text-sm text-center flex flex-col justify-center space-y-1">
             <span class="font-semibold">Difference:</span>
-            <div :class="Math.abs(Number(calculateStatementTotal(selectedStatementTransactions)) - Number(calculateInvoiceTotal(selectedInvoiceTransactions))) > props.acceptableDifference ? 'text-red-600' : 'text-green-600'" class="font-medium">
+            <div class="font-medium" :class="Math.abs(Number(calculateStatementTotal(selectedStatementTransactions)) - Number(calculateInvoiceTotal(selectedInvoiceTransactions))) > props.acceptableDifference ? 'text-red-600' : 'text-green-600'">
               {{ Math.abs(Number(calculateStatementTotal(selectedStatementTransactions)) - Number(calculateInvoiceTotal(selectedInvoiceTransactions))) }}
             </div>
           </div>
@@ -369,21 +381,64 @@ const loadSalesInvoice = async (index: number, done: any) => {
           <div></div>
           <div class="flex gap-4 mb-2">
             <div class="flex space-x-2">
-              <q-select v-model="sortBy" :options="sortOptions" outlined dense label="Sort by" class="w-32" @update:model-value="(page = 1), searchInvoice()" option-value="value" option-label="label" emit-value />
+              <q-select
+                v-model="sortBy"
+                dense
+                emit-value
+                outlined
+                class="w-32"
+                label="Sort by"
+                option-label="label"
+                option-value="value"
+                :options="sortOptions"
+                @update:model-value="(page = 1), searchInvoice()"
+              />
               <div class="flex items-center pb-2 cursor-pointer text-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="20" viewBox="0 0 12 20" :class="sortDir === 'asc' ? 'transform rotate-180' : ''" @click="(sortDir = sortDir === 'asc' ? 'desc' : 'asc'), (page = 1), searchInvoice()">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                    <path stroke-dasharray="20" stroke-dashoffset="20" d="M6 3l0 17.5">
-                      <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.2s" values="20;0" />
+                <svg
+                  height="20"
+                  viewBox="0 0 12 20"
+                  width="10"
+                  xmlns="http://www.w3.org/2000/svg"
+                  :class="sortDir === 'asc' ? 'transform rotate-180' : ''"
+                  @click="(sortDir = sortDir === 'asc' ? 'desc' : 'asc'), (page = 1), searchInvoice()"
+                >
+                  <g
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  >
+                    <path d="M6 3l0 17.5" stroke-dasharray="20" stroke-dashoffset="20">
+                      <animate
+                        attributeName="stroke-dashoffset"
+                        dur="0.2s"
+                        fill="freeze"
+                        values="20;0"
+                      />
                     </path>
-                    <path stroke-dasharray="12" stroke-dashoffset="12" d="M6 21l5 -5M6 21l-5 -5">
-                      <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.2s" dur="0.2s" values="12;0" />
+                    <path d="M6 21l5 -5M6 21l-5 -5" stroke-dasharray="12" stroke-dashoffset="12">
+                      <animate
+                        attributeName="stroke-dashoffset"
+                        begin="0.2s"
+                        dur="0.2s"
+                        fill="freeze"
+                        values="12;0"
+                      />
                     </path>
                   </g>
                 </svg>
               </div>
             </div>
-            <q-input v-model="search" :debounce="500" @update:model-value="(page = 1), searchInvoice()" outlined dense placeholder="Search..." class="grow mb-2" />
+            <q-input
+              v-model="search"
+              dense
+              outlined
+              class="grow mb-2"
+              placeholder="Search..."
+              :debounce="500"
+              @update:model-value="(page = 1), searchInvoice()"
+            />
           </div>
         </div>
 
@@ -392,16 +447,28 @@ const loadSalesInvoice = async (index: number, done: any) => {
           <div class="space-y-4">
             <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
               <div class="bg-blue-50 px-6 py-4 border-b border-blue-100 flex items-center justify-between">
-                <h3 class="text-xl my-0 font-bold text-blue-700 tracking-tight">Statement Transactions</h3>
+                <h3 class="text-xl my-0 font-bold text-blue-700 tracking-tight">
+                  Statement Transactions
+                </h3>
                 <div class="flex items-center space-x-3">
-                  <input type="checkbox" :checked="allStatementSelected" @change="toggleAllStatementTransactions" class="h-5 w-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 transition duration-200" />
+                  <input
+                    class="h-5 w-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 transition duration-200"
+                    type="checkbox"
+                    :checked="allStatementSelected"
+                    @change="toggleAllStatementTransactions"
+                  />
                   <span class="text-sm text-gray-600 font-medium">Select All</span>
                 </div>
               </div>
 
               <div class="divide-y divide-gray-100 max-h-[calc(75vh-250px)] overflow-y-auto">
                 <div v-for="data in allStatementTransactions" :key="data.id" class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150 flex flex-nowrap items-center space-x-4">
-                  <input type="checkbox" :checked="isStatementTransactionSelected(data)" @change="toggleStatementTransaction(data)" class="h-5 w-5 text-green-600 rounded focus:ring-2 focus:ring-green-500" />
+                  <input
+                    class="h-5 w-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                    type="checkbox"
+                    :checked="isStatementTransactionSelected(data)"
+                    @change="toggleStatementTransaction(data)"
+                  />
                   <div class="flex-grow">
                     <div class="flex flex-nowrap justify-between items-center mb-1">
                       <span class="text-sm text-gray-500">{{ data.date }}</span>
@@ -424,35 +491,61 @@ const loadSalesInvoice = async (index: number, done: any) => {
             <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
               <div class="bg-green-50 px-6 py-4 border-b border-green-100 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                  <h3 class="text-xl my-0 font-bold text-green-700 tracking-tight">Sales Invoices</h3>
+                  <h3 class="text-xl my-0 font-bold text-green-700 tracking-tight">
+                    Sales Invoices
+                  </h3>
                   <span class="text-sm text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
                     {{ response.results.length }}
                   </span>
                 </div>
                 <div class="flex items-center space-x-3">
-                  <input type="checkbox" :checked="allInvoiceSelected" @change="toggleAllInvoiceTransactions" class="h-5 w-5 text-green-600 rounded focus:ring-2 focus:ring-green-500 transition duration-200" />
+                  <input
+                    class="h-5 w-5 text-green-600 rounded focus:ring-2 focus:ring-green-500 transition duration-200"
+                    type="checkbox"
+                    :checked="allInvoiceSelected"
+                    @change="toggleAllInvoiceTransactions"
+                  />
                   <span class="text-sm text-gray-600 font-medium">Select All</span>
                 </div>
               </div>
 
               <div v-if="response.results.length" class="divide-y divide-gray-100 overflow-y-auto max-h-[calc(75vh-250px)] sales-invoices">
-                <q-infinite-scroll ref="infiniteScroll" @load="loadSalesInvoice" :offset="250" scroll-target=".sales-invoices">
+                <q-infinite-scroll
+                  ref="infiniteScroll"
+                  scroll-target=".sales-invoices"
+                  :offset="250"
+                  @load="loadSalesInvoice"
+                >
                   <div v-for="data in response.results" :key="data.id" class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150 flex flex-nowrap items-center space-x-4">
-                    <input type="checkbox" :checked="isInvoiceSelected(data)" @change="toggleInvoiceSelection(data)" class="h-5 w-5 text-green-600 rounded focus:ring-2 focus:ring-green-500" />
+                    <input
+                      class="h-5 w-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                      type="checkbox"
+                      :checked="isInvoiceSelected(data)"
+                      @change="toggleInvoiceSelection(data)"
+                    />
                     <div class="flex-grow">
                       <div class="flex justify-between items-center mb-1">
                         <span class="text-sm text-gray-500">{{ data.date }}</span>
-                        <router-link v-if="checkPermissions('SalesView')" :to="`/sales-voucher/${data.id}/view/`" target="_blank" class="text-blue-600 text-xs hover:underline">Sales Invoice</router-link>
+                        <router-link
+                          v-if="checkPermissions('SalesView')"
+                          class="text-blue-600 text-xs hover:underline"
+                          target="_blank"
+                          :to="`/sales-voucher/${data.id}/view/`"
+                        >
+                          Sales Invoice
+                        </router-link>
                       </div>
                       <div class="flex justify-between items-center flex-nowrap">
                         <div class="text-sm text-gray-700 break pr-2">
                           {{ data.party_name || data.customer_name }}
                         </div>
-                        <div class="text-green-500 font-semibold">+{{ data.total_amount }}</div>
+                        <div class="text-green-500 font-semibold">
+                          +{{ data.total_amount }}
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <template v-slot:loading>
+                  <template #loading>
                     <div class="row justify-center q-my-md">
                       <q-spinner-dots color="primary" size="40px" />
                     </div>
@@ -466,13 +559,24 @@ const loadSalesInvoice = async (index: number, done: any) => {
     </q-card>
   </q-dialog>
   <q-dialog v-model="tdsAndRemarks">
-    <q-card style="min-width: 650px" class="p-5">
+    <q-card class="p-5" style="min-width: 650px">
       <q-input v-model="tds" dense label="TDS Amount" />
-      <q-input v-model="remarks" dense label="Remarks" class="my-5" />
+      <q-input
+        v-model="remarks"
+        dense
+        class="my-5"
+        label="Remarks"
+      />
       <div class="flex justify-end space-x-3">
-        <q-btn v-if="canReconcile" @click="reconcile" class="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors">Reconcile</q-btn>
-        <q-btn v-else-if="selectedStatementTransactions.length && selectedInvoiceTransactions.length && Math.abs(Number(calculateStatementTotal(selectedStatementTransactions)) - Number(calculateInvoiceTotal(selectedInvoiceTransactions))) <= props.adjustmentThreshold" @click="reconcile" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">Reconcile with Adjustment</q-btn>
-        <q-btn @click="closeTDSAndRemarks" class="px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors">Cancel</q-btn>
+        <q-btn v-if="canReconcile" class="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors" @click="reconcile">
+          Reconcile
+        </q-btn>
+        <q-btn v-else-if="selectedStatementTransactions.length && selectedInvoiceTransactions.length && Math.abs(Number(calculateStatementTotal(selectedStatementTransactions)) - Number(calculateInvoiceTotal(selectedInvoiceTransactions))) <= props.adjustmentThreshold" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm" @click="reconcile">
+          Reconcile with Adjustment
+        </q-btn>
+        <q-btn class="px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors" @click="closeTDSAndRemarks">
+          Cancel
+        </q-btn>
       </div>
     </q-card>
   </q-dialog>

@@ -1,5 +1,31 @@
+<script>
+import checkPermissions from 'src/composables/checkPermissions'
+import useForm from '/src/composables/useForm'
+
+export default {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setup(props, context) {
+    const endpoint = '/v1/tax_scheme/'
+    const formData = useForm(endpoint, {
+      getDefaults: false,
+      successRoute: '/taxes/list/',
+    })
+    useMeta(() => {
+      return {
+        title: `${formData.isEdit?.value ? 'Update Tax Scheme' : 'Add Tax Scheme'} | Awecount`,
+      }
+    })
+    formData.fields.value.recoverable = false
+    return {
+      ...formData,
+      checkPermissions,
+    }
+  },
+}
+</script>
+
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <q-form autofocus class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -11,47 +37,70 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.name" label="Name *" class="col-12 col-md-6" :error-message="errors.name" :error="!!errors.name" />
-            <q-input v-model="fields.short_name" label="Short Name" class="col-12 col-md-6" :error-message="errors.short_name" :error="!!errors.short_name" />
+            <q-input
+              v-model="fields.name"
+              class="col-12 col-md-6"
+              label="Name *"
+              :error="!!errors.name"
+              :error-message="errors.name"
+            />
+            <q-input
+              v-model="fields.short_name"
+              class="col-12 col-md-6"
+              label="Short Name"
+              :error="!!errors.short_name"
+              :error-message="errors.short_name"
+            />
           </div>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.rate" label="Rate *" class="col-12 col-md-6" type="number" :error-message="errors.rate" :error="!!errors.rate" />
+            <q-input
+              v-model="fields.rate"
+              class="col-12 col-md-6"
+              label="Rate *"
+              type="number"
+              :error="!!errors.rate"
+              :error-message="errors.rate"
+            />
           </div>
           <div>
-            <q-input v-model="fields.description" label="Description" class="col-6" :error-message="errors.description" :error="!!errors.description" type="textarea" />
+            <q-input
+              v-model="fields.description"
+              class="col-6"
+              label="Description"
+              type="textarea"
+              :error="!!errors.description"
+              :error-message="errors.description"
+            />
           </div>
-          <q-checkbox class="col-4" v-model="fields.recoverable" label="Is Recoverable?" :error-message="errors.recoverable" :error="!!errors.recoverable" />
+          <q-checkbox
+            v-model="fields.recoverable"
+            class="col-4"
+            label="Is Recoverable?"
+            :error="!!errors.recoverable"
+            :error-message="errors.recoverable"
+          />
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('TaxSchemeCreate') && !isEdit" @click.prevent="submitForm" color="green" :loading="loading" label="Create" class="q-ml-auto q-px-lg" type="submit" />
-          <q-btn v-if="checkPermissions('TaxSchemeModify') && isEdit" @click.prevent="submitForm" color="green" :loading="loading" label="Update" class="q-ml-auto q-px-lg" type="submit" />
+          <q-btn
+            v-if="checkPermissions('TaxSchemeCreate') && !isEdit"
+            class="q-ml-auto q-px-lg"
+            color="green"
+            label="Create"
+            type="submit"
+            :loading="loading"
+            @click.prevent="submitForm"
+          />
+          <q-btn
+            v-if="checkPermissions('TaxSchemeModify') && isEdit"
+            class="q-ml-auto q-px-lg"
+            color="green"
+            label="Update"
+            type="submit"
+            :loading="loading"
+            @click.prevent="submitForm"
+          />
         </div>
       </q-card>
     </q-card>
   </q-form>
 </template>
-
-<script>
-import useForm from '/src/composables/useForm'
-import checkPermissions from 'src/composables/checkPermissions'
-export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/tax_scheme/'
-    const formData = useForm(endpoint, {
-      getDefaults: false,
-      successRoute: '/taxes/list/',
-    })
-    useMeta(() => {
-      return {
-        title: (formData.isEdit?.value ? 'Update Tax Scheme' : 'Add Tax Scheme') + ' | Awecount',
-      }
-    })
-    formData.fields.value.recoverable = false
-    return {
-      ...formData,
-      checkPermissions,
-    }
-  },
-}
-</script>

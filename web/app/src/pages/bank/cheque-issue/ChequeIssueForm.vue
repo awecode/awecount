@@ -1,104 +1,8 @@
-<template>
-  <div>
-    <q-form class="q-pa-lg print-hide" autofocus>
-      <q-card>
-        <q-card-section class="bg-green text-white">
-          <div class="text-h6">
-            <span v-if="!isEdit">New Cheque Issue</span>
-            <span v-else>Update Cheque | #{{ fields.cheque_no }}</span>
-          </div>
-        </q-card-section>
-
-        <q-card class="q-mt-none q-ml-lg q-mr-lg q-mb-lg">
-          <q-card-section>
-            <div class="row q-col-gutter-md">
-              <div class="col-md-6 col-12">
-                <n-auto-complete-v2 v-model="fields.bank_account" endpoint="v1/cheque-issue/create-defaults/bank_accounts" :options="formDefaults.collections?.bank_accounts" label="Bank Account *" :disabled="isEdit || !!bankAccount?.id" :staticOption="fields.selected_bank_account_obj" :error="errors?.bank_account" @update:modelValue="updateBankAccount" />
-              </div>
-              <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date *" :error-message="errors.date" :error="!!errors.date"></date-picker>
-            </div>
-            <div class="row q-col-gutter-md">
-              <q-input v-model="fields.cheque_no" label="Cheque Number" class="col-md-6 col-12" :error-message="errors.cheque_no" :error="!!errors.cheque_no" :disable="isEdit" type="number" />
-              <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount" type="number" :error="!!errors.amount" />
-            </div>
-            <div class="row q-col-gutter-md">
-              <div class="col-8">
-                <n-auto-complete-v2 v-if="!showDrAccount" v-model="fields.party" :options="formDefaults.collections?.parties" :staticOption="fields.selected_party_obj" endpoint="v1/cheque-issue/create-defaults/parties" label="Party *" :error="errors?.party" />
-                <div class="row" v-else>
-                  <q-input v-model="fields.issued_to" label="Issued To" class="col-12" :error-message="errors.issued_to" :error="!!errors.issued_to" />
-                </div>
-              </div>
-              <div>
-                <q-btn @click.prevent="toggleDrAccount" square icon="groups_2" class="q-mt-md" />
-              </div>
-            </div>
-            <div class="row q-col-gutter-md" v-if="showDrAccount">
-              <div class="col-8">
-                <n-auto-complete-v2 v-model="fields.dr_account" :options="formDefaults.collections?.accounts" :staticOption="fields.selected_dr_account_obj" endpoint="v1/cheque-issue/create-defaults/accounts" label="Dr Account" :modal-component="BenefactorForm" :error="errors?.dr_account" />
-              </div>
-            </div>
-          </q-card-section>
-          <div class="q-pr-md q-pb-lg row justify-between">
-            <div class="row q-gutter-md">
-              <q-btn @click="exportPDF" v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'" color="green" outline class="q-px-lg q-py-sm" style="display: inline-block">Print Pdf</q-btn>
-              <q-btn @click="onChequePrint" v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'" color="green" outline class="q-px-lg q-py-sm" style="display: inline-block" label="Print Cheque"></q-btn>
-              <q-btn v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('ChequeIssueCancel')" @click.prevent="isDeleteOpen = true" icon="block" color="red" label="Cancel" class="q-ml-md" />
-            </div>
-            <div>
-              <q-btn v-if="checkPermissions('ChequeIssueCreate') && !isEdit" @click.prevent="submitForm" color="green" label="Create" class="q-ml-auto" type="submit" />
-              <q-btn v-if="checkPermissions('ChequeIssueModify') && isEdit" @click.prevent="submitForm" color="green" label="Update" class="q-ml-auto" type="submit" />
-            </div>
-          </div>
-        </q-card>
-      </q-card>
-    </q-form>
-    <div class="print-only">
-      <div class="cheque-con" id="cheque-con">
-        <div class="date">
-          {{ fields.date.replaceAll('-', '').split('').join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;') }}
-        </div>
-        <div class="payee">
-          {{ fields.payee }}
-        </div>
-        <div class="amt1">
-          {{ amtArrayComputed[0] }}
-        </div>
-        <div class="amt2">
-          {{ amtArrayComputed[1] }}
-        </div>
-        <div class="amt-num">
-          {{ formatNumberWithCommas(fields.amount) + '/-' }}
-        </div>
-      </div>
-    </div>
-    <q-dialog v-model="isDeleteOpen">
-      <q-card style="min-width: min(40vw, 400px)">
-        <q-card-section class="bg-red-6 q-py-md flex justify-between">
-          <div class="text-h6 text-white">
-            <span>Confirm Cancellation?</span>
-          </div>
-          <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
-        </q-card-section>
-        <q-separator inset />
-        <q-card-section>
-          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">Are you sure?</div>
-          <div class="text-blue">
-            <div class="row justify-end">
-              <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
-              <q-btn flat class="text-red" label="Yes" @click="cancelForm"></q-btn>
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-  </div>
-</template>
-
 <script>
-import BenefactorForm from 'src/pages/account/ledger/LedgerForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
-import useGenerateChequePdf from 'src/composables/pdf/useGenerateChequePdf'
 import formatNumberWithCommas from 'src/composables/formatNumberWithComma'
+import useGenerateChequePdf from 'src/composables/pdf/useGenerateChequePdf'
+import BenefactorForm from 'src/pages/account/ledger/LedgerForm.vue'
 // const $q = useQuasar()
 
 export default {
@@ -140,7 +44,7 @@ export default {
     const isDeleteOpen = ref(false)
     useMeta(() => {
       return {
-        title: (formData.isEdit?.value ? 'Update Cheque' : 'Issue Cheque') + ' | Awecount',
+        title: `${formData.isEdit?.value ? 'Update Cheque' : 'Issue Cheque'} | Awecount`,
       }
     })
     if (props.bankAccount && !formData.isEdit.value) {
@@ -186,7 +90,7 @@ export default {
           unit: 'in',
           format: [7.5, 3.5],
         })
-        const amt = formData.fields.value.amount_in_words + ' only'
+        const amt = `${formData.fields.value.amount_in_words} only`
         const amountArray = splitString(amt, 50)
         doc.setFontSize(13)
         const dateArray = formData.fields.value.date.replaceAll('-', '').split('')
@@ -240,8 +144,10 @@ export default {
     }
     const amtArrayComputed = computed(() => {
       if (formData.fields.value.amount_in_words) {
-        return splitString(formData.fields.value.amount_in_words + ' only', 50)
-      } else return []
+        return splitString(`${formData.fields.value.amount_in_words} only`, 50)
+      } else {
+        return []
+      }
     })
 
     return {
@@ -260,6 +166,216 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div>
+    <q-form autofocus class="q-pa-lg print-hide">
+      <q-card>
+        <q-card-section class="bg-green text-white">
+          <div class="text-h6">
+            <span v-if="!isEdit">New Cheque Issue</span>
+            <span v-else>Update Cheque | #{{ fields.cheque_no }}</span>
+          </div>
+        </q-card-section>
+
+        <q-card class="q-mt-none q-ml-lg q-mr-lg q-mb-lg">
+          <q-card-section>
+            <div class="row q-col-gutter-md">
+              <div class="col-md-6 col-12">
+                <n-auto-complete-v2
+                  v-model="fields.bank_account"
+                  endpoint="v1/cheque-issue/create-defaults/bank_accounts"
+                  label="Bank Account *"
+                  :disabled="isEdit || !!bankAccount?.id"
+                  :error="errors?.bank_account"
+                  :options="formDefaults.collections?.bank_accounts"
+                  :static-option="fields.selected_bank_account_obj"
+                  @update:model-value="updateBankAccount"
+                />
+              </div>
+              <date-picker
+                v-model="fields.date"
+                class="col-md-6 col-12"
+                label="Date *"
+                :error="!!errors.date"
+                :error-message="errors.date"
+              />
+            </div>
+            <div class="row q-col-gutter-md">
+              <q-input
+                v-model="fields.cheque_no"
+                class="col-md-6 col-12"
+                label="Cheque Number"
+                type="number"
+                :disable="isEdit"
+                :error="!!errors.cheque_no"
+                :error-message="errors.cheque_no"
+              />
+              <q-input
+                v-model="fields.amount"
+                class="col-md-6 col-12"
+                label="Amount *"
+                type="number"
+                :error="!!errors.amount"
+                :error-message="errors.amount"
+              />
+            </div>
+            <div class="row q-col-gutter-md">
+              <div class="col-8">
+                <n-auto-complete-v2
+                  v-if="!showDrAccount"
+                  v-model="fields.party"
+                  endpoint="v1/cheque-issue/create-defaults/parties"
+                  label="Party *"
+                  :error="errors?.party"
+                  :options="formDefaults.collections?.parties"
+                  :static-option="fields.selected_party_obj"
+                />
+                <div v-else class="row">
+                  <q-input
+                    v-model="fields.issued_to"
+                    class="col-12"
+                    label="Issued To"
+                    :error="!!errors.issued_to"
+                    :error-message="errors.issued_to"
+                  />
+                </div>
+              </div>
+              <div>
+                <q-btn
+                  square
+                  class="q-mt-md"
+                  icon="groups_2"
+                  @click.prevent="toggleDrAccount"
+                />
+              </div>
+            </div>
+            <div v-if="showDrAccount" class="row q-col-gutter-md">
+              <div class="col-8">
+                <n-auto-complete-v2
+                  v-model="fields.dr_account"
+                  endpoint="v1/cheque-issue/create-defaults/accounts"
+                  label="Dr Account"
+                  :error="errors?.dr_account"
+                  :modal-component="BenefactorForm"
+                  :options="formDefaults.collections?.accounts"
+                  :static-option="fields.selected_dr_account_obj"
+                />
+              </div>
+            </div>
+          </q-card-section>
+          <div class="q-pr-md q-pb-lg row justify-between">
+            <div class="row q-gutter-md">
+              <q-btn
+                v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'"
+                outline
+                class="q-px-lg q-py-sm"
+                color="green"
+                style="display: inline-block"
+                @click="exportPDF"
+              >
+                Print Pdf
+              </q-btn>
+              <q-btn
+                v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'"
+                outline
+                class="q-px-lg q-py-sm"
+                color="green"
+                label="Print Cheque"
+                style="display: inline-block"
+                @click="onChequePrint"
+              />
+              <q-btn
+                v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('ChequeIssueCancel')"
+                class="q-ml-md"
+                color="red"
+                icon="block"
+                label="Cancel"
+                @click.prevent="isDeleteOpen = true"
+              />
+            </div>
+            <div>
+              <q-btn
+                v-if="checkPermissions('ChequeIssueCreate') && !isEdit"
+                class="q-ml-auto"
+                color="green"
+                label="Create"
+                type="submit"
+                @click.prevent="submitForm"
+              />
+              <q-btn
+                v-if="checkPermissions('ChequeIssueModify') && isEdit"
+                class="q-ml-auto"
+                color="green"
+                label="Update"
+                type="submit"
+                @click.prevent="submitForm"
+              />
+            </div>
+          </div>
+        </q-card>
+      </q-card>
+    </q-form>
+    <div class="print-only">
+      <div id="cheque-con" class="cheque-con">
+        <div class="date">
+          {{ fields.date.replaceAll('-', '').split('').join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;') }}
+        </div>
+        <div class="payee">
+          {{ fields.payee }}
+        </div>
+        <div class="amt1">
+          {{ amtArrayComputed[0] }}
+        </div>
+        <div class="amt2">
+          {{ amtArrayComputed[1] }}
+        </div>
+        <div class="amt-num">
+          {{ `${formatNumberWithCommas(fields.amount)}/-` }}
+        </div>
+      </div>
+    </div>
+    <q-dialog v-model="isDeleteOpen">
+      <q-card style="min-width: min(40vw, 400px)">
+        <q-card-section class="bg-red-6 q-py-md flex justify-between">
+          <div class="text-h6 text-white">
+            <span>Confirm Cancellation?</span>
+          </div>
+          <q-btn
+            v-close-popup
+            dense
+            flat
+            round
+            class="text-red-700 bg-slate-200 opacity-95"
+            icon="close"
+          />
+        </q-card-section>
+        <q-separator inset />
+        <q-card-section>
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">
+            Are you sure?
+          </div>
+          <div class="text-blue">
+            <div class="row justify-end">
+              <q-btn
+                flat
+                class="q-mr-md text-blue-grey-9"
+                label="NO"
+                @click="() => (isDeleteOpen = false)"
+              />
+              <q-btn
+                flat
+                class="text-red"
+                label="Yes"
+                @click="cancelForm"
+              />
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+  </div>
+</template>
 
 <style scoped>
 .cheque-con {

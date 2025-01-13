@@ -1,79 +1,3 @@
-<template>
-  <div class="q-pa-md">
-    <div class="row justify-end">
-      <q-btn v-if="checkPermissions('JournalVoucherCreate')" color="green" to="/journal-voucher/add/" label="New Journal Voucher" class="add-btn" icon-right="add" />
-    </div>
-
-    <q-table :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-      <template v-slot:top>
-        <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-          <q-btn class="f-open-btn" icon="mdi-filter-variant">
-            <q-menu>
-              <div class="menu-wrapper" style="width: min(500px, 90vw)">
-                <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Filters</h6>
-                </div>
-                <div class="q-ma-sm">
-                  <div class="q-ma-sm">
-                    <MultiSelectChip :options="['Cancelled', 'Approved', 'Unapproved']" v-model="filters.status" />
-                  </div>
-                  <div class="q-mx-md">
-                    <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
-                  </div>
-                </div>
-                <div class="q-mx-md flex gap-4 q-mb-md">
-                  <q-btn color="green" label="Filter" @click="onFilterUpdate" class="f-submit-btn"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
-                </div>
-              </div>
-            </q-menu>
-          </q-btn>
-        </div>
-      </template>
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props">
-          <div class="flex gap-4 no-wrap">
-            <q-btn v-if="checkPermissions('JournalVoucherView')" color="blue" label="View" :to="`/journal-voucher/${props.row.id}/view/`" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" />
-            <q-btn v-if="props.row.status !== 'Cancelled' && checkPermissions('JournalVoucherModify')" color="orange-7" label="Edit" :to="`/journal-voucher/${props.row.id}/edit/`" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" />
-          </div>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-status="props">
-        <q-td :props="props">
-          <div class="row q-gutter-sm justify-center">
-            <span
-              class="text-white text-subtitle"
-              :class="
-                props.row.status === 'Unapproved' ? 'bg-orange-2 text-orange-10'
-                : props.row.status === 'Approved' ? 'bg-green-2 text-green-10'
-                : 'bg-red-2 text-red-10'
-              "
-              style="border-radius: 8px; padding: 2px 10px"
-            >
-              {{ props.row.status }}
-            </span>
-          </div>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props" style="padding: 0">
-          <span v-if="props.row.voucher_no">
-            <router-link v-if="checkPermissions('JournalVoucherView')" :to="`/challan/${props.row.id}/`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue">
-              {{ props.row.voucher_no }}
-            </router-link>
-            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.voucher_no }}</span>
-          </span>
-        </q-td>
-      </template>
-    </q-table>
-  </div>
-</template>
-
 <script>
 export default {
   setup() {
@@ -110,3 +34,133 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <div class="row justify-end">
+      <q-btn
+        v-if="checkPermissions('JournalVoucherCreate')"
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="New Journal Voucher"
+        to="/journal-voucher/add/"
+      />
+    </div>
+
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      :columns="newColumns"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
+      <template #top>
+        <div class="search-bar">
+          <q-input
+            v-model="searchQuery"
+            dense
+            class="full-width search-input"
+            debounce="500"
+            placeholder="Search"
+          >
+            <template #append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(500px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">
+                    Filters
+                  </h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-ma-sm">
+                    <MultiSelectChip v-model="filters.status" :options="['Cancelled', 'Approved', 'Unapproved']" />
+                  </div>
+                  <div class="q-mx-md">
+                    <DateRangePicker v-model:end-date="filters.end_date" v-model:start-date="filters.start_date" />
+                  </div>
+                </div>
+                <div class="q-mx-md flex gap-4 q-mb-md">
+                  <q-btn
+                    class="f-submit-btn"
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  />
+                  <q-btn
+                    class="f-reset-btn"
+                    color="red"
+                    icon="close"
+                    @click="resetFilters"
+                  />
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
+        </div>
+      </template>
+      <template #body-cell-actions="props">
+        <q-td :props="props">
+          <div class="flex gap-4 no-wrap">
+            <q-btn
+              v-if="checkPermissions('JournalVoucherView')"
+              class="q-py-none q-px-md font-size-sm l-view-btn"
+              color="blue"
+              label="View"
+              style="font-size: 12px"
+              :to="`/journal-voucher/${props.row.id}/view/`"
+            />
+            <q-btn
+              v-if="props.row.status !== 'Cancelled' && checkPermissions('JournalVoucherModify')"
+              class="q-py-none q-px-md font-size-sm l-edit-btn"
+              color="orange-7"
+              label="Edit"
+              style="font-size: 12px"
+              :to="`/journal-voucher/${props.row.id}/edit/`"
+            />
+          </div>
+        </q-td>
+      </template>
+      <template #body-cell-status="props">
+        <q-td :props="props">
+          <div class="row q-gutter-sm justify-center">
+            <span
+              class="text-white text-subtitle"
+              style="border-radius: 8px; padding: 2px 10px"
+              :class="
+                props.row.status === 'Unapproved' ? 'bg-orange-2 text-orange-10'
+                : props.row.status === 'Approved' ? 'bg-green-2 text-green-10'
+                  : 'bg-red-2 text-red-10'
+              "
+            >
+              {{ props.row.status }}
+            </span>
+          </div>
+        </q-td>
+      </template>
+      <template #body-cell-voucher_no="props">
+        <q-td style="padding: 0" :props="props">
+          <span v-if="props.row.voucher_no">
+            <router-link
+              v-if="checkPermissions('JournalVoucherView')"
+              class="text-blue"
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+              :to="`/challan/${props.row.id}/`"
+            >
+              {{ props.row.voucher_no }}
+            </router-link>
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.voucher_no }}</span>
+          </span>
+        </q-td>
+      </template>
+    </q-table>
+  </div>
+</template>

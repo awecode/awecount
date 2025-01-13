@@ -1,50 +1,8 @@
-<template>
-  <q-form class="q-pa-lg" v-if="fields">
-    <q-dialog v-model="htmlDialogOpen">
-      <q-card style="size: a4; min-width: 60%; max-width: 90vw">
-        <q-card-section>
-          <div v-html="selectedHtml"></div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-
-    <q-card>
-      <q-card-section class="bg-green text-white">
-        <div class="text-h6">
-          <span>Invoice Settings</span>
-        </div>
-      </q-card-section>
-
-      <q-card-section>
-        <div class="mb-4">
-          <div class="text-h6 mb-2">Available Templates</div>
-          <div class="flex flex-wrap gap-4">
-            <div v-for="template in templateOptions" :key="template.id" class="q-mb-md" @click="openHtmlDialog(template.html)">
-              <div>{{ template.label }}</div>
-              <div class="relative w-[200px] h-[125px] cursor-pointer overflow-hidden">
-                <div v-html="template.html" class="w-full h-full" style="zoom: 0.2"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row q-ml-sm">
-          <div class="col-12 col-sm-6">
-            <q-select map-options emit-value v-model="fields.invoice_template" option-value="value" option-label="label" :options="templateOptions" label="Invoicing Template" />
-          </div>
-        </div>
-        <div class="q-ma-md row q-pb-lg">
-          <q-btn @click.prevent="() => onUpdateClick(fields)" color="green" label="Update" type="submit" :loading="formLoading" />
-        </div>
-      </q-card-section>
-    </q-card>
-  </q-form>
-</template>
-
 <script setup>
-import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { useLoginStore } from 'src/stores/login-info'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
+import { useLoginStore } from 'src/stores/login-info'
+import { ref } from 'vue'
 
 useMeta({
   title: 'Invoice Settings | Awecount',
@@ -177,7 +135,7 @@ const templateOptions = ref([
   { label: 'Template 3', value: 3, html: '' },
 ])
 
-templateOptions.value.forEach(async (template) => (template.html = await generateHtml(template.value)))
+templateOptions.value.forEach(async template => (template.html = await generateHtml(template.value)))
 
 const htmlDialogOpen = ref(false)
 const selectedHtml = ref('')
@@ -215,3 +173,66 @@ const onUpdateClick = async (fields) => {
     })
 }
 </script>
+
+<template>
+  <q-form v-if="fields" class="q-pa-lg">
+    <q-dialog v-model="htmlDialogOpen">
+      <q-card style="size: a4; min-width: 60%; max-width: 90vw">
+        <q-card-section>
+          <div v-html="selectedHtml"></div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <q-card>
+      <q-card-section class="bg-green text-white">
+        <div class="text-h6">
+          <span>Invoice Settings</span>
+        </div>
+      </q-card-section>
+
+      <q-card-section>
+        <div class="mb-4">
+          <div class="text-h6 mb-2">
+            Available Templates
+          </div>
+          <div class="flex flex-wrap gap-4">
+            <div
+              v-for="template in templateOptions"
+              :key="template.id"
+              class="q-mb-md"
+              @click="openHtmlDialog(template.html)"
+            >
+              <div>{{ template.label }}</div>
+              <div class="relative w-[200px] h-[125px] cursor-pointer overflow-hidden">
+                <div class="w-full h-full" style="zoom: 0.2" v-html="template.html"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row q-ml-sm">
+          <div class="col-12 col-sm-6">
+            <q-select
+              v-model="fields.invoice_template"
+              emit-value
+              map-options
+              label="Invoicing Template"
+              option-label="label"
+              option-value="value"
+              :options="templateOptions"
+            />
+          </div>
+        </div>
+        <div class="q-ma-md row q-pb-lg">
+          <q-btn
+            color="green"
+            label="Update"
+            type="submit"
+            :loading="formLoading"
+            @click.prevent="() => onUpdateClick(fields)"
+          />
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-form>
+</template>

@@ -1,27 +1,10 @@
-<template>
-  <q-page class="p-10">
-    <div class="flex justify-between">
-      <div class="flex gap-5">
-        <n-auto-complete v-model="selectedAccount" :options="bankAccounts" label="Bank Accounts" optionValue="ledger_id" />
-        <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" />
-        <div>
-          <q-btn :loading="isLoading" icon="mdi-magnify" color="primary" label="Search" @click="fetchTransactions" :disable="!selectedAccount || !startDate || !endDate ? true : false" />
-        </div>
-      </div>
-      <div>
-        <!-- <q-btn icon="mdi-file-upload-outline" color="green" label="Go to List" @click="router.push('/bank/reconciliation')" /> -->
-      </div>
-    </div>
-    <ReconciliationTable v-if="accountDetails" :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate" :accountDetails="accountDetails" />
-  </q-page>
-</template>
-
 <script setup lang="ts">
-import { Ref } from 'vue'
+import type { Ref } from 'vue'
+
 const route = useRoute()
 const router = useRouter()
 
-type Bank = {
+interface Bank {
   ledger_id: number
   id: number
   cheque_no: string
@@ -51,7 +34,7 @@ const fetchTransactions = async () => {
       end_date: endDate.value,
     },
   })
-  accountDetails.value = bankAccounts.value?.find((account) => account.ledger_id === selectedAccount.value) || null
+  accountDetails.value = bankAccounts.value?.find(account => account.ledger_id === selectedAccount.value) || null
 }
 
 useApi(endpoint).then((response) => {
@@ -64,3 +47,40 @@ useApi(endpoint).then((response) => {
   }
 })
 </script>
+
+<template>
+  <q-page class="p-10">
+    <div class="flex justify-between">
+      <div class="flex gap-5">
+        <n-auto-complete
+          v-model="selectedAccount"
+          label="Bank Accounts"
+          option-value="ledger_id"
+          :options="bankAccounts"
+        />
+        <DateRangePicker v-model:end-date="endDate" v-model:start-date="startDate" :hide-btns="true" />
+        <div>
+          <q-btn
+            color="primary"
+            icon="mdi-magnify"
+            label="Search"
+            :disable="!selectedAccount || !startDate || !endDate ? true : false"
+            :loading="isLoading"
+            @click="fetchTransactions"
+          />
+        </div>
+      </div>
+      <div>
+        <!-- <q-btn icon="mdi-file-upload-outline" color="green" label="Go to List" @click="router.push('/bank/reconciliation')" /> -->
+      </div>
+    </div>
+    <ReconciliationTable
+      v-if="accountDetails"
+      :acceptable-difference="acceptableDifference"
+      :account-details="accountDetails"
+      :adjustment-threshold="adjustmentThreshold"
+      :end-date="endDate"
+      :start-date="startDate"
+    />
+  </q-page>
+</template>

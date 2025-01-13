@@ -1,48 +1,9 @@
-<template>
-  <q-card-section class="overflow-y-auto -mt-4">
-    <q-card class="pt-6 min-w-[550px]">
-      <div class="q-col-gutter-md scroll q-px-lg">
-        <div class="row text-subtitle2 hr q-py-sm no-wrap mb-2">
-          <div class="col-5 row">Particular(s)</div>
-          <div class="col-2 text-center">Qty</div>
-          <div class="col-2 text-center">Rate</div>
-          <div class="col-2 text-center">Amount</div>
-          <div class="col-1 text-center"></div>
-        </div>
-        <div v-for="(row, index) in modalValue" :key="row">
-          <InvoiceRow
-            v-if="modalValue[index]"
-            v-model="modalValue[index]"
-            :unitOptions="unitOptions"
-            :taxOptions="taxOptions"
-            :discountOptions="discountOptions"
-            :index="index"
-            :rowEmpty="(rowEmpty && index === 0) || false"
-            @deleteRow="(index) => removeRow(index)"
-            :errors="
-              !rowEmpty ?
-                Array.isArray(errors) ?
-                  errors[index]
-                : null
-              : null
-            "
-            :usedInPos="true"
-            :enableRowDescription="props.enableRowDescription"
-            :showRowTradeDiscount="false"
-            :inputAmount="false"
-            :showRateQuantity="true"
-            usedIn="sales"
-          />
-        </div>
-      </div>
-    </q-card>
-  </q-card-section>
-</template>
-
 <script>
 import useCalcDiscount from 'src/composables/useCalcDiscount.js'
 import InvoiceRow from '../voucher/InvoiceRow.vue'
+
 export default {
+  components: { InvoiceRow },
   props: {
     unitOptions: {
       type: Object,
@@ -129,7 +90,7 @@ export default {
       { deep: true },
     )
     const totalDataComputed = computed(() => {
-      let data = {
+      const data = {
         subTotal: 0,
         discount: 0,
         total: 0,
@@ -154,9 +115,11 @@ export default {
             data.sameScheme = rowTaxObj.id
             data.taxObj = rowTaxObj
           } else if (data.sameScheme === rowTaxObj?.id || rowTaxObj.rate === 0) {
-          } else data.sameScheme = false
+          } else {
+            data.sameScheme = false
+          }
         }
-        let mainDiscountAmount = useCalcDiscount(props.mainDiscount.discount_type, rowTotal - (rowDiscount || 0), props.mainDiscount.discount, props.discountOptions) || 0
+        const mainDiscountAmount = useCalcDiscount(props.mainDiscount.discount_type, rowTotal - (rowDiscount || 0), props.mainDiscount.discount, props.discountOptions) || 0
         if (rowTaxObj) {
           let rowTax = 0
           if (props.mainDiscount.discount_type === 'Amount') {
@@ -188,7 +151,7 @@ export default {
       return data
     })
     const amountComputed = computed(() => {
-      let total = []
+      const total = []
       modalValue.value.forEach((element) => {
         total.push((element.quantity || 0) * (element.rate || 0))
       })
@@ -205,9 +168,10 @@ export default {
       },
     )
     const findtaxObj = (id) => {
-      if (!id || !props.taxOptions.length > 0) return null
-      else {
-        const taxindex = props.taxOptions.findIndex((item) => item.id === id)
+      if (!id || !props.taxOptions.length > 0) {
+        return null
+      } else {
+        const taxindex = props.taxOptions.findIndex(item => item.id === id)
         if (taxindex >= 0) return props.taxOptions[taxindex]
         else return null
       }
@@ -222,6 +186,54 @@ export default {
       rowEmpty,
     }
   },
-  components: { InvoiceRow },
 }
 </script>
+
+<template>
+  <q-card-section class="overflow-y-auto -mt-4">
+    <q-card class="pt-6 min-w-[550px]">
+      <div class="q-col-gutter-md scroll q-px-lg">
+        <div class="row text-subtitle2 hr q-py-sm no-wrap mb-2">
+          <div class="col-5 row">
+            Particular(s)
+          </div>
+          <div class="col-2 text-center">
+            Qty
+          </div>
+          <div class="col-2 text-center">
+            Rate
+          </div>
+          <div class="col-2 text-center">
+            Amount
+          </div>
+          <div class="col-1 text-center"></div>
+        </div>
+        <div v-for="(row, index) in modalValue" :key="row">
+          <InvoiceRow
+            v-if="modalValue[index]"
+            v-model="modalValue[index]"
+            used-in="sales"
+            :discount-options="discountOptions"
+            :enable-row-description="props.enableRowDescription"
+            :errors="
+              !rowEmpty
+                ? Array.isArray(errors)
+                  ? errors[index]
+                  : null
+                : null
+            "
+            :index="index"
+            :input-amount="false"
+            :row-empty="(rowEmpty && index === 0) || false"
+            :show-rate-quantity="true"
+            :show-row-trade-discount="false"
+            :tax-options="taxOptions"
+            :unit-options="unitOptions"
+            :used-in-pos="true"
+            @delete-row="(index) => removeRow(index)"
+          />
+        </div>
+      </div>
+    </q-card>
+  </q-card-section>
+</template>

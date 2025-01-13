@@ -3,7 +3,7 @@ export const $nf = (amount: string | number) => {
     amount = 0
   }
   if (typeof amount !== 'number') {
-    amount = parseFloat(amount)
+    amount = Number.parseFloat(amount)
   }
   // return amount.toFixed(2);
   return Math.round((amount + Number.EPSILON) * 100) / 100

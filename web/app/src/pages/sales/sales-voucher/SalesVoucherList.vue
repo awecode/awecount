@@ -1,133 +1,3 @@
-<template>
-  <div class="q-pa-md">
-    <div class="row q-gutter-x-md justify-end">
-      <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" class="export-btn" />
-      <q-btn color="blue" label="Import" icon-right="upload" @click="showImportModal = true" class="import-btn" />
-      <q-btn v-if="checkPermissions('SalesCreate')" color="green" to="/sales-voucher/add/" label="New Sales" icon-right="add" class="add-btn" />
-    </div>
-    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-      <template v-slot:top>
-        <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-          <q-btn class="f-open-btn" icon="mdi-filter-variant">
-            <q-menu>
-              <div class="menu-wrapper" style="width: min(550px, 90vw)">
-                <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Filters</h6>
-                </div>
-                <div class="q-ma-sm">
-                  <div class="q-mb-sm">
-                    <q-checkbox v-model="filters.is_due" label="Is Due?" :false-value="null"></q-checkbox>
-                  </div>
-                  <div class="q-ma-sm">
-                    <MultiSelectChip :options="['Draft', 'Issued', 'Paid', 'Partially Paid', 'Cancelled']" v-model="filters.status" />
-                  </div>
-                </div>
-                <div class="q-mx-md">
-                  <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
-                </div>
-                <div class="q-mx-sm">
-                  <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/" label="Payment Mode" :fetchOnMount="true" />
-                </div>
-                <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
-                </div>
-              </div>
-            </q-menu>
-          </q-btn>
-        </div>
-      </template>
-      <template v-slot:body-cell-date="props">
-        <q-td data-testid="SN">
-          {{ props.row.date }}
-        </q-td>
-      </template>
-      <template v-slot:body-cell-status="props">
-        <q-td :props="props">
-          <div class="row align-center justify-center" data-testid="status">
-            <div
-              class="text-white text-subtitle row items-center justify-center"
-              :class="
-                props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
-                : props.row.status == 'Paid' ? 'bg-green-2 text-green-10'
-                : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
-                : props.row.status == 'Partially Paid' ? 'bg-green-1 text-green-6'
-                : 'bg-red-2 text-red-10'
-              "
-              style="border-radius: 8px; padding: 2px 10px"
-            >
-              {{ props.row.status }}
-            </div>
-          </div>
-        </q-td>
-      </template>
-
-      <template v-slot:body-cell-party_name="props">
-        <q-td :props="props">
-          <div v-if="props.row.customer_name" class="row align-center text-subtitle2 text-grey-8">
-            <!-- We neeed to know show party icons if both customer name and party name is available, as that means customer name is actually an alias of that party -->
-            <q-icon v-if="props.row.party_name" name="domain" size="sm" class="text-grey-8 q-mr-sm"></q-icon>
-            {{ props.row.customer_name }}
-          </div>
-          <div v-else>
-            <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
-            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">
-              {{ props.row.party_name }}
-            </span>
-          </div>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props">
-          <div class="row q-gutter-x-md justify-start">
-            <q-btn v-if="checkPermissions('SalesView')" color="blue" label="View" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" :to="`/sales-voucher/${props.row.id}/view/`" data-testid="view-btn" />
-          </div>
-        </q-td>
-
-        <!-- TODO: add modals -->
-      </template>
-      <template v-slot:body-cell-payment_receipts="props">
-        <q-td :props="props">
-          <span v-for="id in props.row.payment_receipts.map((item) => item.id)" :key="id">
-            <router-link v-if="checkPermissions('PaymentReceiptView')" :to="`/payment-receipt/${id}/view/`" style="font-weight: 500; text-decoration: none" class="text-blue">#{{ id }}</router-link>
-            <span v-else>#{{ id }}</span>
-          </span>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props" style="padding: 0">
-          <span v-if="checkPermissions('SalesView')" data-testid="voucher-no">
-            <router-link v-if="checkPermissions('SalesView') && props.row.voucher_no" :to="`/sales-voucher/${props.row.id}/view/`" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" class="text-blue">
-              {{ props.row.voucher_no }}
-            </router-link>
-          </span>
-          <span v-else data-testid="voucher-no" style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
-            {{ props.row.voucher_no }}
-          </span>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-receipt_amount="props">
-        <td>
-          <!-- {{ props.row.payment_receipts.map((item) => item.amount) }} -->
-          {{ $nf(props.row.payment_receipts.reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0)) }}
-        </td>
-      </template>
-      <template v-slot:body-cell-tds="props">
-        <td>
-          <!-- {{ props.row.payment_receipts.map((item) => item.amount) }} -->
-          {{ $nf(props.row.payment_receipts.reduce((a, b) => (a.tds_amount || 0) + (b.tds_amount || 0), 0)) }}
-        </td>
-      </template>
-    </q-table>
-    <XLSImport v-model:show-import-modal="showImportModal" :required-columns="importFileRequiredColumns" endpoint="/v1/sales-voucher/import/" title="Import Sales Vouchers" help-text="Upload a .xlsx file to import sales invoices" sample-file-url="/files/sales-invoices.xlsx" />
-  </div>
-</template>
-
 <script>
 export default {
   setup() {
@@ -140,9 +10,9 @@ export default {
     const route = useRoute()
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/sales-voucher/export' + query)
-        .then((data) => usedownloadFile(data, 'application/vnd.ms-excel', 'Sales_voucher'))
-        .catch((err) => console.log('Error Due To', err))
+      useApi(`v1/sales-voucher/export${query}`)
+        .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Sales_voucher'))
+        .catch(err => console.log('Error Due To', err))
     }
     const newColumn = [
       {
@@ -212,3 +82,215 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <div class="row q-gutter-x-md justify-end">
+      <q-btn
+        class="export-btn"
+        color="blue"
+        icon-right="download"
+        label="Export"
+        @click="onDownloadXls"
+      />
+      <q-btn
+        class="import-btn"
+        color="blue"
+        icon-right="upload"
+        label="Import"
+        @click="showImportModal = true"
+      />
+      <q-btn
+        v-if="checkPermissions('SalesCreate')"
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="New Sales"
+        to="/sales-voucher/add/"
+      />
+    </div>
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
+      <template #top>
+        <div class="search-bar">
+          <q-input
+            v-model="searchQuery"
+            dense
+            class="full-width search-input"
+            debounce="500"
+            placeholder="Search"
+          >
+            <template #append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(550px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">
+                    Filters
+                  </h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-mb-sm">
+                    <q-checkbox v-model="filters.is_due" label="Is Due?" :false-value="null" />
+                  </div>
+                  <div class="q-ma-sm">
+                    <MultiSelectChip v-model="filters.status" :options="['Draft', 'Issued', 'Paid', 'Partially Paid', 'Cancelled']" />
+                  </div>
+                </div>
+                <div class="q-mx-md">
+                  <DateRangePicker v-model:end-date="filters.end_date" v-model:start-date="filters.start_date" />
+                </div>
+                <div class="q-mx-sm">
+                  <n-auto-complete-v2
+                    v-model="filters.payment_mode"
+                    endpoint="v1/payment-modes/choices/"
+                    label="Payment Mode"
+                    :fetch-on-mount="true"
+                  />
+                </div>
+                <div class="q-mx-md row q-mb-md q-mt-lg">
+                  <q-btn
+                    class="q-mr-md f-submit-btn"
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  />
+                  <q-btn
+                    class="f-reset-btn"
+                    color="red"
+                    icon="close"
+                    @click="resetFilters"
+                  />
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
+        </div>
+      </template>
+      <template #body-cell-date="props">
+        <q-td data-testid="SN">
+          {{ props.row.date }}
+        </q-td>
+      </template>
+      <template #body-cell-status="props">
+        <q-td :props="props">
+          <div class="row align-center justify-center" data-testid="status">
+            <div
+              class="text-white text-subtitle row items-center justify-center"
+              style="border-radius: 8px; padding: 2px 10px"
+              :class="
+                props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
+                : props.row.status == 'Paid' ? 'bg-green-2 text-green-10'
+                  : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
+                    : props.row.status == 'Partially Paid' ? 'bg-green-1 text-green-6'
+                      : 'bg-red-2 text-red-10'
+              "
+            >
+              {{ props.row.status }}
+            </div>
+          </div>
+        </q-td>
+      </template>
+
+      <template #body-cell-party_name="props">
+        <q-td :props="props">
+          <div v-if="props.row.customer_name" class="row align-center text-subtitle2 text-grey-8">
+            <!-- We neeed to know show party icons if both customer name and party name is available, as that means customer name is actually an alias of that party -->
+            <q-icon
+              v-if="props.row.party_name"
+              class="text-grey-8 q-mr-sm"
+              name="domain"
+              size="sm"
+            />
+            {{ props.row.customer_name }}
+          </div>
+          <div v-else>
+            <q-icon class="text-grey-8" name="domain" size="sm" />
+            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">
+              {{ props.row.party_name }}
+            </span>
+          </div>
+        </q-td>
+      </template>
+      <template #body-cell-actions="props">
+        <q-td :props="props">
+          <div class="row q-gutter-x-md justify-start">
+            <q-btn
+              v-if="checkPermissions('SalesView')"
+              class="q-py-none q-px-md font-size-sm l-view-btn"
+              color="blue"
+              data-testid="view-btn"
+              label="View"
+              style="font-size: 12px"
+              :to="`/sales-voucher/${props.row.id}/view/`"
+            />
+          </div>
+        </q-td>
+
+        <!-- TODO: add modals -->
+      </template>
+      <template #body-cell-payment_receipts="props">
+        <q-td :props="props">
+          <span v-for="id in props.row.payment_receipts.map((item) => item.id)" :key="id">
+            <router-link
+              v-if="checkPermissions('PaymentReceiptView')"
+              class="text-blue"
+              style="font-weight: 500; text-decoration: none"
+              :to="`/payment-receipt/${id}/view/`"
+            >#{{ id }}</router-link>
+            <span v-else>#{{ id }}</span>
+          </span>
+        </q-td>
+      </template>
+      <template #body-cell-voucher_no="props">
+        <q-td style="padding: 0" :props="props">
+          <span v-if="checkPermissions('SalesView')" data-testid="voucher-no">
+            <router-link
+              v-if="checkPermissions('SalesView') && props.row.voucher_no"
+              class="text-blue"
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+              :to="`/sales-voucher/${props.row.id}/view/`"
+            >
+              {{ props.row.voucher_no }}
+            </router-link>
+          </span>
+          <span v-else data-testid="voucher-no" style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+            {{ props.row.voucher_no }}
+          </span>
+        </q-td>
+      </template>
+      <template #body-cell-receipt_amount="props">
+        <td>
+          <!-- {{ props.row.payment_receipts.map((item) => item.amount) }} -->
+          {{ $nf(props.row.payment_receipts.reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0)) }}
+        </td>
+      </template>
+      <template #body-cell-tds="props">
+        <td>
+          <!-- {{ props.row.payment_receipts.map((item) => item.amount) }} -->
+          {{ $nf(props.row.payment_receipts.reduce((a, b) => (a.tds_amount || 0) + (b.tds_amount || 0), 0)) }}
+        </td>
+      </template>
+    </q-table>
+    <XLSImport
+      v-model:show-import-modal="showImportModal"
+      endpoint="/v1/sales-voucher/import/"
+      help-text="Upload a .xlsx file to import sales invoices"
+      sample-file-url="/files/sales-invoices.xlsx"
+      title="Import Sales Vouchers"
+      :required-columns="importFileRequiredColumns"
+    />
+  </div>
+</template>

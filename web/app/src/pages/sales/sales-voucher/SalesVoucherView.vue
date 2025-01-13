@@ -1,117 +1,8 @@
-<template>
-  <div v-if="fields" class="sales-invoice">
-    <div class="d-print-none">
-      <q-card class="q-ma-lg q-mb-sm">
-        <q-card-section class="bg-green text-white">
-          <div class="text-h6 d-print-none">
-            <span>
-              Sales Invoice | {{ fields?.status }}
-              <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no }}</span>
-            </span>
-          </div>
-        </q-card-section>
-        <ViewerHeader2 :fields="fields" :changeModes="isLoggedIn" @updateMode="(newValue) => updatePaymentMode(newValue)" :paymentModeOptions="paymentModeOptions" />
-      </q-card>
-      <q-card class="q-mx-lg" id="to_print">
-        <q-card-section>
-          <ViewerTable :fields="fields" :showRateQuantity="fields.options.show_rate_quantity_in_voucher" />
-        </q-card-section>
-      </q-card>
-      <div v-if="fields?.payment_receipts && fields?.payment_receipts.length > 0">
-        <q-card class="q-mx-lg q-mt-md" id="to_print" v-for="receipt in fields.payment_receipts" :key="receipt">
-          <q-card-section>
-            <div class="row">
-              <div class="col-3">
-                Receipt #
-                <router-link v-if="checkPermissions('PaymentReceiptView')" style="font-weight: 500; text-decoration: none" class="text-blue" :to="`//payment-receipt/${receipt.id}/view`">
-                  {{ receipt.id }}
-                </router-link>
-              </div>
-              <div class="col-3">
-                Amount:
-                <span class="text-weight-medium">Rs {{ receipt.amount }}</span>
-              </div>
-              <div class="col-3">
-                Status:
-                <span class="text-weight-medium">{{ receipt.status }}</span>
-              </div>
-              <div class="col-3">
-                TDS Amount:
-                <span class="text-weight-medium">Rs {{ receipt.tds_amount }}</span>
-              </div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-      <q-card class="q-mx-lg q-my-md" v-if="fields?.remarks">
-        <q-card-section>
-          <span class="text-subtitle2 text-grey-9">Remarks:</span>
-          <span class="text-grey-9">{{ fields?.remarks }}</span>
-        </q-card-section>
-      </q-card>
-      <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
-        <div>
-          <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn v-if="checkPermissions('SalesModify') && (fields.can_update_issued || fields?.status === 'Draft')" color="orange-5" label="Edit" icon="edit" :to="`/sales-voucher/${fields?.id}/`" />
-            <q-btn v-if="fields?.status === 'Issued' && checkPermissions('SalesModify')" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid" icon="mdi-check-all" :loading="loading" />
-            <q-btn v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" :loading="loading" />
-          </div>
-        </div>
-        <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft' || !isLoggedIn)" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`" icon="print" />
-          <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft' || !isLoggedIn)" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status) || !isLoggedIn ? '' : `# ${(fields?.print_count || 0) + 1}`}`" icon="print" />
-          <q-btn v-if="isLoggedIn && !['Draft', 'Cancelled'].includes(fields?.status)" @click="isEmailInvoiceModalOpen = true" label="Send email" data-testid="send-email" />
-          <q-btn v-if="isLoggedIn" color="blue-7" label="Materialized View" icon="mdi-table" :to="`/sales-voucher/${fields?.id}/mv`" />
-          <q-btn v-if="isLoggedIn && fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7" label="Journal Entries" icon="books" :to="`/journal-entries/sales-voucher/${fields.id}/`" />
-        </div>
-        <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}" class="overflow-visible">
-          <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
-            <q-card-section class="bg-red-6 flex justify-between">
-              <div class="text-h6 text-white">
-                <span>Confirm Cancellation?</span>
-              </div>
-              <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
-            </q-card-section>
-
-            <q-card-section class="q-ma-md">
-              <q-input autofocus v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"></q-input>
-              <div class="text-right q-mt-lg">
-                <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
-              </div>
-            </q-card-section>
-          </q-card>
-        </q-dialog>
-      </div>
-    </div>
-
-    <q-dialog v-model="isEmailInvoiceModalOpen" @hide="resetEmailInvoicePayload">
-      <q-card style="min-width: min(60vw, 800px)">
-        <q-card-section class="bg-primary text-white">
-          <div class="text-h6 flex justify-between">
-            <span class="q-mx-md">Send invoice in email</span>
-            <q-btn icon="close" class="text-white bg-red-500" flat round dense v-close-popup />
-          </div>
-        </q-card-section>
-        <q-card-section class="q-mx-md flex flex-col gap-4">
-          <q-select label="To" filled v-model="emailInvoicePayload.to" use-input use-chips multiple hide-dropdown-icon input-debounce="0" new-value-mode="add-unique" :error="!!emailInvoiceErrors.to" :error-message="typeof emailInvoiceErrors.to === 'string' ? emailInvoiceErrors.to : 'Enter valid email address'" />
-          <q-input v-model="emailInvoicePayload.subject" label="Subject" outlined :error-message="emailInvoiceErrors.subject" :error="!!emailInvoiceErrors.subject" />
-          <q-editor v-model="emailInvoicePayload.message" />
-          <q-checkbox v-model="emailInvoicePayload.attach_pdf" label="Attach PDF"></q-checkbox>
-          <file-uploader :error="emailInvoiceErrors.attachments" v-model="emailInvoicePayload.attachments" label="Attachments" multiple />
-          <div class="row justify-end">
-            <q-btn label="Send" color="orange-5" class="q-mt-md" @click="emailInvoice"></q-btn>
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-  </div>
-</template>
-
 <script lang="ts">
-import { useLoginStore } from 'src/stores/login-info.js'
+import type { Ref } from 'vue'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import { modes } from 'src/helpers/constants/invoice'
-import { Ref } from 'vue'
+import { useLoginStore } from 'src/stores/login-info.js'
 import { parseErrors } from 'src/utils/helpers'
 
 interface Fields {
@@ -155,7 +46,7 @@ export default {
           }
           if (status === 'Cancelled') {
             isDeleteOpen.value = false
-            fields.value.remarks = '\nReason for cancellation: ' + body?.body.message
+            fields.value.remarks = `\nReason for cancellation: ${body?.body.message}`
           }
           loading.value = false
         })
@@ -168,7 +59,7 @@ export default {
                 }
                 if (status === 'Cancelled') {
                   isDeleteOpen.value = false
-                  fields.value.remarks = '\nReason for cancellation: ' + body?.body.message
+                  fields.value.remarks = `\nReason for cancellation: ${body?.body.message}`
                 }
                 loading.value = false
               })
@@ -210,8 +101,10 @@ export default {
             }
             print(bodyOnly)
           })
-          .catch((err) => console.log('err from the api', err))
-      } else print(bodyOnly)
+          .catch(err => console.log('err from the api', err))
+      } else {
+        print(bodyOnly)
+      }
     }
 
     const print = (bodyOnly: boolean) => {
@@ -245,7 +138,7 @@ export default {
 
           <p>Please find attached the invoice <b>#${fields.value?.voucher_no}</b></p>
 
-          <p>You can view and download the invoice using the following link: <a href="${window.location.protocol + '//' + window.location.host + window.location.pathname}?hash=${fields.value?.hash}">View Invoice</a>.</p>
+          <p>You can view and download the invoice using the following link: <a href="${`${window.location.protocol}//${window.location.host}${window.location.pathname}`}?hash=${fields.value?.hash}">View Invoice</a>.</p>
 
           <p>If you have any questions or require further assistance, feel free to contact us at <b>${loginStore.companyInfo?.contact_no || '[]'}</b>.</p>
 
@@ -294,7 +187,7 @@ export default {
       fields,
       dialog: false,
       partyObj: null,
-      modes: modes,
+      modes,
       submitChangeStatus,
       isDeleteOpen,
       deleteMsg,
@@ -332,6 +225,216 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div v-if="fields" class="sales-invoice">
+    <div class="d-print-none">
+      <q-card class="q-ma-lg q-mb-sm">
+        <q-card-section class="bg-green text-white">
+          <div class="text-h6 d-print-none">
+            <span>
+              Sales Invoice | {{ fields?.status }}
+              <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no }}</span>
+            </span>
+          </div>
+        </q-card-section>
+        <ViewerHeader2
+          :change-modes="isLoggedIn"
+          :fields="fields"
+          :payment-mode-options="paymentModeOptions"
+          @update-mode="(newValue) => updatePaymentMode(newValue)"
+        />
+      </q-card>
+      <q-card id="to_print" class="q-mx-lg">
+        <q-card-section>
+          <ViewerTable :fields="fields" :show-rate-quantity="fields.options.show_rate_quantity_in_voucher" />
+        </q-card-section>
+      </q-card>
+      <div v-if="fields?.payment_receipts && fields?.payment_receipts.length > 0">
+        <q-card
+          v-for="receipt in fields.payment_receipts"
+          id="to_print"
+          :key="receipt"
+          class="q-mx-lg q-mt-md"
+        >
+          <q-card-section>
+            <div class="row">
+              <div class="col-3">
+                Receipt #
+                <router-link
+                  v-if="checkPermissions('PaymentReceiptView')"
+                  class="text-blue"
+                  style="font-weight: 500; text-decoration: none"
+                  :to="`//payment-receipt/${receipt.id}/view`"
+                >
+                  {{ receipt.id }}
+                </router-link>
+              </div>
+              <div class="col-3">
+                Amount:
+                <span class="text-weight-medium">Rs {{ receipt.amount }}</span>
+              </div>
+              <div class="col-3">
+                Status:
+                <span class="text-weight-medium">{{ receipt.status }}</span>
+              </div>
+              <div class="col-3">
+                TDS Amount:
+                <span class="text-weight-medium">Rs {{ receipt.tds_amount }}</span>
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+      <q-card v-if="fields?.remarks" class="q-mx-lg q-my-md">
+        <q-card-section>
+          <span class="text-subtitle2 text-grey-9">Remarks:</span>
+          <span class="text-grey-9">{{ fields?.remarks }}</span>
+        </q-card-section>
+      </q-card>
+      <div v-if="fields" class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none">
+        <div>
+          <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
+            <q-btn
+              v-if="checkPermissions('SalesModify') && (fields.can_update_issued || fields?.status === 'Draft')"
+              color="orange-5"
+              icon="edit"
+              label="Edit"
+              :to="`/sales-voucher/${fields?.id}/`"
+            />
+            <q-btn
+              v-if="fields?.status === 'Issued' && checkPermissions('SalesModify')"
+              color="green-6"
+              icon="mdi-check-all"
+              label="mark as paid"
+              :loading="loading"
+              @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
+            />
+            <q-btn
+              v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'"
+              color="red-5"
+              icon="cancel"
+              label="Cancel"
+              :loading="loading"
+              @click.prevent="() => (isDeleteOpen = true)"
+            />
+          </div>
+        </div>
+        <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
+          <q-btn icon="print" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`" @click="() => onPrintclick(false, fields?.status === 'Draft' || !isLoggedIn)" />
+          <q-btn icon="print" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status) || !isLoggedIn ? '' : `# ${(fields?.print_count || 0) + 1}`}`" @click="() => onPrintclick(true, fields?.status === 'Draft' || !isLoggedIn)" />
+          <q-btn
+            v-if="isLoggedIn && !['Draft', 'Cancelled'].includes(fields?.status)"
+            data-testid="send-email"
+            label="Send email"
+            @click="isEmailInvoiceModalOpen = true"
+          />
+          <q-btn
+            v-if="isLoggedIn"
+            color="blue-7"
+            icon="mdi-table"
+            label="Materialized View"
+            :to="`/sales-voucher/${fields?.id}/mv`"
+          />
+          <q-btn
+            v-if="isLoggedIn && fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
+            color="blue-7"
+            icon="books"
+            label="Journal Entries"
+            :to="`/journal-entries/sales-voucher/${fields.id}/`"
+          />
+        </div>
+        <q-dialog v-model="isDeleteOpen" class="overflow-visible" @before-hide="errors = {}">
+          <q-card class="overflow-visible" style="min-width: min(40vw, 500px)">
+            <q-card-section class="bg-red-6 flex justify-between">
+              <div class="text-h6 text-white">
+                <span>Confirm Cancellation?</span>
+              </div>
+              <q-btn
+                v-close-popup
+                dense
+                flat
+                round
+                class="text-red-700 bg-slate-200 opacity-95"
+                icon="close"
+              />
+            </q-card-section>
+
+            <q-card-section class="q-ma-md">
+              <q-input
+                v-model="deleteMsg"
+                autofocus
+                outlined
+                type="textarea"
+                :error="!!errors?.message"
+                :error-message="errors?.message"
+              />
+              <div class="text-right q-mt-lg">
+                <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')" />
+              </div>
+            </q-card-section>
+          </q-card>
+        </q-dialog>
+      </div>
+    </div>
+
+    <q-dialog v-model="isEmailInvoiceModalOpen" @hide="resetEmailInvoicePayload">
+      <q-card style="min-width: min(60vw, 800px)">
+        <q-card-section class="bg-primary text-white">
+          <div class="text-h6 flex justify-between">
+            <span class="q-mx-md">Send invoice in email</span>
+            <q-btn
+              v-close-popup
+              dense
+              flat
+              round
+              class="text-white bg-red-500"
+              icon="close"
+            />
+          </div>
+        </q-card-section>
+        <q-card-section class="q-mx-md flex flex-col gap-4">
+          <q-select
+            v-model="emailInvoicePayload.to"
+            filled
+            hide-dropdown-icon
+            multiple
+            use-chips
+            use-input
+            input-debounce="0"
+            label="To"
+            new-value-mode="add-unique"
+            :error="!!emailInvoiceErrors.to"
+            :error-message="typeof emailInvoiceErrors.to === 'string' ? emailInvoiceErrors.to : 'Enter valid email address'"
+          />
+          <q-input
+            v-model="emailInvoicePayload.subject"
+            outlined
+            label="Subject"
+            :error="!!emailInvoiceErrors.subject"
+            :error-message="emailInvoiceErrors.subject"
+          />
+          <q-editor v-model="emailInvoicePayload.message" />
+          <q-checkbox v-model="emailInvoicePayload.attach_pdf" label="Attach PDF" />
+          <file-uploader
+            v-model="emailInvoicePayload.attachments"
+            multiple
+            label="Attachments"
+            :error="emailInvoiceErrors.attachments"
+          />
+          <div class="row justify-end">
+            <q-btn
+              class="q-mt-md"
+              color="orange-5"
+              label="Send"
+              @click="emailInvoice"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+  </div>
+</template>
 
 <style scoped lang="scss">
 @media print {

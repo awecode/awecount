@@ -1,15 +1,10 @@
-<template>
-  <div>
-    <canvas id="chartDiagram" ref="chartRef" style="max-height: 300px; width: 100%"></canvas>
-  </div>
-</template>
-
 <script setup>
 import Chart from 'chart.js/auto'
+
 const props = defineProps(['data'])
 const chartRef = ref(null)
 const dataComputed = computed(() => {
-  let data = {
+  const data = {
     labels: [],
     data: [],
     colors: [],
@@ -40,3 +35,9 @@ onMounted(() => {
   })
 })
 </script>
+
+<template>
+  <div>
+    <canvas id="chartDiagram" ref="chartRef" style="max-height: 300px; width: 100%"></canvas>
+  </div>
+</template>

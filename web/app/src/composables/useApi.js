@@ -8,7 +8,7 @@ const useApi = async (endpoint, body, omitToken, permissionRedirect = false) => 
   const options = {}
   if (omitToken !== true) {
     options.headers = {
-      Authorization: `${loginStore.token ? 'Token ' + loginStore.token : ''}`,
+      Authorization: `${loginStore.token ? `Token ${loginStore.token}` : ''}`,
       // mode: "no-cors", // no-cors, *cors, same-origin
     }
   }
@@ -20,13 +20,13 @@ const useApi = async (endpoint, body, omitToken, permissionRedirect = false) => 
   }
   return new Promise((resolve, reject) => {
     api(endpoint, options)
-      .then((data) => resolve(data))
+      .then(data => resolve(data))
       .catch((error) => {
         if (error.status == 401 && omitToken !== true) {
           loginStore.reset()
           router.push('/login')
         }
-        if (permissionRedirect && error.status == 403 && error.data.detail === "You don't have the permission to perform this action!") {
+        if (permissionRedirect && error.status == 403 && error.data.detail === 'You don\'t have the permission to perform this action!') {
           router.push('/no-permission')
         }
         return reject(error)
