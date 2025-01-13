@@ -199,7 +199,7 @@ function getVoucherUrl(row) {
   if (source_type === 'Item') return `/items/details/${row.source_id}/`
   // added
   if (source_type === 'Fund Transfer')
-    return `/bank/fund/fund-transfer/${row.source_id}/edit/`
+    return `/fund-transfer/${row.source_id}/`
   if (source_type === 'Bank Cash Deposit')
     return `/bank/cash/cash-deposit/${row.source_id}/edit/`
   if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`

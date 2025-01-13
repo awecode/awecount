@@ -446,6 +446,51 @@ class TransactionQsEntrySerializer(serializers.ModelSerializer):
         )
 
 
+class TransactionMinSerializer(serializers.ModelSerializer):
+    date = serializers.ReadOnlyField(source="journal_entry.date")
+    source_type = serializers.SerializerMethodField()
+    source_id = serializers.ReadOnlyField(source="journal_entry.source.get_source_id")
+    dr_amount = RoundedField()
+    cr_amount = RoundedField()
+    counterpart_accounts = serializers.SerializerMethodField()
+
+    def get_counterpart_accounts(self, obj):
+        all_transactions = obj.journal_entry.transactions.all()
+        counterpart_accounts = [
+            {
+                "account_id": t.account_id,
+                "account_name": t.account.name,
+                "dr_amount": t.dr_amount,
+                "cr_amount": t.cr_amount,
+            }
+            for t in all_transactions
+            if t.account_id != obj.account_id
+        ]
+        return counterpart_accounts
+
+    def get_source_type(self, obj):
+        v_type = obj.journal_entry.content_type.name
+        if v_type[-4:] == " row":
+            v_type = v_type[:-3]
+        if v_type[-11:] == " particular":
+            v_type = v_type[:-10]
+        if v_type == "account":
+            return "Opening Balance"
+        return v_type.strip().title()
+
+    class Meta:
+        model = Transaction
+        fields = (
+            "id",
+            "dr_amount",
+            "cr_amount",
+            "date",
+            "source_type",
+            "source_id",
+            "counterpart_accounts",
+        )
+
+
 class TransactionEntrySerializer(serializers.Serializer):
     date = serializers.ReadOnlyField()
     source_type = serializers.SerializerMethodField()

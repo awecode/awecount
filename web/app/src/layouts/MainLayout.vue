@@ -501,6 +501,12 @@ const essentialLinks: EssentialLinkProps[] = [
         link: '/fund-transfer/list/',
         hide: !checkPermissions('FundTransferView'),
       },
+      {
+        title: 'Bank Reconciliation',
+        icon: 'mdi-text-box-check',
+        link: '/bank-reconciliation/view',
+        hide: !checkPermissions('ReconciliationStatementView'),
+      },
     ],
   },
   {

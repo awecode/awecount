@@ -13,6 +13,7 @@ from apps.ledger.models import (
     TransactionModel,
     set_ledger_transactions,
 )
+from apps.ledger.models.base import Transaction
 from awecount.libs import wGenerator
 
 
@@ -314,10 +315,10 @@ class FundTransfer(TransactionModel, CompanyBaseModel):
         if self.pk and not self.voucher_no:
             self.voucher_no = self.pk
         super().save(*args, **kwargs)
-        self.apply_transactions()
         if not self.voucher_no:
             self.voucher_no = self.pk
-            super().save(*args, **kwargs)
+            super().save(update_fields=["voucher_no"])
+        self.apply_transactions()
 
     def get_voucher_no(self):
         return self.voucher_no
@@ -438,3 +439,79 @@ class BankCashDeposit(TransactionModel, CompanyBaseModel):
         self.status = "Cancelled"
         self.save()
         self.cancel_transactions()
+
+
+BANK_RECONCILIATION_STATUS = (
+    ("Reconciled", "Reconciled"),
+    ("Matched", "Matched"),
+    ("Unreconciled", "Unreconciled"),
+)
+
+
+class ReconciliationStatement(models.Model):
+    account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name="bank_reconciliation_statements"
+    )
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="bank_reconciliation_statements"
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.file_name or str(self.start_date)
+
+
+class ReconciliationRow(models.Model):
+    status = models.CharField(
+        choices=BANK_RECONCILIATION_STATUS,
+        default=BANK_RECONCILIATION_STATUS[0][0],
+        max_length=20,
+    )
+    date = models.DateField()
+    dr_amount = models.FloatField(null=True, blank=True)
+    cr_amount = models.FloatField(null=True, blank=True)
+    balance = models.FloatField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    statement = models.ForeignKey(
+        ReconciliationStatement, on_delete=models.CASCADE, related_name="rows"
+    )
+    remarks = models.TextField(null=True, blank=True)
+    # - if the amount is positive, it means the bank statement has more money than the ledger
+    adjustment_amount = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return str(self.date)
+
+    @property
+    def voucher_no(self):
+        return self.id
+
+    def apply_transactions(self, adjustment_account, date):
+        if not self.adjustment_amount:
+            return
+        entries = []
+
+        bank_account = self.statement.account
+
+        adjustment_amount_absolute = abs(self.adjustment_amount)
+        if self.adjustment_amount < 0:
+            entries.append(("cr", bank_account, adjustment_amount_absolute))
+            entries.append(("dr", adjustment_account, adjustment_amount_absolute))
+        elif self.adjustment_amount > 0:
+            entries.append(("dr", bank_account, adjustment_amount_absolute))
+            entries.append(("cr", adjustment_account, adjustment_amount_absolute))
+        set_ledger_transactions(self, date, *entries, clear=True)
+
+
+
+class ReconciliationRowTransaction(models.Model):
+    transaction = models.ForeignKey(Transaction, null=True, on_delete=models.SET_NULL, related_name="reconciliation_rows_transactions")
+    reconciliation_row = models.ForeignKey(
+        ReconciliationRow, on_delete=models.CASCADE, related_name="transactions"
+    )
+    # To keep track of the last updated transaction
+    transaction_last_updated_at = models.DateTimeField()
+    

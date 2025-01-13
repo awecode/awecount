@@ -1247,6 +1247,36 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/bank-reconciliation',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'view/',
+        name: 'Bank Reconciliation',
+        component: () => import('src/pages/bank/reconciliation/IndexPage.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Bank Reconciliation'],
+        },
+      },
+      {
+        path: 'reconcile/',
+        name: 'Reconcile Transactions',
+        component: () => import('src/pages/bank/reconciliation/ReconcileTransactions.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Bank Reconciliation', 'Reconcile Transactions'],
+        },
+      },
+      {
+        path: ':id/',
+        name: 'Statement Detail',
+        component: () => import('src/pages/bank/reconciliation/StatementDetail.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Bank Reconciliation', 'Statement Detail'],
+        },
+      }
+    ],
+  },
+  {
     path: '/taxes',
     component: () => import('layouts/MainLayout.vue'),
     children: [

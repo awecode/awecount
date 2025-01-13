@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from decimal import ROUND_HALF_UP, localcontext
-
 from dateutil.utils import today
 from django.apps import apps
 from django.conf import settings
@@ -456,6 +455,7 @@ class Transaction(CompanyBaseModel):
     type = models.CharField(
         choices=TRANSACTION_TYPES, max_length=25, default=TRANSACTION_TYPES[0][0]
     )
+    updated_at = models.DateTimeField(auto_now=True)
 
     def get_amount(self):
         return self.dr_amount - self.cr_amount

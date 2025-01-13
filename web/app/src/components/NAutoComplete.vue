@@ -1,7 +1,7 @@
 <template>
   <div class="row no-wrap">
     <q-select :autofocus="focusOnMount" v-model="modalValue" input-debounce="0" :label="label" use-input
-      :options="filteredOptions" @filter="filterFn" option-value="id" option-label="name" map-options emit-value
+      :options="filteredOptions" @filter="filterFn" :option-value="optionValue" option-label="name" map-options emit-value
       class="q-mr-xs col" @update:modelValue="valUpdated" :disable="props.disabled" :error-message="props?.error"
       :error="!!props?.error" clearable clear-icon="close">
       <template #no-option>
@@ -62,7 +62,11 @@ export default {
     focusOnMount: {
       type: Boolean,
       default: false
-    }
+    },
+    optionValue: {
+      type: String,
+      default: 'id'
+    },
   },
   emits: ['update:modelValue'],
 

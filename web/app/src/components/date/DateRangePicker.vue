@@ -1,12 +1,10 @@
 <template>
   <div class="flex gap-x-4 gap-y-2">
-    <div class="flex gap-x-6 gap-y-0 target">
-      <q-input :model-value="getText0" :error="error0" :error-message="errorMessage0" @update:model-value="onInput0"
-        label="Start Date" debounce="1000" mask="####-##-##" />
-      <q-input :model-value="getText1" :error="error1" :error-message="errorMessage1" @update:model-value="onInput1"
-        label="End Date" debounce="1000" mask="####-##-##" />
+    <div class="flex gap-x-6 gap-y-0" :id="id">
+      <q-input :model-value="getText0" :error="error0" :error-message="errorMessage0" @update:model-value="onInput0" label="Start Date" debounce="1000" mask="####-##-##" />
+      <q-input :model-value="getText1" :error="error1" :error-message="errorMessage1" @update:model-value="onInput1" label="End Date" debounce="1000" mask="####-##-##" />
     </div>
-    <q-menu ref="menuDom" target=".target" :no-focus="true">
+    <q-menu ref="menuDom" :target="`#${id}`" :no-focus="true">
       <div class="row q-pa-md main-con">
         <div class="row" style="min-width: 150px">
           <div>
@@ -87,7 +85,14 @@ import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
 
-const props = defineProps(['startDate', 'endDate', 'hideBtns', 'focusOnMount'])
+
+const props = defineProps({
+  startDate: { type: String, default: undefined },
+  endDate: { type: String, default: undefined },
+  hideBtns: { type: Boolean, default: false },
+  focusOnMount: { type: Boolean, default: false },
+  id: { type: String, default: 'date-range-picker' },
+})
 
 const menuDom = ref(null)
 const value0 = ref(props.startDate)
@@ -175,7 +180,7 @@ watch(
 const onInput0 = (text) => {
   text = DateConverter.parseText(text)
   if (!text) {
-    return;
+    return
   }
   error0.value = false
   errorMessage0.value = null

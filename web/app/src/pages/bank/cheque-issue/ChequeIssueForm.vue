@@ -13,26 +13,21 @@
           <q-card-section>
             <div class="row q-col-gutter-md">
               <div class="col-md-6 col-12">
-                <n-auto-complete-v2 v-model="fields.bank_account" endpoint="v1/cheque-issue/create-defaults/bank_accounts"
-                 :options="formDefaults.collections?.bank_accounts" label="Bank Account *" :disabled="isEdit"
-                 :staticOption="fields.selected_bank_account_obj" :error="errors?.bank_account" @update:modelValue="updateBankAccount" />
+                <n-auto-complete-v2 v-model="fields.bank_account" endpoint="v1/cheque-issue/create-defaults/bank_accounts" :options="formDefaults.collections?.bank_accounts" label="Bank Account *"
+                  :disabled="isEdit || !!bankAccount?.id" :staticOption="fields.selected_bank_account_obj" :error="errors?.bank_account" @update:modelValue="updateBankAccount" />
               </div>
-              <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date *" :error-message="errors.date"
-                :error="!!errors.date"></date-picker>
+              <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date *" :error-message="errors.date" :error="!!errors.date"></date-picker>
             </div>
             <div class="row q-col-gutter-md">
-              <q-input v-model="fields.cheque_no" label="Cheque Number" class="col-md-6 col-12"
-                :error-message="errors.cheque_no" :error="!!errors.cheque_no" :disable="isEdit" type="number" />
-              <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount"
-                type="number" :error="!!errors.amount" />
+              <q-input v-model="fields.cheque_no" label="Cheque Number" class="col-md-6 col-12" :error-message="errors.cheque_no" :error="!!errors.cheque_no" :disable="isEdit" type="number" />
+              <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount" type="number" :error="!!errors.amount" />
             </div>
             <div class="row q-col-gutter-md">
               <div class="col-8">
-                <n-auto-complete-v2 v-if="!showDrAccount" v-model="fields.party" :options="formDefaults.collections?.parties"
-                  :staticOption="fields.selected_party_obj" endpoint="v1/cheque-issue/create-defaults/parties" label="Party *" :error="errors?.party" />
+                <n-auto-complete-v2 v-if="!showDrAccount" v-model="fields.party" :options="formDefaults.collections?.parties" :staticOption="fields.selected_party_obj"
+                  endpoint="v1/cheque-issue/create-defaults/parties" label="Party *" :error="errors?.party" />
                 <div class="row" v-else>
-                  <q-input v-model="fields.issued_to" label="Issued To" class="col-12" :error-message="errors.issued_to"
-                    :error="!!errors.issued_to" />
+                  <q-input v-model="fields.issued_to" label="Issued To" class="col-12" :error-message="errors.issued_to" :error="!!errors.issued_to" />
                 </div>
               </div>
               <div>
@@ -41,25 +36,23 @@
             </div>
             <div class="row q-col-gutter-md" v-if="showDrAccount">
               <div class="col-8">
-                <n-auto-complete-v2 v-model="fields.dr_account" :options="formDefaults.collections?.accounts"
-                  :staticOption="fields.selected_dr_account_obj" endpoint="v1/cheque-issue/create-defaults/accounts" label="Dr Account" :modal-component="BenefactorForm" :error="errors?.dr_account" />
+                <n-auto-complete-v2 v-model="fields.dr_account" :options="formDefaults.collections?.accounts" :staticOption="fields.selected_dr_account_obj"
+                  endpoint="v1/cheque-issue/create-defaults/accounts" label="Dr Account" :modal-component="BenefactorForm" :error="errors?.dr_account" />
               </div>
             </div>
           </q-card-section>
           <div class="q-pr-md q-pb-lg row justify-between">
             <div class="row q-gutter-md">
-              <q-btn @click="exportPDF" v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'" color="green"
-                outline class="q-px-lg q-py-sm" style="display: inline-block;">Print Pdf</q-btn>
-              <q-btn @click="onChequePrint" v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'"
-                color="green" outline class="q-px-lg q-py-sm" style="display: inline-block;" label="Print Cheque"></q-btn>
-              <q-btn v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('ChequeIssueCancel')"
-                @click.prevent="isDeleteOpen = true" icon="block" color="red" label="Cancel" class="q-ml-md" />
+              <q-btn @click="exportPDF" v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'" color="green" outline class="q-px-lg q-py-sm" style="display: inline-block;">Print
+                Pdf</q-btn>
+              <q-btn @click="onChequePrint" v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'" color="green" outline class="q-px-lg q-py-sm" style="display: inline-block;"
+                label="Print Cheque"></q-btn>
+              <q-btn v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('ChequeIssueCancel')" @click.prevent="isDeleteOpen = true" icon="block" color="red" label="Cancel"
+                class="q-ml-md" />
             </div>
             <div>
-              <q-btn v-if="checkPermissions('ChequeIssueCreate') && !isEdit" @click.prevent="submitForm" color="green"
-                label="Create" class="q-ml-auto" type="submit" />
-              <q-btn v-if="checkPermissions('ChequeIssueModify') && isEdit" @click.prevent="submitForm" color="green"
-                label="Update" class="q-ml-auto" type="submit" />
+              <q-btn v-if="checkPermissions('ChequeIssueCreate') && !isEdit" @click.prevent="submitForm" color="green" label="Create" class="q-ml-auto" type="submit" />
+              <q-btn v-if="checkPermissions('ChequeIssueModify') && isEdit" @click.prevent="submitForm" color="green" label="Update" class="q-ml-auto" type="submit" />
             </div>
           </div>
         </q-card>
@@ -100,8 +93,7 @@
           <div class=" text-blue">
             <div class="row justify-end">
               <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
-              <q-btn flat class="text-red" label="Yes"
-                @click="cancelForm"></q-btn>
+              <q-btn flat class="text-red" label="Yes" @click="cancelForm"></q-btn>
             </div>
           </div>
         </q-card-section>
@@ -119,13 +111,40 @@ import formatNumberWithCommas from 'src/composables/formatNumberWithComma'
 
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  props: {
+    bankAccount: {
+      type: Object,
+      required: false,
+    },
+    amount: {
+      type: Number,
+      required: false,
+    },
+    date: {
+      type: String,
+      required: false,
+    },
+    statementIds: {
+      type: Array,
+      required: false,
+    },
+    endpoint: {
+      type: String,
+      required: false,
+    },
+  },
   setup(props, context) {
-    const endpoint = '/v1/cheque-issue/'
+    const endpoint = props.endpoint || '/v1/cheque-issue/'
     const showDrAccount = ref(false)
-    const formData = useForm(endpoint, {
+    const config = {
       getDefaults: true,
       successRoute: '/cheque-issue/list/',
-    })
+    }
+    if (props.endpoint) {
+      config.createDefaultsEndpoint = '/v1/cheque-issue/create-defaults/'
+    }
+
+    const formData = useForm(endpoint, config)
     const isDeleteOpen = ref(false)
     useMeta(() => {
       return {
@@ -134,7 +153,22 @@ export default {
           ' | Awecount',
       }
     })
-    formData.fields.value.date = formData.fields.value.date || formData.today
+    if (props.bankAccount && !formData.isEdit.value) {
+      formData.fields.value.bank_account = formData.fields.value.bank_account || props.bankAccount.id
+      formData.fields.value.cheque_no = formData.fields.cheque_no || props.bankAccount.cheque_no
+      formData.fields.value.selected_bank_account_obj = props.bankAccount
+    }
+    if (props.amount) {
+      formData.fields.value.amount = formData.fields.value.amount || props.amount
+    }
+    if (props.date) {
+      formData.fields.value.date = formData.fields.value.date || props.date
+    } else {
+      formData.fields.value.date = formData.fields.value.date || formData.today
+    }
+    if (props.statementIds) {
+      formData.fields.value.statement_ids = formData.fields.value.statement_ids || props.statementIds
+    }
     const toggleDrAccount = () => {
       showDrAccount.value = !showDrAccount.value
       formData.fields.value.issued_to = null
@@ -182,8 +216,8 @@ export default {
       const bank_accounts = formData.formDefaults.value.collections.bank_accounts.results
       if (bank_accounts && bank_account && !formData.fields.value.id) {
         const selected = bank_accounts.find((account) => {
-          return bank_account === account.id;
-        });
+          return bank_account === account.id
+        })
         if (selected.hasOwnProperty('cheque_no')) {
           if (selected.cheque_no) {
             formData.fields.value.cheque_no = selected.cheque_no
@@ -195,24 +229,24 @@ export default {
     }
 
     function splitString(str, chunkSize) {
-      const chunks = [];
-      let start = 0;
+      const chunks = []
+      let start = 0
 
       while (start < str.length) {
-        let end = start + chunkSize;
+        let end = start + chunkSize
         if (end >= str.length) {
-          end = str.length;
+          end = str.length
         } else {
           // Find the closest space before the end index
           while (end > start && str[end] !== ' ' && str[end] !== undefined) {
-            end--;
+            end--
           }
         }
-        chunks.push(str.slice(start, end).trim()); // Remove leading/trailing spaces
-        start = end + 1; // Move start to the next character after the space
+        chunks.push(str.slice(start, end).trim()) // Remove leading/trailing spaces
+        start = end + 1 // Move start to the next character after the space
       }
 
-      return chunks;
+      return chunks
     }
     const amtArrayComputed = computed(() => {
       if (formData.fields.value.amount_in_words) {

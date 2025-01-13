@@ -3,7 +3,7 @@
 // Read more: https://github.com/vuejs/core/pull/3399
 import '@vue/runtime-core'
 
-export {}
+export { }
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
@@ -32,6 +32,7 @@ declare module '@vue/runtime-core' {
     ItemImport: typeof import('./src/components/ItemImport.vue')['default']
     ItemMergeGroup: typeof import('./src/components/settings/ItemMergeGroup.vue')['default']
     LoginCard: typeof import('./src/components/LoginCard.vue')['default']
+    MatchedTransactions: typeof import('./src/components/bank-reconciliation/MatchedTransactions.vue')['default']
     MultiSelectChip: typeof import('./src/components/filter/MultiSelectChip.vue')['default']
     NAutoComplete: typeof import('./src/components/NAutoComplete.vue')['default']
     NAutoCompleteV2: typeof import('./src/components/NAutoCompleteV2.vue')['default']
@@ -43,6 +44,8 @@ declare module '@vue/runtime-core' {
     PurchaseVoucherFormFields: typeof import('./src/components/voucher/PurchaseVoucherFormFields.vue')['default']
     RecurringVoucherTemplateForm: typeof import('./src/components/voucher/RecurringVoucherTemplateForm.vue')['default']
     RecurringVoucherTemplateList: typeof import('./src/components/voucher/RecurringVoucherTemplateList.vue')['default']
+    ReconciliationSalesInvoicesModal: typeof import('./src/components/bank-reconciliation/ReconciliationSalesInvoicesModal.vue')['default']
+    ReconciliationTable: typeof import('./src/components/bank-reconciliation/ReconciliationTable.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SalesVoucherFormFields: typeof import('./src/components/voucher/SalesVoucherFormFields.vue')['default']
