@@ -11,7 +11,7 @@ export default function useGeneratePosPdf(
   /* eslint-disable @typescript-eslint/no-explicit-any */
 ): string {
   const loginStore = useLoginStore()
-  const compayInfo = loginStore.companyInfo
+  const companyInfo = loginStore.companyInfo
   let sameTax = null
   let sameTaxObj = null
   const tableRow = (rows: Array<object>): string => {
@@ -55,27 +55,26 @@ export default function useGeneratePosPdf(
   }
   let html = ''
   let header = ''
-  if ([2, 3].includes(compayInfo.invoice_template)) {
+  if ([2, 3].includes(companyInfo.invoice_template)) {
     header = `
     <div>
     <div style="position: relative; margin-bottom: 10px;">
-    <img src="${compayInfo.logo_url}" alt="Compony Logo" style="height: 110px; object-fit: contain; max-width:160px; position: absolute; ${compayInfo.logo_url ? '' : 'display: none;'} ${compayInfo.invoice_template == 3 ? 'left: 40px;' : ''}" />
+    <img src="${companyInfo.logo_url}" alt="Compony Logo" style="height: 110px; object-fit: contain; max-width:160px; position: absolute; ${companyInfo.logo_url ? '' : 'display: none;'} ${companyInfo.invoice_template == 3 ? 'left: 40px;' : ''}" />
   <div style="text-align:center; padding-left: 10px;">
-    <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 700;">${compayInfo.name} ${
-      compayInfo.organization_type === 'private_limited'
+    <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 700;">${companyInfo.name} ${companyInfo.organization_type === 'private_limited'
         ? ' Pvt. Ltd.'
-        : ['public_limited', 'corporation'].includes(compayInfo.organization_type)
-            ? 'Ltd.'
-            : ''
-    }</h1>
-      <div>${compayInfo.address}</div>
+        : ['public_limited', 'corporation'].includes(companyInfo.organization_type)
+          ? 'Ltd.'
+          : ''
+      }</h1>
+      <div>${companyInfo.address}</div>
       <div style="font-size: 14px;">
           <div style="display: flex; justify-content: center; flex-direction: column;">
           <div style="display: flex; align-items: center; justify-content: center;">
-          <span>Email: ${compayInfo.emails && compayInfo.emails.length ? compayInfo.emails.join(',&nbsp;') : ''}</span>
+          <span>Email: ${companyInfo.emails && companyInfo.emails.length ? companyInfo.emails.join(',&nbsp;') : ''}</span>
         </div>
         <div style="display: flex; align-items: center; justify-content: center;">
-          <span>Tel: ${compayInfo.contact_no}</span>
+          <span>Tel: ${companyInfo.contact_no}</span>
         </div>
       </div>
       </div>
@@ -90,13 +89,13 @@ export default function useGeneratePosPdf(
         align-items: flex-end;
       "
     >
-      <div style="font-size: 14px;" >VAT No. <strong>${compayInfo.tax_registration_number}</strong></div>
-      <div style="display: ${compayInfo.website ? 'flex' : 'none'}; align-items: center">
+      <div style="font-size: 14px;" >VAT No. <strong>${companyInfo.tax_registration_number}</strong></div>
+      <div style="display: ${companyInfo.website ? 'flex' : 'none'}; align-items: center">
         <img
           src="/icons/web-fill.svg"
           alt="Website"
           style="margin-right: 10px; width: 14px"
-        /><span style="color: skyblue">${compayInfo.website}</span>
+        /><span style="color: skyblue">${companyInfo.website}</span>
       </div>
     </div>
   </div>
@@ -106,15 +105,14 @@ export default function useGeneratePosPdf(
   } else {
     header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
     <div>
-      <h1 style="margin: 5px 0; font-size: 35px; font-weight: 700;">${compayInfo.name} ${
-        compayInfo.organization_type === 'private_limited'
-          ? ' Pvt. Ltd.'
-          : ['public_limited', 'corporation'].includes(compayInfo.organization_type)
-              ? 'Ltd.'
-              : ''
+      <h1 style="margin: 5px 0; font-size: 35px; font-weight: 700;">${companyInfo.name} ${companyInfo.organization_type === 'private_limited'
+        ? ' Pvt. Ltd.'
+        : ['public_limited', 'corporation'].includes(companyInfo.organization_type)
+          ? 'Ltd.'
+          : ''
       }</h1>
-      <div>${compayInfo.address}</div>
-      <div>Tax Reg. No. <strong>${compayInfo.tax_registration_number}</strong></div>
+      <div>${companyInfo.address}</div>
+      <div>Tax Reg. No. <strong>${companyInfo.tax_registration_number}</strong></div>
     </div>
 
     <div
@@ -126,7 +124,7 @@ export default function useGeneratePosPdf(
       "
     >
       <div style="margin-bottom: 5px;">
-        <img src="${compayInfo.logo_url}" alt="Compony Logo" style="height: 70px; max-width: 200px; object-fit: contain; ${compayInfo.logo_url ? '' : 'display: none;'}"/>
+        <img src="${companyInfo.logo_url}" alt="Compony Logo" style="height: 70px; max-width: 200px; object-fit: contain; ${companyInfo.logo_url ? '' : 'display: none;'}"/>
       </div>
       <div style="display: flex; align-items: center">
         <img
@@ -134,14 +132,14 @@ export default function useGeneratePosPdf(
           alt="Call"
           style="margin-right: 10px; width: 14px"
         />
-        <span style="color: skyblue">${compayInfo.emails && compayInfo.emails.length ? compayInfo.emails.join(',&nbsp;') : ''}</span>
+        <span style="color: skyblue">${companyInfo.emails && companyInfo.emails.length ? companyInfo.emails.join(',&nbsp;') : ''}</span>
       </div>
       <div style="display: flex; align-items: center">
         <img
           src="/icons/envelope-fill.svg"
           alt="Email"
           style="margin-right: 10px; width: 14px"
-        /><span style="color: skyblue">${compayInfo.email}</span>
+        /><span style="color: skyblue">${companyInfo.email}</span>
       </div>
     </div>
   </div>
@@ -156,10 +154,10 @@ export default function useGeneratePosPdf(
       <th style="width: 40%; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Particular</th>
       <th style="text-align: left; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Qty</th>
       <th style="text-align: left; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Rate</th>
-      <th style="text-align: right; padding:5px; border-bottom: #b9b9b9 solid 2px;">Amount(${compayInfo.config_template === 'np' ? 'NRS' : 'N/A'})</th>
+      <th style="text-align: right; padding:5px; border-bottom: #b9b9b9 solid 2px;">Amount(${companyInfo.config_template === 'np' ? 'NRS' : 'N/A'})</th>
     </tr>
     ${invoiceInfo.rows ? tableRow(invoiceInfo.rows) : ''}
-    ${[2, 3].includes(compayInfo.invoice_template) ? `${emptyRows()}` : ''}
+    ${[2, 3].includes(companyInfo.invoice_template) ? `${emptyRows()}` : ''}
   </table>
   <div style="display: flex; justify-content: space-between; align-items: center; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9; border-top: none; padding: 20px; padding-top: 0;">
       <div>
@@ -174,13 +172,12 @@ export default function useGeneratePosPdf(
           <span style="font-weight: 600; color: lightgray;">DISCOUNT</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.discount)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
-          <span style="font-weight: 600; color: lightgray;">${
-            sameTax
-              ? [2, 3].includes(compayInfo.invoice_template)
-                  ? `${sameTaxObj.rate} % ` + `${sameTaxObj.name}`
-                  : `${sameTaxObj.name} ` + `${sameTaxObj.rate} %`
-              : 'TAX'
-          }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax)}</span>
+          <span style="font-weight: 600; color: lightgray;">${sameTax
+      ? [2, 3].includes(companyInfo.invoice_template)
+        ? `${sameTaxObj.rate} % ` + `${sameTaxObj.name}`
+        : `${sameTaxObj.name} ` + `${sameTaxObj.rate} %`
+      : 'TAX'
+    }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.grand_total)}</span>
@@ -201,13 +198,12 @@ export default function useGeneratePosPdf(
       font-family: Arial, Helvetica, sans-serif;
     "
   >
-  <h4 style="margin: 0; font-size: 1.4rem">${
-    invoiceInfo.status === 'Issued' || invoiceInfo.status === 'Paid'
+  <h4 style="margin: 0; font-size: 1.4rem">${invoiceInfo.status === 'Issued' || invoiceInfo.status === 'Paid'
       ? 'TAX INVOICE'
       : invoiceInfo.status === 'Draft'
         ? 'PRO FORMA INVOICE'
         : ''
-  }</h4>
+    }</h4>
   </div>
   <div style="display: flex; justify-content: space-between">
     <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -227,13 +223,12 @@ export default function useGeneratePosPdf(
       <span><span style="font-weight: 600; color: grey;">Miti: </span></span> ${DateConverter.getRepresentation(invoiceInfo.date, 'bs')}
       </div>
       <div>
-      <span><span style="font-weight: 600; color: grey;">Mode: </span></span> ${invoiceInfo.mode} ${
-        invoiceInfo.status === 'Draft'
-          ? '(Draft)'
-          : invoiceInfo.status === 'Paid'
-            ? '(Paid)'
-            : ''
-      }
+      <span><span style="font-weight: 600; color: grey;">Mode: </span></span> ${invoiceInfo.mode} ${invoiceInfo.status === 'Draft'
+      ? '(Draft)'
+      : invoiceInfo.status === 'Paid'
+        ? '(Paid)'
+        : ''
+    }
       </div>
     </div>
   </div>
