@@ -19,13 +19,34 @@ export default {
   <div class="q-pa-md">
     <div v-if="checkPermissions('unit.create')" class="row justify-between">
       <div></div>
-      <q-btn color="green" :to="`/${$route.params.company}/units/create/`" label="New Unit" class="q-ml-lg add-btn" icon-right="add" />
+      <q-btn
+        class="q-ml-lg add-btn"
+        color="green"
+        icon-right="add"
+        label="New Unit"
+        :to="`/${$route.params.company}/units/create/`"
+      />
     </div>
 
-    <q-table v-model:pagination="pagination" :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      :columns="columns"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
       <template #body-cell-name="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('unit.modify')" class="text-blue text-weight-medium" style="text-decoration: none" :to="`/${$route.params.company}/units/${props.row.id}/`">
+          <router-link
+            v-if="checkPermissions('unit.modify')"
+            class="text-blue text-weight-medium"
+            style="text-decoration: none"
+            :to="`/${$route.params.company}/units/${props.row.id}/`"
+          >
             {{ props.row.name }}
           </router-link>
           <span v-else>{{ props.row.name }}</span>

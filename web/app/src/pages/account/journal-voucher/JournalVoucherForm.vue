@@ -112,7 +112,7 @@ export default {
 </script>
 
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <q-form autofocus class="q-pa-lg">
     <q-card class="q-pa-xs">
       <q-card-section>
         <q-card>
@@ -124,30 +124,61 @@ export default {
           </q-card-section>
           <q-card class="q-pt-md">
             <div class="row q-col-gutter-md q-px-md q-pb-md">
-              <q-input v-model="fields.voucher_no" label="Voucher No." class="col-6" :error-message="errors?.voucher_no" :error="!!errors?.voucher_no" />
-              <DatePicker v-model="fields.date" class="col-6" label="Date" :error-message="errors?.date" :error="!!errors?.date" />
+              <q-input
+                v-model="fields.voucher_no"
+                class="col-6"
+                label="Voucher No."
+                :error="!!errors?.voucher_no"
+                :error-message="errors?.voucher_no"
+              />
+              <DatePicker
+                v-model="fields.date"
+                class="col-6"
+                label="Date"
+                :error="!!errors?.date"
+                :error-message="errors?.date"
+              />
             </div>
           </q-card>
         </q-card>
         <q-card class="q-mt-xs overflow-y-auto">
           <q-card-section class="q-pt-md min-w-[650px]">
             <div class="row q-col-gutter-md q-py-sm">
-              <div class="text-center">SN</div>
+              <div class="text-center">
+                SN
+              </div>
               <div class="row q-col-gutter-md" style="flex-grow: 1">
-                <div class="col-2">Type</div>
-                <div class="col-4">Account</div>
-                <div class="col-2">Dr Amount</div>
-                <div class="col-2">Cr Amount</div>
+                <div class="col-2">
+                  Type
+                </div>
+                <div class="col-4">
+                  Account
+                </div>
+                <div class="col-2">
+                  Dr Amount
+                </div>
+                <div class="col-2">
+                  Cr Amount
+                </div>
                 <div class="col-2"></div>
               </div>
             </div>
             <div v-for="(voucher, index) in fields.rows" :key="voucher.id">
-              <VoucherRow :voucher="voucher" :index="index" :options="formDefaults.collections?.accounts" :errors="errors?.rows ? errors.rows : null" @delete-voucher="(index) => deleteVoucher(index, errors)" @check-add-voucher="checkAddVoucher" />
+              <VoucherRow
+                :errors="errors?.rows ? errors.rows : null"
+                :index="index"
+                :options="formDefaults.collections?.accounts"
+                :voucher="voucher"
+                @check-add-voucher="checkAddVoucher"
+                @delete-voucher="(index) => deleteVoucher(index, errors)"
+              />
             </div>
             <div class="row q-col-gutter-md q-py-sm text-right text-bold">
               <div class="q-mr-md"></div>
               <div class="col-2"></div>
-              <div class="col-3" style="text-align: right">Total</div>
+              <div class="col-3" style="text-align: right">
+                Total
+              </div>
               <div class="col-2" style="text-align: right">
                 {{ amountComputed.dr }}
               </div>
@@ -156,19 +187,62 @@ export default {
               </div>
               <div class="col-2"></div>
             </div>
-            <q-btn outline style="color: green" label="ADD NEW ROW" class="q-mt-lg" @click.prevent="addNewVoucher" />
+            <q-btn
+              outline
+              class="q-mt-lg"
+              label="ADD NEW ROW"
+              style="color: green"
+              @click.prevent="addNewVoucher"
+            />
           </q-card-section>
         </q-card>
       </q-card-section>
 
       <div class="row">
-        <q-input v-model="fields.narration" type="textarea" autogrow label="Narration *" class="col-12 q-pa-md q-mb-md" :error-message="errors?.narration" :error="!!errors?.narration" />
+        <q-input
+          v-model="fields.narration"
+          autogrow
+          class="col-12 q-pa-md q-mb-md"
+          label="Narration *"
+          type="textarea"
+          :error="!!errors?.narration"
+          :error-message="errors?.narration"
+        />
       </div>
       <div class="row q-ma-md justify-end">
-        <q-btn v-if="checkPermissions('journalvoucher.create') && !isEdit" color="orange-7" icon="fa-solid fa-pen-to-square" label="Draft" class="q-mr-md q-py-sm" type="submit" @click.prevent="onSubmitClick('Unapproved')" />
-        <q-btn v-if="checkPermissions('journalvoucher.modify') && isEdit && fields.status === 'Draft'" color="orange-7" icon="fa-solid fa-pen-to-square" label="Save Draft" class="q-mr-md q-py-sm" type="submit" @click.prevent="onSubmitClick('Unapproved')" />
-        <q-btn v-if="checkPermissions('journalvoucher.create') && !isEdit" color="green-8" icon="fa-solid fa-floppy-disk" label="Save" @click.prevent="onSubmitClick('Approved')" />
-        <q-btn v-if="checkPermissions('journalvoucher.modify') && isEdit" color="green-8" icon="fa-solid fa-floppy-disk" label="Update" type="submit" @click.prevent="onSubmitClick('Approved')" />
+        <q-btn
+          v-if="checkPermissions('journalvoucher.create') && !isEdit"
+          class="q-mr-md q-py-sm"
+          color="orange-7"
+          icon="fa-solid fa-pen-to-square"
+          label="Draft"
+          type="submit"
+          @click.prevent="onSubmitClick('Unapproved')"
+        />
+        <q-btn
+          v-if="checkPermissions('journalvoucher.modify') && isEdit && fields.status === 'Draft'"
+          class="q-mr-md q-py-sm"
+          color="orange-7"
+          icon="fa-solid fa-pen-to-square"
+          label="Save Draft"
+          type="submit"
+          @click.prevent="onSubmitClick('Unapproved')"
+        />
+        <q-btn
+          v-if="checkPermissions('journalvoucher.create') && !isEdit"
+          color="green-8"
+          icon="fa-solid fa-floppy-disk"
+          label="Save"
+          @click.prevent="onSubmitClick('Approved')"
+        />
+        <q-btn
+          v-if="checkPermissions('journalvoucher.modify') && isEdit"
+          color="green-8"
+          icon="fa-solid fa-floppy-disk"
+          label="Update"
+          type="submit"
+          @click.prevent="onSubmitClick('Approved')"
+        />
       </div>
     </q-card>
   </q-form>

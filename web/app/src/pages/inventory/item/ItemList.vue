@@ -17,7 +17,16 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
   <div class="q-pa-md">
     <q-dialog v-model="isItemImportOpen">
       <q-card style="min-width: min(80vw, 900px)">
-        <q-btn style="position: absolute; right: 8px; top: 8px; z-index: 50" push color="red" text-color="white" round dense icon="close" @click="isItemImportOpen = false" />
+        <q-btn
+          dense
+          push
+          round
+          color="red"
+          icon="close"
+          style="position: absolute; right: 8px; top: 8px; z-index: 50"
+          text-color="white"
+          @click="isItemImportOpen = false"
+        />
         <ItemImport
           @modal-close="isItemImportOpen = false"
           @update-list="
@@ -30,20 +39,37 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
     <div v-if="checkPermissions('item.create')" class="row justify-end q-gutter-md">
       <q-btn color="green" label="Import From XlS" @click="isItemImportOpen = true" />
       <q-btn
-        color="green"
         class="add-btn"
+        color="green"
+        icon-right="add"
+        label="Add Item"
         :to="{
           name: 'company-inventory-items-create',
           params: { company: $route.params.company },
         }"
-        label="Add Item"
-        icon-right="add"
       />
     </div>
-    <q-table v-model:pagination="pagination" title="Income Items" :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      title="Income Items"
+      :columns="columns"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
       <template #top>
         <div class="search-bar">
-          <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="w-full search-input">
+          <q-input
+            v-model="searchQuery"
+            dense
+            class="w-full search-input"
+            debounce="500"
+            placeholder="Search"
+          >
             <template #append>
               <q-icon name="search" />
             </template>
@@ -52,7 +78,9 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
             <q-menu>
               <div class="menu-wrapper" style="width: min(300px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                  <h6 class="q-ma-md text-grey-9">
+                    Filters
+                  </h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mb-sm">
@@ -62,12 +90,27 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
                     <q-checkbox v-model="filters.can_be_purchased" label="Can be Purchased?" :false-value="null" />
                   </div>
                   <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.category" :endpoint="`/api/company/${$route.params.company}/inventory-categories/choices/`" label="Category" :fetch-on-mount="true" />
+                    <n-auto-complete-v2
+                      v-model="filters.category"
+                      label="Category"
+                      :endpoint="`/api/company/${$route.params.company}/inventory-categories/choices/`"
+                      :fetch-on-mount="true"
+                    />
                   </div>
                 </div>
                 <div class="q-mx-md row q-gutter-md q-mb-md">
-                  <q-btn color="green" class="f-submit-btn" label="Filter" @click="onFilterUpdate" />
-                  <q-btn color="red" class="f-reset-btn" icon="close" @click="resetFilters" />
+                  <q-btn
+                    class="f-submit-btn"
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  />
+                  <q-btn
+                    class="f-reset-btn"
+                    color="red"
+                    icon="close"
+                    @click="resetFilters"
+                  />
                 </div>
               </div>
             </q-menu>
@@ -76,13 +119,32 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('item.view')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View" :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }" />
-          <q-btn v-if="checkPermissions('item.modify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit" :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }" />
+          <q-btn
+            v-if="checkPermissions('item.view')"
+            class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
+            color="blue"
+            label="View"
+            style="font-size: 12px"
+            :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }"
+          />
+          <q-btn
+            v-if="checkPermissions('item.modify')"
+            class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
+            color="orange-6"
+            label="edit"
+            style="font-size: 12px"
+            :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }"
+          />
         </q-td>
       </template>
       <template #body-cell-name="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('item.view')" :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }" style="font-weight: 500; text-decoration: none" class="text-blue">
+          <router-link
+            v-if="checkPermissions('item.view')"
+            class="text-blue"
+            style="font-weight: 500; text-decoration: none"
+            :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }"
+          >
             {{ props.row.name }}
           </router-link>
           <span v-else>{{ props.row.name }}</span>
@@ -90,7 +152,12 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
       </template>
       <template #body-cell-category="props">
         <q-td :props="props">
-          <router-link v-if="props.row.category && checkPermissions('inventorycategory.modify')" :to="{ name: 'company-inventory-categories-id', params: { company: $route.params.company, id: props.row.category.id } }" style="font-weight: 500; text-decoration: none" class="text-blue">
+          <router-link
+            v-if="props.row.category && checkPermissions('inventorycategory.modify')"
+            class="text-blue"
+            style="font-weight: 500; text-decoration: none"
+            :to="{ name: 'company-inventory-categories-id', params: { company: $route.params.company, id: props.row.category.id } }"
+          >
             {{ props.row.category?.name }}
           </router-link>
           <span v-else>{{ props.row.category?.name }}</span>

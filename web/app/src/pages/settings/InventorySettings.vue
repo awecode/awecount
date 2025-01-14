@@ -39,7 +39,7 @@ export default {
           }
         })
     }
-    watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
+    watch(formData.formDefaults, newValue => (fields.value = newValue.fields))
     return {
       ...formData,
       fields,
@@ -50,7 +50,7 @@ export default {
 </script>
 
 <template>
-  <q-form v-if="fields" class="q-pa-lg" autofocus>
+  <q-form v-if="fields" autofocus class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -70,7 +70,12 @@ export default {
         </div>
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">
-        <q-btn color="green" label="Update" type="submit" @click.prevent="() => onUpdateClick(fields)" />
+        <q-btn
+          color="green"
+          label="Update"
+          type="submit"
+          @click.prevent="() => onUpdateClick(fields)"
+        />
       </div>
     </q-card>
   </q-form>

@@ -38,10 +38,28 @@ watch(
             </div>
             <div class="q-my-md row">
               <div class="col-12 col-sm-6">
-                <n-auto-complete-v2 v-model="fields.fiscal_year" label="Financial Year" :endpoint="`/api/company/${$route.params.company}/account-closing/create-defaults/fiscal_years`" :static-option="formDefaults?.fields?.current_fiscal_year" :options="formDefaults.collections?.fiscal_years" option-value="id" option-label="name" map-options emit-value />
+                <n-auto-complete-v2
+                  v-model="fields.fiscal_year"
+                  emit-value
+                  map-options
+                  label="Financial Year"
+                  option-label="name"
+                  option-value="id"
+                  :endpoint="`/api/company/${$route.params.company}/account-closing/create-defaults/fiscal_years`"
+                  :options="formDefaults.collections?.fiscal_years"
+                  :static-option="formDefaults?.fields?.current_fiscal_year"
+                />
               </div>
             </div>
-            <q-btn v-if="checkPermissions('accountclosing.create')" class="q-mt-md" color="green" type="submit" :loading="loading">Close Accounts</q-btn>
+            <q-btn
+              v-if="checkPermissions('accountclosing.create')"
+              class="q-mt-md"
+              color="green"
+              type="submit"
+              :loading="loading"
+            >
+              Close Accounts
+            </q-btn>
           </div>
         </div>
       </q-card-section>

@@ -168,21 +168,31 @@ export default {
       <q-card class="q-mt-sm q-pa-lg">
         <div class="row justify-between q-mb-md">
           <div class="row items-center">
-            <div class="text-subtitle2 text-grey-8">Date :&nbsp;</div>
+            <div class="text-subtitle2 text-grey-8">
+              Date :&nbsp;
+            </div>
             <div class="text-bold text-grey-9">
               {{ getDate[0] || '-' }}
             </div>
           </div>
           <router-link v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : $route.params.slug}/${fields[0]?.source_id}/view`">
-            <div class="row items-center text-blue">Source</div>
+            <div class="row items-center text-blue">
+              Source
+            </div>
           </router-link>
         </div>
         <q-card-section class="">
           <!-- Head -->
           <div class="row q-col-gutter-md text-grey-9 text-bold q-mb-lg">
-            <div class="col-grow">Account</div>
-            <div class="col-3">DR.</div>
-            <div class="col-3">CR.</div>
+            <div class="col-grow">
+              Account
+            </div>
+            <div class="col-3">
+              DR.
+            </div>
+            <div class="col-3">
+              CR.
+            </div>
           </div>
           <!-- Body -->
           <!-- {{ sameTransactionsData }} -->
@@ -191,7 +201,7 @@ export default {
               <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
               <div class="row q-col-gutter-md">
                 <div class="col-grow">
-                  <router-link style="text-decoration: none" class="text-blue" :to="`/${$route.params.company}/account/${row.account.id}/view`">
+                  <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${row.account.id}/view`">
                     {{ row.account.name }}
                   </router-link>
                 </div>
@@ -205,7 +215,9 @@ export default {
             </template>
           </div>
           <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center" style="margin-left: -20px; margin-right: -20px">
-            <div class="col-grow">Total</div>
+            <div class="col-grow">
+              Total
+            </div>
             <div class="col-3">
               {{ $nf(sameTransactionsData.total_dr) }}
             </div>
@@ -235,28 +247,38 @@ export default {
       <q-card class="q-mt-sm q-pa-lg">
         <div class="row justify-between q-mb-md">
           <div class="row items-center">
-            <div class="text-subtitle2 text-grey-8">Date :&nbsp;</div>
+            <div class="text-subtitle2 text-grey-8">
+              Date :&nbsp;
+            </div>
             <div class="text-bold text-grey-9">
               {{ getDate[index] || '-' }}
             </div>
           </div>
           <router-link v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : $route.params.slug}/${voucher?.source_id}/view`">
-            <div class="row items-center text-blue">Source</div>
+            <div class="row items-center text-blue">
+              Source
+            </div>
           </router-link>
         </div>
         <q-card-section class="">
           <!-- Head -->
           <div class="row q-col-gutter-md text-grey-9 text-bold q-mb-lg">
-            <div class="col-grow">Account</div>
-            <div class="col-3">DR.</div>
-            <div class="col-3">CR.</div>
+            <div class="col-grow">
+              Account
+            </div>
+            <div class="col-3">
+              DR.
+            </div>
+            <div class="col-3">
+              CR.
+            </div>
           </div>
           <!-- Body -->
           <div v-for="(row, index) in voucher?.transactions" :key="row.id" class="q-my-md">
             <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
             <div class="row q-col-gutter-md">
               <div class="col-grow">
-                <router-link style="text-decoration: none" class="text-blue" :to="`/${$route.params.company}/account/${row.account.id}/view`">
+                <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${row.account.id}/view`">
                   {{ row.account.name }}
                 </router-link>
               </div>
@@ -269,7 +291,9 @@ export default {
             </div>
           </div>
           <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center" style="margin-left: -20px; margin-right: -20px">
-            <div class="col-grow">Sub Total</div>
+            <div class="col-grow">
+              Sub Total
+            </div>
             <div class="col-3">
               {{ $nf(getAmount?.voucherTally[index].dr_amount) }}
             </div>
@@ -314,7 +338,9 @@ export default {
     <q-card class="q-mt-sm q-mx-lg q-mb-xl">
       <q-card-section class="bg-grey-4">
         <div class="row text-bold">
-          <div class="col-grow">Total</div>
+          <div class="col-grow">
+            Total
+          </div>
           <div class="col-3">
             {{ $nf(sameTransactionsData.total_dr) }}
           </div>
@@ -327,7 +353,7 @@ export default {
   </template>
   <template v-if="sameTransactionsData && fields?.length > 1">
     <div class="q-ma-md flex justify-end">
-      <q-btn :label="seprateTransactions ? 'View Merged Transactions' : 'View Sperate Transactions'" color="green" @click="seprateTransactions = !seprateTransactions" />
+      <q-btn color="green" :label="seprateTransactions ? 'View Merged Transactions' : 'View Sperate Transactions'" @click="seprateTransactions = !seprateTransactions" />
     </div>
   </template>
 </template>

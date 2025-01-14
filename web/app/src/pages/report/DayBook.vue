@@ -85,17 +85,34 @@ function filterData() {
   <div>
     <div class="q-pa-md">
       <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-semibold">Day Book</h1>
+        <h1 class="text-2xl font-semibold">
+          Day Book
+        </h1>
       </div>
       <div>
         <DatePicker v-model="date" class="col-6" label="Date" />
 
         <div class="mt-4">
           <div v-if="data">
-            <q-table :rows="data" :columns="columns" flat bordered hide-pagination :rows-per-page-options="[0]" :filter="searchQuery" :filter-method="filterData">
+            <q-table
+              bordered
+              flat
+              hide-pagination
+              :columns="columns"
+              :filter="searchQuery"
+              :filter-method="filterData"
+              :rows="data"
+              :rows-per-page-options="[0]"
+            >
               <template #top>
                 <div class="search-bar">
-                  <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
+                  <q-input
+                    v-model="searchQuery"
+                    dense
+                    class="full-width search-input"
+                    debounce="500"
+                    placeholder="Search"
+                  >
                     <template #append>
                       <q-icon name="search" />
                     </template>
@@ -131,7 +148,14 @@ function filterData() {
               </template>
               <template #body-cell-action="props">
                 <q-td>
-                  <RouterLink style="text-decoration: none" class="text-blue-6" target="_blank" :to="`/${$route.params.company}/account/${props.row.account.id}/view/?start_date=${date}&end_date=${date}`">View Transactions</RouterLink>
+                  <RouterLink
+                    class="text-blue-6"
+                    style="text-decoration: none"
+                    target="_blank"
+                    :to="`/${$route.params.company}/account/${props.row.account.id}/view/?start_date=${date}&end_date=${date}`"
+                  >
+                    View Transactions
+                  </RouterLink>
                 </q-td>
               </template>
             </q-table>

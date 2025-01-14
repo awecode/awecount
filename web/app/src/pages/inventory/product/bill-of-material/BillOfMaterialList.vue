@@ -25,12 +25,35 @@ const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)
 <template>
   <div class="q-pa-md">
     <div v-if="checkPermissions('billofmaterial.create')" class="row justify-end q-gutter-md">
-      <q-btn color="green" class="add-btn" :to="`/${$route.params.company}/items/bill-of-material/create/`" label="Add Bill of Material" icon-right="add" />
+      <q-btn
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="Add Bill of Material"
+        :to="`/${$route.params.company}/items/bill-of-material/create/`"
+      />
     </div>
-    <q-table v-model:pagination="pagination" title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      title="Income Items"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
       <template #top>
         <div class="search-bar">
-          <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="w-full search-input">
+          <q-input
+            v-model="searchQuery"
+            dense
+            class="w-full search-input"
+            debounce="500"
+            placeholder="Search"
+          >
             <template #append>
               <q-icon name="search" />
             </template>
@@ -40,7 +63,14 @@ const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)
 
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('billofmaterial.modify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit" :to="`/${$route.params.company}/items/bill-of-material/${props.row.id}/`" />
+          <q-btn
+            v-if="checkPermissions('billofmaterial.modify')"
+            class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
+            color="orange-6"
+            label="edit"
+            style="font-size: 12px"
+            :to="`/${$route.params.company}/items/bill-of-material/${props.row.id}/`"
+          />
         </q-td>
       </template>
 
@@ -49,14 +79,14 @@ const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)
           <div class="row align-center justify-center">
             <div
               class="text-white text-subtitle row items-center justify-center"
+              style="border-radius: 8px; padding: 2px 10px"
               :class="
                 props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
                 : props.row.status == 'Paid' ? 'bg-green-2 text-green-10'
-                : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
-                : props.row.status == 'Partially Paid' ? 'bg-green-1 text-green-6'
-                : 'bg-red-2 text-red-10'
+                  : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
+                    : props.row.status == 'Partially Paid' ? 'bg-green-1 text-green-6'
+                      : 'bg-red-2 text-red-10'
               "
-              style="border-radius: 8px; padding: 2px 10px"
             >
               {{ props.row.status }}
             </div>

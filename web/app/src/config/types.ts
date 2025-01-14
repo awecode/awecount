@@ -4,14 +4,14 @@ export interface APIConfig {
   protected: boolean
   unauthorized?:
     | {
-        redirect: string
-        statusCodes: number[]
-        strategy: 'redirect'
-      }
+      redirect: string
+      statusCodes: number[]
+      strategy: 'redirect'
+    }
     | {
-        statusCodes: number[]
-        strategy: 'error'
-      }
+      statusCodes: number[]
+      strategy: 'error'
+    }
   authorizationHeader?: string
   authorizationTokenPrefix?: string
 }
@@ -20,5 +20,5 @@ export interface AuthConfig {
   loginRoute?: string
   fullAccessRoles?: string[]
   redirectIfNotAllowed?: string | false
-  onboarding?: { enabled?: false } | { enabled: true; route: string }
+  onboarding?: { enabled?: false } | { enabled: true, route: string }
 }

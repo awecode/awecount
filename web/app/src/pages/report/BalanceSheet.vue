@@ -105,7 +105,7 @@ export default {
           // get color and apply to excel
           const hexCode = getComputedStyle(td).color
           const hexArray = hexCode.slice(4, hexCode.length - 1).split(',')
-          const numsArray = hexArray.map((e) => Number(e))
+          const numsArray = hexArray.map(e => Number(e))
           const rgbValue = ((1 << 24) | (numsArray[0] << 16) | (numsArray[1] << 8) | numsArray[2]).toString(16).slice(1)
           worksheet[i].s.font.color = { rgb: `${rgbValue}` }
         }
@@ -197,7 +197,9 @@ export default {
             <q-menu>
               <div class="menu-wrapper" style="width: min(300px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Config</h6>
+                  <h6 class="q-ma-md text-grey-9">
+                    Config
+                  </h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-pb-sm">
@@ -221,7 +223,12 @@ export default {
               </div>
             </q-menu>
           </q-btn>
-          <q-btn color="green" label="Export Xls" icon-right="download" @click="onDownloadXls" />
+          <q-btn
+            color="green"
+            icon-right="download"
+            label="Export Xls"
+            @click="onDownloadXls"
+          />
         </div>
       </div>
     </div>
@@ -237,12 +244,28 @@ export default {
                 <!-- {{ timeperoid }} -->
                 <div class="flex">
                   <div class="text-weight-medium text-caption text-left">
-                    <div style="margin-bottom: -5px">{{ store.isCalendarInAD ? timeperoid.start_date : DateConverter.getRepresentation(timeperoid.start_date, 'bs') }}&nbsp;</div>
+                    <div style="margin-bottom: -5px">
+                      {{ store.isCalendarInAD ? timeperoid.start_date : DateConverter.getRepresentation(timeperoid.start_date, 'bs') }}&nbsp;
+                    </div>
                     <div>{{ store.isCalendarInAD ? timeperoid.end_date : DateConverter.getRepresentation(timeperoid.end_date, 'bs') }}</div>
                   </div>
-                  <q-btn v-if="accounts.length > 0" dense flat color="red-5" size="sm" title="Delete Column" class="q-ml-md" @click="onRemoveColumn(index)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24">
-                      <path fill="currentColor" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z" />
+                  <q-btn
+                    v-if="accounts.length > 0"
+                    dense
+                    flat
+                    class="q-ml-md"
+                    color="red-5"
+                    size="sm"
+                    title="Delete Column"
+                    @click="onRemoveColumn(index)"
+                  >
+                    <svg
+                      height="17"
+                      viewBox="0 0 24 24"
+                      width="17"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z" fill="currentColor" />
                     </svg>
                   </q-btn>
                 </div>
@@ -253,7 +276,12 @@ export default {
               <th class="text-left" style="width: 400px">
                 <strong :class="showData ? 'q-ml-lg' : ''">Name</strong>
               </th>
-              <th v-for="(account, index) in accounts.length || 1" :key="index" class="text-left" style="width: 400px">
+              <th
+                v-for="(account, index) in accounts.length || 1"
+                :key="index"
+                class="text-left"
+                style="width: 400px"
+              >
                 <div class="flex items-center">
                   <span class="q-mr-md text-weight-bold">Amount</span>
                 </div>
@@ -262,9 +290,28 @@ export default {
           </thead>
           <tbody>
             <template v-if="showData">
-              <BalanceSheetTableNode :item="categoryTree[0]" :root="true" :accounts="accounts" :is-asset="true" :category_accounts="category_accounts" :config="config" />
-              <BalanceSheetTableNode :item="categoryTree[1]" :root="true" :accounts="accounts" :category_accounts="category_accounts" :config="config" />
-              <BalanceSheetTableNode :item="categoryTree[4]" :root="true" :accounts="accounts" :category_accounts="category_accounts" :config="config" />
+              <BalanceSheetTableNode
+                :accounts="accounts"
+                :category_accounts="category_accounts"
+                :config="config"
+                :is-asset="true"
+                :item="categoryTree[0]"
+                :root="true"
+              />
+              <BalanceSheetTableNode
+                :accounts="accounts"
+                :category_accounts="category_accounts"
+                :config="config"
+                :item="categoryTree[1]"
+                :root="true"
+              />
+              <BalanceSheetTableNode
+                :accounts="accounts"
+                :category_accounts="category_accounts"
+                :config="config"
+                :item="categoryTree[4]"
+                :root="true"
+              />
             </template>
             <tr v-if="!showData">
               <td class="text-weight-medium">
@@ -276,14 +323,21 @@ export default {
         </q-markup-table>
       </div>
       <div style="width: 30px">
-        <q-btn color="green" icon="add" class="m-none q-pa-sm" title="Add Column">
+        <q-btn
+          class="m-none q-pa-sm"
+          color="green"
+          icon="add"
+          title="Add Column"
+        >
           <q-menu>
             <div class="menu-wrapper" style="width: min(300px, 90vw)">
               <div style="border-bottom: 1px solid lightgrey">
-                <h6 class="q-ma-md text-grey-9">Add Column</h6>
+                <h6 class="q-ma-md text-grey-9">
+                  Add Column
+                </h6>
               </div>
               <div class="q-mx-md row q-gutter-md q-mt-xs q-mb-md">
-                <DateRangePicker v-model:start-date="fields.start_date" v-model:end-date="fields.end_date" :hide-btns="true" />
+                <DateRangePicker v-model:end-date="fields.end_date" v-model:start-date="fields.start_date" :hide-btns="true" />
                 <q-btn color="green" label="Filter" @click="onAddColumn" />
                 <q-btn color="red" icon="close" @click="fields = { start_date: null, end_date: null }" />
               </div>

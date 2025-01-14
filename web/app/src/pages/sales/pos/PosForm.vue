@@ -155,7 +155,7 @@ watch(
 )
 // handle Search
 const onAddItem = (itemInfo) => {
-  const index = fields.value.rows.findIndex((item) => item.item_id === itemInfo.id)
+  const index = fields.value.rows.findIndex(item => item.item_id === itemInfo.id)
   if (index >= 0) {
     fields.value.rows[index].quantity++
   } else {
@@ -176,7 +176,7 @@ const onAddItem = (itemInfo) => {
 }
 const getPartyObj = () => {
   if (fields.value.party && !partyMode.value) {
-    const index = partyChoices.value.findIndex((item) => item.id === fields.value.party)
+    const index = partyChoices.value.findIndex(item => item.id === fields.value.party)
     return partyChoices.value[index]
   } else {
     return null
@@ -260,14 +260,35 @@ const modeOptionsComputed = computed(() => {
   <div class="md:grid md:grid-cols-12">
     <div class="border border-r border-black col-span-3">
       <div>
-        <q-input v-model="searchTerm" autofocus debounce="250" label="&nbsp;&nbsp;Search Items..." input-class="pl-2 bg-red-200 focus:bg-green-200" class="search-input" color="green-8" @keypress.enter="enterClicked = true" />
+        <q-input
+          v-model="searchTerm"
+          autofocus
+          class="search-input"
+          color="green-8"
+          debounce="250"
+          input-class="pl-2 bg-red-200 focus:bg-green-200"
+          label="&nbsp;&nbsp;Search Items..."
+          @keypress.enter="enterClicked = true"
+        />
         <!-- <div class="row q-py-sm q-px-md text-subtitle2">
               <div class="col-8">Name</div>
               <div class="col-4">Rate</div>
             </div> -->
-        <div v-for="item in searchResults?.results || formDefaults.collections?.items.results" :key="item.id" class="row" style="border-bottom: 1px lightgrey solid; padding: 8px 16px 6px 16px; font-size: 13px">
+        <div
+          v-for="item in searchResults?.results || formDefaults.collections?.items.results"
+          :key="item.id"
+          class="row"
+          style="border-bottom: 1px lightgrey solid; padding: 8px 16px 6px 16px; font-size: 13px"
+        >
           <div class="col-8">
-            <router-link v-if="hasItemModifyAccess" style="text-decoration: none" class="text-blue" target="_blank" :title="item.code" :to="`/${$route.params.company}/items/${item.id}/`">
+            <router-link
+              v-if="hasItemModifyAccess"
+              class="text-blue"
+              style="text-decoration: none"
+              target="_blank"
+              :title="item.code"
+              :to="`/${$route.params.company}/items/${item.id}/`"
+            >
               {{ item.name }}
             </router-link>
             <span v-else>{{ item.name }}</span>
@@ -276,26 +297,36 @@ const modeOptionsComputed = computed(() => {
             <span class="row items-center">
               <span class="col-9" title="Rate">{{ item.rate }}</span>
               <span class="col-3">
-                <q-icon name="add" class="add-btn" tabindex="0" @click="onAddItem(item)" />
+                <q-icon
+                  class="add-btn"
+                  name="add"
+                  tabindex="0"
+                  @click="onAddItem(item)"
+                />
               </span>
             </span>
           </div>
         </div>
       </div>
-      <PaginateList v-if="formDefaults.collections?.items.pagination" class="q-mt-md" :pagination="searchResults?.pagination || formDefaults.collections?.items.pagination" @update-page="(page) => (currentPage = page)" />
+      <PaginateList
+        v-if="formDefaults.collections?.items.pagination"
+        class="q-mt-md"
+        :pagination="searchResults?.pagination || formDefaults.collections?.items.pagination"
+        @update-page="(page) => (currentPage = page)"
+      />
     </div>
     <div class="col-span-9">
       <q-form>
         <PosInvoiceTable
           v-model="fields.rows"
-          :unit-options="formDefaults.collections ? formDefaults.collections.units : null"
           :discount-options="discountOptionsComputed"
-          :tax-options="formDefaults.collections?.tax_schemes"
+          :errors="!!errors?.rows ? errors.rows : null"
           :main-discount="{
             discount_type: fields.discount_type,
             discount: fields.discount,
           }"
-          :errors="!!errors?.rows ? errors.rows : null"
+          :tax-options="formDefaults.collections?.tax_schemes"
+          :unit-options="formDefaults.collections ? formDefaults.collections.units : null"
           @delete-row-err="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)"
           @update-table-data="(val) => (totalTableData = val)"
         />
@@ -305,7 +336,9 @@ const modeOptionsComputed = computed(() => {
               <div class="row justify-between">
                 <div class="text-center text-left pt-2">
                   <div v-if="fields.rows.reduce((accumulator, currentDict) => accumulator + currentDict.quantity, 0)">
-                    <div class="font-medium text-gray-500">Rows &nbsp; {{ fields.rows.length }}</div>
+                    <div class="font-medium text-gray-500">
+                      Rows &nbsp; {{ fields.rows.length }}
+                    </div>
                     <div class="font-medium text-gray-500">
                       Items &nbsp;
                       {{ fields.rows.reduce((accumulator, currentDict) => accumulator + currentDict.quantity, 0) }}
@@ -314,13 +347,17 @@ const modeOptionsComputed = computed(() => {
                 </div>
                 <div class="text-weight-bold text-grey-8 min-w-[250px]">
                   <div class="row mb-1">
-                    <div class="col-6 text-right">Sub Total</div>
+                    <div class="col-6 text-right">
+                      Sub Total
+                    </div>
                     <div class="col-6 q-pl-md" data-testid="computed-subtotal">
                       {{ $nf(totalTableData.subTotal) }}
                     </div>
                   </div>
                   <div v-if="totalTableData.discount" class="row mb-1">
-                    <div class="col-6 text-right">Discount</div>
+                    <div class="col-6 text-right">
+                      Discount
+                    </div>
                     <div class="col-6 q-pl-md" data-testid="computed-final-discount">
                       {{ $nf(totalTableData.discount) }}
                     </div>
@@ -334,7 +371,9 @@ const modeOptionsComputed = computed(() => {
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-6 text-right">Total</div>
+                    <div class="col-6 text-right">
+                      Total
+                    </div>
                     <div class="col-6 q-pl-md" data-testid="computed-total">
                       {{ $nf(totalTableData.total) }}
                     </div>
@@ -344,9 +383,26 @@ const modeOptionsComputed = computed(() => {
               <div>
                 <div class="flex -my-2 items-center gap-x-8">
                   <div class="flex-grow min-w-[225px]">
-                    <n-auto-complete-v2 v-model="fields.mode" label="Mode" class="col-12 col-md-6" :error-message="errors?.mode ? errors.mode[0] : null" :error="!!errors?.mode" :options="modeOptionsComputed" :endpoint="`/api/company/${$route.params.company}/pos/create-defaults/bank_accounts`" option-value="id" option-label="name" map-options emit-value>
+                    <n-auto-complete-v2
+                      v-model="fields.mode"
+                      emit-value
+                      map-options
+                      class="col-12 col-md-6"
+                      label="Mode"
+                      option-label="name"
+                      option-value="id"
+                      :endpoint="`/api/company/${$route.params.company}/pos/create-defaults/bank_accounts`"
+                      :error="!!errors?.mode"
+                      :error-message="errors?.mode ? errors.mode[0] : null"
+                      :options="modeOptionsComputed"
+                    >
                       <template #append>
-                        <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear" @click.stop.prevent="fields.mode = null" />
+                        <q-icon
+                          v-if="fields.mode !== null"
+                          class="cursor-pointer"
+                          name="clear"
+                          @click.stop.prevent="fields.mode = null"
+                        />
                       </template>
                     </n-auto-complete-v2>
                   </div>
@@ -358,8 +414,22 @@ const modeOptionsComputed = computed(() => {
                             <div class="col-12">
                               <div class="row">
                                 <div class="col-10">
-                                  <q-input v-if="partyMode && fields.mode !== 'Credit'" v-model="fields.customer_name" label="Customer Name" :error-message="errors.customer_name ? errors.customer_name[0] : null" :error="!!errors?.customer_name" />
-                                  <n-auto-complete-v2 v-else v-model="fields.party" :options="partyChoices" label="Party" :endpoint="`/api/company/${$route.params.company}/parties/choices/`" :error="errors?.party ? errors?.party[0] : null" :modal-component="checkPermissions('party.create') ? PartyForm : null" />
+                                  <q-input
+                                    v-if="partyMode && fields.mode !== 'Credit'"
+                                    v-model="fields.customer_name"
+                                    label="Customer Name"
+                                    :error="!!errors?.customer_name"
+                                    :error-message="errors.customer_name ? errors.customer_name[0] : null"
+                                  />
+                                  <n-auto-complete-v2
+                                    v-else
+                                    v-model="fields.party"
+                                    label="Party"
+                                    :endpoint="`/api/company/${$route.params.company}/parties/choices/`"
+                                    :error="errors?.party ? errors?.party[0] : null"
+                                    :modal-component="checkPermissions('party.create') ? PartyForm : null"
+                                    :options="partyChoices"
+                                  />
                                 </div>
                                 <div class="col-2 row justify-center q-py-md">
                                   <q-btn flat size="md" @click="() => switchMode(fields)">
@@ -372,22 +442,50 @@ const modeOptionsComputed = computed(() => {
                           <div class="row q-col-gutter-md">
                             <div class="col-12 row q-col-gutter-md">
                               <div :class="fields.discount_type === 'Amount' || fields.discount_type === 'Percent' ? 'col-8' : 'col-12'">
-                                <n-auto-complete v-model="fields.discount_type" label="Discount*" :error="errors?.discount_type" :options="discountOptionsComputed" :modal-component="checkPermissions('salesdiscount.create') ? SalesDiscountForm : null" />
+                                <n-auto-complete
+                                  v-model="fields.discount_type"
+                                  label="Discount*"
+                                  :error="errors?.discount_type"
+                                  :modal-component="checkPermissions('salesdiscount.create') ? SalesDiscountForm : null"
+                                  :options="discountOptionsComputed"
+                                />
                               </div>
                               <div v-if="fields.discount_type === 'Amount' || fields.discount_type === 'Percent'" class="col-4">
-                                <q-input v-model.number="fields.discount" label="Discount" :error-message="errors?.discount ? errors.discount[0] : null" :error="!!errors?.discount" />
+                                <q-input
+                                  v-model.number="fields.discount"
+                                  label="Discount"
+                                  :error="!!errors?.discount"
+                                  :error-message="errors?.discount ? errors.discount[0] : null"
+                                />
                               </div>
                             </div>
                           </div>
                           <div class="col-12 -mt-4">
-                            <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow :error="!!errors?.remarks" :error-message="errors?.remarks ? errors.remarks[0] : null" />
+                            <q-input
+                              v-model="fields.remarks"
+                              autogrow
+                              label="Remarks"
+                              type="textarea"
+                              :error="!!errors?.remarks"
+                              :error-message="errors?.remarks ? errors.remarks[0] : null"
+                            />
                           </div>
                         </div>
                       </q-menu>
                     </q-btn>
                     <div v-if="fields.rows.length > 0" class="flex items-center justify-end gap-4">
-                      <q-btn color="orange-6" label="Save Draft" type="submit" @click.prevent="onSubmitClick('Draft')" />
-                      <q-btn color="green-8" label="Issue" type="submit" @click.prevent="onSubmitClick('Issued')" />
+                      <q-btn
+                        color="orange-6"
+                        label="Save Draft"
+                        type="submit"
+                        @click.prevent="onSubmitClick('Draft')"
+                      />
+                      <q-btn
+                        color="green-8"
+                        label="Issue"
+                        type="submit"
+                        @click.prevent="onSubmitClick('Issued')"
+                      />
                     </div>
                   </div>
                 </div>

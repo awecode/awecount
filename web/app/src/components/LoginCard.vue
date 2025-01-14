@@ -61,7 +61,7 @@ const handleLoginError = (error: any) => {
     const flows = errorResponse.data?.flows || []
 
     // Check for verify_email flow
-    const verifyEmailFlow = flows.find((flow) => flow.id === 'verify_email')
+    const verifyEmailFlow = flows.find(flow => flow.id === 'verify_email')
     if (verifyEmailFlow?.is_pending) {
       alertState.color = 'warning'
       alertState.title = 'Email Verification Required'
@@ -98,22 +98,37 @@ const onLoginSubmit = async () => {
 <template>
   <div class="row justify-center items-center bg-white q-pa-md">
     <div class="full-width q-px-md">
-      <q-form class="text-sm" autofocus @submit="onLoginSubmit">
-        <q-input v-model="state.email" label="Email" input-class="text-body1" :error="!!errors.email" :error-message="errors.email">
+      <q-form autofocus class="text-sm" @submit="onLoginSubmit">
+        <q-input
+          v-model="state.email"
+          input-class="text-body1"
+          label="Email"
+          :error="!!errors.email"
+          :error-message="errors.email"
+        >
           <template #before>
             <q-icon name="fa-solid fa-envelope" />
           </template>
         </q-input>
-        <q-input v-model="state.password" :type="showPasswordStatus ? 'text' : 'password'" label="Password" input-class="text-body1" :error="!!errors.password" :error-message="errors.password">
+        <q-input
+          v-model="state.password"
+          input-class="text-body1"
+          label="Password"
+          :error="!!errors.password"
+          :error-message="errors.password"
+          :type="showPasswordStatus ? 'text' : 'password'"
+        >
           <template #before>
             <q-icon name="fa-solid fa-lock" />
           </template>
           <template #append>
-            <q-icon :name="showPasswordStatus ? 'mdi-eye' : 'mdi-eye-off'" class="cursor-pointer" @click="showPasswordStatus = !showPasswordStatus" />
+            <q-icon class="cursor-pointer" :name="showPasswordStatus ? 'mdi-eye' : 'mdi-eye-off'" @click="showPasswordStatus = !showPasswordStatus" />
           </template>
         </q-input>
         <div class="text-center q-mt-xl">
-          <q-btn type="submit" class="bg-blue full-width text-white q-px-lg" :loading="loading">Login</q-btn>
+          <q-btn class="bg-blue full-width text-white q-px-lg" type="submit" :loading="loading">
+            Login
+          </q-btn>
         </div>
       </q-form>
     </div>

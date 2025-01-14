@@ -95,13 +95,17 @@ const onCancelClick = () => {
         <q-card-section>
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
-              <div class="col-6 text-bold">Bank Account</div>
+              <div class="col-6 text-bold">
+                Bank Account
+              </div>
               <div class="col-6">
                 {{ fields?.bank_account_name || '-' }}
               </div>
             </div>
             <div class="col-6 row">
-              <div class="col-6 text-bold">Benefactor</div>
+              <div class="col-6 text-bold">
+                Benefactor
+              </div>
               <div class="col-6">
                 {{ fields?.benefactor_name || '-' }}
               </div>
@@ -109,13 +113,17 @@ const onCancelClick = () => {
           </div>
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
-              <div class="col-6 text-bold">Amount</div>
+              <div class="col-6 text-bold">
+                Amount
+              </div>
               <div class="col-6">
                 {{ fields?.amount || '-' }}
               </div>
             </div>
             <div class="col-6 row">
-              <div class="col-6 text-bold">Deposit Date</div>
+              <div class="col-6 text-bold">
+                Deposit Date
+              </div>
               <div class="col-6">
                 {{ getDate.deposit_date || '-' }}
               </div>
@@ -123,13 +131,17 @@ const onCancelClick = () => {
           </div>
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
-              <div class="col-6 text-bold">Cheque Date</div>
+              <div class="col-6 text-bold">
+                Cheque Date
+              </div>
               <div class="col-6">
                 {{ getDate.cheque_date || '-' }}
               </div>
             </div>
             <div class="col-6 row">
-              <div class="col-6 text-bold">Cheque Number</div>
+              <div class="col-6 text-bold">
+                Cheque Number
+              </div>
               <div class="col-6">
                 {{ fields?.cheque_number || '-' }}
               </div>
@@ -137,13 +149,17 @@ const onCancelClick = () => {
           </div>
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
-              <div class="col-6 text-bold">Voucher Number</div>
+              <div class="col-6 text-bold">
+                Voucher Number
+              </div>
               <div class="col-6">
                 {{ fields?.voucher_no || '-' }}
               </div>
             </div>
             <div class="col-6 row">
-              <div class="col-6 text-bold">Deposited By</div>
+              <div class="col-6 text-bold">
+                Deposited By
+              </div>
               <div class="col-6">
                 {{ fields?.deposited_by || '-' }}
               </div>
@@ -151,13 +167,17 @@ const onCancelClick = () => {
           </div>
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
-              <div class="col-6 text-bold">Clearing Date</div>
+              <div class="col-6 text-bold">
+                Clearing Date
+              </div>
               <div class="col-6">
                 {{ getDate.clearing_date || '-' }}
               </div>
             </div>
             <div class="col-6 row">
-              <div class="col-6 text-bold">Drawee Bank</div>
+              <div class="col-6 text-bold">
+                Drawee Bank
+              </div>
               <div class="col-6">
                 {{ fields?.drawee_bank || '-' }}
               </div>
@@ -170,7 +190,9 @@ const onCancelClick = () => {
       <q-card-section>
         <div class="row">
           <div class="col-9 row text-grey-8">
-            <div class="col-6">Narration</div>
+            <div class="col-6">
+              Narration
+            </div>
             <div class="col-6">
               {{ fields?.narration || '-' }}
             </div>
@@ -180,16 +202,42 @@ const onCancelClick = () => {
     </q-card>
     <div v-if="fields" class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
       <div v-if="checkPermissions('chequedeposit.modify')">
-        <q-btn :to="`/${$route.params.company}/cheque-deposit/${id}/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
+        <q-btn
+          class="text-h7 q-py-sm"
+          color="orange"
+          icon="edit"
+          label="Edit"
+          :to="`/${$route.params.company}/cheque-deposit/${id}/`"
+        />
       </div>
       <div v-if="fields?.status === 'Issued' && checkPermissions('chequedeposit.modify')">
-        <q-btn color="green" icon="done_all" label="Mark as cleared" :loading="loading" class="text-h7 q-py-sm" @click.prevent="onClearedClick" />
+        <q-btn
+          class="text-h7 q-py-sm"
+          color="green"
+          icon="done_all"
+          label="Mark as cleared"
+          :loading="loading"
+          @click.prevent="onClearedClick"
+        />
       </div>
       <div v-if="fields?.status !== 'Cancelled' && checkPermissions('chequedeposit.cancel')">
-        <q-btn color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" :loading="loading" @click.prevent="() => (isDeleteOpen = true)" />
+        <q-btn
+          class="text-h7 q-py-sm"
+          color="red"
+          icon="block"
+          label="Cancel"
+          :loading="loading"
+          @click.prevent="() => (isDeleteOpen = true)"
+        />
       </div>
       <div v-if="fields?.status === 'Cleared'" class="q-ml-auto">
-        <q-btn :to="`/${$route.params.company}/journal-entries/cheque-deposits/${fields.id}/`" color="blue" icon="library_books" label="Journal Entries" class="text-h7 q-py-sm" />
+        <q-btn
+          class="text-h7 q-py-sm"
+          color="blue"
+          icon="library_books"
+          label="Journal Entries"
+          :to="`/${$route.params.company}/journal-entries/cheque-deposits/${fields.id}/`"
+        />
       </div>
     </div>
     <q-dialog v-model="isDeleteOpen">
@@ -198,15 +246,34 @@ const onCancelClick = () => {
           <div class="text-h6 text-white">
             <span>Confirm Cancellation?</span>
           </div>
-          <q-btn v-close-popup icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense />
+          <q-btn
+            v-close-popup
+            dense
+            flat
+            round
+            class="text-red-700 bg-slate-200 opacity-95"
+            icon="close"
+          />
         </q-card-section>
         <q-separator inset />
         <q-card-section>
-          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">Are you sure?</div>
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">
+            Are you sure?
+          </div>
           <div class="text-blue">
             <div class="row justify-end">
-              <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)" />
-              <q-btn flat class="text-red" label="Yes" @click="onCancelClick" />
+              <q-btn
+                flat
+                class="q-mr-md text-blue-grey-9"
+                label="NO"
+                @click="() => (isDeleteOpen = false)"
+              />
+              <q-btn
+                flat
+                class="text-red"
+                label="Yes"
+                @click="onCancelClick"
+              />
             </div>
           </div>
         </q-card-section>

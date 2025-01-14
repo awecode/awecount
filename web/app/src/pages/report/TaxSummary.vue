@@ -50,20 +50,20 @@ export default {
       <div>
         <div class="row q-gutter-x-md items-center">
           <div class="q-mx-md">
-            <DateRangePicker v-model:start-date="fields.start_date" v-model:end-date="fields.end_date" :hide-btns="true" />
+            <DateRangePicker v-model:end-date="fields.end_date" v-model:start-date="fields.start_date" :hide-btns="true" />
           </div>
           <q-btn
             v-if="fields.start_date || fields.end_date"
+            class="f-reset-btn"
             color="red"
             icon="close"
-            class="f-reset-btn"
             @click="fields = { start_date: null, end_date: null }"
           />
           <q-btn
-            :disable="!fields.start_date && !fields.end_date ? true : false"
+            class="f-submit-btn"
             color="green"
             label="fetch"
-            class="f-submit-btn"
+            :disable="!fields.start_date && !fields.end_date ? true : false"
             @click="fetchData"
           />
         </div>
@@ -183,11 +183,11 @@ export default {
                 </td>
               </tr>
               <tr>
-                <td colspan="2" class="text-center text-black">
+                <td class="text-center text-black" colspan="2">
                   <span class="text-center" style="color: black;">
                     <th>Tax Payable</th></span>
                 </td>
-                <td colspan="2" class="text-center text-weight-bold">
+                <td class="text-center text-weight-bold" colspan="2">
                   <span class="text-center" style="color: black;">
                     <th>{{ $nf(reportData.sales.total_meta_tax - reportData.purchase.total_meta_tax) }}
                     </th></span>

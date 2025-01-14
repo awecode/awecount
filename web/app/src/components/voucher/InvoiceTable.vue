@@ -139,7 +139,7 @@ export default {
         const rowDiscount = useCalcDiscount(item.discount_type, rowTotal, item.discount, props.discountOptions) || 0
         let currentTaxObj = null
         if (item.tax_scheme_id && props.taxOptions && props.taxOptions.length) {
-          const taxindex = props.taxOptions.findIndex((taxItem) => taxItem.id === item.tax_scheme_id)
+          const taxindex = props.taxOptions.findIndex(taxItem => taxItem.id === item.tax_scheme_id)
           if (taxindex > -1) {
             currentTaxObj = props.taxOptions[taxindex]
           }
@@ -294,39 +294,49 @@ export default {
       <div class="q-pa-lg q-col-gutter-md scroll">
         <div class="row text-subtitle2 hr q-py-sm no-wrap">
           <div class="col-5 row">
-            <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">Particular(s)</div>
-            <div v-if="usedIn === 'creditNote'" class="col-2 text-center">Return</div>
+            <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
+              Particular(s)
+            </div>
+            <div v-if="usedIn === 'creditNote'" class="col-2 text-center">
+              Return
+            </div>
           </div>
-          <div class="col-2 text-center">Qty</div>
-          <div class="col-2 text-center">Rate</div>
-          <div class="col-2 text-center">Amount</div>
+          <div class="col-2 text-center">
+            Qty
+          </div>
+          <div class="col-2 text-center">
+            Rate
+          </div>
+          <div class="col-2 text-center">
+            Amount
+          </div>
           <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="row">
           <InvoiceRow
             v-if="modalValue[index]"
             v-model="modalValue[index]"
-            :used-in="props.usedIn"
-            :item-options="itemOptions"
-            :unit-options="unitOptions"
-            :tax-options="taxOptions"
-            :discount-options="discountOptions"
-            :index="index"
-            :row-empty="(rowEmpty && index === 0) || false"
-            :errors="
-              !rowEmpty ?
-                Array.isArray(errors) ?
-                  errors[index]
-                : null
-              : null
-            "
-            :enable-row-description="props.enableRowDescription"
-            :show-row-trade-discount="props.showRowTradeDiscount"
-            :input-amount="props.inputAmount"
-            :show-rate-quantity="props.showRateQuantity"
-            :is-fifo="isFifo"
             :COGSData="COGSData"
+            :discount-options="discountOptions"
+            :enable-row-description="props.enableRowDescription"
+            :errors="
+              !rowEmpty
+                ? Array.isArray(errors)
+                  ? errors[index]
+                  : null
+                : null
+            "
             :has-challan="hasChallan"
+            :index="index"
+            :input-amount="props.inputAmount"
+            :is-fifo="isFifo"
+            :item-options="itemOptions"
+            :row-empty="(rowEmpty && index === 0) || false"
+            :show-rate-quantity="props.showRateQuantity"
+            :show-row-trade-discount="props.showRowTradeDiscount"
+            :tax-options="taxOptions"
+            :unit-options="unitOptions"
+            :used-in="props.usedIn"
             @delete-row="(index) => removeRow(index)"
             @on-item-id-update="onItemIdUpdate"
           />
@@ -335,13 +345,17 @@ export default {
           <div class="col-7 text-center text-left pt-2"></div>
           <div class="text-weight-bold text-grey-8 col-4 text-center">
             <div class="row q-pb-md">
-              <div class="col-6 text-right">Sub Total</div>
+              <div class="col-6 text-right">
+                Sub Total
+              </div>
               <div class="col-6 q-pl-md" data-testid="computed-subtotal">
                 {{ $nf(totalDataComputed.subTotal) }}
               </div>
             </div>
             <div v-if="totalDataComputed.discount" class="row q-pb-md">
-              <div class="col-6 text-right">Discount</div>
+              <div class="col-6 text-right">
+                Discount
+              </div>
               <div class="col-6 q-pl-md" data-testid="computed-final-discount">
                 {{ $nf(totalDataComputed.discount) }}
               </div>
@@ -355,7 +369,9 @@ export default {
               </div>
             </div>
             <div class="row q-pb-md">
-              <div class="col-6 text-right">Total</div>
+              <div class="col-6 text-right">
+                Total
+              </div>
               <div class="col-6 q-pl-md" data-testid="computed-total">
                 {{ $nf(totalDataComputed.total) }}
               </div>
@@ -364,7 +380,16 @@ export default {
           <div class="col-1 text-center"></div>
         </div>
         <div>
-          <q-btn color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan" data-testid="add-row-btn" @click="addRow">Add Row</q-btn>
+          <q-btn
+            outline
+            class="q-px-lg q-py-ms"
+            color="green"
+            data-testid="add-row-btn"
+            :disabled="hasChallan"
+            @click="addRow"
+          >
+            Add Row
+          </q-btn>
         </div>
       </div>
     </q-card>

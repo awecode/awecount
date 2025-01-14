@@ -1,163 +1,6 @@
-<template>
-  <div class="">
-    <div class="q-date q-date--portrait q-date--portrait-standard">
-      <div class="q-date__header">
-        <div class="relative-position">
-          <div class="q-date__header-subtitle q-date__header-link cursor-pointer" tabindex="0" @click="changeTo('year')">
-            {{ year }}
-          </div>
-        </div>
-        <div class="q-date__header-title relative-position flex no-wrap">
-          <div class="relative-position col">
-            <div class="q-date__header-title-label q-date__header-link q-date__header-link--active" tabindex="0">{{ weekDay }}, {{ months_list[month - 1] }} {{ day }}</div>
-          </div>
-        </div>
-      </div>
-      <div class="q-date__main col column" tabindex="-1">
-        <div class="q-date__content col relative-position">
-          <!------------------------ Calander ------------------------------------>
-          <div v-if="!showMonth && !showYear" class="q-date__view q-date__calendar">
-            <!------------------------------------------ Month, year switcher -------------------------------------->
-            <div class="q-date__navigation row items-center no-wrap">
-              <div class="row items-center q-date__arrow">
-                <button :disabled="(year < 2002 && month == 1) || disablePreviousBtns.month" @click="decMonth" class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense" tabindex="0" type="button" style="font-size: 10px">
-                  <span class="q-focus-helper"></span>
-                  <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
-                    <span class="q-icon" aria-hidden="true" role="img">
-                      <svg viewBox="0 0 24 24">
-                        <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"></path>
-                      </svg>
-                    </span>
-                  </span>
-                </button>
-              </div>
-              <div class="relative-position overflow-hidden flex flex-center col">
-                <div>
-                  <button @click="changeTo('month')" class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--no-uppercase q-btn--dense" tabindex="0" type="button">
-                    <span class="q-focus-helper"></span>
-                    <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
-                      <span class="block">{{ months_list[month - 1] }}</span>
-                    </span>
-                  </button>
-                </div>
-              </div>
-              <div class="row items-center q-date__arrow">
-                <button :disabled="year == 2089 && month == 12" @click="incMonth" class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense" tabindex="0" type="button" style="font-size: 10px">
-                  <span class="q-focus-helper"></span>
-                  <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
-                    <span class="q-icon" aria-hidden="true" role="img">
-                      <svg viewBox="0 0 24 24">
-                        <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path>
-                      </svg>
-                    </span>
-                  </span>
-                </button>
-              </div>
-              <div class="row items-center q-date__arrow">
-                <button :disabled="year < 2002 || disablePreviousBtns.year" @click="decYear" class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense" tabindex="0" type="button" style="font-size: 10px">
-                  <span class="q-focus-helper"></span>
-                  <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
-                    <span class="q-icon" aria-hidden="true" role="img">
-                      <svg viewBox="0 0 24 24">
-                        <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"></path>
-                      </svg>
-                    </span>
-                  </span>
-                </button>
-              </div>
-              <div class="relative-position overflow-hidden flex flex-center">
-                <div>
-                  <button @click="changeTo('year')" class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--no-uppercase q-btn--dense q-btn--active" tabindex="0" type="button">
-                    <span class="q-focus-helper"></span>
-                    <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
-                      <span class="block">{{ year }}</span>
-                    </span>
-                  </button>
-                </div>
-              </div>
-              <div class="row items-center q-date__arrow">
-                <button :disabled="!(year < 2089)" @click="incYear" class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense" tabindex="0" type="button" style="font-size: 10px">
-                  <span class="q-focus-helper"></span>
-                  <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
-                    <span class="q-icon" aria-hidden="true" role="img">
-                      <svg viewBox="0 0 24 24">
-                        <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path>
-                      </svg>
-                    </span>
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <!-- ------------------------------Days heading --------------------------->
-            <div class="q-date__calendar-weekdays row items-center no-wrap">
-              <div class="q-date__calendar-item" v-for="day in days_list" :key="day">
-                <div>{{ day.slice(0, 3) }}</div>
-              </div>
-            </div>
-            <!-------------------------------------- Days listing--------------------------------- -->
-            <div class="q-date__calendar-days-container relative-position overflow-hidden">
-              <div class="q-date__calendar-days fit">
-                <span v-for="(row, index) in monthRows" :key="index">
-                  <span v-for="(obj, j) in row" :key="j">
-                    <span class="border-none" v-if="obj" @click="onDateClick(obj)">
-                      <div class="q-date__calendar-item q-date__calendar-item--in">
-                        <button :disabled="compareBsDate(obj)" class="day-selector q-btn q-btn-item non-selectable no-outline q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--dense" tabindex="0" :class="day == obj ? 'q-btn--unelevated bg-primary text-white' : 'q-btn--flat q-btn--active'" type="button">
-                          <span class="q-focus-helper" :tabindex="day == obj ? '-1' : '0'"></span>
-                          <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
-                            <span class="block">{{ obj }}</span>
-                          </span>
-                        </button>
-                      </div>
-                    </span>
-                    <span v-else>
-                      <div class="q-date__calendar-item q-date__calendar-item--fill">
-                        <div></div>
-                      </div>
-                    </span>
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- ----------------------------------------------------Month listing----------------------------------- -->
-          <div v-if="showMonth" class="q-date__view q-date__years flex flex-center justify-between row flex-center">
-            <span v-for="(monthList, index) in months_list" :key="monthList" class="col-4" @click="(month = index + 1), (showMonth = false)">
-              <div class="q-date__months-item flex flex-center">
-                <button class="q-btn q-btn-item non-selectable no-outline q-btn--rectangle text-null q-btn--actionable q-focusable q-hoverable" :class="month == index + 1 ? 'q-btn--unelevated bg-primary text-white' : 'q-btn--flat text-null'" tabindex="0" type="button">
-                  <span class="q-focus-helper"></span>
-                  <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
-                    <span class="block">{{ monthList }}</span>
-                  </span>
-                </button>
-              </div>
-            </span>
-          </div>
-
-          <!------------------------------------ Years listing------------------------------- -->
-          <div v-if="showYear" class="q-date__view q-date__years flex flex-center">
-            <div class="q-date__years-content col self-stretch row items-center">
-              <div v-for="i in 22" :key="i" class="col-3" @click="(year = i + 2068), (showYear = false)">
-                <div class="q-date__years-item flex flex-center">
-                  <button class="q-btn q-btn-item non-selectable no-outline q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--dense" :class="i + 2068 == year ? 'q-btn--unelevated bg-primary text-white q-btn--active' : 'q-btn--flat  text-null '" tabindex="0" type="button">
-                    <span class="q-focus-helper"></span>
-                    <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
-                      <span class="block">{{ i + 2068 }}</span>
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import DateConverter from './VikramSamvat'
+
 const props = defineProps(['modelValue', 'error', 'toLimit'])
 const emit = defineEmits(['update:modelValue', 'closeMenu'])
 const ad_date = ref(props.modelValue || null)
@@ -176,7 +19,7 @@ const year = ref(null)
 const month = ref(null)
 const day = ref(null)
 if (converted_bs_date.value) {
-  ;[year.value, month.value, day.value] = converted_bs_date.value.split('-').map((data) => parseInt(data))
+  ;[year.value, month.value, day.value] = converted_bs_date.value.split('-').map(data => Number.parseInt(data))
 }
 
 const bsDate = computed(() => {
@@ -195,7 +38,7 @@ const weekDay = computed(() => {
 })
 
 const monthStartDay = computed(() => {
-  let bs_month_start_date_in_ad = new Date(DateConverter.bs2ad(`${year.value}-${month.value}-${1}`))
+  const bs_month_start_date_in_ad = new Date(DateConverter.bs2ad(`${year.value}-${month.value}-${1}`))
   return bs_month_start_date_in_ad.getDay() + 1
 })
 
@@ -204,11 +47,11 @@ const monthDays = computed(() => {
 })
 
 const monthRows = computed(() => {
-  let rows = []
+  const rows = []
   let date = 1
   let first_row = true
   do {
-    let new_row = []
+    const new_row = []
     for (let i = 1; i <= 7; i++) {
       if (first_row) {
         if (i < monthStartDay.value) {
@@ -235,9 +78,9 @@ const monthRows = computed(() => {
 watch(
   () => props.modelValue,
   (newVal) => {
-    let converted_bs_date1 = DateConverter.ad2bs(newVal)
+    const converted_bs_date1 = DateConverter.ad2bs(newVal)
     if (converted_bs_date1) {
-      let [year_second, month_second, day_second] = converted_bs_date1.split('-').map((data) => parseInt(data))
+      const [year_second, month_second, day_second] = converted_bs_date1.split('-').map(data => Number.parseInt(data))
       year.value = year_second
       month.value = month_second
       day.value = day_second
@@ -248,7 +91,7 @@ watch(
 watch(
   () => bsDate.value,
   (newVal) => {
-    let modVal = DateConverter.bs2ad(newVal, true)
+    const modVal = DateConverter.bs2ad(newVal, true)
     emit('update:modelValue', modVal)
   },
 )
@@ -263,14 +106,18 @@ const onDateClick = (data) => {
     if (selectedDate >= toLimitConverted) {
       day.value = data
     }
-  } else day.value = data
+  } else {
+    day.value = data
+  }
 }
 const compareBsDate = (day) => {
   if (props.toLimit) {
     const selectedDate = `${year.value}-${month.value < 10 ? `0${month.value}` : `${month.value}`}-${day < 10 ? `0${day}` : `${day}`}`
     const toLimitConverted = DateConverter.ad2bs(props.toLimit)
     return !(selectedDate >= toLimitConverted)
-  } else return false
+  } else {
+    return false
+  }
 }
 
 const incMonth = () => {
@@ -336,6 +183,230 @@ const disablePreviousBtns = computed(() => {
   return data
 })
 </script>
+
+<template>
+  <div class="">
+    <div class="q-date q-date--portrait q-date--portrait-standard">
+      <div class="q-date__header">
+        <div class="relative-position">
+          <div class="q-date__header-subtitle q-date__header-link cursor-pointer" tabindex="0" @click="changeTo('year')">
+            {{ year }}
+          </div>
+        </div>
+        <div class="q-date__header-title relative-position flex no-wrap">
+          <div class="relative-position col">
+            <div class="q-date__header-title-label q-date__header-link q-date__header-link--active" tabindex="0">
+              {{ weekDay }}, {{ months_list[month - 1] }} {{ day }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="q-date__main col column" tabindex="-1">
+        <div class="q-date__content col relative-position">
+          <!------------------------ Calander ------------------------------------>
+          <div v-if="!showMonth && !showYear" class="q-date__view q-date__calendar">
+            <!------------------------------------------ Month, year switcher -------------------------------------->
+            <div class="q-date__navigation row items-center no-wrap">
+              <div class="row items-center q-date__arrow">
+                <button
+                  class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense"
+                  style="font-size: 10px"
+                  tabindex="0"
+                  type="button"
+                  :disabled="(year < 2002 && month == 1) || disablePreviousBtns.month"
+                  @click="decMonth"
+                >
+                  <span class="q-focus-helper"></span>
+                  <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
+                    <span aria-hidden="true" class="q-icon" role="img">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+              </div>
+              <div class="relative-position overflow-hidden flex flex-center col">
+                <div>
+                  <button
+                    class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--no-uppercase q-btn--dense"
+                    tabindex="0"
+                    type="button"
+                    @click="changeTo('month')"
+                  >
+                    <span class="q-focus-helper"></span>
+                    <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
+                      <span class="block">{{ months_list[month - 1] }}</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <div class="row items-center q-date__arrow">
+                <button
+                  class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense"
+                  style="font-size: 10px"
+                  tabindex="0"
+                  type="button"
+                  :disabled="year == 2089 && month == 12"
+                  @click="incMonth"
+                >
+                  <span class="q-focus-helper"></span>
+                  <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
+                    <span aria-hidden="true" class="q-icon" role="img">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+              </div>
+              <div class="row items-center q-date__arrow">
+                <button
+                  class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense"
+                  style="font-size: 10px"
+                  tabindex="0"
+                  type="button"
+                  :disabled="year < 2002 || disablePreviousBtns.year"
+                  @click="decYear"
+                >
+                  <span class="q-focus-helper"></span>
+                  <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
+                    <span aria-hidden="true" class="q-icon" role="img">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+              </div>
+              <div class="relative-position overflow-hidden flex flex-center">
+                <div>
+                  <button
+                    class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--no-uppercase q-btn--dense q-btn--active"
+                    tabindex="0"
+                    type="button"
+                    @click="changeTo('year')"
+                  >
+                    <span class="q-focus-helper"></span>
+                    <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
+                      <span class="block">{{ year }}</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <div class="row items-center q-date__arrow">
+                <button
+                  class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense"
+                  style="font-size: 10px"
+                  tabindex="0"
+                  type="button"
+                  :disabled="!(year < 2089)"
+                  @click="incYear"
+                >
+                  <span class="q-focus-helper"></span>
+                  <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
+                    <span aria-hidden="true" class="q-icon" role="img">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- ------------------------------Days heading --------------------------->
+            <div class="q-date__calendar-weekdays row items-center no-wrap">
+              <div v-for="day in days_list" :key="day" class="q-date__calendar-item">
+                <div>{{ day.slice(0, 3) }}</div>
+              </div>
+            </div>
+            <!-------------------------------------- Days listing--------------------------------- -->
+            <div class="q-date__calendar-days-container relative-position overflow-hidden">
+              <div class="q-date__calendar-days fit">
+                <span v-for="(row, index) in monthRows" :key="index">
+                  <span v-for="(obj, j) in row" :key="j">
+                    <span v-if="obj" class="border-none" @click="onDateClick(obj)">
+                      <div class="q-date__calendar-item q-date__calendar-item--in">
+                        <button
+                          class="day-selector q-btn q-btn-item non-selectable no-outline q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--dense"
+                          tabindex="0"
+                          type="button"
+                          :class="day == obj ? 'q-btn--unelevated bg-primary text-white' : 'q-btn--flat q-btn--active'"
+                          :disabled="compareBsDate(obj)"
+                        >
+                          <span class="q-focus-helper" :tabindex="day == obj ? '-1' : '0'"></span>
+                          <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
+                            <span class="block">{{ obj }}</span>
+                          </span>
+                        </button>
+                      </div>
+                    </span>
+                    <span v-else>
+                      <div class="q-date__calendar-item q-date__calendar-item--fill">
+                        <div></div>
+                      </div>
+                    </span>
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ----------------------------------------------------Month listing----------------------------------- -->
+          <div v-if="showMonth" class="q-date__view q-date__years flex flex-center justify-between row flex-center">
+            <span
+              v-for="(monthList, index) in months_list"
+              :key="monthList"
+              class="col-4"
+              @click="(month = index + 1), (showMonth = false)"
+            >
+              <div class="q-date__months-item flex flex-center">
+                <button
+                  class="q-btn q-btn-item non-selectable no-outline q-btn--rectangle text-null q-btn--actionable q-focusable q-hoverable"
+                  tabindex="0"
+                  type="button"
+                  :class="month == index + 1 ? 'q-btn--unelevated bg-primary text-white' : 'q-btn--flat text-null'"
+                >
+                  <span class="q-focus-helper"></span>
+                  <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
+                    <span class="block">{{ monthList }}</span>
+                  </span>
+                </button>
+              </div>
+            </span>
+          </div>
+
+          <!------------------------------------ Years listing------------------------------- -->
+          <div v-if="showYear" class="q-date__view q-date__years flex flex-center">
+            <div class="q-date__years-content col self-stretch row items-center">
+              <div
+                v-for="i in 22"
+                :key="i"
+                class="col-3"
+                @click="(year = i + 2068), (showYear = false)"
+              >
+                <div class="q-date__years-item flex flex-center">
+                  <button
+                    class="q-btn q-btn-item non-selectable no-outline q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--dense"
+                    tabindex="0"
+                    type="button"
+                    :class="i + 2068 == year ? 'q-btn--unelevated bg-primary text-white q-btn--active' : 'q-btn--flat  text-null '"
+                  >
+                    <span class="q-focus-helper"></span>
+                    <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
+                      <span class="block">{{ i + 2068 }}</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 button.day-selector:disabled {

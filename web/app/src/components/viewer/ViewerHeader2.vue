@@ -46,7 +46,7 @@ export default {
     })
     const paymentModeComputed: Ref<string> = computed(() => {
       if (typeof props.fields?.payment_mode === 'number') {
-        const index: number = props.paymentModeOptions.findIndex((item) => item.id === props.fields?.payment_mode)
+        const index: number = props.paymentModeOptions.findIndex(item => item.id === props.fields?.payment_mode)
         return props.paymentModeOptions[index].name
       } else if (props.fields?.payment_mode === null) {
         return 'Credit'
@@ -76,7 +76,7 @@ export default {
             icon: 'check_circle',
           })
         })
-        .catch((err) => console.log('err from the api', err))
+        .catch(err => console.log('err from the api', err))
     }
     const isChangeOpen: Ref<boolean> = ref(false)
     return {
@@ -98,13 +98,17 @@ export default {
     <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
       <template v-if="fields?.party_name">
         <div class="col-12 col-md-6 row">
-          <div class="col-6">Party</div>
+          <div class="col-6">
+            Party
+          </div>
           <div class="col-6">
             {{ fields?.party_name }}
           </div>
         </div>
         <div v-if="fields?.customer_name" class="col-12 col-md-6 row">
-          <div class="col-6">Name on Invoice</div>
+          <div class="col-6">
+            Name on Invoice
+          </div>
           <div class="col-6">
             {{ fields?.customer_name }}
           </div>
@@ -119,19 +123,25 @@ export default {
         </div>
       </div>
       <div class="col-12 col-md-6 row">
-        <div class="col-6">Address</div>
+        <div class="col-6">
+          Address
+        </div>
         <div class="col-6">
           {{ fields?.address }}
         </div>
       </div>
       <div class="col-12 col-md-6 row">
-        <div class="col-6">Status</div>
+        <div class="col-6">
+          Status
+        </div>
         <div class="col-6">
           {{ fields?.status }}
         </div>
       </div>
       <div v-if="discountComputed" class="col-12 col-md-6 row">
-        <div class="col-6">Discount</div>
+        <div class="col-6">
+          Discount
+        </div>
         <div class="col-6">
           {{ discountComputed }}
         </div>
@@ -139,26 +149,34 @@ export default {
     </div>
     <div class="col-12 col-md-6 q-gutter-y-lg">
       <div class="col-12 col-md-6 row">
-        <div class="col-6">Date</div>
+        <div class="col-6">
+          Date
+        </div>
         <div class="col-6">
           {{ dateComputed }}
         </div>
       </div>
       <div v-if="changeModes" class="col-12 col-md-6 row">
-        <div class="col-6">Payment Mode</div>
+        <div class="col-6">
+          Payment Mode
+        </div>
         <div class="col-6">
           <span class="q-mr-sm">{{ paymentModeComputed }}</span>
           <q-btn icon="edit" size="sm" @click="() => (isChangeOpen = true)" />
         </div>
       </div>
       <div v-else class="col-12 col-md-6 row">
-        <div class="col-6">Payment Mode</div>
+        <div class="col-6">
+          Payment Mode
+        </div>
         <div class="col-6">
           {{ fields?.payment_mode ?? 'Credit' }}
         </div>
       </div>
       <div v-if="fields.challan_numbers && fields.challan_numbers.length > 0" class="col-12 col-md-6 row">
-        <div class="col-6">Challan Voucher No.</div>
+        <div class="col-6">
+          Challan Voucher No.
+        </div>
         <div class="col-6">
           {{ fields.challan_numbers.join(',') }}
         </div>
@@ -169,15 +187,36 @@ export default {
         <q-card-section class="bg-grey-4">
           <div class="text-h6 flex justify-between">
             <span class="q-mx-md">Edit Payment Mode</span>
-            <q-btn v-close-popup icon="close" class="text-white bg-red-500" flat round dense />
+            <q-btn
+              v-close-popup
+              dense
+              flat
+              round
+              class="text-white bg-red-500"
+              icon="close"
+            />
           </div>
         </q-card-section>
         <q-card-section class="q-mx-md">
           <div class="text-right q-mt-lg row justify-between q-mx-lg">
-            <q-select v-model="paymentModeValue" label="Payment Mode" class="col-12" :options="[{ id: null, name: 'Credit' }, ...props.paymentModeOptions]" option-value="id" option-label="name" map-options emit-value />
+            <q-select
+              v-model="paymentModeValue"
+              emit-value
+              map-options
+              class="col-12"
+              label="Payment Mode"
+              option-label="name"
+              option-value="id"
+              :options="[{ id: null, name: 'Credit' }, ...props.paymentModeOptions]"
+            />
           </div>
           <div class="row q-mt-lg justify-end">
-            <q-btn label="update" color="orange-5" class="q-mt-md" @click="() => submitChangeModes(props.fields.id)" />
+            <q-btn
+              class="q-mt-md"
+              color="orange-5"
+              label="update"
+              @click="() => submitChangeModes(props.fields.id)"
+            />
           </div>
         </q-card-section>
       </q-card>

@@ -79,14 +79,14 @@ fields.value.items_purchase_account_type = 'dedicated'
 
 const onSubmitClick = () => {
   if (fields.value.extra_fields && fields.value.extra_fields.length) {
-    fields.value.extra_fields = fields.value.extra_fields.filter((item) => item.name && item.type)
+    fields.value.extra_fields = fields.value.extra_fields.filter(item => item.name && item.type)
   }
   submitForm()
 }
 </script>
 
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <q-form autofocus class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -97,65 +97,193 @@ const onSubmitClick = () => {
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.name" class="col-12 col-md-6" label="Name *" :error-message="errors.name" :error="!!errors.name" />
-            <q-input v-model="fields.code" label="Code" class="col-12 col-md-6" :error-message="errors.code" :error="!!errors.code" />
+            <q-input
+              v-model="fields.name"
+              class="col-12 col-md-6"
+              label="Name *"
+              :error="!!errors.name"
+              :error-message="errors.name"
+            />
+            <q-input
+              v-model="fields.code"
+              class="col-12 col-md-6"
+              label="Code"
+              :error="!!errors.code"
+              :error-message="errors.code"
+            />
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete-v2 v-model="fields.default_unit_id" label="Unit" :options="formDefaults.collections?.units" :endpoint="`/api/company/${$route.params.company}/inventory-categories/create-defaults/units`" :static-option="fields.selected_unit_obj" :modal-component="checkPermissions('unit.create') ? UnitForm : null" :error="errors.default_unit_id" />
+              <n-auto-complete-v2
+                v-model="fields.default_unit_id"
+                label="Unit"
+                :endpoint="`/api/company/${$route.params.company}/inventory-categories/create-defaults/units`"
+                :error="errors.default_unit_id"
+                :modal-component="checkPermissions('unit.create') ? UnitForm : null"
+                :options="formDefaults.collections?.units"
+                :static-option="fields.selected_unit_obj"
+              />
             </div>
             <div class="col-12 col-md-6">
-              <NAutoComplete v-model="fields.default_tax_scheme_id" label="Tax Scheme" :options="formDefaults.collections?.tax_scheme" :modal-component="checkPermissions('taxscheme.create') ? TaxForm : null" :error="errors.default_tax_scheme_id" />
+              <NAutoComplete
+                v-model="fields.default_tax_scheme_id"
+                label="Tax Scheme"
+                :error="errors.default_tax_scheme_id"
+                :modal-component="checkPermissions('taxscheme.create') ? TaxForm : null"
+                :options="formDefaults.collections?.tax_scheme"
+              />
             </div>
           </div>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.hs_code" class="col-12 col-md-6" label="H.S. code" :error-message="errors.hs_code" :error="!!errors.hs_code" />
+            <q-input
+              v-model="fields.hs_code"
+              class="col-12 col-md-6"
+              label="H.S. code"
+              :error="!!errors.hs_code"
+              :error-message="errors.hs_code"
+            />
           </div>
           <div class="row q-gutter-y-lg mt-1 mb-6">
             <div class="col-sm-6 col-12 col-lg-4">
-              <q-checkbox v-model="fields.track_inventory" label="Track Inventory" :error-message="errors.track_inventory" :error="!!errors.track_inventory" />
+              <q-checkbox
+                v-model="fields.track_inventory"
+                label="Track Inventory"
+                :error="!!errors.track_inventory"
+                :error-message="errors.track_inventory"
+              />
             </div>
             <div class="col-sm-6 col-12 col-lg-4">
-              <q-checkbox v-model="fields.can_be_sold" label="Can be sold?" :error-message="errors.can_be_sold" :error="!!errors.can_be_sold" :disable="fields.direct_expense || fields.indirect_expense" />
+              <q-checkbox
+                v-model="fields.can_be_sold"
+                label="Can be sold?"
+                :disable="fields.direct_expense || fields.indirect_expense"
+                :error="!!errors.can_be_sold"
+                :error-message="errors.can_be_sold"
+              />
             </div>
             <div class="col-sm-6 col-12 col-lg-4">
-              <q-checkbox v-model="fields.can_be_purchased" label="Can be purchased?" :error-message="errors.can_be_purchased" :error="!!errors.can_be_purchased" :disable="fields.direct_expense || fields.indirect_expense" />
+              <q-checkbox
+                v-model="fields.can_be_purchased"
+                label="Can be purchased?"
+                :disable="fields.direct_expense || fields.indirect_expense"
+                :error="!!errors.can_be_purchased"
+                :error-message="errors.can_be_purchased"
+              />
             </div>
             <div class="col-sm-6 col-12 col-lg-4">
-              <q-checkbox v-model="fields.fixed_asset" label="Fixed Asset?" :error-message="errors.fixed_asset" :error="!!errors.fixed_asset" :disable="fields.direct_expense || fields.indirect_expense" />
+              <q-checkbox
+                v-model="fields.fixed_asset"
+                label="Fixed Asset?"
+                :disable="fields.direct_expense || fields.indirect_expense"
+                :error="!!errors.fixed_asset"
+                :error-message="errors.fixed_asset"
+              />
             </div>
             <div class="col-sm-6 col-12 col-lg-4">
-              <q-checkbox v-model="fields.direct_expense" label="Direct Expenses" :error-message="errors.direct_expense" :error="!!errors.direct_expense" @click="toggleExpenses('indirect_expense')" />
+              <q-checkbox
+                v-model="fields.direct_expense"
+                label="Direct Expenses"
+                :error="!!errors.direct_expense"
+                :error-message="errors.direct_expense"
+                @click="toggleExpenses('indirect_expense')"
+              />
             </div>
             <div class="col-sm-6 col-12 col-lg-4">
-              <q-checkbox v-model="fields.indirect_expense" label="Indirect Expense?" :error-message="errors.indirect_expense" :error="!!errors.indirect_expense" @click="toggleExpenses('direct_expense')" />
+              <q-checkbox
+                v-model="fields.indirect_expense"
+                label="Indirect Expense?"
+                :error="!!errors.indirect_expense"
+                :error-message="errors.indirect_expense"
+                @click="toggleExpenses('direct_expense')"
+              />
             </div>
           </div>
           <div class="row justify-between q-col-gutter-sm my-4">
             <div class="col-12 col-md-6">
               <div v-if="fields.fixed_asset || fields.direct_expense || fields.indirect_expense">
-                <q-select v-model="fields.account_category" :options="parent_account_categories" label="Account Category" option-value="id" option-label="name" map-options emit-value />
+                <q-select
+                  v-model="fields.account_category"
+                  emit-value
+                  map-options
+                  label="Account Category"
+                  option-label="name"
+                  option-value="id"
+                  :options="parent_account_categories"
+                />
               </div>
             </div>
           </div>
           <!-- {{ fields.sales_account_obj }} -->
           <div v-if="isEdit ? fields.hasOwnProperty('sales_account_obj') : true">
             <div>
-              <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:model-value="fields.sales_account" v-model:type-model-value="fields.items_sales_account_type" label="Sales" :options="formDefaults.collections?.accounts" :item-name="fields.name" :used-in-category-form="true" :dedicated-account="fields.dedicated_sales_account" :error="errors.sales_account" :global-accounts="formDefaults.options?.global_accounts" :static-option="fields.sales_account_obj" />
+              <select-item-accounts-with-types
+                v-if="fields.can_be_sold"
+                v-model:model-value="fields.sales_account"
+                v-model:type-model-value="fields.items_sales_account_type"
+                label="Sales"
+                :dedicated-account="fields.dedicated_sales_account"
+                :error="errors.sales_account"
+                :global-accounts="formDefaults.options?.global_accounts"
+                :item-name="fields.name"
+                :options="formDefaults.collections?.accounts"
+                :static-option="fields.sales_account_obj"
+                :used-in-category-form="true"
+              />
             </div>
             <div>
-              <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:model-value="fields.purchase_account" v-model:type-model-value="fields.items_purchase_account_type" label="Purchase" :options="formDefaults.collections?.accounts" :item-name="fields.name" :used-in-category-form="true" :dedicated-account="fields.dedicated_purchase_account" :error="errors.purchase_account" :global-accounts="formDefaults.options?.global_accounts" :static-option="fields.purchase_account_obj" />
+              <select-item-accounts-with-types
+                v-if="fields.can_be_purchased"
+                v-model:model-value="fields.purchase_account"
+                v-model:type-model-value="fields.items_purchase_account_type"
+                label="Purchase"
+                :dedicated-account="fields.dedicated_purchase_account"
+                :error="errors.purchase_account"
+                :global-accounts="formDefaults.options?.global_accounts"
+                :item-name="fields.name"
+                :options="formDefaults.collections?.accounts"
+                :static-option="fields.purchase_account_obj"
+                :used-in-category-form="true"
+              />
             </div>
             <div>
-              <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:model-value="fields.discount_allowed_account" v-model:type-model-value="fields.items_discount_allowed_account_type" label="Discount Allowed" :options="formDefaults.collections?.discount_allowed_accounts" :item-name="fields.name" :used-in-category-form="true" :dedicated-account="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account" :global-accounts="formDefaults.options?.global_accounts" :static-option="fields.discount_allowed_account_obj" />
+              <select-item-accounts-with-types
+                v-if="fields.can_be_sold"
+                v-model:model-value="fields.discount_allowed_account"
+                v-model:type-model-value="fields.items_discount_allowed_account_type"
+                label="Discount Allowed"
+                :dedicated-account="fields.dedicated_discount_allowed_account"
+                :error="errors.discount_allowed_account"
+                :global-accounts="formDefaults.options?.global_accounts"
+                :item-name="fields.name"
+                :options="formDefaults.collections?.discount_allowed_accounts"
+                :static-option="fields.discount_allowed_account_obj"
+                :used-in-category-form="true"
+              />
             </div>
             <div class="col-12 col-lg-6">
-              <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:model-value="fields.discount_received_account" v-model:type-model-value="fields.items_discount_received_account_type" label="Discount Received" :options="formDefaults.collections?.discount_received_accounts" :item-name="fields.name" :used-in-category-form="true" :dedicated-account="fields.dedicated_discount_received_account" :error="errors.discount_received_account" :global-accounts="formDefaults.options?.global_accounts" :static-option="fields.discount_received_account_obj" />
+              <select-item-accounts-with-types
+                v-if="fields.can_be_purchased"
+                v-model:model-value="fields.discount_received_account"
+                v-model:type-model-value="fields.items_discount_received_account_type"
+                label="Discount Received"
+                :dedicated-account="fields.dedicated_discount_received_account"
+                :error="errors.discount_received_account"
+                :global-accounts="formDefaults.options?.global_accounts"
+                :item-name="fields.name"
+                :options="formDefaults.collections?.discount_received_accounts"
+                :static-option="fields.discount_received_account_obj"
+                :used-in-category-form="true"
+              />
             </div>
           </div>
           <div class="row my-6">
             <div class="col-12 col-md-6 row item-center">
-              <q-checkbox v-model="fields.use_account_subcategory" :label="fields.id ? 'Use corresponding category in chart of accounts for ledger accounts of items in this category?' : 'Create corresponding category in chart of accounts for ledger accounts of items in this category?'" :error-message="errors.indirect_expense" :error="!!errors.indirect_expense" />
+              <q-checkbox
+                v-model="fields.use_account_subcategory"
+                :error="!!errors.indirect_expense"
+                :error-message="errors.indirect_expense"
+                :label="fields.id ? 'Use corresponding category in chart of accounts for ledger accounts of items in this category?' : 'Create corresponding category in chart of accounts for ledger accounts of items in this category?'"
+              />
             </div>
           </div>
           <div>
@@ -166,19 +294,46 @@ const onSubmitClick = () => {
             <div v-if="fields.extra_fields?.length > 0">
               <div v-for="(field, index) in fields.extra_fields" :key="index" class="row q-gutter-x-md items-center">
                 <q-input v-model="field.name" class="col-4" label="Name" />
-                <q-select v-model="field.type" class="col-3" :options="extraFieldTypes" label="Type" />
+                <q-select
+                  v-model="field.type"
+                  class="col-3"
+                  label="Type"
+                  :options="extraFieldTypes"
+                />
                 <q-checkbox v-model="field.enable_search" class="2" label="Enable Search?" />
                 <!-- <q-btn icon="delete"></q-btn> -->
                 <span class="col-1">
-                  <q-icon class="deleteIcon cursor-pointer" color="red-6" size="sm" name="delete" @click="removeExtraFields(index)" />
+                  <q-icon
+                    class="deleteIcon cursor-pointer"
+                    color="red-6"
+                    name="delete"
+                    size="sm"
+                    @click="removeExtraFields(index)"
+                  />
                 </span>
               </div>
             </div>
           </div>
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('inventorycategory.modify') && isEdit" :loading="loading" color="green" label="Update" class="q-ml-auto q-px-xl" type="submit" @click.prevent="onSubmitClick" />
-          <q-btn v-if="checkPermissions('inventorycategory.create') && !isEdit" :loading="loading" color="green" label="Create" class="q-ml-auto q-px-xl" type="submit" @click.prevent="onSubmitClick" />
+          <q-btn
+            v-if="checkPermissions('inventorycategory.modify') && isEdit"
+            class="q-ml-auto q-px-xl"
+            color="green"
+            label="Update"
+            type="submit"
+            :loading="loading"
+            @click.prevent="onSubmitClick"
+          />
+          <q-btn
+            v-if="checkPermissions('inventorycategory.create') && !isEdit"
+            class="q-ml-auto q-px-xl"
+            color="green"
+            label="Create"
+            type="submit"
+            :loading="loading"
+            @click.prevent="onSubmitClick"
+          />
         </div>
       </q-card>
     </q-card>

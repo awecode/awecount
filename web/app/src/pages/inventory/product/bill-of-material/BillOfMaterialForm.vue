@@ -49,7 +49,7 @@ export default {
 </script>
 
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <q-form autofocus class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -61,21 +61,89 @@ export default {
       <q-card class="q-ma-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-select v-model="fields.finished_product" class="col-md-6 col-12" :options="formDefaults?.collections?.finished_products" option-value="id" option-label="name" map-options emit-value label="Finished Product *" :error-message="errors.finished_product" :error="!!errors.finished_product" :disable="isEdit" />
-            <q-select v-model="fields.unit_id" class="col-md-6 col-12" :options="formDefaults?.collections?.units" option-value="id" option-label="name" map-options emit-value label="Unit *" :error-message="errors.unit_id" :error="!!errors.unit_id" />
-            <q-input v-model="fields.quantity" label="Quantity *" class="col-md-6 col-12" :error-message="errors.quantity" :error="!!errors.quantity" type="number" />
-            <q-input v-model="fields.rate" label="Rate *" class="col-md-6 col-12" :error-message="errors.rate" :error="!!errors.rate" type="number" />
+            <q-select
+              v-model="fields.finished_product"
+              emit-value
+              map-options
+              class="col-md-6 col-12"
+              label="Finished Product *"
+              option-label="name"
+              option-value="id"
+              :disable="isEdit"
+              :error="!!errors.finished_product"
+              :error-message="errors.finished_product"
+              :options="formDefaults?.collections?.finished_products"
+            />
+            <q-select
+              v-model="fields.unit_id"
+              emit-value
+              map-options
+              class="col-md-6 col-12"
+              label="Unit *"
+              option-label="name"
+              option-value="id"
+              :error="!!errors.unit_id"
+              :error-message="errors.unit_id"
+              :options="formDefaults?.collections?.units"
+            />
+            <q-input
+              v-model="fields.quantity"
+              class="col-md-6 col-12"
+              label="Quantity *"
+              type="number"
+              :error="!!errors.quantity"
+              :error-message="errors.quantity"
+            />
+            <q-input
+              v-model="fields.rate"
+              class="col-md-6 col-12"
+              label="Rate *"
+              type="number"
+              :error="!!errors.rate"
+              :error-message="errors.rate"
+            />
           </div>
           <div class="q-mt-lg">
-            <AdjustmentInvoiceTable v-model="fields.rows" label="Raw Material(s)" :minimal="true" :item-options="formDefaults?.collections?.items" :unit-options="formDefaults?.collections?.units" :errors="errors?.rows" :finished-product="fields.finished_product" @delete-row="(index) => deleteRow(index, errors)" />
+            <AdjustmentInvoiceTable
+              v-model="fields.rows"
+              label="Raw Material(s)"
+              :errors="errors?.rows"
+              :finished-product="fields.finished_product"
+              :item-options="formDefaults?.collections?.items"
+              :minimal="true"
+              :unit-options="formDefaults?.collections?.units"
+              @delete-row="(index) => deleteRow(index, errors)"
+            />
           </div>
           <div class="q-mt-lg">
-            <q-input v-model="fields.remarks" label="Remarks" class="col-6" :error-message="errors.remarks" :error="!!errors.remarks" type="textarea" autogrow />
+            <q-input
+              v-model="fields.remarks"
+              autogrow
+              class="col-6"
+              label="Remarks"
+              type="textarea"
+              :error="!!errors.remarks"
+              :error-message="errors.remarks"
+            />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
-          <q-btn v-if="checkPermissions('billofmaterial.modify') && isEdit && fields.status !== 'Cancelled'" :loading="loading" color="green" label="Update" type="submit" @click.prevent="onSubmitClick(fields.status)" />
-          <q-btn v-if="!isEdit && checkPermissions('billofmaterial.create')" :loading="loading" color="green" label="Create" type="submit" @click.prevent="onSubmitClick('Issued')" />
+          <q-btn
+            v-if="checkPermissions('billofmaterial.modify') && isEdit && fields.status !== 'Cancelled'"
+            color="green"
+            label="Update"
+            type="submit"
+            :loading="loading"
+            @click.prevent="onSubmitClick(fields.status)"
+          />
+          <q-btn
+            v-if="!isEdit && checkPermissions('billofmaterial.create')"
+            color="green"
+            label="Create"
+            type="submit"
+            :loading="loading"
+            @click.prevent="onSubmitClick('Issued')"
+          />
         </div>
       </q-card>
     </q-card>

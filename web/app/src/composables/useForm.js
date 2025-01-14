@@ -1,8 +1,8 @@
-import { withTrailingSlash, withoutTrailingSlash, joinURL } from 'ufo'
-import { getCurrentInstance } from 'vue'
-import useApi from './useApi'
 import { useLoginStore } from 'src/stores/login-info'
 import { useModalFormLoading } from 'src/stores/ModalFormLoading'
+import { joinURL, withoutTrailingSlash, withTrailingSlash } from 'ufo'
+import { getCurrentInstance } from 'vue'
+import useApi from './useApi'
 
 export default (endpoint, config) => {
   const $q = useQuasar()
@@ -41,7 +41,9 @@ export default (endpoint, config) => {
       store.isLoading = false
     } else if (isModal && (isEdit.value || config.getDefaults)) {
       store.isLoading = false
-    } else setModalLoadingFalse()
+    } else {
+      setModalLoadingFalse()
+    }
     id.value = route.params.id
     if (isEdit.value) {
       isGetEditLoading.value = true
@@ -105,7 +107,9 @@ export default (endpoint, config) => {
         let val = v
         if (Array.isArray(val)) {
           if (typeof val[0] === 'object') {
-          } else val = val.join(' ')
+          } else {
+            val = val.join(' ')
+          }
         }
         return [k, val]
       }),
@@ -182,7 +186,7 @@ export default (endpoint, config) => {
             html: true,
           })
             .onOk(() => {
-              useApi(postEndpoint + `?${data.data?.code}=true`, {
+              useApi(`${postEndpoint}?${data.data?.code}=true`, {
                 method: isEdit.value ? 'PATCH' : 'POST',
                 body: { ...fields.value, status: originalStatus },
               })
@@ -219,7 +223,7 @@ export default (endpoint, config) => {
         } else {
           $q.notify({
             color: 'negative',
-            message: message,
+            message,
             icon: 'report_problem',
           })
           loading.value = false
@@ -274,7 +278,9 @@ export default (endpoint, config) => {
   onUnmounted(() => {
     if (isModal) {
       if (modalFormLoading.hasOwnProperty(`${modalId}`)) delete modalFormLoading[modalId]
-    } else store.isLoading = false
+    } else {
+      store.isLoading = false
+    }
   })
 
   return {

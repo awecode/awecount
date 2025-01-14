@@ -50,7 +50,7 @@ export default {
           <span class="text-weight-medium text-grey-9">Remote Address:</span>
           <span>{{ fields.remote_addr }}</span>
         </div>
-        <q-markup-table flat bordered class="q-mt-md">
+        <q-markup-table bordered flat class="q-mt-md">
           <thead>
             <q-tr class="text-left">
               <q-th>Field</q-th>

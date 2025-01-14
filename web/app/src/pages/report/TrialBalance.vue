@@ -87,7 +87,7 @@ export default {
           showData.value = true
           total.value = tallyTotal
         })
-        .catch((err) => console.log(err))
+        .catch(err => console.log(err))
       // TODO: add 404 error routing
     }
     const onDownloadXls = async () => {
@@ -115,7 +115,7 @@ export default {
           // get color and apply to excel
           const hexCode = getComputedStyle(td).color
           const hexArray = hexCode.slice(4, hexCode.length - 1).split(',')
-          const numsArray = hexArray.map((e) => Number(e))
+          const numsArray = hexArray.map(e => Number(e))
           const rgbValue = ((1 << 24) | (numsArray[0] << 16) | (numsArray[1] << 8) | numsArray[2]).toString(16).slice(1)
           worksheet[i].s.font.color = { rgb: `${rgbValue}` }
         }
@@ -189,17 +189,36 @@ export default {
       <div class="flex items-center justify-between gap-2">
         <div class="flex gap-x-6 gap-y-2 items-center">
           <div>
-            <DateRangePicker v-model:start-date="fields.start_date" v-model:end-date="fields.end_date" :hide-btns="true" :focus-on-mount="true" />
+            <DateRangePicker
+              v-model:end-date="fields.end_date"
+              v-model:start-date="fields.start_date"
+              :focus-on-mount="true"
+              :hide-btns="true"
+            />
           </div>
-          <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close" class="f-reset-btn" @click="fields = { start_date: null, end_date: null }" />
-          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch" class="f-submit-btn" @click="updateData" />
+          <q-btn
+            v-if="fields.start_date || fields.end_date"
+            class="f-reset-btn"
+            color="red"
+            icon="close"
+            @click="fields = { start_date: null, end_date: null }"
+          />
+          <q-btn
+            class="f-submit-btn"
+            color="green"
+            label="fetch"
+            :disable="!fields.start_date && !fields.end_date ? true : false"
+            @click="updateData"
+          />
         </div>
         <div v-if="showData" class="flex gap-6">
           <q-btn icon="settings" title="Config">
             <q-menu>
               <div class="menu-wrapper" style="width: min(300px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Config</h6>
+                  <h6 class="q-ma-md text-grey-9">
+                    Config
+                  </h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-pb-sm">
@@ -221,7 +240,13 @@ export default {
               </div>
             </q-menu>
           </q-btn>
-          <q-btn color="blue" label="Export Xls" icon-right="download" class="export-btn" @click="onDownloadXls" />
+          <q-btn
+            class="export-btn"
+            color="blue"
+            icon-right="download"
+            label="Export Xls"
+            @click="onDownloadXls"
+          />
         </div>
       </div>
     </div>
@@ -232,31 +257,65 @@ export default {
             <th class="text-left">
               <strong>Name</strong>
             </th>
-            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">Opening</th>
-            <th class="text-left" colspan="2">Transactions</th>
-            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">Closing</th>
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
+              Opening
+            </th>
+            <th class="text-left" colspan="2">
+              Transactions
+            </th>
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
+              Closing
+            </th>
           </tr>
           <tr>
             <th class="text-left"></th>
             <template v-if="config.show_opening_closing_dr_cr">
-              <th class="text-left">Dr</th>
-              <th class="text-left">Cr</th>
-              <th class="text-left">Balance</th>
+              <th class="text-left">
+                Dr
+              </th>
+              <th class="text-left">
+                Cr
+              </th>
+              <th class="text-left">
+                Balance
+              </th>
             </template>
-            <th v-else class="text-left">Balance</th>
-            <th class="text-left">Dr</th>
-            <th class="text-left">Cr</th>
+            <th v-else class="text-left">
+              Balance
+            </th>
+            <th class="text-left">
+              Dr
+            </th>
+            <th class="text-left">
+              Cr
+            </th>
             <template v-if="config.show_opening_closing_dr_cr">
-              <th class="text-left">Dr</th>
-              <th class="text-left">Cr</th>
-              <th class="text-left">Balance</th>
+              <th class="text-left">
+                Dr
+              </th>
+              <th class="text-left">
+                Cr
+              </th>
+              <th class="text-left">
+                Balance
+              </th>
             </template>
-            <th v-else class="text-left">Balance</th>
+            <th v-else class="text-left">
+              Balance
+            </th>
           </tr>
         </thead>
         <tbody>
           <template v-if="showData">
-            <TableNode v-for="category in categoryTree" :key="category.id" :item="category" :root="true" :accounts="accounts" :category_accounts="category_accounts" :config="config" />
+            <TableNode
+              v-for="category in categoryTree"
+              :key="category.id"
+              :accounts="accounts"
+              :category_accounts="category_accounts"
+              :config="config"
+              :item="category"
+              :root="true"
+            />
           </template>
           <tr>
             <td class="text-weight-medium">

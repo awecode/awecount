@@ -113,20 +113,27 @@ export default {
 
         <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end">
           <div style="margin-bottom: 5px">
-            <img :src="loginStore.companyInfo.logo_url" alt="Compony Logo" style="height: 70px" :class="loginStore.companyInfo.logo_url ? '' : 'hidden'" />
+            <img
+              alt="Compony Logo"
+              style="height: 70px"
+              :class="loginStore.companyInfo.logo_url ? '' : 'hidden'"
+              :src="loginStore.companyInfo.logo_url"
+            />
           </div>
           <div style="display: flex; align-items: center">
-            <img src="/icons/telephone-fill.svg" alt="Email" style="margin-right: 10px; width: 14px" />
+            <img alt="Email" src="/icons/telephone-fill.svg" style="margin-right: 10px; width: 14px" />
             <span style="color: skyblue">{{ loginStore.companyInfo.contact_no }}</span>
           </div>
           <div style="display: flex; align-items: center">
-            <img src="/icons/envelope-fill.svg" alt="Call" style="margin-right: 10px; width: 14px" />
+            <img alt="Call" src="/icons/envelope-fill.svg" style="margin-right: 10px; width: 14px" />
             <span style="color: skyblue">{{ loginStore.companyInfo.email }}</span>
           </div>
         </div>
       </div>
       <hr style="margin: 20px 0" />
-      <div style="text-align: center">Payment Receipt | {{ fields?.status }}</div>
+      <div style="text-align: center">
+        Payment Receipt | {{ fields?.status }}
+      </div>
     </div>
     <div v-if="fields" class="sales-invoice">
       <q-card class="q-ma-lg q-mb-sm">
@@ -281,7 +288,12 @@ export default {
                 <span class="text-weight-medium col-6">Invoice #</span>
                 <span>
                   <span v-for="invoice in fields.invoices" :key="invoice.id" class="col-6">
-                    <router-link v-if="checkPermissions('sales.view')" class="text-blue q-mr-sm" style="text-decoration: none" :to="`/${$route.params.company}/sales-voucher/${invoice.id}/view`">#{{ invoice.id }}</router-link>
+                    <router-link
+                      v-if="checkPermissions('sales.view')"
+                      class="text-blue q-mr-sm"
+                      style="text-decoration: none"
+                      :to="`/${$route.params.company}/sales-voucher/${invoice.id}/view`"
+                    >#{{ invoice.id }}</router-link>
                     <span v-else>#{{ invoice.id }}</span>
                   </span>
                 </span>
@@ -313,14 +325,46 @@ export default {
       <div v-if="fields" class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md">
         <div class="row q-gutter-x-sm q-mb-md print-hide">
           <span v-if="fields.status !== 'Cancelled'" class="row q-gutter-x-sm q-ml-none">
-            <q-btn v-if="checkPermissions('paymentreceipt.modify')" color="orange-7" label="Edit" icon="edit" :to="`/${$route.params.company}/payment-receipt/${fields.id}/`" />
-            <q-btn v-if="fields.status !== 'Cleared' && checkPermissions('paymentreceipt.modify')" color="green" label="mark as cleared" icon="mdi-check-all" :loading="isLoading" @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')" />
-            <q-btn v-if="checkPermissions('paymentreceipt.cancel')" color="red" label="cancel" icon="cancel" :loading="isLoading" @click.prevent="() => (isDeleteOpen = true)" />
+            <q-btn
+              v-if="checkPermissions('paymentreceipt.modify')"
+              color="orange-7"
+              icon="edit"
+              label="Edit"
+              :to="`/${$route.params.company}/payment-receipt/${fields.id}/`"
+            />
+            <q-btn
+              v-if="fields.status !== 'Cleared' && checkPermissions('paymentreceipt.modify')"
+              color="green"
+              icon="mdi-check-all"
+              label="mark as cleared"
+              :loading="isLoading"
+              @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')"
+            />
+            <q-btn
+              v-if="checkPermissions('paymentreceipt.cancel')"
+              color="red"
+              icon="cancel"
+              label="cancel"
+              :loading="isLoading"
+              @click.prevent="() => (isDeleteOpen = true)"
+            />
           </span>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end print-hide">
-          <q-btn v-if="fields.mode === 'Cheque'" color="blue-7" label="View Cheque deposit" icon="mdi-checkbook" :to="`/${$route.params.company}/cheque-deposit/${fields?.id}/view/`" />
-          <q-btn v-if="fields.status === 'Cleared'" color="blue-7" label="Journal Entries" icon="books" :to="`/${$route.params.company}/journal-entries/payment-receipt/${fields?.id}/`" />
+          <q-btn
+            v-if="fields.mode === 'Cheque'"
+            color="blue-7"
+            icon="mdi-checkbook"
+            label="View Cheque deposit"
+            :to="`/${$route.params.company}/cheque-deposit/${fields?.id}/view/`"
+          />
+          <q-btn
+            v-if="fields.status === 'Cleared'"
+            color="blue-7"
+            icon="books"
+            label="Journal Entries"
+            :to="`/${$route.params.company}/journal-entries/payment-receipt/${fields?.id}/`"
+          />
         </div>
         <q-dialog v-model="isDeleteOpen">
           <q-card style="min-width: min(40vw, 400px)">
@@ -328,15 +372,34 @@ export default {
               <div class="text-h6 text-white">
                 <span>Confirm Cancellation?</span>
               </div>
-              <q-btn v-close-popup icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense />
+              <q-btn
+                v-close-popup
+                dense
+                flat
+                round
+                class="text-red-700 bg-slate-200 opacity-95"
+                icon="close"
+              />
             </q-card-section>
             <q-separator inset />
             <q-card-section>
-              <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">Are you sure?</div>
+              <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">
+                Are you sure?
+              </div>
               <div class="text-blue">
                 <div class="row justify-end">
-                  <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)" />
-                  <q-btn flat class="text-red" label="Yes" @click="() => submitChangeStatus(fields?.id, 'Cancelled')" />
+                  <q-btn
+                    flat
+                    class="q-mr-md text-blue-grey-9"
+                    label="NO"
+                    @click="() => (isDeleteOpen = false)"
+                  />
+                  <q-btn
+                    flat
+                    class="text-red"
+                    label="Yes"
+                    @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
+                  />
                 </div>
               </div>
             </q-card-section>
@@ -346,7 +409,9 @@ export default {
     </div>
     <div class="print-only text-right text-grey-9 text-caption">
       <div>Generated by {{ loginStore.username }} for {{ `${loginStore.companyInfo?.name}${loginStore.companyInfo.organization_type === 'private_limited' ? ' Pvt Ltd' : ''}` }}.</div>
-      <div class="text-italic">This is a computer generated receipt, produced using awecount.com - IRD Approval No. 7600405</div>
+      <div class="text-italic">
+        This is a computer generated receipt, produced using awecount.com - IRD Approval No. 7600405
+      </div>
     </div>
   </div>
 </template>

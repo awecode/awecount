@@ -31,12 +31,36 @@ const { rows, resetFilters, filters, loading, searchQuery, pagination, onRequest
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('category.create')" color="green" :to="`/${$route.params.company}/account-category/create/`" label="New Category" class="add-btn" icon-right="add" />
+      <q-btn
+        v-if="checkPermissions('category.create')"
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="New Category"
+        :to="`/${$route.params.company}/account-category/create/`"
+      />
     </div>
-    <q-table v-model:pagination="pagination" title="Income Items" :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      title="Income Items"
+      :columns="newColumns"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
       <template #top>
         <div class="search-bar">
-          <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
+          <q-input
+            v-model="searchQuery"
+            dense
+            class="full-width search-input"
+            debounce="500"
+            placeholder="Search"
+          >
             <template #append>
               <q-icon name="search" />
             </template>
@@ -45,7 +69,9 @@ const { rows, resetFilters, filters, loading, searchQuery, pagination, onRequest
             <q-menu>
               <div class="menu-wrapper" style="width: min(300px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                  <h6 class="q-ma-md text-grey-9">
+                    Filters
+                  </h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-pb-sm">
@@ -53,8 +79,18 @@ const { rows, resetFilters, filters, loading, searchQuery, pagination, onRequest
                   </div>
                 </div>
                 <div class="q-mx-md flex gap-4 q-mb-md">
-                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate" />
-                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters" />
+                  <q-btn
+                    class="f-submit-btn"
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  />
+                  <q-btn
+                    class="f-reset-btn"
+                    color="red"
+                    icon="close"
+                    @click="resetFilters"
+                  />
                 </div>
               </div>
             </q-menu>
@@ -63,7 +99,14 @@ const { rows, resetFilters, filters, loading, searchQuery, pagination, onRequest
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('category.modify')" color="orange-7" label="Edit" :to="`/${$route.params.company}/account-category/${props.row.id}/`" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" />
+          <q-btn
+            v-if="checkPermissions('category.modify')"
+            class="q-py-none q-px-md font-size-sm l-edit-btn"
+            color="orange-7"
+            label="Edit"
+            style="font-size: 12px"
+            :to="`/${$route.params.company}/account-category/${props.row.id}/`"
+          />
         </q-td>
       </template>
       <template #body-cell-default="props">

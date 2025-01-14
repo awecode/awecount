@@ -48,9 +48,25 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <q-table v-model:pagination="pagination" :rows="rows" :columns="columnList" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      :columns="columnList"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
       <template #top>
-        <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
+        <q-input
+          v-model="searchQuery"
+          dense
+          class="full-width search-input"
+          debounce="500"
+          placeholder="Search"
+        >
           <template #append>
             <q-icon name="search" />
           </template>
@@ -58,12 +74,19 @@ export default {
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('inventoryaccount.view')" color="blue" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" label="view" :to="`/${$route.params.company}/inventory-account/detail/${props.row.id}`" />
+          <q-btn
+            v-if="checkPermissions('inventoryaccount.view')"
+            class="q-py-none q-px-md font-size-sm l-view-btn"
+            color="blue"
+            label="view"
+            style="font-size: 12px"
+            :to="`/${$route.params.company}/inventory-account/detail/${props.row.id}`"
+          />
         </q-td>
       </template>
       <template #body-cell-name="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('inventoryaccount.view')" :to="`/${$route.params.company}/inventory-account/detail/${props.row.id}`" class="no-underline font-medium text-blue">
+          <router-link v-if="checkPermissions('inventoryaccount.view')" class="no-underline font-medium text-blue" :to="`/${$route.params.company}/inventory-account/detail/${props.row.id}`">
             {{ props.row.name }}
           </router-link>
           <span v-else>{{ props.row.name }}</span>

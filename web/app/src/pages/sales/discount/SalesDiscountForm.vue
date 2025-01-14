@@ -32,7 +32,7 @@ export default {
 </script>
 
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <q-form autofocus class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -44,21 +44,72 @@ export default {
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.name" label="Name *" class="col-12 col-md-6" :error-message="errors.name" :error="!!errors.name" />
+            <q-input
+              v-model="fields.name"
+              class="col-12 col-md-6"
+              label="Name *"
+              :error="!!errors.name"
+              :error-message="errors.name"
+            />
           </div>
           <div class="row q-col-gutter-md">
-            <q-select v-model="fields.type" label="Type *" class="col-12 col-md-6" :error-message="errors.type" :error="!!errors.type" :options="type" option-value="value" option-label="id" map-options emit-value>
+            <q-select
+              v-model="fields.type"
+              emit-value
+              map-options
+              class="col-12 col-md-6"
+              label="Type *"
+              option-label="id"
+              option-value="value"
+              :error="!!errors.type"
+              :error-message="errors.type"
+              :options="type"
+            >
               <template #append>
-                <q-icon v-if="fields.type !== null" class="cursor-pointer" name="clear" @click.stop.prevent="fields.type = null" />
+                <q-icon
+                  v-if="fields.type !== null"
+                  class="cursor-pointer"
+                  name="clear"
+                  @click.stop.prevent="fields.type = null"
+                />
               </template>
             </q-select>
-            <q-input v-model="fields.value" label="Value *" class="col-12 col-md-6" :error-message="errors.value" :error="!!errors.value" type="number" />
+            <q-input
+              v-model="fields.value"
+              class="col-12 col-md-6"
+              label="Value *"
+              type="number"
+              :error="!!errors.value"
+              :error-message="errors.value"
+            />
           </div>
-          <q-checkbox v-model="fields.trade_discount" class="q-mt-sm" label="Is Trade Discount?" :error-message="errors.trade_discount" :error="!!errors.trade_discount" />
+          <q-checkbox
+            v-model="fields.trade_discount"
+            class="q-mt-sm"
+            label="Is Trade Discount?"
+            :error="!!errors.trade_discount"
+            :error-message="errors.trade_discount"
+          />
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('salesdiscount.create') && !isEdit" :loading="loading" color="green" label="Create" class="q-ml-auto" type="submit" @click.prevent="submitForm" />
-          <q-btn v-if="checkPermissions('salesdiscount.modify') && isEdit" :loading="loading" color="green" label="Update" class="q-ml-auto" type="submit" @click.prevent="submitForm" />
+          <q-btn
+            v-if="checkPermissions('salesdiscount.create') && !isEdit"
+            class="q-ml-auto"
+            color="green"
+            label="Create"
+            type="submit"
+            :loading="loading"
+            @click.prevent="submitForm"
+          />
+          <q-btn
+            v-if="checkPermissions('salesdiscount.modify') && isEdit"
+            class="q-ml-auto"
+            color="green"
+            label="Update"
+            type="submit"
+            :loading="loading"
+            @click.prevent="submitForm"
+          />
         </div>
       </q-card>
     </q-card>

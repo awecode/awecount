@@ -126,7 +126,7 @@ export default {
 
 <template>
   <div>
-    <q-form class="q-pa-lg print-hide" autofocus>
+    <q-form autofocus class="q-pa-lg print-hide">
       <q-card>
         <q-card-section class="bg-green text-white">
           <div class="text-h6">
@@ -139,40 +139,135 @@ export default {
           <q-card-section>
             <div class="row q-col-gutter-md">
               <div class="col-md-6 col-12">
-                <n-auto-complete-v2 v-model="fields.bank_account" :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/bank_accounts`" :options="formDefaults.collections?.bank_accounts" label="Bank Account *" :disabled="isEdit" :static-option="fields.selected_bank_account_obj" :error="errors?.bank_account" @update:model-value="updateBankAccount" />
+                <n-auto-complete-v2
+                  v-model="fields.bank_account"
+                  label="Bank Account *"
+                  :disabled="isEdit"
+                  :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/bank_accounts`"
+                  :error="errors?.bank_account"
+                  :options="formDefaults.collections?.bank_accounts"
+                  :static-option="fields.selected_bank_account_obj"
+                  @update:model-value="updateBankAccount"
+                />
               </div>
-              <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date *" :error-message="errors.date" :error="!!errors.date" />
+              <date-picker
+                v-model="fields.date"
+                class="col-md-6 col-12"
+                label="Date *"
+                :error="!!errors.date"
+                :error-message="errors.date"
+              />
             </div>
             <div class="row q-col-gutter-md">
-              <q-input v-model="fields.cheque_no" label="Cheque Number" class="col-md-6 col-12" :error-message="errors.cheque_no" :error="!!errors.cheque_no" :disable="isEdit" type="number" />
-              <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount" type="number" :error="!!errors.amount" />
+              <q-input
+                v-model="fields.cheque_no"
+                class="col-md-6 col-12"
+                label="Cheque Number"
+                type="number"
+                :disable="isEdit"
+                :error="!!errors.cheque_no"
+                :error-message="errors.cheque_no"
+              />
+              <q-input
+                v-model="fields.amount"
+                class="col-md-6 col-12"
+                label="Amount *"
+                type="number"
+                :error="!!errors.amount"
+                :error-message="errors.amount"
+              />
             </div>
             <div class="row q-col-gutter-md">
               <div class="col-8">
-                <n-auto-complete-v2 v-if="!showDrAccount" v-model="fields.party" :options="formDefaults.collections?.parties" :static-option="fields.selected_party_obj" :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/parties`" label="Party *" :error="errors?.party" />
+                <n-auto-complete-v2
+                  v-if="!showDrAccount"
+                  v-model="fields.party"
+                  label="Party *"
+                  :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/parties`"
+                  :error="errors?.party"
+                  :options="formDefaults.collections?.parties"
+                  :static-option="fields.selected_party_obj"
+                />
                 <div v-else class="row">
-                  <q-input v-model="fields.issued_to" label="Issued To" class="col-12" :error-message="errors.issued_to" :error="!!errors.issued_to" />
+                  <q-input
+                    v-model="fields.issued_to"
+                    class="col-12"
+                    label="Issued To"
+                    :error="!!errors.issued_to"
+                    :error-message="errors.issued_to"
+                  />
                 </div>
               </div>
               <div>
-                <q-btn square icon="groups_2" class="q-mt-md" @click.prevent="toggleDrAccount" />
+                <q-btn
+                  square
+                  class="q-mt-md"
+                  icon="groups_2"
+                  @click.prevent="toggleDrAccount"
+                />
               </div>
             </div>
             <div v-if="showDrAccount" class="row q-col-gutter-md">
               <div class="col-8">
-                <n-auto-complete-v2 v-model="fields.dr_account" :options="formDefaults.collections?.accounts" :static-option="fields.selected_dr_account_obj" :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/accounts`" label="Dr Account" :modal-component="BenefactorForm" :error="errors?.dr_account" />
+                <n-auto-complete-v2
+                  v-model="fields.dr_account"
+                  label="Dr Account"
+                  :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/accounts`"
+                  :error="errors?.dr_account"
+                  :modal-component="BenefactorForm"
+                  :options="formDefaults.collections?.accounts"
+                  :static-option="fields.selected_dr_account_obj"
+                />
               </div>
             </div>
           </q-card-section>
           <div class="q-pr-md q-pb-lg row justify-between">
             <div class="row q-gutter-md">
-              <q-btn v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'" color="green" outline class="q-px-lg q-py-sm" style="display: inline-block" @click="exportPDF">Print Pdf</q-btn>
-              <q-btn v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'" color="green" outline class="q-px-lg q-py-sm" style="display: inline-block" label="Print Cheque" @click="onChequePrint" />
-              <q-btn v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('chequeissue.cancel')" icon="block" color="red" label="Cancel" class="q-ml-md" @click.prevent="isDeleteOpen = true" />
+              <q-btn
+                v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'"
+                outline
+                class="q-px-lg q-py-sm"
+                color="green"
+                style="display: inline-block"
+                @click="exportPDF"
+              >
+                Print Pdf
+              </q-btn>
+              <q-btn
+                v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'"
+                outline
+                class="q-px-lg q-py-sm"
+                color="green"
+                label="Print Cheque"
+                style="display: inline-block"
+                @click="onChequePrint"
+              />
+              <q-btn
+                v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('chequeissue.cancel')"
+                class="q-ml-md"
+                color="red"
+                icon="block"
+                label="Cancel"
+                @click.prevent="isDeleteOpen = true"
+              />
             </div>
             <div>
-              <q-btn v-if="checkPermissions('chequeissue.create') && !isEdit" color="green" label="Create" class="q-ml-auto" type="submit" @click.prevent="submitForm" />
-              <q-btn v-if="checkPermissions('chequeissue.modify') && isEdit" color="green" label="Update" class="q-ml-auto" type="submit" @click.prevent="submitForm" />
+              <q-btn
+                v-if="checkPermissions('chequeissue.create') && !isEdit"
+                class="q-ml-auto"
+                color="green"
+                label="Create"
+                type="submit"
+                @click.prevent="submitForm"
+              />
+              <q-btn
+                v-if="checkPermissions('chequeissue.modify') && isEdit"
+                class="q-ml-auto"
+                color="green"
+                label="Update"
+                type="submit"
+                @click.prevent="submitForm"
+              />
             </div>
           </div>
         </q-card>
@@ -203,15 +298,34 @@ export default {
           <div class="text-h6 text-white">
             <span>Confirm Cancellation?</span>
           </div>
-          <q-btn v-close-popup icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense />
+          <q-btn
+            v-close-popup
+            dense
+            flat
+            round
+            class="text-red-700 bg-slate-200 opacity-95"
+            icon="close"
+          />
         </q-card-section>
         <q-separator inset />
         <q-card-section>
-          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">Are you sure?</div>
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">
+            Are you sure?
+          </div>
           <div class="text-blue">
             <div class="row justify-end">
-              <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)" />
-              <q-btn flat class="text-red" label="Yes" @click="cancelForm" />
+              <q-btn
+                flat
+                class="q-mr-md text-blue-grey-9"
+                label="NO"
+                @click="() => (isDeleteOpen = false)"
+              />
+              <q-btn
+                flat
+                class="text-red"
+                label="Yes"
+                @click="cancelForm"
+              />
             </div>
           </div>
         </q-card-section>

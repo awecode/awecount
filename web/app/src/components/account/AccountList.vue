@@ -13,18 +13,24 @@ const openState = ref(false)
   <div v-if="props.accounts.length > 2">
     <div class="transition" :class="`${openState ? '' : 'max-h-[40px]'} overflow-y-hidden accounts-con`">
       <div v-for="(account, index) in props.accounts" :key="index">
-        <router-link :to="`/${$route.params.company}/account/${account.id}/view/`" style="font-weight: 500; text-decoration: none" class="text-blue block">
+        <router-link class="text-blue block" style="font-weight: 500; text-decoration: none" :to="`/${$route.params.company}/account/${account.id}/view/`">
           {{ account.name }}
         </router-link>
       </div>
     </div>
     <div class="hover:bg-gray-200 text-center" @click="openState = !openState">
-      <q-icon size="sm" color="blue" name="mdi-chevron-down" class="transition-transform" :class="openState ? 'rotate-180' : ''" />
+      <q-icon
+        class="transition-transform"
+        color="blue"
+        name="mdi-chevron-down"
+        size="sm"
+        :class="openState ? 'rotate-180' : ''"
+      />
     </div>
   </div>
   <div v-else>
     <div v-for="(account, index) in props.accounts" :key="index">
-      <router-link :to="`/${$route.params.company}/account/${account.id}/view/`" style="font-weight: 500; text-decoration: none" class="text-blue block">
+      <router-link class="text-blue block" style="font-weight: 500; text-decoration: none" :to="`/${$route.params.company}/account/${account.id}/view/`">
         {{ account.name }}
       </router-link>
     </div>

@@ -26,7 +26,7 @@ export default {
 </script>
 
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <q-form autofocus class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -39,18 +39,63 @@ export default {
         <q-card-section>
           <div class="grid md:grid-cols-2 q-col-gutter-md">
             <div>
-              <n-auto-complete-v2 v-if="!isEdit" v-model="fields.account" :endpoint="`/api/company/${$route.params.company}/account-opening-balance/create-defaults/accounts`" :static-option="fields.selected_account_obj" :options="formDefaults.collections?.accounts" label="Account *" :modal-component="checkPermissions('account.create') ? LedgerForm : null" :error="errors?.account" />
-              <q-input v-else label="Account *" disable :model-value="fields.name" class="mb-4" />
+              <n-auto-complete-v2
+                v-if="!isEdit"
+                v-model="fields.account"
+                label="Account *"
+                :endpoint="`/api/company/${$route.params.company}/account-opening-balance/create-defaults/accounts`"
+                :error="errors?.account"
+                :modal-component="checkPermissions('account.create') ? LedgerForm : null"
+                :options="formDefaults.collections?.accounts"
+                :static-option="fields.selected_account_obj"
+              />
+              <q-input
+                v-else
+                disable
+                class="mb-4"
+                label="Account *"
+                :model-value="fields.name"
+              />
             </div>
           </div>
           <div class="grid md:grid-cols-2 q-col-gutter-md">
-            <q-input v-model="fields.opening_dr" type="number" label="Opening Dr" class="col-6" :error-message="errors.opening_dr" :error="!!errors.opening_dr" />
-            <q-input v-model="fields.opening_cr" type="number" label="Opening Cr" class="col-6" :error-message="errors.opening_cr || errors.detail" :error="!!errors.opening_cr || !!errors.detail" />
+            <q-input
+              v-model="fields.opening_dr"
+              class="col-6"
+              label="Opening Dr"
+              type="number"
+              :error="!!errors.opening_dr"
+              :error-message="errors.opening_dr"
+            />
+            <q-input
+              v-model="fields.opening_cr"
+              class="col-6"
+              label="Opening Cr"
+              type="number"
+              :error="!!errors.opening_cr || !!errors.detail"
+              :error-message="errors.opening_cr || errors.detail"
+            />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('accountopeningbalance.create') && !isEdit" color="green" label="Create" class="q-ml-auto" type="submit" :loading="loading" @click.prevent="submitForm" />
-          <q-btn v-if="checkPermissions('accountopeningbalance.modify') && isEdit" color="green" label="Update" class="q-ml-auto" type="submit" :loading="loading" @click.prevent="submitForm" />
+          <q-btn
+            v-if="checkPermissions('accountopeningbalance.create') && !isEdit"
+            class="q-ml-auto"
+            color="green"
+            label="Create"
+            type="submit"
+            :loading="loading"
+            @click.prevent="submitForm"
+          />
+          <q-btn
+            v-if="checkPermissions('accountopeningbalance.modify') && isEdit"
+            class="q-ml-auto"
+            color="green"
+            label="Update"
+            type="submit"
+            :loading="loading"
+            @click.prevent="submitForm"
+          />
         </div>
       </q-card>
     </q-card>

@@ -20,7 +20,12 @@ fields.value = res
 <template>
   <div class="q-ma-md">
     <div>
-      <q-btn icon="add" label="Add widget" :to="`/${$route.params.company}/settings/dashboard-widgets/create/`" style="font-size: 0.75rem" />
+      <q-btn
+        icon="add"
+        label="Add widget"
+        style="font-size: 0.75rem"
+        :to="`/${$route.params.company}/settings/dashboard-widgets/create/`"
+      />
     </div>
     <div class="q-mt-md grid-con">
       <div v-for="widget in fields" :key="widget.id">
@@ -31,7 +36,13 @@ fields.value = res
                 {{ widget.name }}
               </h5>
               <span style="flex-grow: 0; flex-shrink: 0">
-                <q-btn flat icon="edit" :to="`/${$route.params.company}/settings/dashboard-widgets/${widget.id}/edit`" size="sm" class="text-grey-8" />
+                <q-btn
+                  flat
+                  class="text-grey-8"
+                  icon="edit"
+                  size="sm"
+                  :to="`/${$route.params.company}/settings/dashboard-widgets/${widget.id}/edit`"
+                />
               </span>
             </div>
             <div>

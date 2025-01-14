@@ -215,14 +215,32 @@ export default {
         <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
           <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
           <span v-if="!props.config.hide_categories" style="display: inline-block; width: 40px; margin-left: -5px">
-            <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''" @click="changeExpandStatus(item.id)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
-                <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
+            <q-btn
+              dense
+              flat
+              round
+              class="expand-btn"
+              :class="expandStatus ? 'expanded' : ''"
+              @click="changeExpandStatus(item.id)"
+            >
+              <svg
+                class="text-grey-7"
+                height="32"
+                viewBox="0 0 24 24"
+                width="32"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" fill="currentColor" />
               </svg>
             </q-btn>
           </span>
           <span v-else style="display: inline-block; width: 40px; margin-left: -5px"></span>
-          <RouterLink style="text-decoration: none" target="_blank" :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`" class="text-blue-6">
+          <RouterLink
+            class="text-blue-6"
+            style="text-decoration: none"
+            target="_blank"
+            :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`"
+          >
             {{ item.name }}
           </RouterLink>
         </td>
@@ -266,13 +284,31 @@ export default {
         <td class="text-blue-6">
           <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
           <span style="display: inline-block; width: 40px; margin-left: -5px">
-            <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''" @click="changeExpandStatus(item.id)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
-                <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
+            <q-btn
+              dense
+              flat
+              round
+              class="expand-btn"
+              :class="expandStatus ? 'expanded' : ''"
+              @click="changeExpandStatus(item.id)"
+            >
+              <svg
+                class="text-grey-7"
+                height="32"
+                viewBox="0 0 24 24"
+                width="32"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" fill="currentColor" />
               </svg>
             </q-btn>
           </span>
-          <RouterLink style="text-decoration: none" target="_blank" :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`" class="text-blue-6">
+          <RouterLink
+            class="text-blue-6"
+            style="text-decoration: none"
+            target="_blank"
+            :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`"
+          >
             {{ item.name }}
           </RouterLink>
         </td>
@@ -288,7 +324,7 @@ export default {
       :class="
         props.config.hide_categories ? ''
         : expandAccountsProps && expandStatus ? ''
-        : 'hidden'
+          : 'hidden'
       "
     >
       <!-- {{ showTotalObject.length }} -->
@@ -298,7 +334,12 @@ export default {
           <span v-for="num in props.level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         </span>
         <span v-else><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
-        <RouterLink target="_blank" style="text-decoration: none" :to="`/${$route.params.company}/account/${activeObject.account_id}/view/`" class="text-blue-7 text-italic text-weight-regular">
+        <RouterLink
+          class="text-blue-7 text-italic text-weight-regular"
+          style="text-decoration: none"
+          target="_blank"
+          :to="`/${$route.params.company}/account/${activeObject.account_id}/view/`"
+        >
           {{ activeObject.name }}
         </RouterLink>
       </td>
@@ -306,7 +347,9 @@ export default {
         <td v-if="activeObject.data[index]">
           {{ calculateNet(activeObject.data[index]) }}
         </td>
-        <td v-else>0</td>
+        <td v-else>
+          0
+        </td>
       </template>
       <!-- <td v-for="(periodData, index) in activeObject.data" :key="index"></td> -->
     </tr>
@@ -335,7 +378,19 @@ export default {
         </template> -->
   </template>
   <template v-if="item.children && item.children.length">
-    <BalanceSheetTableNode v-for="(child, index) in item.children" :key="child.id" :item="child" :index="index" :level="props.level + 1" :accounts="props.accounts" :category_accounts="props.category_accounts" :config="props.config" :expand-accounts-props="expandAccountsProps && expandStatus" :is-asset="props.isAsset" @update-total="onUpdateTotal" />
+    <BalanceSheetTableNode
+      v-for="(child, index) in item.children"
+      :key="child.id"
+      :accounts="props.accounts"
+      :category_accounts="props.category_accounts"
+      :config="props.config"
+      :expand-accounts-props="expandAccountsProps && expandStatus"
+      :index="index"
+      :is-asset="props.isAsset"
+      :item="child"
+      :level="props.level + 1"
+      @update-total="onUpdateTotal"
+    />
   </template>
 </template>
 

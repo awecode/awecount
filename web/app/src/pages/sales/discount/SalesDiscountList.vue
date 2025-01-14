@@ -50,12 +50,35 @@ export default {
 <template>
   <div class="q-pa-md">
     <div v-if="checkPermissions('salesdiscount.delete')" class="row q-gutter-x-md justify-end">
-      <q-btn color="green" :to="`/${$route.params.company}/sales-discount/create/`" label="New sales discount" icon-right="add" class="add-btn" />
+      <q-btn
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="New sales discount"
+        :to="`/${$route.params.company}/sales-discount/create/`"
+      />
     </div>
-    <q-table v-model:pagination="pagination" title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      title="Income Items"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
       <template #top>
         <div class="search-bar">
-          <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
+          <q-input
+            v-model="searchQuery"
+            dense
+            class="full-width search-input"
+            debounce="500"
+            placeholder="Search"
+          >
             <template #append>
               <q-icon name="search" />
             </template>
@@ -64,7 +87,9 @@ export default {
             <q-menu>
               <div class="menu-wrapper" style="width: min(500px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                  <h6 class="q-ma-md text-grey-9">
+                    Filters
+                  </h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-ma-sm">
@@ -75,8 +100,18 @@ export default {
                   </div>
                 </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate" />
-                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters" />
+                  <q-btn
+                    class="f-submit-btn"
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  />
+                  <q-btn
+                    class="f-reset-btn"
+                    color="red"
+                    icon="close"
+                    @click="resetFilters"
+                  />
                 </div>
               </div>
             </q-menu>
@@ -91,12 +126,24 @@ export default {
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('salesdiscount.modify')" color="orange-6" label="Edit" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/${$route.params.company}/sales-discount/${props.row.id}/`" />
+          <q-btn
+            v-if="checkPermissions('salesdiscount.modify')"
+            class="q-py-none q-px-md font-size-sm l-edit-btn"
+            color="orange-6"
+            label="Edit"
+            style="font-size: 12px"
+            :to="`/${$route.params.company}/sales-discount/${props.row.id}/`"
+          />
         </q-td>
       </template>
       <template #body-cell-name="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('salesdiscount.modify')" :to="`/${$route.params.company}/sales-discount/${props.row.id}/`" style="font-weight: 500; text-decoration: none" class="text-blue">
+          <router-link
+            v-if="checkPermissions('salesdiscount.modify')"
+            class="text-blue"
+            style="font-weight: 500; text-decoration: none"
+            :to="`/${$route.params.company}/sales-discount/${props.row.id}/`"
+          >
             {{ props.row.name }}
           </router-link>
           <span v-else>{{ props.row.name }}</span>

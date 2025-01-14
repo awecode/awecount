@@ -81,7 +81,7 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
 
 <template>
   <div>
-    <q-form class="q-pa-lg print-hide" autofocus>
+    <q-form autofocus class="q-pa-lg print-hide">
       <q-card>
         <q-card-section class="bg-green text-white">
           <div class="text-h6">
@@ -96,13 +96,17 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
           <q-card-section>
             <div class="grid md:grid-cols-2 q-col-gutter-md q-mb-sm">
               <div class="col-6 row">
-                <div class="col-6">Voucher No</div>
+                <div class="col-6">
+                  Voucher No
+                </div>
                 <div class="col-6">
                   {{ fields?.voucher_no || '-' }}
                 </div>
               </div>
               <div class="col-6 row">
-                <div class="col-6">Date</div>
+                <div class="col-6">
+                  Date
+                </div>
                 <div class="col-6">
                   {{ store.isCalendarInAD ? fields?.date : DateConverter.getRepresentation(fields?.date, 'bs') }}
                 </div>
@@ -116,11 +120,21 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
         <q-card-section class="min-w-[650px]">
           <!-- Head -->
           <div class="row q-col-gutter-md text-grey-9">
-            <div class="col-2">SN</div>
-            <div class="col-2">Type</div>
-            <div class="col-grow">Account</div>
-            <div class="col-2">Dr Amount</div>
-            <div class="col-2">Cr Amount</div>
+            <div class="col-2">
+              SN
+            </div>
+            <div class="col-2">
+              Type
+            </div>
+            <div class="col-grow">
+              Account
+            </div>
+            <div class="col-2">
+              Dr Amount
+            </div>
+            <div class="col-2">
+              Cr Amount
+            </div>
           </div>
 
           <!-- Body -->
@@ -151,7 +165,9 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
           <div class="row q-col-gutter-md text-bold q-mt-md">
             <div class="col-2"></div>
             <div class="col-2"></div>
-            <div class="col-grow">Total</div>
+            <div class="col-grow">
+              Total
+            </div>
             <div class="col-2">
               {{ $nf(getTotalDrAmount) }}
             </div>
@@ -166,7 +182,9 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
         <q-card-section>
           <div class="row">
             <div class="col-9 row text-grey-8">
-              <div class="col-6">Narration</div>
+              <div class="col-6">
+                Narration
+              </div>
               <div class="col-6">
                 {{ fields?.narration || '-' }}
               </div>
@@ -176,10 +194,23 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
       </q-card>
       <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
         <div>
-          <q-btn v-if="checkPermissions('journalvoucher.modify') && fields?.status !== 'Cancelled'" :to="`/${$route.params.company}/journal-voucher/${props.id}/edit/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
+          <q-btn
+            v-if="checkPermissions('journalvoucher.modify') && fields?.status !== 'Cancelled'"
+            class="text-h7 q-py-sm"
+            color="orange"
+            icon="edit"
+            label="Edit"
+            :to="`/${$route.params.company}/journal-voucher/${props.id}/edit/`"
+          />
         </div>
         <div v-if="fields?.status == 'Approved' && checkPermissions('journalvoucher.cancel')">
-          <q-btn color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" @click.prevent="isDeleteOpen = true" />
+          <q-btn
+            class="text-h7 q-py-sm"
+            color="red"
+            icon="block"
+            label="Cancel"
+            @click.prevent="isDeleteOpen = true"
+          />
         </div>
       </div>
     </q-form>
@@ -198,20 +229,27 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
 
         <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end">
           <div style="margin-bottom: 5px">
-            <img v-if="store?.companyInfo.logo_url" :src="store?.companyInfo.logo_url" alt="Compony Logo" style="height: 70px; max-width: 200px; object-fit: contain" />
+            <img
+              v-if="store?.companyInfo.logo_url"
+              alt="Compony Logo"
+              style="height: 70px; max-width: 200px; object-fit: contain"
+              :src="store?.companyInfo.logo_url"
+            />
           </div>
           <div style="display: flex; align-items: center">
-            <img src="/icons/telephone-fill.svg" alt="Email" style="margin-right: 10px; width: 14px" />
+            <img alt="Email" src="/icons/telephone-fill.svg" style="margin-right: 10px; width: 14px" />
             <span style="color: skyblue">{{ store?.companyInfo.contact_no }}</span>
           </div>
           <div v-if="store?.companyInfo?.emails?.length > 0" style="display: flex; align-items: center">
-            <img src="/icons/envelope-fill.svg" alt="Call" style="margin-right: 10px; width: 14px" />
+            <img alt="Call" src="/icons/envelope-fill.svg" style="margin-right: 10px; width: 14px" />
             <span style="color: skyblue">{{ store?.companyInfo.emails && store.companyInfo.emails.length ? store.companyInfo.emails.join(',&nbsp;') : '' }}</span>
           </div>
         </div>
       </div>
       <hr style="margin: 20px 0" />
-      <div class="text-center text-bold text-subtitle1 q-mb-md">Journal Voucher</div>
+      <div class="text-center text-bold text-subtitle1 q-mb-md">
+        Journal Voucher
+      </div>
       <div class="row justify-between">
         <div>Date: {{ fields?.date || '-' }}</div>
         <div>J.V. No.: {{ fields?.voucher_no }}</div>
@@ -219,13 +257,27 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
       <table class="w-full text-center text-xs">
         <thead>
           <tr class="text-bold">
-            <th class="col-one">SN</th>
-            <th class="col-two">Type</th>
-            <th class="col-three">Code</th>
-            <th class="col-four">Account</th>
-            <th class="col-five">Acc. Sheet No</th>
-            <th class="col-six">Debit</th>
-            <th class="col-seven">Credit</th>
+            <th class="col-one">
+              SN
+            </th>
+            <th class="col-two">
+              Type
+            </th>
+            <th class="col-three">
+              Code
+            </th>
+            <th class="col-four">
+              Account
+            </th>
+            <th class="col-five">
+              Acc. Sheet No
+            </th>
+            <th class="col-six">
+              Debit
+            </th>
+            <th class="col-seven">
+              Credit
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -245,7 +297,9 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
         </tbody>
         <tfoot>
           <tr class="text-bold q-mt-md">
-            <td colspan="5">Total</td>
+            <td colspan="5">
+              Total
+            </td>
 
             <td>{{ $nf(getTotalDrAmount) }}</td>
             <td>{{ $nf(getTotalCrAmount) }}</td>
@@ -260,20 +314,26 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
 
       <div class="row q-mt-md">
         <div class="col" style="line-height: 160%">
-          <div class="underline">Prepared By</div>
+          <div class="underline">
+            Prepared By
+          </div>
           <div>Name : {{ store?.userInfo.fullName }}</div>
           <div>Designation:</div>
           <div>Date : {{ today }}</div>
         </div>
         <div class="col" style="line-height: 160%">
-          <div class="underline">Checked By</div>
+          <div class="underline">
+            Checked By
+          </div>
           <div>Name:</div>
           <div>Designation:</div>
           <div>Date:</div>
         </div>
 
         <div class="col" style="line-height: 160%">
-          <div class="underline">Approved By</div>
+          <div class="underline">
+            Approved By
+          </div>
           <div>Name:</div>
           <div>Designation:</div>
           <div>Date:</div>
@@ -286,10 +346,24 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
           <div class="text-h6 text-white">
             <span>Confirm Cancellation?</span>
           </div>
-          <q-btn v-close-popup icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense />
+          <q-btn
+            v-close-popup
+            dense
+            flat
+            round
+            class="text-red-700 bg-slate-200 opacity-95"
+            icon="close"
+          />
         </q-card-section>
         <q-card-section class="q-ma-md">
-          <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message" />
+          <q-input
+            v-model="deleteMsg"
+            autofocus
+            outlined
+            type="textarea"
+            :error="!!errors?.message"
+            :error-message="errors?.message"
+          />
           <div class="text-right q-mt-lg">
             <q-btn label="Confirm" @click="onCancelClick" />
           </div>

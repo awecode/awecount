@@ -41,14 +41,14 @@ export default {
         remove: true,
         label: 'Total Sales',
         align: 'left',
-        field: (row) => row.voucher_meta.sub_total_after_row_discounts,
+        field: row => row.voucher_meta.sub_total_after_row_discounts,
       },
       {
         name: 'non_taxable_sales',
         remove: true,
         label: 'Non Taxable Sales',
         align: 'left',
-        field: (row) => row.voucher_meta.non_taxable,
+        field: row => row.voucher_meta.non_taxable,
       },
       {
         name: 'export_sales',
@@ -81,8 +81,8 @@ export default {
     const onDownloadXls = () => {
       const downloadEndpoint = route.fullPath.slice(route.fullPath.indexOf('?'))
       useApi(`/api/company/${route.params.company}/sales-book/export${downloadEndpoint}`)
-        .then((data) => usedownloadFile(data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Sales Book'))
-        .catch((err) => console.log('Error Due To', err))
+        .then(data => usedownloadFile(data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Sales Book'))
+        .catch(err => console.log('Error Due To', err))
     }
     return {
       ...listData,
@@ -96,18 +96,45 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <q-table v-model:pagination="pagination" title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      title="Income Items"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
       <template #top>
         <div class="row q-col-gutter-md full-width" style="justify-content: space-between">
           <div class="row items-center q-gutter-x-md">
-            <DateRangePicker v-model:start-date="filters.start_date" v-model:end-date="filters.end_date" :hide-btns="true" />
+            <DateRangePicker v-model:end-date="filters.end_date" v-model:start-date="filters.start_date" :hide-btns="true" />
             <div class="flex gap-4 items-center">
-              <q-btn class="f-submit-btn" label="Filter" color="green" @click="onFilterUpdate" />
-              <q-btn v-if="filters.start_date || filters.end_date" class="f-reset-btn" icon="close" color="red" @click="resetFilters" />
+              <q-btn
+                class="f-submit-btn"
+                color="green"
+                label="Filter"
+                @click="onFilterUpdate"
+              />
+              <q-btn
+                v-if="filters.start_date || filters.end_date"
+                class="f-reset-btn"
+                color="red"
+                icon="close"
+                @click="resetFilters"
+              />
             </div>
           </div>
           <div v-if="aggregate" class="row items-center">
-            <q-btn label="Export Xls" color="blue" icon-right="download" @click="onDownloadXls" />
+            <q-btn
+              color="blue"
+              icon-right="download"
+              label="Export Xls"
+              @click="onDownloadXls"
+            />
           </div>
         </div>
       </template>
@@ -115,7 +142,12 @@ export default {
       <template #body-cell-voucher_no="props">
         <q-td :props="props">
           <div class="row align-center">
-            <router-link v-if="checkPermissions('sales.view')" style="font-weight: 500; text-decoration: none" class="text-blue l-view-btn" :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view`">
+            <router-link
+              v-if="checkPermissions('sales.view')"
+              class="text-blue l-view-btn"
+              style="font-weight: 500; text-decoration: none"
+              :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view`"
+            >
               {{ props.row.voucher_no }}
             </router-link>
             <span v-else>{{ props.row.voucher_no }}</span>
@@ -124,12 +156,22 @@ export default {
       </template>
       <template #header="props">
         <q-tr>
-          <q-th colspan="4" style="text-align: center">Invoice</q-th>
-          <q-th rowspan="2" style="text-align: center">Total Sales</q-th>
-          <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">Non Taxable Sales</q-th>
-          <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">Export Sales</q-th>
+          <q-th colspan="4" style="text-align: center">
+            Invoice
+          </q-th>
+          <q-th rowspan="2" style="text-align: center">
+            Total Sales
+          </q-th>
+          <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">
+            Non Taxable Sales
+          </q-th>
+          <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">
+            Export Sales
+          </q-th>
           <!-- <q-th rowspan="2" style="text-align: center">Discount</q-th> -->
-          <q-th rowspan="1" colspan="2" style="text-align: center">Taxable Sales</q-th>
+          <q-th colspan="2" rowspan="1" style="text-align: center">
+            Taxable Sales
+          </q-th>
         </q-tr>
         <q-tr>
           <q-th v-for="header in props.cols" :key="header.name" :style="header.remove === true ? { display: 'none' } : ''">
@@ -142,7 +184,9 @@ export default {
     <q-card v-if="aggregate" class="q-mt-md">
       <q-card-section>
         <div>
-          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">Aggregate Report for Filtered Data</h5>
+          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">
+            Aggregate Report for Filtered Data
+          </h5>
         </div>
         <hr />
         <div class="q-mt-md">

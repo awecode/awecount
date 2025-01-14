@@ -87,7 +87,7 @@ export default {
       () => formData.fields.value.party,
       (newValue) => {
         if (newValue) {
-          const index = formData.formDefaults.value.collections?.parties.results.findIndex((option) => option.id === newValue)
+          const index = formData.formDefaults.value.collections?.parties.results.findIndex(option => option.id === newValue)
           if (index > -1) {
             formData.fields.value.address = formData.formDefaults.value.collections.parties.results[index].address
           }
@@ -114,7 +114,7 @@ export default {
 </script>
 
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <q-form autofocus class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -129,22 +129,78 @@ export default {
         <q-card-section>
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
-              <n-auto-complete-v2 v-model="fields.party" :options="formDefaults.collections?.parties" label="Party *" :endpoint="`/api/company/${$route.params.company}/purchase-order/create-defaults/parties`" :static-option="fields.selected_party_obj" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('party.create') ? PartyForm : null" />
+              <n-auto-complete-v2
+                v-model="fields.party"
+                label="Party *"
+                :endpoint="`/api/company/${$route.params.company}/purchase-order/create-defaults/parties`"
+                :error="errors?.party ? errors?.party : null"
+                :modal-component="checkPermissions('party.create') ? PartyForm : null"
+                :options="formDefaults.collections?.parties"
+                :static-option="fields.selected_party_obj"
+              />
               <div></div>
             </div>
-            <DatePicker v-model="fields.date" class="col-md-6 col-12" label="Date *" :error="!!errors?.date" :error-message="errors?.date" />
+            <DatePicker
+              v-model="fields.date"
+              class="col-md-6 col-12"
+              label="Date *"
+              :error="!!errors?.date"
+              :error-message="errors?.date"
+            />
           </div>
         </q-card-section>
       </q-card>
-      <ChallanTable v-if="formDefaults.collections" v-model="fields.rows" :item-options="formDefaults.collections ? formDefaults.collections.items : null" used-in="purchase-order" :unit-options="formDefaults.collections ? formDefaults.collections.units : null" :errors="!!errors.rows ? errors.rows : null" :is-edit="isEdit" @delete-row="(index, deleteObj) => deleteRow(index, errors, deleteObj)" />
+      <ChallanTable
+        v-if="formDefaults.collections"
+        v-model="fields.rows"
+        used-in="purchase-order"
+        :errors="!!errors.rows ? errors.rows : null"
+        :is-edit="isEdit"
+        :item-options="formDefaults.collections ? formDefaults.collections.items : null"
+        :unit-options="formDefaults.collections ? formDefaults.collections.units : null"
+        @delete-row="(index, deleteObj) => deleteRow(index, errors, deleteObj)"
+      />
       <div class="q-px-md">
-        <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10" :error="!!errors?.remarks" :error-message="errors?.remarks" />
+        <q-input
+          v-model="fields.remarks"
+          autogrow
+          class="col-12 col-md-10"
+          label="Remarks"
+          type="textarea"
+          :error="!!errors?.remarks"
+          :error-message="errors?.remarks"
+        />
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
-        <q-btn v-if="checkPermissions('challan.create') && isEdit && fields.status === 'Issued'" :to="`/${$route.params.company}/purchase-voucher/create/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`" color="blue" label="Issue Purchase Voucher" :loading="loading" />
-        <q-btn v-if="checkPermissions('purchaseorder.cancel') && isEdit && fields.status === 'Issued'" :loading="loading" color="red" label="Cancel" icon="cancel" @click.prevent="isDeleteOpen = true" />
-        <q-btn v-if="checkPermissions('purchaseorder.modify') && isEdit && fields.status === 'Issued'" :loading="loading" color="green" label="Update" @click.prevent="onSubmitClick('Issued')" />
-        <q-btn v-if="checkPermissions('purchaseorder.create') && !isEdit" :loading="loading" color="green" label="Issue" @click.prevent="onSubmitClick('Issued')" />
+        <q-btn
+          v-if="checkPermissions('challan.create') && isEdit && fields.status === 'Issued'"
+          color="blue"
+          label="Issue Purchase Voucher"
+          :loading="loading"
+          :to="`/${$route.params.company}/purchase-voucher/create/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`"
+        />
+        <q-btn
+          v-if="checkPermissions('purchaseorder.cancel') && isEdit && fields.status === 'Issued'"
+          color="red"
+          icon="cancel"
+          label="Cancel"
+          :loading="loading"
+          @click.prevent="isDeleteOpen = true"
+        />
+        <q-btn
+          v-if="checkPermissions('purchaseorder.modify') && isEdit && fields.status === 'Issued'"
+          color="green"
+          label="Update"
+          :loading="loading"
+          @click.prevent="onSubmitClick('Issued')"
+        />
+        <q-btn
+          v-if="checkPermissions('purchaseorder.create') && !isEdit"
+          color="green"
+          label="Issue"
+          :loading="loading"
+          @click.prevent="onSubmitClick('Issued')"
+        />
       </div>
     </q-card>
     <q-dialog v-model="isDeleteOpen" @before-hide="delete errors?.message">
@@ -153,11 +209,25 @@ export default {
           <div class="text-h6 text-white">
             <span>Confirm Cancellation?</span>
           </div>
-          <q-btn v-close-popup icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense />
+          <q-btn
+            v-close-popup
+            dense
+            flat
+            round
+            class="text-red-700 bg-slate-200 opacity-95"
+            icon="close"
+          />
         </q-card-section>
 
         <q-card-section class="q-ma-md">
-          <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message" />
+          <q-input
+            v-model="deleteMsg"
+            autofocus
+            outlined
+            type="textarea"
+            :error="!!errors?.message"
+            :error-message="errors?.message"
+          />
           <div class="text-right q-mt-lg">
             <q-btn label="Confirm" @click="onCancelClick" />
           </div>

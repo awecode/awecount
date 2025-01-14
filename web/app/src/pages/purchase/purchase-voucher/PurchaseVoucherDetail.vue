@@ -159,13 +159,17 @@ export default {
         <q-card class="q-mx-lg q-pa-lg row text-grey-8 text-body2">
           <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
             <div class="col-12 col-md-6 row">
-              <div class="col-6">Party</div>
+              <div class="col-6">
+                Party
+              </div>
               <div class="col-6">
                 {{ fields?.party_name }}
               </div>
             </div>
             <div class="col-12 col-md-6 row">
-              <div class="col-6">Status</div>
+              <div class="col-6">
+                Status
+              </div>
               <div class="col-6">
                 {{ fields?.status }}
               </div>
@@ -173,13 +177,17 @@ export default {
           </div>
           <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
             <div class="col-12 col-md-6 row">
-              <div class="col-6">Date</div>
+              <div class="col-6">
+                Date
+              </div>
               <div class="col-6">
                 {{ getDate }}
               </div>
             </div>
             <div class="col-12 col-md-6 row">
-              <div class="col-6">Payment Mode</div>
+              <div class="col-6">
+                Payment Mode
+              </div>
               <div class="col-6">
                 {{ fields?.payment_mode ?? 'Credit' }}
               </div>
@@ -187,7 +195,9 @@ export default {
           </div>
           <div v-if="discountComputed" class="col-12 col-md-6 q-gutter-y-lg">
             <div class="col-12 col-md-6 row">
-              <div class="col-6">Discount</div>
+              <div class="col-6">
+                Discount
+              </div>
               <div class="col-6">
                 {{ discountComputed }}
               </div>
@@ -195,7 +205,9 @@ export default {
           </div>
           <div v-if="fields.purchase_order_numbers && fields.purchase_order_numbers.length > 0" class="col-12 col-md-6 q-gutter-y-lg">
             <div class="col-12 col-md-6 row">
-              <div class="col-6">Purchase Order(s)</div>
+              <div class="col-6">
+                Purchase Order(s)
+              </div>
               <div class="col-6">
                 {{ fields.purchase_order_numbers.join(',') }}
               </div>
@@ -216,12 +228,38 @@ export default {
       </q-card>
       <div v-if="fields" class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none">
         <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-          <q-btn v-if="checkPermissions('purchasevoucher.modify')" color="orange-5" label="Edit" icon="edit" :to="`/${$route.params.company}/purchase-voucher/${fields?.id}/`" />
-          <q-btn v-if="fields?.status === 'Issued' && checkPermissions('purchasevoucher.modify')" color="green-6" label="mark as paid" :loading="isLoading" icon="mdi-check-all" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" />
-          <q-btn v-if="checkPermissions('purchasevoucher.modify')" color="red-5" label="Cancel" icon="cancel" :loading="isLoading" @click.prevent="() => (isDeleteOpen = true)" />
+          <q-btn
+            v-if="checkPermissions('purchasevoucher.modify')"
+            color="orange-5"
+            icon="edit"
+            label="Edit"
+            :to="`/${$route.params.company}/purchase-voucher/${fields?.id}/`"
+          />
+          <q-btn
+            v-if="fields?.status === 'Issued' && checkPermissions('purchasevoucher.modify')"
+            color="green-6"
+            icon="mdi-check-all"
+            label="mark as paid"
+            :loading="isLoading"
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
+          />
+          <q-btn
+            v-if="checkPermissions('purchasevoucher.modify')"
+            color="red-5"
+            icon="cancel"
+            label="Cancel"
+            :loading="isLoading"
+            @click.prevent="() => (isDeleteOpen = true)"
+          />
         </div>
         <div>
-          <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7" label="Journal Entries" icon="books" :to="`/${$route.params.company}/journal-entries/purchase-vouchers/${fields?.id}/`" />
+          <q-btn
+            v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
+            color="blue-7"
+            icon="books"
+            label="Journal Entries"
+            :to="`/${$route.params.company}/journal-entries/purchase-vouchers/${fields?.id}/`"
+          />
         </div>
       </div>
       <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}">
@@ -230,11 +268,25 @@ export default {
             <div class="text-h6 text-white">
               <span>Confirm Cancellation?</span>
             </div>
-            <q-btn v-close-popup icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense />
+            <q-btn
+              v-close-popup
+              dense
+              flat
+              round
+              class="text-red-700 bg-slate-200 opacity-95"
+              icon="close"
+            />
           </q-card-section>
 
           <q-card-section class="q-ma-md">
-            <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message" />
+            <q-input
+              v-model="deleteMsg"
+              autofocus
+              outlined
+              type="textarea"
+              :error="!!errors?.message"
+              :error-message="errors?.message"
+            />
             <div class="text-right q-mt-lg">
               <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')" />
             </div>

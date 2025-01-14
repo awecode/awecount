@@ -63,13 +63,36 @@ export default {
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('bankcashdeposit.create')" color="green" :to="`/${$route.params.company}/cash-deposit/create/`" label="New Cash Deposit" class="add-btn" icon-right="add" />
+      <q-btn
+        v-if="checkPermissions('bankcashdeposit.create')"
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="New Cash Deposit"
+        :to="`/${$route.params.company}/cash-deposit/create/`"
+      />
     </div>
 
-    <q-table v-model:pagination="pagination" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
       <template #top>
         <div class="search-bar">
-          <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
+          <q-input
+            v-model="searchQuery"
+            dense
+            class="full-width search-input"
+            debounce="500"
+            placeholder="Search"
+          >
             <template #append>
               <q-icon name="search" />
             </template>
@@ -78,14 +101,26 @@ export default {
             <q-menu>
               <div class="menu-wrapper" style="width: min(550px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                  <h6 class="q-ma-md text-grey-9">
+                    Filters
+                  </h6>
                 </div>
                 <div class="q-mx-md">
-                  <DateRangePicker v-model:start-date="filters.start_date" v-model:end-date="filters.end_date" />
+                  <DateRangePicker v-model:end-date="filters.end_date" v-model:start-date="filters.start_date" />
                 </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate" />
-                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters" />
+                  <q-btn
+                    class="f-submit-btn"
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  />
+                  <q-btn
+                    class="f-reset-btn"
+                    color="red"
+                    icon="close"
+                    @click="resetFilters"
+                  />
                 </div>
               </div>
             </q-menu>
@@ -97,12 +132,12 @@ export default {
           <div class="row align-center justify-center">
             <div
               class="text-white text-subtitle row items-center justify-center"
+              style="border-radius: 8px; padding: 2px 10px"
               :class="
                 props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
                 : props.row.status == 'Cleared' ? 'bg-green-2 text-green-10'
-                : 'bg-red-2 text-red-10'
+                  : 'bg-red-2 text-red-10'
               "
-              style="border-radius: 8px; padding: 2px 10px"
             >
               {{ props.row.status }}
             </div>
@@ -111,7 +146,14 @@ export default {
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('bankcashdeposit.modify')" label="Edit" color="orange-6" class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/${$route.params.company}/cash-deposit/${props.row.id}/`" />
+          <q-btn
+            v-if="checkPermissions('bankcashdeposit.modify')"
+            class="q-py-none q-px-md font-size-sm"
+            color="orange-6"
+            label="Edit"
+            style="font-size: 12px"
+            :to="`/${$route.params.company}/cash-deposit/${props.row.id}/`"
+          />
         </q-td>
       </template>
     </q-table>

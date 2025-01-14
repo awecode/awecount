@@ -1,7 +1,8 @@
-type VoucherType = 'salesVoucher' | 'creditNote' | 'debitNote'
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 import numberToText from '../numToText'
-import DateConverter from 'src/components/date/VikramSamvat.js'
+
+type VoucherType = 'salesVoucher' | 'creditNote' | 'debitNote'
 
 export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boolean, invoiceInfo: object, hideRowQuantity: boolean): string {
   const loginStore: Record<string, string | number | object> = useLoginStore()
@@ -10,7 +11,7 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
   let taxIndex: number | null = null
   const formatRowDescription = (str: string) => {
     const dataArray = str.split('\n')
-    const htmlArray = dataArray.map((data) => `<div>${data}</div>`)
+    const htmlArray = dataArray.map(data => `<div>${data}</div>`)
     return htmlArray.join(' ')
   }
   const tableRow = (rows: Array<object>): string => {
@@ -28,7 +29,7 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
       <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;">${index + 1}</th>
       <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;">${row.hs_code ?? ''}  </th>
       <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px;">${row.item_name}<br><div style="font-size: 12px; ${row.description ? '' : 'display: none;'}" class="text-grey-8; padding:5px">${row.description ? formatRowDescription(row.description) : ''}</div></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${hideRowQuantity ? 'display: none' : ''}">${row.quantity + `<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name}</span>`}</span></th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${hideRowQuantity ? 'display: none' : ''}">${`${row.quantity}<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name}</span>`}</span></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${hideRowQuantity ? 'display: none' : ''}">${$nf(row.rate)}</span></th>
       <th style="text-align: right; font-weight: 400; padding:5px;">${formatNumberWithComma(row.quantity * row.rate)}</th>
     </tr>
@@ -59,9 +60,11 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
     <img src="${compayInfo.logo_url}" alt="Compony Logo" style="height: 110px; object-fit: contain; max-width:160px; position: absolute; ${compayInfo.logo_url ? '' : 'display: none;'} ${compayInfo.invoice_template == 3 ? 'left: 40px;' : ''}" />
   <div style="text-align:center; padding-left: 10px;">
     <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 700;">${compayInfo.name} ${
-      compayInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.'
-      : ['public_limited', 'corporation'].includes(compayInfo.organization_type) ? 'Ltd.'
-      : ''
+      compayInfo.organization_type === 'private_limited'
+        ? ' Pvt. Ltd.'
+        : ['public_limited', 'corporation'].includes(compayInfo.organization_type)
+            ? 'Ltd.'
+            : ''
     }</h1>
       <div>${compayInfo.address}</div>
       <div style="font-size: 14px;">
@@ -102,9 +105,11 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
       header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
     <div>
       <h1 style="margin: 5px 0; font-size: 35px; font-weight: 700;">${compayInfo.name} ${
-        compayInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.'
-        : ['public_limited', 'corporation'].includes(compayInfo.organization_type) ? 'Ltd.'
-        : ''
+        compayInfo.organization_type === 'private_limited'
+          ? ' Pvt. Ltd.'
+          : ['public_limited', 'corporation'].includes(compayInfo.organization_type)
+              ? 'Ltd.'
+              : ''
       }</h1>
       <div>${compayInfo.address}</div>
       <div>Tax Reg. No. <strong>${compayInfo.tax_registration_number}</strong></div>
@@ -159,9 +164,9 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
   <div style="display: flex; justify-content: space-between; align-items: center; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9; border-top: none; padding: 20px; padding-top: 0;">
       <div>
       ${
-        voucherType === 'creditNote' || voucherType === 'debitNote' ?
-          ''
-        : `<div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
+        voucherType === 'creditNote' || voucherType === 'debitNote'
+          ? ''
+          : `<div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
       <div>${numberToText(invoiceInfo.voucher_meta.grand_total)}</div>`
       }
       </div>
@@ -174,11 +179,11 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">${
-            sameTax ?
-              [2, 3].includes(compayInfo.invoice_template) ?
-                `${invoiceInfo.rows[taxIndex].tax_scheme.rate} % ` + `${invoiceInfo.rows[taxIndex].tax_scheme.name}`
-              : `${invoiceInfo.rows[taxIndex].tax_scheme.name} ` + `${invoiceInfo.rows[taxIndex].tax_scheme.rate} %`
-            : 'TAX'
+            sameTax
+              ? [2, 3].includes(compayInfo.invoice_template)
+                  ? `${invoiceInfo.rows[taxIndex].tax_scheme.rate} % ` + `${invoiceInfo.rows[taxIndex].tax_scheme.name}`
+                  : `${invoiceInfo.rows[taxIndex].tax_scheme.name} ` + `${invoiceInfo.rows[taxIndex].tax_scheme.rate} %`
+              : 'TAX'
           }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
@@ -204,10 +209,13 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
     "
   >
     <h4 style="margin: 0; font-size: 1.4rem">${
-      invoiceInfo.status === 'Issued' || invoiceInfo.status === 'Paid' || invoiceInfo.status === 'Partially Paid' ? 'TAX INVOICE'
-      : invoiceInfo.status === 'Draft' ? 'PRO FORMA INVOICE'
-      : invoiceInfo.status === 'Cancelled' ? 'TAX INVOICE (CANCELLED)'
-      : ''
+      invoiceInfo.status === 'Issued' || invoiceInfo.status === 'Paid' || invoiceInfo.status === 'Partially Paid'
+        ? 'TAX INVOICE'
+        : invoiceInfo.status === 'Draft'
+          ? 'PRO FORMA INVOICE'
+          : invoiceInfo.status === 'Cancelled'
+            ? 'TAX INVOICE (CANCELLED)'
+            : ''
     }</h4>
   </div>
   <div style="text-align:center; ${invoiceInfo.print_count > 1 && ['Issued', 'Paid', 'Partially Paid'].includes(invoiceInfo.status) ? '' : 'display: none'}">
@@ -234,9 +242,11 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
       </div>
       <div>
       <span><span style="font-weight: 600; color: grey;">Mode: </span></span> ${invoiceInfo.mode} ${
-        invoiceInfo.status === 'Draft' ? '(Draft)'
-        : invoiceInfo.status === 'Paid' ? '(Paid)'
-        : ''
+        invoiceInfo.status === 'Draft'
+          ? '(Draft)'
+          : invoiceInfo.status === 'Paid'
+            ? '(Paid)'
+            : ''
       }
       </div>
     </div>
@@ -250,11 +260,13 @@ ${table}
     Generated by ${loginStore.username} for ${loginStore.companyInfo.name} ${loginStore.companyInfo.organization_type === 'private_limited' ? 'Private Limited' : ''}.
   </div>
   ${
-    onlyBody ? '' : (
-      `<div>
+    onlyBody
+      ? ''
+      : (
+          `<div>
   This is a computer generated invoice, produced using awecount.com - IRD Approval No. 7600405
   </div>`
-    )
+        )
   }
 </div>
 `
@@ -304,14 +316,16 @@ ${table}
       Generated by ${loginStore.username} for ${loginStore.companyInfo.name} ${loginStore.companyInfo.organization_type === 'private_limited' ? 'Private Limited' : ''}
     </div>
     ${
-      onlyBody ? '' : (
-        `
+      onlyBody
+        ? ''
+        : (
+            `
     <div>
       This is a computer generated invoice, produced using awecount.com - IRD
       Approval No. 7600405
     </div>
     `
-      )
+          )
     }
   </div>
 `

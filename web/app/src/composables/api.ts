@@ -27,9 +27,11 @@ const handleTrailingSlash = (url: string, trailingSlash?: boolean) => {
 
   const hasTrailingSlash = url.endsWith('/')
   return (
-    hasTrailingSlash === trailingSlash ? url
-    : trailingSlash ? `${url}/`
-    : url.slice(0, -1)
+    hasTrailingSlash === trailingSlash
+      ? url
+      : trailingSlash
+        ? `${url}/`
+        : url.slice(0, -1)
   )
 }
 
@@ -69,7 +71,7 @@ export const useAPI = <T = any, R extends ResponseType = 'json'>(request: FetchR
 
       // Handle unauthorized/forbidden responses based on config
       if (_protected && config.api.unauthorized) {
-        const { statusCodes, strategy, redirect } = config.api.unauthorized as { statusCodes: number[]; strategy: 'redirect' | 'error'; redirect?: RouteLocationRaw }
+        const { statusCodes, strategy, redirect } = config.api.unauthorized as { statusCodes: number[], strategy: 'redirect' | 'error', redirect?: RouteLocationRaw }
 
         if (statusCodes.includes(ctx.response.status)) {
           if (strategy === 'redirect' && redirect) {

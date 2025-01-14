@@ -69,7 +69,7 @@ export default {
           formLoading.value = false
         })
     }
-    watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
+    watch(formData.formDefaults, newValue => (fields.value = newValue.fields))
     const onupdateErrors = () => (emailListErrors.value = null)
     const modeOptionsComputed = computed(() => {
       const obj = {
@@ -98,7 +98,7 @@ export default {
 </script>
 
 <template>
-  <q-form v-if="fields" class="q-pa-lg" autofocus>
+  <q-form v-if="fields" autofocus class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -132,9 +132,26 @@ export default {
           </div> -->
           <div class="row q-ml-sm">
             <div class="col-12 col-sm-6">
-              <n-auto-complete-v2 v-model.number="fields.payment_mode" label="Mode" :options="modeOptionsComputed" :endpoint="`/api/company/${$route.params.company}/purchase-settings/create-defaults/payment_modes`" :static-option="fields.selected_mode_obj" option-value="id" option-label="name" map-options emit-value :error="!!modeErrors" :error-message="modeErrors">
+              <n-auto-complete-v2
+                v-model.number="fields.payment_mode"
+                emit-value
+                map-options
+                label="Mode"
+                option-label="name"
+                option-value="id"
+                :endpoint="`/api/company/${$route.params.company}/purchase-settings/create-defaults/payment_modes`"
+                :error="!!modeErrors"
+                :error-message="modeErrors"
+                :options="modeOptionsComputed"
+                :static-option="fields.selected_mode_obj"
+              >
                 <template #append>
-                  <q-icon v-if="fields.payment_mode" name="close" class="cursor-pointer" @click.stop.prevent="fields.payment_mode = null" />
+                  <q-icon
+                    v-if="fields.payment_mode"
+                    class="cursor-pointer"
+                    name="close"
+                    @click.stop.prevent="fields.payment_mode = null"
+                  />
                 </template>
               </n-auto-complete-v2>
             </div>
@@ -167,7 +184,13 @@ export default {
         </div>
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">
-        <q-btn color="green" label="Update" type="submit" :loading="formLoading" @click.prevent="() => onUpdateClick(fields)" />
+        <q-btn
+          color="green"
+          label="Update"
+          type="submit"
+          :loading="formLoading"
+          @click.prevent="() => onUpdateClick(fields)"
+        />
       </div>
     </q-card>
   </q-form>

@@ -1,6 +1,6 @@
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 import numberToText from '../numToText'
-import DateConverter from 'src/components/date/VikramSamvat.js'
 
 export default function useGeneratePosPdf(
   invoiceInfo: object,
@@ -17,7 +17,7 @@ export default function useGeneratePosPdf(
   const tableRow = (rows: Array<object>): string => {
     let isTaxSame: number | boolean | null = null
     const htmlRows = rows.map((row: Record<string, number | string | object>, index: number) => {
-      const taxObjindex = taxOptions.findIndex((item) => item.id === row.tax_scheme_id)
+      const taxObjindex = taxOptions.findIndex(item => item.id === row.tax_scheme_id)
       const taxObj = taxOptions[taxObjindex]
       if (isTaxSame !== false && taxObj.rate != 0) {
         if (isTaxSame === null) {
@@ -31,7 +31,7 @@ export default function useGeneratePosPdf(
       <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px; ${index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''}">${index + 1}</th>
       <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px; ${index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''}">${row.hs_code ?? ''}</th>
       <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px; ${index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''}">${row.item_name}<br><span style="font-size: 12px; ${row.description ? '' : 'display: none;'}" class="text-grey-8; padding:5px">(${row.description})</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px; ${index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''}"><span style="${hideRowQuantity ? 'display: none' : ''}">${row.quantity + `<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name || ''}</span>`}</span></th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px; ${index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''}"><span style="${hideRowQuantity ? 'display: none' : ''}">${`${row.quantity}<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name || ''}</span>`}</span></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px; ${index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''}"><span style="${hideRowQuantity ? 'display: none' : ''}">${$nf(row.rate)}</span></th>
       <th style="text-align: right; font-weight: 400; padding:5px; ${index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''}">${formatNumberWithComma(row.quantity * row.rate)}</th>
     </tr>
@@ -62,9 +62,11 @@ export default function useGeneratePosPdf(
     <img src="${compayInfo.logo_url}" alt="Compony Logo" style="height: 110px; object-fit: contain; max-width:160px; position: absolute; ${compayInfo.logo_url ? '' : 'display: none;'} ${compayInfo.invoice_template == 3 ? 'left: 40px;' : ''}" />
   <div style="text-align:center; padding-left: 10px;">
     <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 700;">${compayInfo.name} ${
-      compayInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.'
-      : ['public_limited', 'corporation'].includes(compayInfo.organization_type) ? 'Ltd.'
-      : ''
+      compayInfo.organization_type === 'private_limited'
+        ? ' Pvt. Ltd.'
+        : ['public_limited', 'corporation'].includes(compayInfo.organization_type)
+            ? 'Ltd.'
+            : ''
     }</h1>
       <div>${compayInfo.address}</div>
       <div style="font-size: 14px;">
@@ -105,9 +107,11 @@ export default function useGeneratePosPdf(
     header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
     <div>
       <h1 style="margin: 5px 0; font-size: 35px; font-weight: 700;">${compayInfo.name} ${
-        compayInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.'
-        : ['public_limited', 'corporation'].includes(compayInfo.organization_type) ? 'Ltd.'
-        : ''
+        compayInfo.organization_type === 'private_limited'
+          ? ' Pvt. Ltd.'
+          : ['public_limited', 'corporation'].includes(compayInfo.organization_type)
+              ? 'Ltd.'
+              : ''
       }</h1>
       <div>${compayInfo.address}</div>
       <div>Tax Reg. No. <strong>${compayInfo.tax_registration_number}</strong></div>
@@ -171,11 +175,11 @@ export default function useGeneratePosPdf(
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">${
-            sameTax ?
-              [2, 3].includes(compayInfo.invoice_template) ?
-                `${sameTaxObj.rate} % ` + `${sameTaxObj.name}`
-              : `${sameTaxObj.name} ` + `${sameTaxObj.rate} %`
-            : 'TAX'
+            sameTax
+              ? [2, 3].includes(compayInfo.invoice_template)
+                  ? `${sameTaxObj.rate} % ` + `${sameTaxObj.name}`
+                  : `${sameTaxObj.name} ` + `${sameTaxObj.rate} %`
+              : 'TAX'
           }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
@@ -198,9 +202,11 @@ export default function useGeneratePosPdf(
     "
   >
   <h4 style="margin: 0; font-size: 1.4rem">${
-    invoiceInfo.status === 'Issued' || invoiceInfo.status === 'Paid' ? 'TAX INVOICE'
-    : invoiceInfo.status === 'Draft' ? 'PRO FORMA INVOICE'
-    : ''
+    invoiceInfo.status === 'Issued' || invoiceInfo.status === 'Paid'
+      ? 'TAX INVOICE'
+      : invoiceInfo.status === 'Draft'
+        ? 'PRO FORMA INVOICE'
+        : ''
   }</h4>
   </div>
   <div style="display: flex; justify-content: space-between">
@@ -222,9 +228,11 @@ export default function useGeneratePosPdf(
       </div>
       <div>
       <span><span style="font-weight: 600; color: grey;">Mode: </span></span> ${invoiceInfo.mode} ${
-        invoiceInfo.status === 'Draft' ? '(Draft)'
-        : invoiceInfo.status === 'Paid' ? '(Paid)'
-        : ''
+        invoiceInfo.status === 'Draft'
+          ? '(Draft)'
+          : invoiceInfo.status === 'Paid'
+            ? '(Paid)'
+            : ''
       }
       </div>
     </div>

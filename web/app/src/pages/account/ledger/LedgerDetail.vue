@@ -99,21 +99,27 @@ onMounted(() => {
     <div class="mt-8">
       <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Dr Amount</div>
+          <div class="q-px-md text-grey-8">
+            Dr Amount
+          </div>
           <div class="q-px-md">
             {{ $nf(fields?.amounts?.dr) || '-' }}
           </div>
         </div>
 
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Cr Amount</div>
+          <div class="q-px-md text-grey-8">
+            Cr Amount
+          </div>
           <div class="q-px-md">
             {{ $nf(fields?.amounts?.cr) || '-' }}
           </div>
         </div>
 
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Closing Balance</div>
+          <div class="q-px-md text-grey-8">
+            Closing Balance
+          </div>
           <div class="q-px-md">
             {{ $nf((fields?.amounts?.dr || 0) - (fields?.amounts?.cr || 0)) }}
           </div>
@@ -121,12 +127,23 @@ onMounted(() => {
       </div>
       <div class="sm:mt-6 mb-4 sm:mb-0 mt-2 px-2">
         <div class="row q-col-gutter-md print-hide items-center">
-          <DateRangePicker v-model:start-date="startDate" v-model:end-date="endDate" :hide-btns="true" />
+          <DateRangePicker v-model:end-date="endDate" v-model:start-date="startDate" :hide-btns="true" />
           <div v-if="startDate != null || endDate != null">
-            <q-btn square color="red" icon="fa-solid fa-xmark" class="q-mt-md" @click.prevent="resetDate" />
+            <q-btn
+              square
+              class="q-mt-md"
+              color="red"
+              icon="fa-solid fa-xmark"
+              @click.prevent="resetDate"
+            />
           </div>
           <div>
-            <q-btn color="primary" label="FILTER" class="sm:q-mt-md" @click.prevent="filter" />
+            <q-btn
+              class="sm:q-mt-md"
+              color="primary"
+              label="FILTER"
+              @click.prevent="filter"
+            />
           </div>
         </div>
       </div>

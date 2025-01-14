@@ -1,4 +1,4 @@
-import { acceptHMRUpdate, defineStore, Pinia } from 'pinia'
+import { acceptHMRUpdate, defineStore } from 'pinia'
 import * as config from 'src/config'
 
 interface User {
@@ -164,7 +164,7 @@ export const useAuthStore = defineStore(
       }
     }
 
-    const login = async (credentials: { email: string; password: string }, { redirectTo }: { redirectTo?: string | false } = {}) => {
+    const login = async (credentials: { email: string, password: string }, { redirectTo }: { redirectTo?: string | false } = {}) => {
       const { data, meta } = await _request<any>(URLs.LOGIN, { method: 'POST', body: credentials })
       _handleAuthSuccess(data, meta)
       await _handleRedirect(data?.user, redirectTo)
@@ -222,7 +222,7 @@ export const useAuthStore = defineStore(
       return await _request(URLs.EMAIL, { method: 'PUT', body: { email } })
     }
 
-    const redirectToProvider = async ({ provider, redirect, process = 'login' }: { provider: string; redirect?: string; process?: AuthProcessType }) => {
+    const redirectToProvider = async ({ provider, redirect, process = 'login' }: { provider: string, redirect?: string, process?: AuthProcessType }) => {
       _postForm(`${config.api.baseURL}/${URLs.REDIRECT_TO_PROVIDER}`, {
         provider,
         process,
@@ -289,12 +289,12 @@ export const useAuthStore = defineStore(
 
     const hasAnyRole = (roles: string[]) => {
       if (!_roles.value?.length) return false
-      return roles.some((role) => _roles.value!.includes(role))
+      return roles.some(role => _roles.value!.includes(role))
     }
 
     const hasAllRoles = (roles: string[]) => {
       if (!_roles.value.length) return false
-      return roles.every((role) => _roles.value.includes(role))
+      return roles.every(role => _roles.value.includes(role))
     }
 
     const _hasFullAccess = () => {
@@ -315,7 +315,7 @@ export const useAuthStore = defineStore(
       }
 
       // Resource-only check - return true if any action is allowed for this resource
-      return Object.keys(_permissions.value?.[permission] || {}).some((action) => _permissions.value?.[permission]?.[action] === true)
+      return Object.keys(_permissions.value?.[permission] || {}).some(action => _permissions.value?.[permission]?.[action] === true)
     }
 
     const hasAnyPermission = (permissions: Permission[]) => {
@@ -323,7 +323,7 @@ export const useAuthStore = defineStore(
       if (_hasFullAccess()) return true
 
       if (!_permissions.value) return false
-      return permissions.some((permission) => hasPermission(permission))
+      return permissions.some(permission => hasPermission(permission))
     }
 
     const hasAllPermissions = (permissions: Permission[]) => {
@@ -331,7 +331,7 @@ export const useAuthStore = defineStore(
       if (_hasFullAccess()) return true
 
       if (!_permissions.value) return false
-      return permissions.every((permission) => hasPermission(permission))
+      return permissions.every(permission => hasPermission(permission))
     }
 
     return {

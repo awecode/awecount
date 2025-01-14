@@ -36,7 +36,7 @@ const columnList = [
     name: 'date',
     label: 'Date',
     align: 'left',
-    field: (row) => DateConverter.getRepresentation(row.date, store.isCalendarInAD ? 'ad' : 'bs'),
+    field: row => DateConverter.getRepresentation(row.date, store.isCalendarInAD ? 'ad' : 'bs'),
   },
   {
     name: 'voucher_type',
@@ -149,12 +149,12 @@ const getPermissionsWithSourceType = {
   'Cheque Deposit': 'ChequeDepositView',
   'Payment Receipt': 'PaymentReceiptView',
   'Cheque Issue': 'ChequeIssueModify',
-  Challan: 'ChallanModify',
+  'Challan': 'ChallanModify',
   'Account Opening Balance': 'AccountOpeningBalanceModify',
   'Fund Transfer': 'FundTransferModify',
   'Bank Cash Deposit': 'BankCashDepositModify',
   'Tax Payment': 'TaxPaymentModify',
-  Item: 'ItemView',
+  'Item': 'ItemView',
   'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView',
   'Inventory Conversion Voucher': 'InventoryConversionVoucherView',
 }
@@ -164,7 +164,12 @@ const getPermissionsWithSourceType = {
   <div class="q-py-lg q-pl-lg q-mr-xl">
     <div class="flex justify-between">
       <div class="text-h5">
-        <router-link v-if="checkPermissions('inventoryaccount.view')" :to="`/${$route.params.company}/items/${fields?.item}/`" style="font-weight: 500; text-decoration: none" class="text-blue">
+        <router-link
+          v-if="checkPermissions('inventoryaccount.view')"
+          class="text-blue"
+          style="font-weight: 500; text-decoration: none"
+          :to="`/${$route.params.company}/items/${fields?.item}/`"
+        >
           {{ fields?.name }}
         </router-link>
         <span v-else class="text-bold">{{ fields?.name || '-' }}</span>
@@ -180,21 +185,27 @@ const getPermissionsWithSourceType = {
     <div class="mt-8">
       <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Current Balance</div>
+          <div class="q-px-md text-grey-8">
+            Current Balance
+          </div>
           <div class="q-px-md">
             {{ $nf(fields?.current_balance) || '-' }}
           </div>
         </div>
 
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Opening Balance</div>
+          <div class="q-px-md text-grey-8">
+            Opening Balance
+          </div>
           <div class="q-px-md">
             {{ $nf(fields?.opening_balance) || '-' }}
           </div>
         </div>
 
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">Closing Balance</div>
+          <div class="q-px-md text-grey-8">
+            Closing Balance
+          </div>
           <div class="q-px-md">
             {{ $nf(fields?.closing_balance) || '-' }}
           </div>
@@ -202,16 +213,36 @@ const getPermissionsWithSourceType = {
       </div>
       <div class="mt-8 px-2">
         <div class="flex gap-x-2 mb-4 items-center">
-          <DateRangePicker v-model:start-date="startDate" v-model:end-date="endDate" />
+          <DateRangePicker v-model:end-date="endDate" v-model:start-date="startDate" />
           <div>
-            <q-btn color="primary" label="FILTER" :disabled="!(startDate && endDate)" @click.prevent="filter" />
+            <q-btn
+              color="primary"
+              label="FILTER"
+              :disabled="!(startDate && endDate)"
+              @click.prevent="filter"
+            />
           </div>
         </div>
       </div>
-      <q-table v-model:pagination="pagination" :columns="columnList" :rows="rows" :loading="loading" row-key="id" class="q-mt-xs" :binary-state-sort="true" :rows-per-page-options="[20]" @request="onRequest">
+      <q-table
+        v-model:pagination="pagination"
+        class="q-mt-xs"
+        row-key="id"
+        :binary-state-sort="true"
+        :columns="columnList"
+        :loading="loading"
+        :rows="rows"
+        :rows-per-page-options="[20]"
+        @request="onRequest"
+      >
         <template #body-cell-voucher_no="props">
           <q-td :props="props">
-            <router-link v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type])" :to="getVoucherUrl(props.row)" class="text-blue text-weight-medium" style="text-decoration: none">
+            <router-link
+              v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type])"
+              class="text-blue text-weight-medium"
+              style="text-decoration: none"
+              :to="getVoucherUrl(props.row)"
+            >
               {{ props.row.voucher_no }}
             </router-link>
             <span v-else>{{ props.row.voucher_no }}</span>

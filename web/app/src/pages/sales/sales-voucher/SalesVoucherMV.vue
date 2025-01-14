@@ -29,7 +29,7 @@ export default {
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         const removeArr: Array<string> = ['discount_obj', 'voucher_meta', 'rows', 'enable_row_description', 'payment_receipts', 'can_update_issued', 'issue_datetime', 'available_bank_accounts', 'id', 'options']
-        removeArr.forEach((item) => delete data[item])
+        removeArr.forEach(item => delete data[item])
         this.fields = data
       })
       .catch((error) => {
@@ -46,8 +46,12 @@ export default {
     <q-markup-table>
       <thead>
         <tr class="text-subtitle2 bg-grey-4">
-          <th class="text-left">Field</th>
-          <th class="text-left">Data</th>
+          <th class="text-left">
+            Field
+          </th>
+          <th class="text-left">
+            Data
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -60,13 +64,20 @@ export default {
           </td>
         </tr>
         <tr class="bg-grey-4 text-subtitle2">
-          <td class="text-left">Grand Total</td>
+          <td class="text-left">
+            Grand Total
+          </td>
           <td class="text-left">
             {{ fields?.total_amount }}
           </td>
         </tr>
       </tbody>
     </q-markup-table>
-    <q-btn label="Print" icon="print" class="q-mt-lg" @click="onPrintClick" />
+    <q-btn
+      class="q-mt-lg"
+      icon="print"
+      label="Print"
+      @click="onPrintClick"
+    />
   </div>
 </template>

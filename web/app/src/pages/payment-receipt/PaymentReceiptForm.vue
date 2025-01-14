@@ -122,7 +122,7 @@ export default {
 </script>
 
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <q-form autofocus class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -137,36 +137,126 @@ export default {
         <q-card-section>
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12 row no-wrap">
-              <span style="flex-grow: 1"><q-input v-model="fields.invoice_nos" label="For Invoice(s) *" disable :error-message="errors.invoices" :error="!!errors.invoices" /></span>
-              <span class="row items-center q-ml-sm" style="flex-grow: 0; flex-shrink: 0"><q-btn icon="add" color="blue" @click="() => (addInoviceModal = !addInoviceModal)" /></span>
+              <span style="flex-grow: 1"><q-input
+                v-model="fields.invoice_nos"
+                disable
+                label="For Invoice(s) *"
+                :error="!!errors.invoices"
+                :error-message="errors.invoices"
+              /></span>
+              <span class="row items-center q-ml-sm" style="flex-grow: 0; flex-shrink: 0"><q-btn color="blue" icon="add" @click="() => (addInoviceModal = !addInoviceModal)" /></span>
             </div>
-            <q-input v-model="fields.party_name" class="col-md-6 col-12" label="Party" disable :error="!!errors?.party_name" :error-message="errors.party_name" />
+            <q-input
+              v-model="fields.party_name"
+              disable
+              class="col-md-6 col-12"
+              label="Party"
+              :error="!!errors?.party_name"
+              :error-message="errors.party_name"
+            />
           </div>
           <div class="row q-col-gutter-md">
             <DatePicker v-model="fields.date" class="col-md-6 col-12" label="Deposit Date*" />
-            <q-select v-model="fields.mode" label="Mode" class="col-12 col-md-6" :error-message="errors.mode" :error="!!errors.mode" :options="['Cheque', 'Cash', 'Bank Deposit']" />
+            <q-select
+              v-model="fields.mode"
+              class="col-12 col-md-6"
+              label="Mode"
+              :error="!!errors.mode"
+              :error-message="errors.mode"
+              :options="['Cheque', 'Cash', 'Bank Deposit']"
+            />
           </div>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.amount" class="col-md-6 col-12" label="Amount *" type="number" :error-message="errors.amount" :error="!!errors.amount" />
-            <q-input v-model="fields.tds_amount" class="col-md-6 col-12" label="TDS Amount" :error-message="errors.tds_amount" :error="!!errors.tds_amount" type="number" />
+            <q-input
+              v-model="fields.amount"
+              class="col-md-6 col-12"
+              label="Amount *"
+              type="number"
+              :error="!!errors.amount"
+              :error-message="errors.amount"
+            />
+            <q-input
+              v-model="fields.tds_amount"
+              class="col-md-6 col-12"
+              label="TDS Amount"
+              type="number"
+              :error="!!errors.tds_amount"
+              :error-message="errors.tds_amount"
+            />
           </div>
           <div v-if="fields.mode === 'Bank Deposit' || fields.mode === 'Cheque'" class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
-              <n-auto-complete-v2 v-model="fields.bank_account" label="Bank Account *" :error-message="errors.bank_account" endpoint="/api/company/payment-receipt/create-defaults/bank_accounts" :error="!!errors.bank_account" :static-option="fields.selected_bank_account_obj" :options="formDefaults.collections?.bank_accounts" option-value="id" option-label="name" map-options emit-value />
+              <n-auto-complete-v2
+                v-model="fields.bank_account"
+                emit-value
+                map-options
+                endpoint="/api/company/payment-receipt/create-defaults/bank_accounts"
+                label="Bank Account *"
+                option-label="name"
+                option-value="id"
+                :error="!!errors.bank_account"
+                :error-message="errors.bank_account"
+                :options="formDefaults.collections?.bank_accounts"
+                :static-option="fields.selected_bank_account_obj"
+              />
             </div>
           </div>
           <div v-if="fields.mode === 'Cheque'">
             <div class="row q-col-gutter-md">
-              <DatePicker v-model="fields.cheque_date" class="col-md-6 col-12" label="Cheque Date" :not-required="true" :error="!!errors?.cheque_date" :error-message="errors?.cheque_date" />
-              <q-input v-model="fields.cheque_number" class="col-md-6 col-12" label="Cheque Number *" :error-message="errors.cheque_number" :error="!!errors.cheque_number" type="number" />
+              <DatePicker
+                v-model="fields.cheque_date"
+                class="col-md-6 col-12"
+                label="Cheque Date"
+                :error="!!errors?.cheque_date"
+                :error-message="errors?.cheque_date"
+                :not-required="true"
+              />
+              <q-input
+                v-model="fields.cheque_number"
+                class="col-md-6 col-12"
+                label="Cheque Number *"
+                type="number"
+                :error="!!errors.cheque_number"
+                :error-message="errors.cheque_number"
+              />
             </div>
-            <q-input v-model="fields.drawee_bank" label="Drawee Bank" type="textarea" autogrow class="col-12 col-md-10" :error="!!errors?.drawee_bank" :error-message="errors?.drawee_bank" />
+            <q-input
+              v-model="fields.drawee_bank"
+              autogrow
+              class="col-12 col-md-10"
+              label="Drawee Bank"
+              type="textarea"
+              :error="!!errors?.drawee_bank"
+              :error-message="errors?.drawee_bank"
+            />
           </div>
-          <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10" :error="!!errors?.remarks" :error-message="errors?.remarks" />
+          <q-input
+            v-model="fields.remarks"
+            autogrow
+            class="col-12 col-md-10"
+            label="Remarks"
+            type="textarea"
+            :error="!!errors?.remarks"
+            :error-message="errors?.remarks"
+          />
 
           <div class="q-mt-lg row q-pb-lg flex justify-end">
-            <q-btn v-if="checkPermissions('paymentreceipt.create') && !isEdit" :loading="loading" color="green" label="Create" type="submit" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" />
-            <q-btn v-if="checkPermissions('paymentreceipt.modify') && isEdit" :loading="loading" color="green" label="Update" type="submit" @click.prevent="() => onSubmitClick(fields.status, fields, submitForm)" />
+            <q-btn
+              v-if="checkPermissions('paymentreceipt.create') && !isEdit"
+              color="green"
+              label="Create"
+              type="submit"
+              :loading="loading"
+              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
+            />
+            <q-btn
+              v-if="checkPermissions('paymentreceipt.modify') && isEdit"
+              color="green"
+              label="Update"
+              type="submit"
+              :loading="loading"
+              @click.prevent="() => onSubmitClick(fields.status, fields, submitForm)"
+            />
           </div>
         </q-card-section>
       </q-card>
@@ -177,19 +267,49 @@ export default {
           <div class="text-h6">
             <span class="q-mx-md">Add Invoice</span>
           </div>
-          <q-btn v-close-popup icon="close" class="text-white bg-red-500 opacity-95" flat round dense />
+          <q-btn
+            v-close-popup
+            dense
+            flat
+            round
+            class="text-white bg-red-500 opacity-95"
+            icon="close"
+          />
         </q-card-section>
 
         <q-card-section class="q-mb-md">
           <div class="q-mt-lg q-mx-md">
-            <q-input v-model="invoiceFormData.invoice_no" label="Invoice No.*" class="col-12" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no" />
+            <q-input
+              v-model="invoiceFormData.invoice_no"
+              autofocus
+              class="col-12"
+              label="Invoice No.*"
+              type="number"
+              :error="!!errors?.invoice_no"
+              :error-message="errors?.invoice_no"
+            />
             <div class="q-mx-0 q-my-md">
               <q-checkbox v-model="invoiceFormData.tax_deducted_at_source" label="Tax Deducted at Source?" />
             </div>
-            <q-select v-model="invoiceFormData.fiscal_year" label="Fiscal Year" :options="formDefaults.options?.fiscal_years" option-value="id" option-label="name" map-options emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year" />
+            <q-select
+              v-model="invoiceFormData.fiscal_year"
+              emit-value
+              map-options
+              label="Fiscal Year"
+              option-label="name"
+              option-value="id"
+              :error="!!errors?.fiscal_year"
+              :error-message="errors?.fiscal_year"
+              :options="formDefaults.options?.fiscal_years"
+            />
           </div>
           <div class="row q-mt-lg justify-end">
-            <q-btn label="Add" color="green" class="q-mt-md" @click="() => fetchInvoice(fields)" />
+            <q-btn
+              class="q-mt-md"
+              color="green"
+              label="Add"
+              @click="() => fetchInvoice(fields)"
+            />
           </div>
         </q-card-section>
       </q-card>

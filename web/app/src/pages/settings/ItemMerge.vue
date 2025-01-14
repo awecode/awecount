@@ -39,7 +39,7 @@ const addGroup = () => {
 const onSubmit = () => {
   const filteredArray: Array<Record<string, Array<number> | Record<string, boolean>>> = []
   modalValueArray.value.forEach((group) => {
-    const filterredItems = group.items.filter((item) => item !== null) as unknown as number[]
+    const filterredItems = group.items.filter(item => item !== null) as unknown as number[]
     const obj = { ...group }
     obj.items = filterredItems
     if (filterredItems.length > 1) {
@@ -96,7 +96,7 @@ const selectedItems = computed(() => {
     return [...value.items]
   })
   const filteredArray = arrays.flat()
-  return filteredArray.filter((id) => id !== null) as number[]
+  return filteredArray.filter(id => id !== null) as number[]
 })
 const onSimilarFetch = () => {
   loading.value = true
@@ -137,15 +137,28 @@ const onSimilarFetch = () => {
       </q-card-section>
       <q-card-section class="q-pa-lg">
         <div class="flex justify-end">
-          <q-btn color="blue" :loading="loading" @click="onSimilarFetch">Fetch Similar Groups</q-btn>
+          <q-btn color="blue" :loading="loading" @click="onSimilarFetch">
+            Fetch Similar Groups
+          </q-btn>
         </div>
         <div v-for="(modalValue, index) in modalValueArray" :key="modalValue.index" class="mb-8">
-          <h5 class="m-0">Group {{ index + 1 }}</h5>
-          <ItemMergeGroup v-model="modalValueArray[index]" :item-options="itemOptions" :selected-items="selectedItems" @remove-group="removeGroup(index)" />
+          <h5 class="m-0">
+            Group {{ index + 1 }}
+          </h5>
+          <ItemMergeGroup
+            v-model="modalValueArray[index]"
+            :item-options="itemOptions"
+            :selected-items="selectedItems"
+            @remove-group="removeGroup(index)"
+          />
         </div>
         <div class="flex justify-between">
-          <q-btn color="green" class="mt-8" @click="addGroup">Add New Group</q-btn>
-          <q-btn color="green" class="mt-8" @click="onSubmit">Merge Items</q-btn>
+          <q-btn class="mt-8" color="green" @click="addGroup">
+            Add New Group
+          </q-btn>
+          <q-btn class="mt-8" color="green" @click="onSubmit">
+            Merge Items
+          </q-btn>
         </div>
       </q-card-section>
     </q-card>

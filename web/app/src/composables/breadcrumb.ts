@@ -31,7 +31,7 @@ const withoutQuery = (path: string) => {
 }
 
 const titleCase = (s: string) => {
-  return s.replaceAll('-', ' ').replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.substr(1).toLowerCase())
+  return s.replaceAll('-', ' ').replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.substr(1).toLowerCase())
 }
 
 interface BreadcrumbItem {
@@ -47,13 +47,13 @@ export const useBreadcrumbItems = () => {
     const rootNode = '/'
     const current = withoutQuery(withoutTrailingSlash(toValue(router.currentRoute.value?.path) || rootNode))
 
-    const segments = pathBreadcrumbSegments(current, rootNode).map((path) => ({ to: path }) as BreadcrumbItem)
+    const segments = pathBreadcrumbSegments(current, rootNode).map(path => ({ to: path }) as BreadcrumbItem)
 
     return segments
       .filter(Boolean)
       .map((item) => {
         const route = router.resolve(item.to)?.matched?.[0] || router.currentRoute.value // fallback to current route
-        const routeMeta = (route?.meta || {}) as RouteMeta & { title?: string; breadcrumbLabel: string }
+        const routeMeta = (route?.meta || {}) as RouteMeta & { title?: string, breadcrumbLabel: string }
         const routeName = route.name.toString()
         const fallbackLabel = titleCase(routeName === 'index' ? 'Home' : (item.to || '').split('/').pop() || '') // fallback to last path segment
 

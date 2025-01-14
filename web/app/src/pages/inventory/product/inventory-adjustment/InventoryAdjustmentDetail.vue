@@ -127,19 +127,25 @@ export default {
         </q-card-section>
         <div class="q-mx-lg q-pa-lg row text-grey-8 text-body2 grid grid-cols-2 gap-5">
           <div class="grid grid-cols-2">
-            <div class="">Date</div>
+            <div class="">
+              Date
+            </div>
             <div class="">
               {{ fields.date }}
             </div>
           </div>
           <div class="grid grid-cols-2">
-            <div class="">Status</div>
+            <div class="">
+              Status
+            </div>
             <div class="">
               {{ fields.status }}
             </div>
           </div>
           <div class="grid grid-cols-2">
-            <div class="">Purpose</div>
+            <div class="">
+              Purpose
+            </div>
             <div class="">
               {{ fields.purpose }}
             </div>
@@ -148,14 +154,24 @@ export default {
       </q-card>
       <q-card id="to_print" class="q-mx-lg">
         <q-card-section>
-          <q-markup-table flat bordered>
+          <q-markup-table bordered flat>
             <thead>
               <q-tr class="text-left">
-                <q-th data-testid="SN">SN</q-th>
-                <q-th data-testid="Particular">Particular</q-th>
-                <q-th data-testid="Qty">Qty</q-th>
-                <q-th data-testid="Rate">Rate</q-th>
-                <q-th data-testid="Amount" class="text-right">Amount</q-th>
+                <q-th data-testid="SN">
+                  SN
+                </q-th>
+                <q-th data-testid="Particular">
+                  Particular
+                </q-th>
+                <q-th data-testid="Qty">
+                  Qty
+                </q-th>
+                <q-th data-testid="Rate">
+                  Rate
+                </q-th>
+                <q-th class="text-right" data-testid="Amount">
+                  Amount
+                </q-th>
               </q-tr>
             </thead>
             <tbody class="text-left">
@@ -166,7 +182,7 @@ export default {
                 <q-td>
                   {{ row.item_name }}
                   <br />
-                  <span v-if="row.description" style="font-size: 11px" class="text-grey-8">
+                  <span v-if="row.description" class="text-grey-8" style="font-size: 11px">
                     <div v-for="(des, index) in row.description.split('\n')" :key="index" class="whitespace-normal">
                       {{ des }}
                     </div>
@@ -207,25 +223,58 @@ export default {
       <div v-if="fields" class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none">
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn v-if="checkPermissions('inventoryadjustmentvoucher.modify') && fields?.status !== 'Cancelled'" color="orange-5" label="Edit" icon="edit" :to="`/${$route.params.company}/items/inventory-adjustment/${fields?.id}/`" />
-            <q-btn v-if="checkPermissions('sales.cancel') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel" icon="cancel" :loading="loading" @click.prevent="() => (isDeleteOpen = true)" />
+            <q-btn
+              v-if="checkPermissions('inventoryadjustmentvoucher.modify') && fields?.status !== 'Cancelled'"
+              color="orange-5"
+              icon="edit"
+              label="Edit"
+              :to="`/${$route.params.company}/items/inventory-adjustment/${fields?.id}/`"
+            />
+            <q-btn
+              v-if="checkPermissions('sales.cancel') && fields?.status !== 'Cancelled'"
+              color="red-5"
+              icon="cancel"
+              label="Cancel"
+              :loading="loading"
+              @click.prevent="() => (isDeleteOpen = true)"
+            />
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`" icon="print" @click="() => onPrintclick(false, fields?.status === 'Draft')" />
-          <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7" label="Journal Entries" icon="books" :to="`/${$route.params.company}/journal-entries/inventory-adjustment/${fields.id}/`" />
+          <q-btn icon="print" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`" @click="() => onPrintclick(false, fields?.status === 'Draft')" />
+          <q-btn
+            v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
+            color="blue-7"
+            icon="books"
+            label="Journal Entries"
+            :to="`/${$route.params.company}/journal-entries/inventory-adjustment/${fields.id}/`"
+          />
         </div>
         <q-dialog v-model="isDeleteOpen" class="overflow-visible" @before-hide="errors = {}">
-          <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
+          <q-card class="overflow-visible" style="min-width: min(40vw, 500px)">
             <q-card-section class="bg-red-6 flex justify-between">
               <div class="text-h6 text-white">
                 <span>Confirm Cancellation?</span>
               </div>
-              <q-btn v-close-popup icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense />
+              <q-btn
+                v-close-popup
+                dense
+                flat
+                round
+                class="text-red-700 bg-slate-200 opacity-95"
+                icon="close"
+              />
             </q-card-section>
 
             <q-card-section class="q-ma-md">
-              <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message" />
+              <q-input
+                v-model="deleteMsg"
+                autofocus
+                outlined
+                type="textarea"
+                :error="!!errors?.message"
+                :error-message="errors?.message"
+              />
               <div class="text-right q-mt-lg">
                 <q-btn label="Confirm" @click="onCancelClick" />
               </div>

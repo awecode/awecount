@@ -142,7 +142,7 @@ export default {
       () => props.modelValue.discount_type,
       (newValue) => {
         if (typeof newValue === 'number') {
-          const index = props.discountOptions.findIndex((item) => newValue === item.id)
+          const index = props.discountOptions.findIndex(item => newValue === item.id)
           modalValue.value.discountObj = props.discountOptions[index]
         } else if (newValue === null) {
           modalValue.value.discountObj = null
@@ -217,29 +217,34 @@ export default {
   <div :class="usedInPos ? '-mt-12' : ''">
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5 row">
-        <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'" data-testid="item">
+        <div data-testid="item" :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
           <n-auto-complete-v2
             v-if="!usedInPos"
             v-model="modalValue.item_id"
-            :options="itemOptions"
-            :static-option="modelValue.selected_item_obj"
             label="Item"
+            :disabled="usedInPos || hasChallan"
+            :emit-obj="true"
+            :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/items`"
             :error="
               errors?.item_id ? errors?.item_id[0]
               : rowEmpty ? 'Item is required'
-              : ''
+                : ''
             "
             :modal-component="
               usedInPos || hasChallan ? false
               : checkPermissions('inventoryaccount.create') ? ItemForm
-              : null
+                : null
             "
-            :disabled="usedInPos || hasChallan"
-            :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/items`"
-            :emit-obj="true"
+            :options="itemOptions"
+            :static-option="modelValue.selected_item_obj"
             @update-obj="updateItem"
           />
-          <q-input v-else :label="usedInPos ? '' : 'Item'" disable :model-value="modelValue.name" />
+          <q-input
+            v-else
+            disable
+            :label="usedInPos ? '' : 'Item'"
+            :model-value="modelValue.name"
+          />
         </div>
         <div v-if="usedIn === 'creditNote'" class="col-2 row justify-center">
           <q-checkbox v-model="modalValue.is_returned" :false-value="null" />
@@ -247,7 +252,14 @@ export default {
       </div>
       <div class="col-2">
         <span v-if="showRateQuantity" data-testid="quantity-input">
-          <q-input v-model.number="modalValue.quantity" :label="usedInPos ? '' : 'Quantity'" :error-message="errors?.quantity ? errors.quantity[0] : null" :error="errors?.quantity ? true : false" type="number" :disable="hasChallan">
+          <q-input
+            v-model.number="modalValue.quantity"
+            type="number"
+            :disable="hasChallan"
+            :error="errors?.quantity ? true : false"
+            :error-message="errors?.quantity ? errors.quantity[0] : null"
+            :label="usedInPos ? '' : 'Quantity'"
+          >
             <template v-if="isFifo && COGSData?.hasOwnProperty(index)" #append>
               <q-icon v-if="COGSData[index].totalCost.status === 'error'" color="orange" name="mdi-alert">
                 <q-tooltip>
@@ -266,7 +278,13 @@ export default {
       </div>
       <div class="col-2">
         <div v-if="showRateQuantity" data-testid="rate-input">
-          <q-input v-model.number="modalValue.rate" :label="usedInPos ? '' : 'Rate'" :error-message="errors?.rate ? errors.rate[0] : null" :error="errors?.rate ? true : false" type="number">
+          <q-input
+            v-model.number="modalValue.rate"
+            type="number"
+            :error="errors?.rate ? true : false"
+            :error-message="errors?.rate ? errors.rate[0] : null"
+            :label="usedInPos ? '' : 'Rate'"
+          >
             <template v-if="isFifo && COGSData?.hasOwnProperty(index)" #append>
               <span v-if="COGSData[index].totalCost.status != 'error'" class="text-sm mt-4 text-blue-400">
                 <q-tooltip>Cost Rate as per Fifo.</q-tooltip>
@@ -306,13 +324,36 @@ export default {
         <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
       <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
-        <q-btn flat class="q-pa-sm focus-highLight" color="transparent" data-testid="expand-btn" @click="() => (expandedState = !expandedState)">
-          <q-icon name="mdi-arrow-expand" size="20px" color="green" class="cursor-pointer">
+        <q-btn
+          flat
+          class="q-pa-sm focus-highLight"
+          color="transparent"
+          data-testid="expand-btn"
+          @click="() => (expandedState = !expandedState)"
+        >
+          <q-icon
+            class="cursor-pointer"
+            color="green"
+            name="mdi-arrow-expand"
+            size="20px"
+          >
             <q-tooltip>Expand</q-tooltip>
           </q-icon>
         </q-btn>
-        <q-btn flat class="q-pa-sm focus-highLight" color="transparent" :disable="hasChallan" data-testid="row-delete-btn" @click="() => deleteRow(index)">
-          <q-icon name="delete" size="20px" color="negative" class="cursor-pointer" />
+        <q-btn
+          flat
+          class="q-pa-sm focus-highLight"
+          color="transparent"
+          data-testid="row-delete-btn"
+          :disable="hasChallan"
+          @click="() => deleteRow(index)"
+        >
+          <q-icon
+            class="cursor-pointer"
+            color="negative"
+            name="delete"
+            size="20px"
+          />
         </q-btn>
       </div>
     </div>
@@ -336,27 +377,55 @@ export default {
     <div v-if="expandedState">
       <div class="row q-col-gutter-md q-px-lg">
         <div class="col-grow" data-testid="unit-select">
-          <n-auto-complete-v2 v-model="modalValue.unit_id" :options="unitOptions" label="Unit" :static-option="modalValue.selected_unit_obj" :error-message="errors?.unit_id ? errors.unit_id[0] : null" :error="errors?.unit_id ? true : false" :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/units`" :emit-obj="usedInPos" @update-obj="(val) => (modalValue.selected_unit_obj = val)" />
+          <n-auto-complete-v2
+            v-model="modalValue.unit_id"
+            label="Unit"
+            :emit-obj="usedInPos"
+            :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/units`"
+            :error="errors?.unit_id ? true : false"
+            :error-message="errors?.unit_id ? errors.unit_id[0] : null"
+            :options="unitOptions"
+            :static-option="modalValue.selected_unit_obj"
+            @update-obj="(val) => (modalValue.selected_unit_obj = val)"
+          />
         </div>
         <div class="col-5">
           <div class="row q-col-gutter-md">
-            <div :class="['Amount', 'Percent'].includes(modalValue.discount_type) ? 'col-5' : 'col-12'" data-testid="row-discount-type-div">
+            <div data-testid="row-discount-type-div" :class="['Amount', 'Percent'].includes(modalValue.discount_type) ? 'col-5' : 'col-12'">
               <n-auto-complete v-model="modalValue.discount_type" label="Discount" :options="discountOptions" />
             </div>
             <div v-if="modalValue.discount_type === 'Amount' || modalValue.discount_type === 'Percent'" :class="showRowTradeDiscount ? 'col-3' : 'col-6'">
-              <q-input v-model.number="modalValue.discount" label="Discount" :error-message="errors?.discount ? errors.discount[0] : null" :error="errors?.discount ? true : false" data-testid="row-discount-input" />
+              <q-input
+                v-model.number="modalValue.discount"
+                data-testid="row-discount-input"
+                label="Discount"
+                :error="errors?.discount ? true : false"
+                :error-message="errors?.discount ? errors.discount[0] : null"
+              />
             </div>
             <div v-if="['Amount', 'Percent'].includes(modalValue.discount_type) && showRowTradeDiscount" class="col-3 row">
-              <q-checkbox v-model="modalValue.trade_discount" label="Trade Discount?" data-testid="row-trade-discount-checkbox" />
+              <q-checkbox v-model="modalValue.trade_discount" data-testid="row-trade-discount-checkbox" label="Trade Discount?" />
             </div>
           </div>
         </div>
         <div class="col-3" data-testid="row-tax-select">
-          <n-auto-complete v-model="modalValue.tax_scheme_id" :options="taxOptions" label="Tax" :error="errors?.tax_scheme_id ? true : null" :error-message="errors?.tax_scheme_id ? 'This field is required' : null" />
+          <n-auto-complete
+            v-model="modalValue.tax_scheme_id"
+            label="Tax"
+            :error="errors?.tax_scheme_id ? true : null"
+            :error-message="errors?.tax_scheme_id ? 'This field is required' : null"
+            :options="taxOptions"
+          />
         </div>
       </div>
       <div v-if="$route.params.id ? (!!modalValue.item_id || !!modalValue.itemObj) && enableRowDescription : !!modalValue.itemObj && enableRowDescription">
-        <q-input v-model="modalValue.description" label="Description" type="textarea" class="q-mb-lg" data-testid="row-description-input" />
+        <q-input
+          v-model="modalValue.description"
+          class="q-mb-lg"
+          data-testid="row-description-input"
+          label="Description"
+          type="textarea"
+        />
       </div>
     </div>
   </div>

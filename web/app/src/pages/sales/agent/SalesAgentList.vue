@@ -31,12 +31,34 @@ export default {
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
-      <q-btn v-if="checkPermissions('salesagent.create')" color="green" :to="`/${$route.params.company}/sales-agent/create/`" label="Sales Agent" icon-right="add" class="add-btn" />
+      <q-btn
+        v-if="checkPermissions('salesagent.create')"
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="Sales Agent"
+        :to="`/${$route.params.company}/sales-agent/create/`"
+      />
     </div>
-    <q-table v-model:pagination="pagination" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
       <template #body-cell-name="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('salesagent.modify')" class="text-blue l-edit-btn whitespace-normal" style="text-decoration: none" :to="`/${$route.params.company}/sales-agent/${props.row.id}/`">
+          <router-link
+            v-if="checkPermissions('salesagent.modify')"
+            class="text-blue l-edit-btn whitespace-normal"
+            style="text-decoration: none"
+            :to="`/${$route.params.company}/sales-agent/${props.row.id}/`"
+          >
             {{ props.row.name }}
           </router-link>
           <span v-else class="whitespace-normal">{{ props.row.name }}</span>

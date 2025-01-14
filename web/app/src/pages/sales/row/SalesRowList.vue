@@ -84,10 +84,10 @@ export default {
     ]
     const fetchedOptions: Ref<Record<string, Array<object> | null>> = ref({
       'sales-agent': null,
-      parties: null,
-      tax_scheme: null,
+      'parties': null,
+      'tax_scheme': null,
       'inventory-categories': null,
-      item_choices: null,
+      'item_choices': null,
     })
     const aggregate_headers = [
       ['Total Sales Invoice(s) Issued', 'voucher__count'],
@@ -117,10 +117,27 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <q-table v-model:pagination="pagination" title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      title="Income Items"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
       <template #top>
         <div class="search-bar">
-          <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
+          <q-input
+            v-model="searchQuery"
+            dense
+            class="full-width search-input"
+            debounce="500"
+            placeholder="Search"
+          >
             <template #append>
               <q-icon name="search" />
             </template>
@@ -129,34 +146,66 @@ export default {
             <q-menu>
               <div class="menu-wrapper" style="width: min(500px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                  <h6 class="q-ma-md text-grey-9">
+                    Filters
+                  </h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mx-md">
-                    <DateRangePicker v-model:start-date="filters.start_date" v-model:end-date="filters.end_date" />
+                    <DateRangePicker v-model:end-date="filters.end_date" v-model:start-date="filters.start_date" />
                   </div>
                   <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.category" label="Sales Agent" :endpoint="`/api/company/${$route.params.company}/sales-agent/choices`" fetch-on-mount />
+                    <n-auto-complete-v2
+                      v-model="filters.category"
+                      fetch-on-mount
+                      label="Sales Agent"
+                      :endpoint="`/api/company/${$route.params.company}/sales-agent/choices`"
+                    />
                   </div>
                   <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.party" :endpoint="`/api/company/${$route.params.company}/parties/choices`" label="Party" fetch-on-mount />
+                    <n-auto-complete-v2
+                      v-model="filters.party"
+                      fetch-on-mount
+                      label="Party"
+                      :endpoint="`/api/company/${$route.params.company}/parties/choices`"
+                    />
                   </div>
                   <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.tax_scheme" :endpoint="`/api/company/${$route.params.company}/tax_scheme/choices/`" label="Tax Scheme" fetch-on-mount />
+                    <n-auto-complete-v2
+                      v-model="filters.tax_scheme"
+                      fetch-on-mount
+                      label="Tax Scheme"
+                      :endpoint="`/api/company/${$route.params.company}/tax_scheme/choices/`"
+                    />
                   </div>
                   <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.item_category" :endpoint="`/api/company/${$route.params.company}/inventory-categories/choices/`" label="Item Category" fetch-on-mount />
+                    <n-auto-complete-v2
+                      v-model="filters.item_category"
+                      fetch-on-mount
+                      label="Item Category"
+                      :endpoint="`/api/company/${$route.params.company}/inventory-categories/choices/`"
+                    />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model="filters.item" :endpoint="`/api/company/${$route.params.company}/items/sales-choices/`" label="Items" />
+                    <SelectWithFetch v-model="filters.item" label="Items" :endpoint="`/api/company/${$route.params.company}/items/sales-choices/`" />
                   </div>
                   <div class="q-ma-sm">
                     <MultiSelectChip v-model="filters.status" :options="['Draft', 'Issued', 'Paid', 'Partially Paid', 'Cancelled']" />
                   </div>
                 </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate" />
-                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters" />
+                  <q-btn
+                    class="f-submit-btn"
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  />
+                  <q-btn
+                    class="f-reset-btn"
+                    color="red"
+                    icon="close"
+                    @click="resetFilters"
+                  />
                 </div>
               </div>
             </q-menu>
@@ -167,7 +216,12 @@ export default {
       <template #body-cell-voucher_id="props">
         <q-td :props="props">
           <div class="row align-center">
-            <router-link v-if="checkPermissions('sales.view')" style="font-weight: 500; text-decoration: none" class="text-blue l-view-btn" :to="`/${$route.params.company}/sales-voucher/${props.row.voucher_id}/view`">
+            <router-link
+              v-if="checkPermissions('sales.view')"
+              class="text-blue l-view-btn"
+              style="font-weight: 500; text-decoration: none"
+              :to="`/${$route.params.company}/sales-voucher/${props.row.voucher_id}/view`"
+            >
               {{ props.row.voucher__voucher_no }}
             </router-link>
             <span v-else>{{ props.row.voucher__voucher_no }}</span>
@@ -180,7 +234,7 @@ export default {
             {{ props.row.customer_name }}
           </div>
           <div v-else>
-            <q-icon name="domain" size="sm" class="text-grey-8" />
+            <q-icon class="text-grey-8" name="domain" size="sm" />
             <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{ props.row.party_name }}</span>
           </div>
         </q-td>
@@ -194,7 +248,9 @@ export default {
     <q-card v-if="aggregate" class="q-mt-md">
       <q-card-section>
         <div>
-          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">Aggregate Report for Filtered Data</h5>
+          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">
+            Aggregate Report for Filtered Data
+          </h5>
         </div>
         <hr />
         <div class="q-mt-md">

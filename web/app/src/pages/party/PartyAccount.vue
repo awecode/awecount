@@ -136,17 +136,29 @@ export default {
       <q-markup-table>
         <thead>
           <tr>
-            <th class="text-left">Account</th>
-            <th class="text-left">Code</th>
-            <th class="text-left">Dr</th>
-            <th class="text-left">Cr</th>
-            <th class="text-left">Balance</th>
+            <th class="text-left">
+              Account
+            </th>
+            <th class="text-left">
+              Code
+            </th>
+            <th class="text-left">
+              Dr
+            </th>
+            <th class="text-left">
+              Cr
+            </th>
+            <th class="text-left">
+              Balance
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="fields.supplier_account && (fields.supplier_account.amounts.dr != null || fields.supplier_account.amounts.cr != null)">
             <td class="text-left">
-              <router-link :to="`/${$route.params.company}/account/${fields.supplier_account?.id}/view/`" class="text-blue" style="text-decoration: none">Vendor (Payable)</router-link>
+              <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${fields.supplier_account?.id}/view/`">
+                Vendor (Payable)
+              </router-link>
             </td>
             <td class="text-left">
               {{ fields.supplier_account.code }}
@@ -163,7 +175,9 @@ export default {
           </tr>
           <tr v-if="fields.customer_account && (fields.customer_account.amounts.dr != null || fields.customer_account.amounts.cr != null)">
             <td class="text-left">
-              <router-link :to="`/${$route.params.company}/account/${fields.customer_account?.id}/view/`" class="text-blue" style="text-decoration: none">Customer (Receivable)</router-link>
+              <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${fields.customer_account?.id}/view/`">
+                Customer (Receivable)
+              </router-link>
             </td>
             <td class="text-left">
               {{ fields.customer_account.code }}
@@ -194,12 +208,30 @@ export default {
       </q-markup-table>
     </q-card>
     <q-card class="q-mt-md q-pa-md">
-      <h5 class="q-ma-none">Transactions</h5>
+      <h5 class="q-ma-none">
+        Transactions
+      </h5>
       <div class="row items-center q-mx-sm print-hide">
-        <DateRangePicker v-model:start-date="dateRef.start_date" v-model:end-date="dateRef.end_date" :hide-btns="true" class="q-mr-md" />
+        <DateRangePicker
+          v-model:end-date="dateRef.end_date"
+          v-model:start-date="dateRef.start_date"
+          class="q-mr-md"
+          :hide-btns="true"
+        />
         <span class="row items-end q-gutter-y-sm">
-          <q-btn v-if="dateRef.start_date && dateRef.end_date" color="red" icon="close" class="q-mr-sm" @click="resetDate" />
-          <q-btn :disable="!(dateRef.start_date && dateRef.end_date)" label="filter" color="blue" @click="filter" />
+          <q-btn
+            v-if="dateRef.start_date && dateRef.end_date"
+            class="q-mr-sm"
+            color="red"
+            icon="close"
+            @click="resetDate"
+          />
+          <q-btn
+            color="blue"
+            label="filter"
+            :disable="!(dateRef.start_date && dateRef.end_date)"
+            @click="filter"
+          />
         </span>
       </div>
       <TransactionTable v-if="fields?.transactions.results?.length > 0" :fields="fields">

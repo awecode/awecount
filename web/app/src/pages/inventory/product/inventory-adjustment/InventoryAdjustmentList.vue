@@ -55,12 +55,35 @@ const newColumn = [
 <template>
   <div class="q-pa-md">
     <div v-if="checkPermissions('inventoryadjustmentvoucher.create')" class="row justify-end q-gutter-md">
-      <q-btn color="green" class="add-btn" :to="`/${$route.params.company}/items/inventory-adjustment/create/`" label="Add Inventory Adjustment Voucher" icon-right="add" />
+      <q-btn
+        class="add-btn"
+        color="green"
+        icon-right="add"
+        label="Add Inventory Adjustment Voucher"
+        :to="`/${$route.params.company}/items/inventory-adjustment/create/`"
+      />
     </div>
-    <q-table v-model:pagination="pagination" title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
+    <q-table
+      v-model:pagination="pagination"
+      class="q-mt-md"
+      row-key="id"
+      title="Income Items"
+      :columns="newColumn"
+      :filter="searchQuery"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
       <template #top>
         <div class="search-bar">
-          <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="w-full search-input">
+          <q-input
+            v-model="searchQuery"
+            dense
+            class="w-full search-input"
+            debounce="500"
+            placeholder="Search"
+          >
             <template #append>
               <q-icon name="search" />
             </template>
@@ -69,7 +92,9 @@ const newColumn = [
             <q-menu>
               <div class="menu-wrapper" style="width: min(550px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                  <h6 class="q-ma-md text-grey-9">
+                    Filters
+                  </h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-ma-sm">
@@ -77,11 +102,21 @@ const newColumn = [
                   </div>
                 </div>
                 <div class="q-mx-md">
-                  <DateRangePicker v-model:start-date="filters.start_date" v-model:end-date="filters.end_date" />
+                  <DateRangePicker v-model:end-date="filters.end_date" v-model:start-date="filters.start_date" />
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onFilterUpdate" />
-                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters" />
+                  <q-btn
+                    class="q-mr-md f-submit-btn"
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  />
+                  <q-btn
+                    class="f-reset-btn"
+                    color="red"
+                    icon="close"
+                    @click="resetFilters"
+                  />
                 </div>
               </div>
             </q-menu>
@@ -91,14 +126,33 @@ const newColumn = [
 
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('inventoryadjustmentvoucher.view')" color="blue-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="View" :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/view`" />
-          <q-btn v-if="checkPermissions('inventoryadjustmentvoucher.modify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit" :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/`" />
+          <q-btn
+            v-if="checkPermissions('inventoryadjustmentvoucher.view')"
+            class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
+            color="blue-6"
+            label="View"
+            style="font-size: 12px"
+            :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/view`"
+          />
+          <q-btn
+            v-if="checkPermissions('inventoryadjustmentvoucher.modify')"
+            class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
+            color="orange-6"
+            label="edit"
+            style="font-size: 12px"
+            :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/`"
+          />
         </q-td>
       </template>
 
       <template #body-cell-voucher_no="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('inventoryadjustmentvoucher.modify')" :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/`" style="font-weight: 500; text-decoration: none" class="text-blue">
+          <router-link
+            v-if="checkPermissions('inventoryadjustmentvoucher.modify')"
+            class="text-blue"
+            style="font-weight: 500; text-decoration: none"
+            :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/`"
+          >
             {{ props.row.voucher_no }}
           </router-link>
           <span v-else>{{ props.row.voucher_no }}</span>
@@ -110,14 +164,14 @@ const newColumn = [
           <div class="row align-center justify-center">
             <div
               class="text-white text-subtitle row items-center justify-center"
+              style="border-radius: 8px; padding: 2px 10px"
               :class="
                 props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
                 : props.row.status == 'Paid' ? 'bg-green-2 text-green-10'
-                : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
-                : props.row.status == 'Partially Paid' ? 'bg-green-1 text-green-6'
-                : 'bg-red-2 text-red-10'
+                  : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
+                    : props.row.status == 'Partially Paid' ? 'bg-green-1 text-green-6'
+                      : 'bg-red-2 text-red-10'
               "
-              style="border-radius: 8px; padding: 2px 10px"
             >
               {{ props.row.status }}
             </div>

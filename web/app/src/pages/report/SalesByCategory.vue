@@ -101,23 +101,36 @@ fetchData()
     <div class="flex items-center justify-between gap-2">
       <div class="flex gap-x-6 gap-y-2 items-center">
         <div>
-          <DateRangePicker v-model:start-date="fields.start_date" v-model:end-date="fields.end_date" :hide-btns="true" />
+          <DateRangePicker v-model:end-date="fields.end_date" v-model:start-date="fields.start_date" :hide-btns="true" />
         </div>
         <q-btn
           v-if="fields.start_date || fields.end_date"
+          class="f-reset-btn"
           color="red"
           icon="close"
-          class="f-reset-btn"
           @click="
             fields = { start_date: '', end_date: '' }
             updateRouteUrl()
             fetchData()
           "
         />
-        <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch" class="f-submit-btn" @click="fetchData" />
+        <q-btn
+          class="f-submit-btn"
+          color="green"
+          label="fetch"
+          :disable="!fields.start_date && !fields.end_date ? true : false"
+          @click="fetchData"
+        />
       </div>
     </div>
-    <q-table :rows="rows" :columns="newColumn" :loading="loading" row-key="id" class="q-mt-md" :rows-per-page-options="[20]">
+    <q-table
+      class="q-mt-md"
+      row-key="id"
+      :columns="newColumn"
+      :loading="loading"
+      :rows="rows"
+      :rows-per-page-options="[20]"
+    >
       <template #body-cell-category="props">
         <q-td :props="props">
           <span v-if="props.row.item__category__name" class="font-medium">{{ props.row.item__category__name }}</span>
@@ -125,7 +138,9 @@ fetchData()
         </q-td>
       </template>
       <template #bottom-row>
-        <q-td class="font-medium">Total</q-td>
+        <q-td class="font-medium">
+          Total
+        </q-td>
         <q-td class="font-medium">
           {{ rows.reduce((accumulator, currentDict) => accumulator + currentDict.quantity, 0) }}
         </q-td>

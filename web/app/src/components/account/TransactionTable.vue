@@ -75,12 +75,12 @@ export default {
       'Cheque Deposit': 'ChequeDepositView',
       'Payment Receipt': 'PaymentReceiptView',
       'Cheque Issue': 'ChequeIssueModify',
-      Challan: 'ChallanModify',
+      'Challan': 'ChallanModify',
       'Account Opening Balance': 'AccountOpeningBalanceModify',
       'Fund Transfer': 'FundTransferModify',
       'Bank Cash Deposit': 'BankCashDepositModify',
       'Tax Payment': 'TaxPaymentModify',
-      Item: 'ItemView',
+      'Item': 'ItemView',
       'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView',
     }
     const runningBalance = computed(() => {
@@ -126,13 +126,27 @@ export default {
     <!-- TODO: aggregate data not availaible, so check if it works -->
     <thead>
       <tr>
-        <th class="text-left">Date</th>
-        <th class="text-left">Voucher Type</th>
-        <th class="text-left">Against</th>
-        <th class="text-left">Voucher No.</th>
-        <th class="text-left">Dr</th>
-        <th class="text-left">Cr</th>
-        <th v-if="fields.aggregate" class="text-left">Balance</th>
+        <th class="text-left">
+          Date
+        </th>
+        <th class="text-left">
+          Voucher Type
+        </th>
+        <th class="text-left">
+          Against
+        </th>
+        <th class="text-left">
+          Voucher No.
+        </th>
+        <th class="text-left">
+          Dr
+        </th>
+        <th class="text-left">
+          Cr
+        </th>
+        <th v-if="fields.aggregate" class="text-left">
+          Balance
+        </th>
       </tr>
     </thead>
     <tbody v-if="fields.transactions">
@@ -180,7 +194,9 @@ export default {
       <template v-if="fields.amounts">
         <tr v-if="$route.query.end_date" class="text-weight-bold">
           <td colspan="2"></td>
-          <td class="text-left">Final Closing</td>
+          <td class="text-left">
+            Final Closing
+          </td>
           <td></td>
           <td class="text-left">
             {{ $nf(fields.aggregate.total.dr + fields.aggregate.opening.dr, 2) }}
@@ -194,7 +210,9 @@ export default {
         </tr>
         <tr v-else class="text-weight-bold">
           <td colspan="2"></td>
-          <td class="text-left">Final Closing</td>
+          <td class="text-left">
+            Final Closing
+          </td>
           <td></td>
           <td class="text-left">
             {{ $nf(fields.amounts.dr || 0, 2) }}
@@ -209,7 +227,9 @@ export default {
       </template>
       <tr v-if="$route.query.start_date && fields.page_cumulative" class="text-weight-bold">
         <td colspan="2"></td>
-        <td class="text-left">Closing</td>
+        <td class="text-left">
+          Closing
+        </td>
         <td></td>
         <td class="text-left">
           {{ $nf(fields.page_cumulative.current.dr + fields.page_cumulative.next.dr + fields.aggregate.opening.dr, 2) }}
@@ -223,7 +243,9 @@ export default {
       </tr>
       <tr v-else-if="fields.page_cumulative" class="text-weight-bold">
         <td colspan="2"></td>
-        <td class="text-left">Closing</td>
+        <td class="text-left">
+          Closing
+        </td>
         <td></td>
         <td class="text-left">
           {{ $nf(fields.page_cumulative.current.dr + fields.page_cumulative.next.dr, 2) }}
@@ -250,7 +272,12 @@ export default {
           </div> -->
         </td>
         <td>
-          <router-link v-if="transaction.source_type && transaction.voucher_no && checkPermissions(getPermissionsWithSourceType[transaction.source_type])" class="text-blue" style="text-decoration: none" :to="getVoucherUrl(transaction)">
+          <router-link
+            v-if="transaction.source_type && transaction.voucher_no && checkPermissions(getPermissionsWithSourceType[transaction.source_type])"
+            class="text-blue"
+            style="text-decoration: none"
+            :to="getVoucherUrl(transaction)"
+          >
             {{ transaction.voucher_no }}
           </router-link>
           <span v-else>{{ transaction.voucher_no }}</span>
@@ -268,7 +295,9 @@ export default {
 
       <tr v-if="fields.aggregate && fields.aggregate.total && (fields.aggregate.total.dr_amount__sum || fields.aggregate.total.cr_amount__sum)" class="text-weight-bold">
         <td colspan="2"></td>
-        <td class="text-left">Total</td>
+        <td class="text-left">
+          Total
+        </td>
         <td></td>
         <td class="text-left">
           {{ $nf(fields.aggregate.total.dr_amount__sum, 2) }}
@@ -305,8 +334,10 @@ export default {
       </template> -->
 
       <tr v-if="$route.query.start_date" class="text-weight-bold">
-        <td rowspan="1" colspan="2"></td>
-        <td class="text-left">Opening</td>
+        <td colspan="2" rowspan="1"></td>
+        <td class="text-left">
+          Opening
+        </td>
         <td></td>
         <td class="text-left">
           {{ $nf(fields.aggregate.opening.dr + fields.page_cumulative.next.dr, 2) }}
@@ -319,8 +350,10 @@ export default {
         </td>
       </tr>
       <tr v-else-if="fields.page_cumulative" class="text-weight-bold">
-        <td rowspan="1" colspan="2"></td>
-        <td class="text-left">Opening</td>
+        <td colspan="2" rowspan="1"></td>
+        <td class="text-left">
+          Opening
+        </td>
         <td></td>
         <td class="text-left">
           {{ $nf(fields.page_cumulative.next.dr, 2) }}

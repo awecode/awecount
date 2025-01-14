@@ -1,5 +1,6 @@
 import DateConverter from 'src/components/date/VikramSamvat.js'
 import formatNumberWithCommas from '../formatNumberWithComma'
+
 export default function useGenerateChequePdf(fields) {
   return `
     <div style="border: 2px solid black; padding: 20px;">

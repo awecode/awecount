@@ -37,7 +37,7 @@ export default {
 </script>
 
 <template>
-  <q-form v-if="fields" class="q-pa-lg" autofocus>
+  <q-form v-if="fields" autofocus class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -48,29 +48,116 @@ export default {
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.voucher_no" label="Voucher No." class="col-12 col-md-6" :error-message="errors.voucher_no" :error="!!errors.voucher_no" />
-            <date-picker v-model="fields.date" class="col-12 col-md-6" label="Date" :error-message="errors?.date" :error="!!errors?.date" />
+            <q-input
+              v-model="fields.voucher_no"
+              class="col-12 col-md-6"
+              label="Voucher No."
+              :error="!!errors.voucher_no"
+              :error-message="errors.voucher_no"
+            />
+            <date-picker
+              v-model="fields.date"
+              class="col-12 col-md-6"
+              label="Date"
+              :error="!!errors?.date"
+              :error-message="errors?.date"
+            />
           </div>
           <div class="row q-col-gutter-md">
-            <q-select v-model="fields.tax_scheme" label="Tax *" class="col-12 col-md-6" :options="formDefaults.collections?.tax_schemes" option-value="id" option-label="name" map-options emit-value :error="!!errors.tax_scheme" :error-message="errors.tax_scheme" />
-            <q-input v-model="fields.amount" label="Amount *" class="col-12 col-md-6" :error-message="errors.amount" :error="!!errors.amount" type="number" />
+            <q-select
+              v-model="fields.tax_scheme"
+              emit-value
+              map-options
+              class="col-12 col-md-6"
+              label="Tax *"
+              option-label="name"
+              option-value="id"
+              :error="!!errors.tax_scheme"
+              :error-message="errors.tax_scheme"
+              :options="formDefaults.collections?.tax_schemes"
+            />
+            <q-input
+              v-model="fields.amount"
+              class="col-12 col-md-6"
+              label="Amount *"
+              type="number"
+              :error="!!errors.amount"
+              :error-message="errors.amount"
+            />
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete-v2 v-model="fields.cr_account" label="Paid From/By *" :endpoint="`/api/company/${$route.params.company}/tax-payments/create-defaults/cr_accounts`" :static-option="fields.selected_cr_account_obj" :options="formDefaults.collections?.cr_accounts" option-value="id" option-label="name" map-options emit-value :error="!!errors.cr_account" :error-message="errors.cr_account" />
+              <n-auto-complete-v2
+                v-model="fields.cr_account"
+                emit-value
+                map-options
+                label="Paid From/By *"
+                option-label="name"
+                option-value="id"
+                :endpoint="`/api/company/${$route.params.company}/tax-payments/create-defaults/cr_accounts`"
+                :error="!!errors.cr_account"
+                :error-message="errors.cr_account"
+                :options="formDefaults.collections?.cr_accounts"
+                :static-option="fields.selected_cr_account_obj"
+              />
             </div>
           </div>
-          <q-input v-model="fields.remarks" type="textarea" autogrow label="Remarks" class="col-12 q-mt-sm" :error="!!errors.remarks" :error-message="errors.remarks" />
+          <q-input
+            v-model="fields.remarks"
+            autogrow
+            class="col-12 q-mt-sm"
+            label="Remarks"
+            type="textarea"
+            :error="!!errors.remarks"
+            :error-message="errors.remarks"
+          />
         </q-card-section>
         <div class="q-pb-lg row justify-end q-gutter-x-md">
           <span v-if="fields.status !== 'Cancelled' && fields.status !== 'Paid'" class="row q-gutter-x-md">
-            <q-btn v-if="checkPermissions('taxpayment.create')" color="orange-6" label="Save Draft" class="q-px-lg q-mb-sm" type="submit" :loading="loading" @click.prevent="submitWithStatus('Draft', submitForm)" />
-            <q-btn v-if="!!fields.status && isEdit && checkPermissions('taxpayment.cancel')" color="red-6" label="Cancel" icon="cancel" class="q-px-lg q-mb-sm" :loading="loading" @click.prevent="isDeleteOpen = true" />
-            <q-btn v-if="checkPermissions('taxpayment.create')" color="green-6" label="Mark as paid" class="q-px-lg q-mb-sm" :loading="loading" @click.prevent="submitWithStatus('Paid', submitForm)" />
+            <q-btn
+              v-if="checkPermissions('taxpayment.create')"
+              class="q-px-lg q-mb-sm"
+              color="orange-6"
+              label="Save Draft"
+              type="submit"
+              :loading="loading"
+              @click.prevent="submitWithStatus('Draft', submitForm)"
+            />
+            <q-btn
+              v-if="!!fields.status && isEdit && checkPermissions('taxpayment.cancel')"
+              class="q-px-lg q-mb-sm"
+              color="red-6"
+              icon="cancel"
+              label="Cancel"
+              :loading="loading"
+              @click.prevent="isDeleteOpen = true"
+            />
+            <q-btn
+              v-if="checkPermissions('taxpayment.create')"
+              class="q-px-lg q-mb-sm"
+              color="green-6"
+              label="Mark as paid"
+              :loading="loading"
+              @click.prevent="submitWithStatus('Paid', submitForm)"
+            />
           </span>
           <span v-if="fields.status === 'Paid' || fields.status === 'Cancelled'" class="row q-gutter-x-md">
-            <q-btn v-if="fields.status !== 'Cancelled'" color="red-6" label="Cancel" :loading="loading" icon="cancel" class="q-px-lg q-mb-sm" @click.prevent="isDeleteOpen = true" />
-            <q-btn color="green-6" label="Update" class="q-px-lg q-mb-sm" :loading="loading" @click.prevent="submitWithStatus(fields.status === 'Cancelled' ? 'Cancelled' : 'Paid', submitForm)" />
+            <q-btn
+              v-if="fields.status !== 'Cancelled'"
+              class="q-px-lg q-mb-sm"
+              color="red-6"
+              icon="cancel"
+              label="Cancel"
+              :loading="loading"
+              @click.prevent="isDeleteOpen = true"
+            />
+            <q-btn
+              class="q-px-lg q-mb-sm"
+              color="green-6"
+              label="Update"
+              :loading="loading"
+              @click.prevent="submitWithStatus(fields.status === 'Cancelled' ? 'Cancelled' : 'Paid', submitForm)"
+            />
           </span>
         </div>
       </q-card>
@@ -81,15 +168,34 @@ export default {
           <div class="text-h6 text-white">
             <span>Confirm Cancellation?</span>
           </div>
-          <q-btn v-close-popup icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense />
+          <q-btn
+            v-close-popup
+            dense
+            flat
+            round
+            class="text-red-700 bg-slate-200 opacity-95"
+            icon="close"
+          />
         </q-card-section>
         <q-separator inset />
         <q-card-section>
-          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">Are you sure?</div>
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">
+            Are you sure?
+          </div>
           <div class="text-blue">
             <div class="row justify-end">
-              <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)" />
-              <q-btn flat class="text-red" label="Yes" @click="submitWithStatus('Cancelled')" />
+              <q-btn
+                flat
+                class="q-mr-md text-blue-grey-9"
+                label="NO"
+                @click="() => (isDeleteOpen = false)"
+              />
+              <q-btn
+                flat
+                class="text-red"
+                label="Yes"
+                @click="submitWithStatus('Cancelled')"
+              />
             </div>
           </div>
         </q-card-section>
