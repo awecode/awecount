@@ -16,7 +16,7 @@ export default {
     const finishedProductData = ref([])
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/items/inventory-conversion/list/',
+      successRoute: `/${route.params.company}/inventory/conversions/`,
     })
     formData.fields.value.date = formData.today
     const deleteRow = (index, errors) => {

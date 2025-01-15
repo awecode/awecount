@@ -44,7 +44,7 @@ const newColumn = [
         color="green"
         icon-right="add"
         label="Add Inventory Conversion Voucher"
-        :to="`/${$route.params.company}/items/inventory-conversion/create/`"
+        :to="`/${$route.params.company}/inventory/conversions/create/`"
       />
     </div>
     <q-table
@@ -116,15 +116,15 @@ const newColumn = [
             color="blue-6"
             label="View"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/items/inventory-conversion/${props.row.id}/view`"
+            :to="`/${$route.params.company}/inventory/conversions/${props.row.id}`"
           />
           <q-btn
             v-if="checkPermissions('inventoryconversionvoucher.modify')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
-            label="edit"
+            label="Edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/items/inventory-conversion/${props.row.id}/`"
+            :to="`/${$route.params.company}/inventory/conversions/${props.row.id}/edit`"
           />
         </q-td>
       </template>
@@ -135,7 +135,7 @@ const newColumn = [
             v-if="checkPermissions('inventoryconversionvoucher.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
-            :to="`/${$route.params.company}/items/inventory-conversion/${props.row.id}/`"
+            :to="`/${$route.params.company}/inventory/conversions/${props.row.id}/edit`"
           >
             {{ props.row.voucher_no }}
           </router-link>

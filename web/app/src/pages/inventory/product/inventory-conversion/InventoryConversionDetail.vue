@@ -287,7 +287,7 @@ export default {
               color="orange-5"
               icon="edit"
               label="Edit"
-              :to="`/${$route.params.company}/items/inventory-conversion/${fields?.id}/`"
+              :to="`/${$route.params.company}/inventory/conversions/${fields?.id}`"
             />
             <q-btn
               v-if="checkPermissions('inventoryconversionvoucher.modify') && fields?.status !== 'Cancelled'"
