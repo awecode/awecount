@@ -115,7 +115,7 @@ export default {
       onRequest,
       onUpdate,
       onDownloadXls,
-      loading
+      loading,
     }
   },
 }
@@ -164,10 +164,7 @@ export default {
           >
             {{ props.row.party_name }}
           </router-link>
-          <span
-            v-else
-            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-          >
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
             {{ props.row.party_name }}
           </span>
         </q-td>

@@ -215,11 +215,7 @@ export default {
             >
               {{ props.row.voucher_no }}
             </router-link>
-            <span
-              v-else
-              data-testid="voucher-no"
-              style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            >
+            <span v-else data-testid="voucher-no" style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
               {{ props.row.voucher_no }}
             </span>
           </span>
@@ -228,10 +224,10 @@ export default {
     </q-table>
     <XLSImport
       v-model:show-import-modal="showImportModal"
-      :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/import/`"
       help-text="Upload a .xlsx file to import purchase invoices"
       sample-file-url="/files/purchase-invoices.xlsx"
       title="Import Purchase Vouchers"
+      :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/import/`"
       :required-columns="importRequiredColumns"
     />
   </div>

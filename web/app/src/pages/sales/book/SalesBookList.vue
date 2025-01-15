@@ -150,10 +150,7 @@ export default {
             >
               {{ props.row.voucher_no }}
             </router-link>
-            <span
-              v-else
-              style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            >
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
               {{ props.row.voucher_no }}
             </span>
           </div>

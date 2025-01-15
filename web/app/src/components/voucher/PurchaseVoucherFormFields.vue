@@ -261,8 +261,8 @@ onMounted(() => {
         <div class="col-md-6 col-12">
           <n-auto-complete-v2
             v-model="fields.party"
-            :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`"
             label="Party"
+            :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`"
             :error="errors?.party ? errors?.party : ''"
             :modal-component="checkPermissions('party.create') ? PartyForm : null"
             :options="formDefaults.collections?.parties"
@@ -318,10 +318,10 @@ onMounted(() => {
             v-model="fields.payment_mode"
             emit-value
             map-options
-            :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/payment_modes`"
             label="Payment Mode"
             option-label="name"
             option-value="id"
+            :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/payment_modes`"
             :error="errors.payment_mode"
             :error-message="errors.payment_mode"
             :options="modeOptionsComputed"

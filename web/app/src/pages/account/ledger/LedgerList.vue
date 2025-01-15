@@ -201,10 +201,7 @@ export default {
           >
             {{ props.row.category.name }}
           </router-link>
-          <span
-            v-else
-            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-          >
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
             {{ props.row.category.name }}
           </span>
         </q-td>
@@ -234,10 +231,7 @@ export default {
           >
             {{ props.row.name }}
           </router-link>
-          <span
-            v-else
-            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-          >
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
             {{ props.row.name }}
           </span>
         </q-td>

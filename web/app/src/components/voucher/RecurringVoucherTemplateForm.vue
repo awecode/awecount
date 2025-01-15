@@ -2,9 +2,9 @@
 import checkPermissions from 'src/composables/checkPermissions'
 import { parseErrors } from 'src/utils/helpers'
 import { capitalize } from 'vue'
+import { useRoute } from 'vue-router'
 import PurchaseVoucherFormFields from './PurchaseVoucherFormFields.vue'
 import SalesVoucherFormFields from './SalesVoucherFormFields.vue'
-import { useRoute } from 'vue-router'
 
 const props = defineProps({
   type: {

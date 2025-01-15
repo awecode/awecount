@@ -3,7 +3,6 @@ import checkPermissions from 'src/composables/checkPermissions'
 import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue'
 import { useRoute } from 'vue-router'
 
-const route = useRoute()
 const props = defineProps({
   label: {
     type: String,
@@ -64,6 +63,7 @@ const props = defineProps({
   },
 })
 const emits = defineEmits(['update:modelValue', 'update:typeModelValue'])
+const route = useRoute()
 const $q = useQuasar()
 const type = ref(props.typeModelValue)
 const modalValue = ref(props.modelValue)

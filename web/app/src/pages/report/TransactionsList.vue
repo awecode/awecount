@@ -294,10 +294,7 @@ export default {
           >
             {{ props.row.voucher_no }}
           </RouterLink>
-          <span
-            v-else
-            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-          >
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
             {{ props.row.voucher_no }}
           </span>
         </q-td>
@@ -325,10 +322,7 @@ export default {
           >
             {{ props.row.source_type }}
           </RouterLink>
-          <span
-            v-else
-            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-          >
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
             {{ props.row.source_type }}
           </span>
         </q-td>

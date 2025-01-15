@@ -7,8 +7,6 @@ import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import { useLoginStore } from 'src/stores/login-info'
 import { useRoute } from 'vue-router'
 
-const route = useRoute()
-
 const props = defineProps({
   formDefaults: {
     type: Object,
@@ -27,6 +25,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+const route = useRoute()
 
 const importChallanModal = ref(false)
 
@@ -323,9 +323,9 @@ watch(
               <n-auto-complete-v2
                 v-else
                 v-model="fields.party"
-                :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`"
                 label="Party"
                 :emit-obj="true"
+                :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`"
                 :error="errors?.party ? errors?.party : null"
                 :modal-component="checkPermissions('party.create') ? PartyForm : null"
                 :options="formDefaults.collections?.parties"
@@ -423,9 +423,9 @@ watch(
           <n-auto-complete-v2
             v-model="fields.payment_mode"
             data-testid="payment-mode-select"
-            :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/payment_modes`"
             label="Payment Mode *"
             :emit-obj="true"
+            :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/payment_modes`"
             :error="errors?.payment_mode ? errors?.payment_mode : null"
             :map-options="true"
             :options="modeOptionsComputed"
@@ -494,8 +494,8 @@ watch(
           v-model="fields.sales_agent"
           class="col-8"
           data-testid="sales-agent-select"
-          :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/sales_agents`"
           label="Sales Agent"
+          :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/sales_agents`"
           :error="errors?.sales_agent"
           :options="formDefaults.collections?.sales_agents"
           :static-option="fields.selected_sales_agent_obj"

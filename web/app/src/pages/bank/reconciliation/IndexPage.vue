@@ -2,8 +2,9 @@
 import type { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import { getPermissionFromSourceType, getVoucherUrl } from 'src/composables/getVoucherUrlAndPermissions'
-import * as XLSX from 'xlsx'
 import { useRoute } from 'vue-router'
+import * as XLSX from 'xlsx'
+
 interface SystemTransactionData {
   id: number
   date: string
@@ -507,7 +508,7 @@ async function parseExcelFile(file: File): Promise<void> {
         label="Manual Reconciliation"
         :to="{
           name: 'company-bank-reconciliation-reconcile',
-          params: { company: $route.params.company }
+          params: { company: $route.params.company },
         }"
       />
       <q-btn

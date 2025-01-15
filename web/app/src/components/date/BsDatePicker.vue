@@ -359,7 +359,7 @@ const disablePreviousBtns = computed(() => {
               v-for="(monthList, index) in months_list"
               :key="monthList"
               class="col-4"
-              @click="(month = index + 1), (showMonth = false)"
+              @click="((month = index + 1), (showMonth = false))"
             >
               <div class="q-date__months-item flex flex-center">
                 <button
@@ -384,7 +384,7 @@ const disablePreviousBtns = computed(() => {
                 v-for="i in 22"
                 :key="i"
                 class="col-3"
-                @click="(year = i + 2068), (showYear = false)"
+                @click="((year = i + 2068), (showYear = false))"
               >
                 <div class="q-date__years-item flex flex-center">
                   <button

@@ -82,12 +82,7 @@ const onSubmitClick = (status, noPrint) => {
           icon: 'report_problem',
         })
       } else if (err.status === 422) {
-        useHandleCancelInconsistencyError(
-          `/api/company/${route.params.company}/pos/`,
-          err,
-          fields.value,
-          $q
-        )
+        useHandleCancelInconsistencyError(`/api/company/${route.params.company}/pos/`, err, fields.value, $q)
           .then((data) => {
             handleSubmitSuccess(data, fields.value.noPrint)
           })

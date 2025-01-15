@@ -61,11 +61,7 @@ export default {
           >
             {{ props.row.name }}
           </router-link>
-          <span
-            v-else
-            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            class="whitespace-normal"
-          >
+          <span v-else class="whitespace-normal" style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
             {{ props.row.name }}
           </span>
         </q-td>

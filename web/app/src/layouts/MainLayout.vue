@@ -440,11 +440,18 @@ const breadcrumbs = useBreadcrumbItems()
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
     <q-header bordered class="bg-white text-grey-8 d-print-none print-hide q-py-xs">
       <q-toolbar>
-        <q-btn flat dense round icon="mdi-menu" aria-label="Menu" @click="miniState = !miniState" />
+        <q-btn
+          dense
+          flat
+          round
+          aria-label="Menu"
+          icon="mdi-menu"
+          @click="miniState = !miniState"
+        />
 
         <q-toolbar-title class="flex items-center" style="gap: 16px">
-          <RouterLink v-if="store.companyInfo?.logo_url" :to="`/${$route.params.company}/dashboard`" style="max-width: 60px; max-height: 40px">
-            <img style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url" alt="Company Logo" />
+          <RouterLink v-if="store.companyInfo?.logo_url" style="max-width: 60px; max-height: 40px" :to="`/${$route.params.company}/dashboard`">
+            <img alt="Company Logo" style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url" />
           </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">
             <q-breadcrumbs-el v-for="breadcrumb in breadcrumbs.slice(1)" :key="breadcrumb.to" v-bind="breadcrumb" />
@@ -501,8 +508,18 @@ const breadcrumbs = useBreadcrumbItems()
                   </div>
                   <div class="q-mb-md" style="margin-top: 40px">
                     <div class="text-right text-blue-6 row justify-end q-gutter-x-lg">
-                      <q-btn flat label="Cancel" class="text-grey-8" @click="logoutDiologueOpen = false" />
-                      <q-btn flat label="Yes" class="text-red" @click="() => logout()" />
+                      <q-btn
+                        flat
+                        class="text-grey-8"
+                        label="Cancel"
+                        @click="logoutDiologueOpen = false"
+                      />
+                      <q-btn
+                        flat
+                        class="text-red"
+                        label="Yes"
+                        @click="() => logout()"
+                      />
                     </div>
                   </div>
                 </div>
@@ -512,14 +529,21 @@ const breadcrumbs = useBreadcrumbItems()
         </div>
       </q-toolbar>
     </q-header>
-    <q-drawer v-model="leftDrawerOpen" drawer persistent bordered show-if-above :mini="miniState">
+    <q-drawer
+      v-model="leftDrawerOpen"
+      bordered
+      drawer
+      persistent
+      show-if-above
+      :mini="miniState"
+    >
       <q-list class="icon-grey d-print-none print-hide">
         <q-btn-dropdown
           flat
-          :label="companies.find(c => c.slug === activeCompany)?.name || 'Select Company'"
           class="full-width q-pa-md"
-          style="margin-top: 2px;"
+          style="margin-top: 2px"
           :disable="miniState"
+          :label="companies.find((c) => c.slug === activeCompany)?.name || 'Select Company'"
         >
           <q-list>
             <template v-for="company in companies" :key="company.slug">
@@ -541,7 +565,7 @@ const breadcrumbs = useBreadcrumbItems()
                   <q-item-label>{{ company.name }}</q-item-label>
                 </q-item-section>
                 <q-item-section v-if="company.slug === activeCompany" side>
-                  <q-icon name="check" color="primary" />
+                  <q-icon color="primary" name="check" />
                 </q-item-section>
               </q-item>
             </template>
@@ -591,22 +615,37 @@ const breadcrumbs = useBreadcrumbItems()
       <div v-if="store.isLoading" class="relative">
         <div class="bg-white q-pa-lg -mt-2 transition-all absolute top-0 left-0 w-full h-full">
           <q-card class="mt-2">
-            <q-skeleton height="64px" square class="bg-green" />
+            <q-skeleton square class="bg-green" height="64px" />
             <q-card class="q-mx-lg q-pt-md pb-8 px-3">
               <div class="grid lg:grid-cols-2 grid-cols-1 gap-y-12 gap-x-6 py-6">
                 <div class="flex gap-4">
                   <div class="flex grow gap-1">
-                    <q-skeleton height="45px" type="rect" class="grow" />
-                    <q-skeleton height="45px" width="45px" type="QBtn" square />
+                    <q-skeleton class="grow" height="45px" type="rect" />
+                    <q-skeleton
+                      square
+                      height="45px"
+                      type="QBtn"
+                      width="45px"
+                    />
                   </div>
-                  <q-skeleton height="45px" width="65px" type="QBtn" square />
+                  <q-skeleton
+                    square
+                    height="45px"
+                    type="QBtn"
+                    width="65px"
+                  />
                 </div>
                 <q-skeleton height="45px" type="QInput" />
                 <q-skeleton height="45px" type="QInput" />
                 <q-skeleton height="45px" type="QInput" />
                 <div class="flex gap-4">
-                  <q-skeleton height="45px" type="rect" class="grow" />
-                  <q-skeleton height="45px" width="65px" type="QBtn" square />
+                  <q-skeleton class="grow" height="45px" type="rect" />
+                  <q-skeleton
+                    square
+                    height="45px"
+                    type="QBtn"
+                    width="65px"
+                  />
                 </div>
                 <div></div>
                 <q-skeleton height="45px" type="QInput" />
@@ -620,8 +659,13 @@ const breadcrumbs = useBreadcrumbItems()
                     </div>
                     <div class="grid grid-cols-12 gap-6">
                       <div class="flex grow gap-1 col-span-5">
-                        <q-skeleton height="45px" type="rect" class="grow" />
-                        <q-skeleton height="45px" width="45px" type="QBtn" square />
+                        <q-skeleton class="grow" height="45px" type="rect" />
+                        <q-skeleton
+                          square
+                          height="45px"
+                          type="QBtn"
+                          width="45px"
+                        />
                       </div>
                       <div class="col-span-2">
                         <q-skeleton height="45px" type="rect" />
@@ -640,26 +684,26 @@ const breadcrumbs = useBreadcrumbItems()
                     <div class="sm:grid grid-cols-8 py-8">
                       <div class="col-span-5"></div>
                       <div class="col-span-3 grid grid-cols-2 gap-x-4">
-                        <q-skeleton type="text" height="30px" class="w-" />
-                        <q-skeleton type="text" height="30px" class="w-" />
-                        <q-skeleton type="text" height="30px" class="w-" />
-                        <q-skeleton type="text" height="30px" class="w-" />
-                        <q-skeleton type="text" height="30px" class="w-" />
-                        <q-skeleton type="text" height="30px" class="w-" />
+                        <q-skeleton class="w-" height="30px" type="text" />
+                        <q-skeleton class="w-" height="30px" type="text" />
+                        <q-skeleton class="w-" height="30px" type="text" />
+                        <q-skeleton class="w-" height="30px" type="text" />
+                        <q-skeleton class="w-" height="30px" type="text" />
+                        <q-skeleton class="w-" height="30px" type="text" />
                       </div>
                     </div>
                   </q-card-section>
                 </q-card>
               </div>
               <div class="flex justify-right">
-                <q-skeleton type="QBtn" class="bg-green" height="36px" />
+                <q-skeleton class="bg-green" height="36px" type="QBtn" />
               </div>
             </q-card>
           </q-card>
         </div>
       </div>
       <Suspense>
-        <RouterView :class="store.isLoading ? 'opacity-0' : ''" class="transition-all" />
+        <RouterView class="transition-all" :class="store.isLoading ? 'opacity-0' : ''" />
       </Suspense>
     </q-page-container>
   </q-layout>

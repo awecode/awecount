@@ -3,14 +3,14 @@ import checkPermissions from 'src/composables/checkPermissions'
 import { capitalize } from 'vue'
 import { useRoute } from 'vue-router'
 
-const route = useRoute()
-
 const props = defineProps({
   type: {
     type: String,
     required: true,
   },
 })
+
+const route = useRoute()
 
 const capitalizedType = capitalize(props.type)
 

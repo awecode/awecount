@@ -6,7 +6,6 @@ import ChequeIssueForm from 'src/pages/bank/cheque-issue/ChequeIssueForm.vue'
 import FundTransferForm from 'src/pages/bank/fund-transfer/FundTransferForm.vue'
 import { useRoute } from 'vue-router'
 
-
 interface AccountDetails {
   ledger_id: number
   id: number
@@ -536,7 +535,7 @@ const onFundTransferChequeIssueSuccess = () => {
                   option-label="label"
                   option-value="value"
                   :options="sortBy"
-                  @update:model-value="(statementPage = 1), fetchUnmatchedBankTransactions()"
+                  @update:model-value="((statementPage = 1), fetchUnmatchedBankTransactions())"
                 />
                 <div class="flex items-center pb-2 cursor-pointer">
                   <svg
@@ -545,7 +544,7 @@ const onFundTransferChequeIssueSuccess = () => {
                     width="10"
                     xmlns="http://www.w3.org/2000/svg"
                     :class="statementSortDir === 'asc' ? 'transform rotate-180' : ''"
-                    @click="(statementSortDir = statementSortDir === 'asc' ? 'desc' : 'asc'), (statementPage = 1), fetchUnmatchedBankTransactions()"
+                    @click="((statementSortDir = statementSortDir === 'asc' ? 'desc' : 'asc'), (statementPage = 1), fetchUnmatchedBankTransactions())"
                   >
                     <g
                       fill="none"
@@ -583,7 +582,7 @@ const onFundTransferChequeIssueSuccess = () => {
                 class="grow mb-2"
                 placeholder="Search..."
                 :debounce="500"
-                @update:model-value="(statementPage = 1), fetchUnmatchedBankTransactions()"
+                @update:model-value="((statementPage = 1), fetchUnmatchedBankTransactions())"
               />
             </div>
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
@@ -661,7 +660,7 @@ const onFundTransferChequeIssueSuccess = () => {
                   option-label="label"
                   option-value="value"
                   :options="sortBy"
-                  @update:model-value="(systemPage = 1), fetchUnmatchedSystemTransactions()"
+                  @update:model-value="((systemPage = 1), fetchUnmatchedSystemTransactions())"
                 />
                 <div class="flex items-center pb-2 cursor-pointer text-gray-700">
                   <svg
@@ -670,7 +669,7 @@ const onFundTransferChequeIssueSuccess = () => {
                     width="10"
                     xmlns="http://www.w3.org/2000/svg"
                     :class="systemSortDir === 'asc' ? 'transform rotate-180' : ''"
-                    @click="(systemSortDir = systemSortDir === 'asc' ? 'desc' : 'asc'), (systemPage = 1), fetchUnmatchedSystemTransactions()"
+                    @click="((systemSortDir = systemSortDir === 'asc' ? 'desc' : 'asc'), (systemPage = 1), fetchUnmatchedSystemTransactions())"
                   >
                     <g
                       fill="none"
@@ -708,7 +707,7 @@ const onFundTransferChequeIssueSuccess = () => {
                 class="grow mb-2"
                 placeholder="Search..."
                 :debounce="500"
-                @update:model-value="(systemPage = 1), fetchUnmatchedSystemTransactions()"
+                @update:model-value="((systemPage = 1), fetchUnmatchedSystemTransactions())"
               />
             </div>
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
@@ -826,9 +825,9 @@ const onFundTransferChequeIssueSuccess = () => {
     <div class="min-w-[900px]">
       <FundTransferForm
         class="w-full"
-        :endpoint="`/api/company/${$route.params.company}/bank-reconciliation/reconcile-transactions-with-funds-transfer/`"
         :amount="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)))"
         :date="findLatestDate(selectedStatementTransactions)"
+        :endpoint="`/api/company/${$route.params.company}/bank-reconciliation/reconcile-transactions-with-funds-transfer/`"
         :from-account="{
           id: accountDetails.ledger_id,
           name: accountDetails.name,
@@ -845,7 +844,6 @@ const onFundTransferChequeIssueSuccess = () => {
     <div class="min-w-[900px]">
       <ChequeIssueForm
         class="w-full"
-        :endpoint="`/api/company/${$route.params.company}/bank-reconciliation/reconcile-transactions-with-cheque-issue/`"
         :amount="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)))"
         :bank-account="{
           id: accountDetails.id,
@@ -854,6 +852,7 @@ const onFundTransferChequeIssueSuccess = () => {
           cheque_no: accountDetails.cheque_no,
         }"
         :date="findLatestDate(selectedStatementTransactions)"
+        :endpoint="`/api/company/${$route.params.company}/bank-reconciliation/reconcile-transactions-with-cheque-issue/`"
         :is-modal="true"
         :statement-ids="selectedStatementTransactions.map((t) => t.id)"
         @modal-signal="onFundTransferChequeIssueSuccess"

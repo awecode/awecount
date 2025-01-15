@@ -186,11 +186,7 @@ export default {
                     />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch
-                      v-model="filters.item"
-                      label="Items"
-                      :endpoint="`/api/company/${$route.params.company}/items/sales-choices/`"
-                    />
+                    <SelectWithFetch v-model="filters.item" label="Items" :endpoint="`/api/company/${$route.params.company}/items/sales-choices/`" />
                   </div>
                   <div class="q-ma-sm">
                     <MultiSelectChip v-model="filters.status" :options="['Draft', 'Issued', 'Paid', 'Partially Paid', 'Cancelled']" />
@@ -227,10 +223,7 @@ export default {
             >
               {{ props.row.voucher__voucher_no }}
             </router-link>
-            <span
-              v-else
-              style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            >
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
               {{ props.row.voucher__voucher_no }}
             </span>
           </div>

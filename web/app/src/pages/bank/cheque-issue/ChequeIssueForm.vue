@@ -33,7 +33,7 @@ export default {
   setup(props, context) {
     const route = useRoute()
 
-    const endpoint =  props.endpoint || `/api/company/${route.params.company}cheque-issue/`
+    const endpoint = props.endpoint || `/api/company/${route.params.company}cheque-issue/`
 
     const showDrAccount = ref(false)
     const config = {

@@ -394,7 +394,7 @@ const loadSalesInvoice = async (index: number, done: any) => {
                 option-label="label"
                 option-value="value"
                 :options="sortOptions"
-                @update:model-value="(page = 1), searchInvoice()"
+                @update:model-value="((page = 1), searchInvoice())"
               />
               <div class="flex items-center pb-2 cursor-pointer text-gray-700">
                 <svg
@@ -403,7 +403,7 @@ const loadSalesInvoice = async (index: number, done: any) => {
                   width="10"
                   xmlns="http://www.w3.org/2000/svg"
                   :class="sortDir === 'asc' ? 'transform rotate-180' : ''"
-                  @click="(sortDir = sortDir === 'asc' ? 'desc' : 'asc'), (page = 1), searchInvoice()"
+                  @click="((sortDir = sortDir === 'asc' ? 'desc' : 'asc'), (page = 1), searchInvoice())"
                 >
                   <g
                     fill="none"
@@ -440,7 +440,7 @@ const loadSalesInvoice = async (index: number, done: any) => {
               class="grow mb-2"
               placeholder="Search..."
               :debounce="500"
-              @update:model-value="(page = 1), searchInvoice()"
+              @update:model-value="((page = 1), searchInvoice())"
             />
           </div>
         </div>
