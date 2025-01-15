@@ -1,18 +1,43 @@
-FROM python:3.11.2-slim-buster
+FROM python:3.12.7-alpine AS backend
 
-RUN apt-get update && apt-get install -y libmagic-dev libpq-dev libffi-dev musl-dev libfreetype6-dev python3-dev graphviz libgraphviz-dev pkg-config
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+WORKDIR /app
 
-ENV PYTHONUNBUFFERED 1
+RUN apk add --no-cache \
+  "libpq" \
+  "libxslt" \
+  "xmlsec"
 
+COPY requirements.txt ./
+
+RUN apk add --no-cache libffi-dev
+RUN apk add --no-cache --virtual .build-deps \
+  "bash~=5.2" \
+  "g++" \
+  "gcc" \
+  "git" \
+  "make" \
+  "postgresql-dev" \
+  "libc-dev" \
+  "linux-headers" \
+  && \
+  pip install -r requirements.txt --compile --no-cache-dir \
+  && \
+  apk del .build-deps
+
+# Add in Django deps and generate Django's static files
+COPY manage.py manage.py
 COPY . .
 
-RUN apt-get update \
-  && apt-get -y install gcc \
-  && apt-get clean \
-  && pip install --upgrade pip \
-  && pip install -r requirements/frozen.txt
+RUN apk --no-cache add "bash~=5.2"
+COPY ./bin ./bin/
 
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+RUN mkdir -p /app/logs
+RUN chmod +x ./bin/*
+
+# Expose container port and run entry point script
+EXPOSE 8000
