@@ -177,7 +177,7 @@ export default {
           color="blue"
           label="Issue Purchase Voucher"
           :loading="loading"
-          :to="`/${$route.params.company}/purchase-voucher/create/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`"
+          :to="`/${$route.params.company}/purchase/vouchers/create/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`"
         />
         <q-btn
           v-if="checkPermissions('purchaseorder.cancel') && isEdit && fields.status === 'Issued'"

@@ -30,7 +30,7 @@ const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)
         color="green"
         icon-right="add"
         label="Add Bill of Material"
-        :to="`/${$route.params.company}/items/bill-of-material/create/`"
+        :to="`/${$route.params.company}/inventory/bill-of-materials/create/`"
       />
     </div>
     <q-table
@@ -69,7 +69,7 @@ const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/items/bill-of-material/${props.row.id}/`"
+            :to="`/${$route.params.company}/inventory/bill-of-materials/${props.row.id}/edit`"
           />
         </q-td>
       </template>
