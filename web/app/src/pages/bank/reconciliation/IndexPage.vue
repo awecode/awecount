@@ -509,7 +509,7 @@ async function parseExcelFile(file: File): Promise<void> {
         }"
       />
       <q-btn
-        v-if="checkPermissions('ReconciliationStatementCreate')"
+        v-if="checkPermissions('reconciliationstatement.create')"
         color="green"
         icon="mdi-file-upload-outline"
         label="Upload Statement"
@@ -585,7 +585,7 @@ async function parseExcelFile(file: File): Promise<void> {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('ReconciliationStatementView')"
+            v-if="checkPermissions('reconciliationstatement.view')"
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             color="blue"
             label="View"
@@ -593,7 +593,7 @@ async function parseExcelFile(file: File): Promise<void> {
             :to="`/bank-reconciliation/${props.row.id}/`"
           />
           <q-btn
-            v-if="checkPermissions('ReconciliationStatementView') && props.row.reconciled_rows < props.row.total_rows"
+            v-if="checkPermissions('reconciliationstatement.view') && props.row.reconciled_rows < props.row.total_rows"
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             color="green"
             label="Reconcile"
@@ -601,7 +601,7 @@ async function parseExcelFile(file: File): Promise<void> {
             :to="`/bank-reconciliation/reconcile/?account_id=${props.row.account.id}&start_date=${props.row.start_date}&end_date=${props.row.end_date}`"
           />
           <q-btn
-            v-else-if="checkPermissions('ReconciliationStatementView')"
+            v-else-if="checkPermissions('reconciliationstatement.view')"
             disable
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             color="blue"
@@ -609,7 +609,7 @@ async function parseExcelFile(file: File): Promise<void> {
             style="font-size: 12px"
           />
           <q-btn
-            v-if="checkPermissions('ReconciliationStatementDelete')"
+            v-if="checkPermissions('reconciliationstatement.delete')"
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             color="red"
             label="Delete"
@@ -621,7 +621,7 @@ async function parseExcelFile(file: File): Promise<void> {
       <template #body-cell-category="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('CategoryModify')"
+            v-if="checkPermissions('category.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
             :to="`/account-category/${props.row.category.id}/`"
@@ -634,7 +634,7 @@ async function parseExcelFile(file: File): Promise<void> {
       <template #body-cell-account="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('AccountView')"
+            v-if="checkPermissions('account.view')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
             :to="`/account/${props.row.account.id}/view/?start_date=${props.row.start_date}&end_date=${props.row.end_date}`"

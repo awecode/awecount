@@ -172,7 +172,7 @@ const timeUnits = ['Day(s)', 'Week(s)', 'Month(s)', 'Year(s)']
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn
-          v-if="!isEdit && checkPermissions('RecurringVoucherTemplateCreate')"
+          v-if="!isEdit && checkPermissions('recurringvouchertemplate.create')"
           color="blue"
           data-testid="issue-btn"
           label="Save"
@@ -181,7 +181,7 @@ const timeUnits = ['Day(s)', 'Week(s)', 'Month(s)', 'Year(s)']
           @click.prevent="submitForm()"
         />
         <q-btn
-          v-if="isEdit && checkPermissions('RecurringVoucherTemplateModify')"
+          v-if="isEdit && checkPermissions('recurringvouchertemplate.modify')"
           color="orange-8"
           data-testid="update-btn"
           label="Update"

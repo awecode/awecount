@@ -44,7 +44,7 @@ const onSubmitClick = async (status) => {
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn
-          v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit"
+          v-if="checkPermissions('purchasevoucher.create') && !isEdit"
           color="orange"
           label="Save Draft"
           type="submit"
@@ -52,7 +52,7 @@ const onSubmitClick = async (status) => {
           @click.prevent="() => onSubmitClick('Draft')"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseVoucherCreate') && isEdit && fields.status === 'Draft'"
+          v-if="checkPermissions('purchasevoucher.create') && isEdit && fields.status === 'Draft'"
           color="orange"
           label="Update Draft"
           type="submit"
@@ -60,14 +60,14 @@ const onSubmitClick = async (status) => {
           @click.prevent="() => onSubmitClick('Draft')"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit"
+          v-if="checkPermissions('purchasevoucher.create') && !isEdit"
           color="green"
           label="Issue"
           :loading="loading"
           @click.prevent="() => onSubmitClick('Issued')"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseVoucherCreate') && isEdit"
+          v-if="checkPermissions('purchasevoucher.create') && isEdit"
           color="green"
           :label="fields.status === 'Draft' ? 'Issue from Draft' : 'Update'"
           :loading="loading"

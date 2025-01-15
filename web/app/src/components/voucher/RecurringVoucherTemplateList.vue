@@ -76,7 +76,7 @@ const newColumn = [
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn
-        v-if="checkPermissions('RecurringVoucherTemplateCreate')"
+        v-if="checkPermissions('recurringvouchertemplate.create')"
         class="add-btn"
         color="green"
         icon-right="add"
@@ -149,7 +149,7 @@ const newColumn = [
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('RecurringVoucherTemplateModify')"
+            v-if="checkPermissions('recurringvouchertemplate.modify')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
             label="edit"

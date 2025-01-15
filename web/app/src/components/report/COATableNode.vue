@@ -178,7 +178,7 @@ const addAccount = (id: number) => {
       'bg-gray-100': canBeDropped,
       'bg-gray-200': currentTarget && currentTarget.id === row.id && canBeDropped,
     }"
-    :draggable="checkPermissions('CategoryModify') && row.id ? true : false"
+    :draggable="checkPermissions('category.modify') && row.id ? true : false"
     @dragend="handleDragEnd"
     @dragenter="handleDragEnter(row)"
     @dragover.prevent
@@ -239,7 +239,7 @@ const addAccount = (id: number) => {
       >
         <q-list>
           <q-item
-            v-if="checkPermissions('CategoryModify')"
+            v-if="checkPermissions('category.modify')"
             v-close-popup
             clickable
             @click="editRow('category', row.id)"
@@ -247,7 +247,7 @@ const addAccount = (id: number) => {
             <q-item-section>Edit Category</q-item-section>
           </q-item>
           <q-item
-            v-if="checkPermissions('CategoryCreate')"
+            v-if="checkPermissions('category.create')"
             v-close-popup
             clickable
             @click="addSubCategory(row.id)"
@@ -255,7 +255,7 @@ const addAccount = (id: number) => {
             <q-item-section>Add Sub-Category</q-item-section>
           </q-item>
           <q-item
-            v-if="checkPermissions('AccountCreate')"
+            v-if="checkPermissions('account.create')"
             v-close-popup
             clickable
             @click="addAccount(row.id)"
@@ -286,7 +286,7 @@ const addAccount = (id: number) => {
         <q-tr
           v-if="!(config.hide_zero_transactions && account.total_transactions === 0)"
           class="q-virtual-scroll--with-prev"
-          :draggable="checkPermissions('AccountModify') && !config.hide_categories ? true : false"
+          :draggable="checkPermissions('account.modify') && !config.hide_categories ? true : false"
           @dragover.prevent
           @dragstart="handleDragStart({ type: 'account', row: account })"
         >
@@ -305,7 +305,7 @@ const addAccount = (id: number) => {
           <q-td>{{ account.total_transactions }}</q-td>
           <q-td class="text-center">
             <q-btn
-              v-if="checkPermissions('AccountModify')"
+              v-if="checkPermissions('account.modify')"
               dense
               flat
               round

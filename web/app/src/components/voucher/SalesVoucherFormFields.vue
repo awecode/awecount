@@ -324,7 +324,7 @@ watch(
                 label="Party"
                 :emit-obj="true"
                 :error="errors?.party ? errors?.party : null"
-                :modal-component="checkPermissions('PartyCreate') ? PartyForm : null"
+                :modal-component="checkPermissions('party.create') ? PartyForm : null"
                 :options="formDefaults.collections?.parties"
                 :static-option="fields.selected_party_obj"
                 @update-obj="onPartyChange"
@@ -350,7 +350,7 @@ watch(
               data-testid="alias-select"
               label="Name on Invoice"
               :error="errors?.customer_name ? errors?.customer_name : null"
-              :modal-component="checkPermissions('PartyAliasCreate') ? PartyAlias : null"
+              :modal-component="checkPermissions('partyalias.create') ? PartyAlias : null"
               :options="aliases"
             />
           </div>
@@ -396,7 +396,7 @@ watch(
               v-model="fields.discount_type"
               label="Discount"
               :error="errors?.discount_type ? errors?.discount_type : null"
-              :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null"
+              :modal-component="checkPermissions('salesdiscount.create') ? SalesDiscountForm : null"
               :options="staticOptions.discount_types.concat(formDefaults.collections?.discounts)"
             />
           </div>

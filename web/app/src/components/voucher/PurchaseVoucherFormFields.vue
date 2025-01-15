@@ -263,7 +263,7 @@ onMounted(() => {
             endpoint="/v1/sales-voucher/create-defaults/parties"
             label="Party"
             :error="errors?.party ? errors?.party : ''"
-            :modal-component="checkPermissions('PartyCreate') ? PartyForm : null"
+            :modal-component="checkPermissions('party.create') ? PartyForm : null"
             :options="formDefaults.collections?.parties"
             :static-option="fields.selected_party_obj"
           />
@@ -282,7 +282,7 @@ onMounted(() => {
               v-model="fields.discount_type"
               label="Discount"
               :error="errors.discount_type"
-              :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null"
+              :modal-component="checkPermissions('purchasediscount.create') ? PurchaseDiscountForm : null"
               :options="discountOptionsComputed"
             />
           </div>

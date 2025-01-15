@@ -302,7 +302,7 @@ const droppableCategories = computed(() => {
 
   const { type: draggingType, row: draggingRow } = draggingItem.value
 
-  if ((draggingType === 'category' && !checkPermissions('CategoryModify')) || (draggingType === 'account' && !checkPermissions('AccountModify'))) {
+  if ((draggingType === 'category' && !checkPermissions('category.modify')) || (draggingType === 'account' && !checkPermissions('account.modify'))) {
     return []
   }
 
@@ -405,7 +405,7 @@ function handleAddAccountEmitEvent(id: number) {
         </q-menu>
       </q-btn>
       <q-btn
-        v-if="checkPermissions('AccountCreate')"
+        v-if="checkPermissions('account.create')"
         class="add-btn"
         color="green"
         icon-right="add"
@@ -414,7 +414,7 @@ function handleAddAccountEmitEvent(id: number) {
       />
 
       <q-btn
-        v-if="checkPermissions('CategoryCreate')"
+        v-if="checkPermissions('category.create')"
         color="green"
         icon-right="add"
         label="Add Category"
