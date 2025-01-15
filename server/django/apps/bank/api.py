@@ -1,19 +1,20 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from itertools import combinations
+from django.db import connection
+import json
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.mail import send_mail
 from django.db import transaction
-from django.db.models import Case, Count, F, OuterRef, Q, Subquery, When
+from django.db.models import Case,Count, F, OuterRef, Q, Subquery, When
 from django.db.models.functions import Coalesce
 from django.forms import ValidationError
 from django_filters import rest_framework as filters
 from django_q.tasks import async_task
-from rest_framework import filters as rf_filters
-from rest_framework import mixins
+from rest_framework import filters as rf_filters, mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
@@ -74,7 +75,6 @@ from awecount.libs.mixins import InputChoiceMixin
 class BankAccountViewSet(InputChoiceMixin, CRULViewSet):
     queryset = BankAccount.objects.all()
     serializer_class = BankAccountSerializer
-
 
 acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
 
@@ -297,9 +297,7 @@ class FundTransferViewSet(CRULViewSet):
         serializer = self.get_serializer(page, many=True)
         paginated_response = self.get_paginated_response(serializer.data)
         data = paginated_response.data
-        templates = FundTransferTemplate.objects.filter(
-            company=request.company
-        ).select_related("from_account", "to_account", "transaction_fee_account")
+        templates = FundTransferTemplate.objects.filter(company=request.company).select_related("from_account", "to_account", "transaction_fee_account")
         data["templates"] = FundTransferTemplateSerializer(templates, many=True).data
         return Response(data)
 
@@ -385,9 +383,6 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
         company_id=company_id, journal_entry__date__range=[start_date, end_date], account_id=account_id
         ).order_by("journal_entry__date").select_related("journal_entry")
 
-        # get system_transactions sql query
-        print(system_transactions.query)
-
         def parse_amount(amount):
             if amount and isinstance(amount, str):
                 return float(amount.replace(",", ""))
@@ -463,6 +458,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
             Parameters:
                 system_transaction (object): The system transaction to reconcile.
                 statement_transactions (list): A list of statement transactions to match against.
+                has_same_date (bool): Whether the system transactions have the same date as the statement transaction.
 
             Returns:
                 bool: True if the transaction was reconciled, False otherwise.
@@ -526,6 +522,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
             Parameters:
                 system_transaction (object): The system transaction to reconcile.
                 statement_transactions (list): A list of statement transactions to match against.
+                has_same_date (bool): Whether the system transactions have the same date as the statement transaction.
 
             Returns:
                 bool: True if the transaction was reconciled, False otherwise.
@@ -561,9 +558,8 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                         return True
             return False
 
-        # in system_transactions that doesnt have transaction_id,
         # Reconcile transactions by sum
-        for system_transaction in unreconciled_system_transactions[:]:  # Iterate over a copy to allow safe modification
+        for system_transaction in unreconciled_system_transactions[:]:
             date_str = system_transaction.journal_entry.date.strftime('%Y-%m-%d')
             if date_str in system_transactions_by_date:
                 # Filter statement transactions by date
@@ -585,6 +581,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
             Parameters:
                 statement_transaction (dict): The statement transaction to reconcile.
                 system_transactions (list): A list of system transactions to match against.
+                has_same_date (bool): Whether the system transactions have the same date as the statement transaction.
 
             Returns:
                 bool: True if the transaction was reconciled, False otherwise.
@@ -639,33 +636,6 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                             reconciled_transactions.append(statement_transaction)
                             unreconciled_statement_transactions.remove(statement_transaction)
                             return True
-
-
-            for r in range(2, len(system_transactions) + 1):
-                for combination in combinations(system_transactions, r):
-                    total_dr = sum((t.dr_amount or 0) for t in combination)
-                    total_cr = sum((t.cr_amount or 0) for t in combination)
-
-                    if (
-                        abs(total_dr - statement_transaction.get('cr_amount', 0)) < settings.BANK_RECONCILIATION_TOLERANCE and
-                        abs(total_cr - statement_transaction.get('dr_amount', 0)) < settings.BANK_RECONCILIATION_TOLERANCE
-                    ):
-                        # Reconcile matched transactions
-                        for system_transaction in combination:
-                            if statement_transaction.get('transactions'):
-                                statement_transaction['transactions'].append({'id': system_transaction.pk, 'updated_at': system_transaction.updated_at})
-                            else:
-                                statement_transaction['transactions'] = [{'id': system_transaction.pk, 'updated_at': system_transaction.updated_at}]
-                            if has_same_date:
-                                statement_transaction['status'] = 'Reconciled'
-                            unreconciled_system_transactions.remove(system_transaction)
-                            system_transactions_by_date[system_transaction.journal_entry.date.strftime('%Y-%m-%d')].remove(system_transaction)
-
-                        reconciled_transactions.append(statement_transaction)
-                        unreconciled_statement_transactions.remove(statement_transaction)
-
-
-                        return True
             return False
 
         # Reconcile transactions by sum
@@ -681,10 +651,6 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                     if not system_transactions_by_date[date_str]:
                         del system_transactions_by_date[date_str]
                     continue
-
-
-        # def reconcile_system_statement_combinations(statement_transaction, system_transactions):
-
 
 
         # loop in unreconciled statement transactions and unreconciled system transactions, find combinations in system transaction of the date where debits - credits that match the statement transaction amount
@@ -704,10 +670,8 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                 if t.journal_entry.date.strftime("%Y-%m-%d") == date_str
             ]
 
-            # Validate statement transaction amount
             statement_amount = float(statement_transaction.get("cr_amount", 0))
 
-            # Track if reconciliation is found
             reconciliation_found = False
 
             # Try combinations of system transactions
@@ -716,12 +680,10 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                     break
 
                 for combination in combinations(date_filtered_system_transactions, r):
-                    # Calculate net difference
                     net_difference = sum(
                         (t.dr_amount or 0) - (t.cr_amount or 0) for t in combination
                     )
 
-                    # Check if net difference matches statement amount within tolerance
                     if (
                         abs(round(net_difference, 2) - round(statement_amount, 2))
                         < settings.BANK_RECONCILIATION_TOLERANCE
@@ -1157,9 +1119,16 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
             # Perform bulk_create for transactions
             ReconciliationRowTransaction.objects.bulk_create(bulk_transactions, batch_size=500)
 
+        reconciled_length = 0
+        matched_length = 0
+        for statement_transaction in reconciled_transactions:
+            if statement_transaction.get('status') == 'Reconciled':
+                reconciled_length += 1
+            else:
+                matched_length += 1
         # email the user
         header = "Bank Reconciliation Statement Import Completed"
-        message = "Bank Reconciliation Statement Import Completed, with " + str(len(reconciled_transactions)) + " transactions reconciled and " + str(len(unreconciled_statement_transactions)) + " transactions unreconciled"
+        message = "Bank Reconciliation Statement Import Completed, with " + str(reconciled_length) + " transactions reconciled, " + str(matched_length) + " transactions matched and " + str(len(unreconciled_statement_transactions)) + " transactions unreconciled"
         send_mail(header, message, settings.DEFAULT_FROM_EMAIL, [email])
         return
     except Exception as e:
@@ -1282,9 +1251,14 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
 
     def get_paginated_merged_transactions(self, bank_statements, company, account_id):
         page = self.paginate_queryset(bank_statements)
+        page = [json.loads(row[0]) for row in page if isinstance(row[0], str)]
         all_transaction_ids = set(
-            {data for entry in page for data in entry["transaction_ids"]}
+            data
+            for entry in page
+            if entry["transaction_ids"]
+            for data in entry["transaction_ids"]
         )
+
         all_statement_ids = set(
             {data for entry in page for data in entry["grouped_statements"]}
         )
@@ -1316,7 +1290,6 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         merged_transactions = self.merge_transactions(
             statements_queryset, system_transactions
         )
-        # TODO: paginate before merging for better performance
 
         return self.get_paginated_response(merged_transactions)
 
@@ -1346,31 +1319,78 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
                 raise ValidationError({"detail": "Both 'start_date' and 'end_date' must be provided for date filtering."})
             filters &= Q(date__range=[start_date, end_date])
 
-        filtered_rows = instance.rows.filter(filters) if filters else instance.rows.all()
+        filtered_rows = instance.rows.filter(filters).distinct()
 
-        matching_statement_ids = filtered_rows.values_list("pk", flat=True)
-        transaction_ids = filtered_rows.values_list("transactions__transaction_id", flat=True)
-
-        filtered_statement_ids = ReconciliationRow.objects.filter(
+        related_statement_ids = ReconciliationRow.objects.filter(
             statement__company=request.company,
             statement__account_id=instance.account_id,
-            transactions__transaction_id__in=transaction_ids,
-        ).values_list("id", flat=True)
+            transactions__transaction_id__in=Subquery(
+                filtered_rows.values_list("transactions__transaction_id", flat=True)
+            ),
+        ).values_list("id", flat=True).distinct()
 
-        combined_statement_ids = list(set(matching_statement_ids) | set(filtered_statement_ids))
+        combined_statement_ids = filtered_rows.values_list("id", flat=True).union(related_statement_ids)
 
-        bank_statements = (
-            instance.rows
-            .filter(pk__in=combined_statement_ids)
-            .values("id")
-            .annotate(
-                grouped_statements=ArrayAgg("id", distinct=True),
-                transaction_ids=Coalesce(
-                    ArrayAgg("transactions__transaction_id", distinct=True), []
-                ),
-            ).order_by("-date")
-        )
 
+        ids_string = ', '.join([str(id) for id in combined_statement_ids])
+
+        query = f"""
+            WITH grouped_data AS (
+                SELECT
+                    brt.transaction_id,
+                    ARRAY_AGG(DISTINCT b.id) AS grouped_statements,
+                    ARRAY_AGG(DISTINCT brt.transaction_id) FILTER (WHERE brt.transaction_id IS NOT NULL) AS transaction_ids
+                FROM bank_reconciliationrow b
+                LEFT OUTER JOIN bank_reconciliationrowtransaction brt
+                    ON b.id = brt.reconciliation_row_id
+                WHERE b.statement_id = {instance.id}
+                AND b.id IN (
+                    {ids_string}
+                )
+                GROUP BY brt.transaction_id
+            ),
+            combined_data AS (
+                SELECT transaction_id, grouped_statements, transaction_ids
+                FROM grouped_data
+                WHERE transaction_id IS NOT NULL
+
+                UNION ALL
+
+                SELECT NULL AS transaction_id,
+                    ARRAY[b.id]::INTEGER[] AS grouped_statements,
+                    ARRAY[NULL]::INTEGER[] AS transaction_ids
+                FROM bank_reconciliationrow b
+                WHERE b.statement_id = {instance.id}
+                AND b.id IN (
+                    {ids_string}
+                )
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM bank_reconciliationrowtransaction brt
+                    WHERE brt.reconciliation_row_id = b.id
+                )
+            ),
+            flattened_data AS (
+                SELECT
+                    transaction_id,
+                    grouped_statements,
+                    unnest(transaction_ids) AS flattened_transaction_id
+                FROM combined_data
+            )
+            SELECT
+                jsonb_build_object(
+                    'transactions__transaction_id', MAX(transaction_id),
+                    'grouped_statements', grouped_statements,
+                    'transaction_ids', ARRAY_AGG(DISTINCT flattened_transaction_id) FILTER (WHERE flattened_transaction_id IS NOT NULL)
+                ) AS result
+            FROM flattened_data
+            GROUP BY grouped_statements
+            ORDER BY MAX(transaction_id) DESC NULLS LAST
+            """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            bank_statements = cursor.fetchall()
         return self.get_paginated_merged_transactions(bank_statements, request.company, instance.account_id)
 
 
@@ -1433,7 +1453,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         ).first()
 
         if existing_statement:
-            raise APIException("Duplicate statement found for the same account and date range")
+            raise ValidationError({"detail": "A statement already exists for the same account within the same date range."})
 
 
         # Ensure all transactions fall within the start_date and end_date range
@@ -1460,25 +1480,75 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         account_id = request.query_params.get("account_id")
 
         if not start_date or not end_date or not account_id:
-            raise APIException("start_date, end_date and account_id are required")
-
-        bank_statements = (
-            ReconciliationRow.objects.filter(
-                statement__company=request.company,
-                statement__account_id=account_id,
-                date__range=[start_date, end_date],
-                status="Matched",
+            raise ValidationError(
+                {"detail": "start_date, end_date and account_id are required"}
             )
-            .values("id")
-            .annotate(
-                grouped_statements=ArrayAgg("id", distinct=True),
-                transaction_ids=Coalesce(
-                    ArrayAgg("transactions__transaction_id", distinct=True), []
-                ),
-            ).order_by("-date")
-        )
 
-        return self.get_paginated_merged_transactions(bank_statements, request.company, account_id)
+        query = f"""
+           WITH grouped_data AS (
+                SELECT
+                    brt.transaction_id,
+                    ARRAY_AGG(DISTINCT b.id) AS grouped_statements,
+                    ARRAY_AGG(DISTINCT brt.transaction_id) FILTER (WHERE brt.transaction_id IS NOT NULL) AS transaction_ids
+                FROM bank_reconciliationrow b
+                LEFT OUTER JOIN bank_reconciliationrowtransaction brt
+                    ON b.id = brt.reconciliation_row_id
+                JOIN bank_reconciliationstatement s
+                    ON b.statement_id = s.id
+                WHERE s.account_id = {account_id}
+                AND b.date BETWEEN '{start_date}' AND '{end_date}'
+                AND b.status = 'Matched'
+                AND s.company_id = {request.company.id}
+                GROUP BY brt.transaction_id
+            ),
+            combined_data AS (
+                SELECT transaction_id, grouped_statements, transaction_ids
+                FROM grouped_data
+                WHERE transaction_id IS NOT NULL
+
+                UNION ALL
+
+                SELECT NULL AS transaction_id,
+                    ARRAY[b.id]::INTEGER[] AS grouped_statements,
+                    ARRAY[NULL]::INTEGER[] AS transaction_ids
+                FROM bank_reconciliationrow b
+                JOIN bank_reconciliationstatement s
+                    ON b.statement_id = s.id
+                WHERE s.account_id = {account_id}
+                AND b.date BETWEEN '{start_date}' AND '{end_date}'
+                AND b.status = 'Matched'
+                AND s.company_id = {request.company.id}
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM bank_reconciliationrowtransaction brt
+                    WHERE brt.reconciliation_row_id = b.id
+                )
+            ),
+            flattened_data AS (
+                SELECT
+                    transaction_id,
+                    grouped_statements,
+                    unnest(transaction_ids) AS flattened_transaction_id
+                FROM combined_data
+            )
+            SELECT
+                jsonb_build_object(
+                    'transactions__transaction_id', MAX(transaction_id),
+                    'grouped_statements', grouped_statements,
+                    'transaction_ids', ARRAY_AGG(DISTINCT flattened_transaction_id) FILTER (WHERE flattened_transaction_id IS NOT NULL)
+                ) AS result
+            FROM flattened_data
+            GROUP BY grouped_statements
+            ORDER BY MAX(transaction_id) DESC NULLS LAST
+            """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            bank_statements = cursor.fetchall()
+
+        return self.get_paginated_merged_transactions(
+            bank_statements, request.company, account_id
+        )
 
     @action(detail=False, url_path="unreconciled-bank-transactions")
     def unreconciled_bank_transactions(self, request):
@@ -1487,7 +1557,9 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         account_id = request.query_params.get("account_id")
 
         if not start_date or not end_date or not account_id:
-            raise APIException("start_date, end_date and account_id are required")
+            raise ValidationError(
+                {"detail": "start_date, end_date and account_id are required"}
+            )
 
         search = request.query_params.get("search")
         sort_by = request.query_params.get("sort_by")
@@ -1525,7 +1597,9 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         account_id = request.query_params.get("account_id")
 
         if not start_date or not end_date or not account_id:
-            raise APIException("start_date, end_date and account_id are required")
+            raise ValidationError(
+                {"detail": "start_date, end_date and account_id are required"}
+            )
 
         search = request.query_params.get("search")
         sort_by = request.query_params.get("sort_by")
@@ -1537,11 +1611,14 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         if sort_dir == "desc":
             sort_by = "-" + sort_by
 
-        reconciled_transaction_ids = ReconciliationRowTransaction.objects.filter(
-            reconciliation_row__statement__company=request.company,
-            reconciliation_row__statement__account_id=account_id,
-        ).values_list("transaction_id", flat=True).distinct()
-
+        reconciled_transaction_ids = (
+            ReconciliationRowTransaction.objects.filter(
+                reconciliation_row__statement__company=request.company,
+                reconciliation_row__statement__account_id=account_id,
+            )
+            .values_list("transaction_id", flat=True)
+            .distinct()
+        )
 
         filters = Q(
             company=request.company,
@@ -1573,28 +1650,57 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         serializer = TransactionMinSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
-
     @action(detail=False, methods=["POST"], url_path="reconcile-transactions")
     def reconcile_transactions(self, request):
-        statement_ids = request.data.get('statement_ids')
-        transaction_ids = request.data.get('transaction_ids')
+        statement_ids = request.data.get("statement_ids")
+        transaction_ids = request.data.get("transaction_ids")
         if not statement_ids or not transaction_ids:
-            raise ValidationError({"detail": "statement_ids and transaction_ids are required"})
-        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
+            raise ValidationError(
+                {"detail": "statement_ids and transaction_ids are required"}
+            )
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related(
+            "statement"
+        )
         account_ids = set([obj.statement.account_id for obj in entries])
         if len(account_ids) > 1:
-            raise ValidationError({"detail": "All the statement entries should have the same account_id"})
+            raise ValidationError(
+                {"detail": "All the statement entries should have the same account_id"}
+            )
         transaction_objects = Transaction.objects.filter(id__in=transaction_ids)
-        entries_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in entries])
-        transaction_sum = sum([obj.dr_amount - (obj.cr_amount or 0) if obj.dr_amount else -obj.cr_amount for obj in transaction_objects])
+        entries_sum = sum(
+            [
+                obj.cr_amount - (obj.dr_amount or 0)
+                if obj.cr_amount
+                else -obj.dr_amount
+                for obj in entries
+            ]
+        )
+        transaction_sum = sum(
+            [
+                obj.dr_amount - (obj.cr_amount or 0)
+                if obj.dr_amount
+                else -obj.cr_amount
+                for obj in transaction_objects
+            ]
+        )
         if abs(entries_sum - transaction_sum) > settings.BANK_RECONCILIATION_TOLERANCE:
-            raise ValidationError({"detail": "Difference between statement transactions and system transactions is too large for reconciliation"})
-        entries.update(status='Reconciled')
+            raise ValidationError(
+                {
+                    "detail": "Difference between statement transactions and system transactions is too large for reconciliation"
+                }
+            )
+        entries.update(status="Reconciled")
         # create reconciliation row transactions for the entries
         to_create = []
         for obj in entries:
             for transaction_data in transaction_objects:
-                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data.id, transaction_last_updated_at=transaction_data.updated_at))
+                to_create.append(
+                    ReconciliationRowTransaction(
+                        reconciliation_row=obj,
+                        transaction_id=transaction_data.id,
+                        transaction_last_updated_at=transaction_data.updated_at,
+                    )
+                )
 
         ReconciliationRowTransaction.objects.bulk_create(to_create)
         return Response({})
@@ -1612,25 +1718,35 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
             raise ValidationError({"detail": "No matching reconciliation rows found."})
 
         # Check for transactions linked to the specified statement IDs
-        invalid_transactions = ReconciliationRowTransaction.objects.filter(
-            transaction_id__in=entries.values_list("transactions__transaction_id", flat=True),
-        ).exclude(reconciliation_row_id__in=statement_ids).exists()
+        invalid_transactions = (
+            ReconciliationRowTransaction.objects.filter(
+                transaction_id__in=entries.values_list(
+                    "transactions__transaction_id", flat=True
+                ),
+            )
+            .exclude(reconciliation_row_id__in=statement_ids)
+            .exists()
+        )
 
         if invalid_transactions:
-            raise ValidationError({
-                "detail": "Some statement_ids have transactions linked to other statements."
-            })
+            raise ValidationError(
+                {
+                    "detail": "Some statement_ids have transactions linked to other statements."
+                }
+            )
 
         # Update the status of the entries to 'Unreconciled'
         entries.update(status="Unreconciled")
 
         # Delete related transactions for the entries
-        ReconciliationRowTransaction.objects.filter(reconciliation_row_id__in=statement_ids).delete()
+        ReconciliationRowTransaction.objects.filter(
+            reconciliation_row_id__in=statement_ids
+        ).delete()
 
         # Delete journal entries associated with the entries
         JournalEntry.objects.filter(
             content_type__model="reconciliationrow",
-            object_id__in=entries.values_list("id", flat=True)
+            object_id__in=entries.values_list("id", flat=True),
         ).delete()
 
         return Response({"detail": "Transactions successfully unmatched."})
@@ -1649,18 +1765,26 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
             raise ValidationError({"detail": "No matching reconciliation rows found."})
 
         # Ensure that all provided `statement_ids` have associated transactions only within the scope of the given IDs
-        invalid_transactions = ReconciliationRowTransaction.objects.filter(
-            transaction_id__in=entries.values_list("transactions__transaction_id", flat=True),
-        ).exclude(reconciliation_row_id__in=statement_ids).exists()
+        invalid_transactions = (
+            ReconciliationRowTransaction.objects.filter(
+                transaction_id__in=entries.values_list(
+                    "transactions__transaction_id", flat=True
+                ),
+            )
+            .exclude(reconciliation_row_id__in=statement_ids)
+            .exists()
+        )
 
         if invalid_transactions:
-            raise ValidationError({
-                "detail": "Some statement_ids have transactions linked to other statements."
-            })
+            raise ValidationError(
+                {
+                    "detail": "Some statement_ids have transactions linked to other statements."
+                }
+            )
 
         JournalEntry.objects.filter(
             content_type__model="reconciliationrow",
-            object_id__in=entries.values_list("id", flat=True)
+            object_id__in=entries.values_list("id", flat=True),
         ).delete()
 
         entries.delete()
@@ -1669,32 +1793,61 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
     @transaction.atomic()
     @action(detail=False, methods=["POST"], url_path="reconcile-with-adjustment")
     def reconcile_with_adjustment(self, request):
-        statement_ids = request.data.get('statement_ids')
-        transaction_ids = request.data.get('transaction_ids')
-        narration = request.data.get('narration')
-        # TODO: max number of statement_ids
-        if not statement_ids or not transaction_ids or not narration or len(statement_ids) > 10:
-            raise ValidationError({"detail": "statement_ids, transaction_ids and narration are required and statement_ids should be less than 10"})
-        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
+        statement_ids = request.data.get("statement_ids")
+        transaction_ids = request.data.get("transaction_ids")
+        narration = request.data.get("narration")
+        if not statement_ids or not transaction_ids or not narration:
+            raise ValidationError(
+                {"detail": "statement_ids, transaction_ids and narration are required"}
+            )
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related(
+            "statement"
+        )
         account_ids = set([obj.statement.account_id for obj in entries])
         if len(account_ids) > 1:
-            raise ValidationError({"detail": "All the statement entries should have the same account_id"})
+            raise ValidationError(
+                {"detail": "All the statement entries should have the same account_id"}
+            )
 
-        transaction_objects = Transaction.objects.filter(id__in=transaction_ids).select_related("journal_entry")
-        entries_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in entries])
-        transaction_sum = sum([obj.dr_amount - (obj.cr_amount or 0) if obj.dr_amount else -obj.cr_amount for obj in transaction_objects])
+        transaction_objects = Transaction.objects.filter(
+            id__in=transaction_ids
+        ).select_related("journal_entry")
+        entries_sum = sum(
+            [
+                obj.cr_amount - (obj.dr_amount or 0)
+                if obj.cr_amount
+                else -obj.dr_amount
+                for obj in entries
+            ]
+        )
+        transaction_sum = sum(
+            [
+                obj.dr_amount - (obj.cr_amount or 0)
+                if obj.dr_amount
+                else -obj.cr_amount
+                for obj in transaction_objects
+            ]
+        )
 
         # find the difference
         difference = entries_sum - transaction_sum
         # validate the difference
         if abs(difference) > settings.BANK_RECONCILIATION_ADJUSTMENT_THRESHOLD:
-            raise ValidationError({"detail": "Difference between statement transactions and system transactions is too large for reconciliation"})
+            raise ValidationError(
+                {
+                    "detail": "Difference between statement transactions and system transactions is too large for reconciliation"
+                }
+            )
         # Divide the difference by the number of statement transactions and put the difference in the adjustment field
         latest_date = max(
-            (obj.journal_entry.date for obj in transaction_objects if obj.journal_entry and obj.journal_entry.date),
+            (
+                obj.journal_entry.date
+                for obj in transaction_objects
+                if obj.journal_entry and obj.journal_entry.date
+            ),
         )
         adjustment = difference / len(entries)
-        entries.update(adjustment_amount=adjustment, status='Reconciled')
+        entries.update(adjustment_amount=adjustment, status="Reconciled")
 
         adjustment_account = Account.objects.get(
             name="Bank Reconciliation Adjustment", company=self.request.company
@@ -1714,9 +1867,21 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         to_create = []
         for obj in entries:
             for transaction_data in transaction_objects:
-                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data.id, transaction_last_updated_at=transaction_data.updated_at))
+                to_create.append(
+                    ReconciliationRowTransaction(
+                        reconciliation_row=obj,
+                        transaction_id=transaction_data.id,
+                        transaction_last_updated_at=transaction_data.updated_at,
+                    )
+                )
             for transaction_data in transactions:
-                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data[0], transaction_last_updated_at=transaction_data[1]))
+                to_create.append(
+                    ReconciliationRowTransaction(
+                        reconciliation_row=obj,
+                        transaction_id=transaction_data[0],
+                        transaction_last_updated_at=transaction_data[1],
+                    )
+                )
 
         ReconciliationRowTransaction.objects.bulk_create(to_create)
 
@@ -1724,11 +1889,11 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
 
     @action(detail=False, url_path="sales-vouchers")
     def find_sales_vouchers(self, request):
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
         if not start_date or not end_date:
-            raise APIException("start_date and end_date are required")
-        search = request.query_params.get('search')
+            raise ValidationError({"detail": "start_date and end_date are required"})
+        search = request.query_params.get("search")
         sort_by = request.query_params.get("sort_by")
         sort_dir = request.query_params.get("sort_dir")
 
@@ -1738,115 +1903,184 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         if sort_dir == "desc":
             sort_by = "-" + sort_by
 
-        filters = Q(date__range=[start_date, end_date]) | Q(due_date__range=[start_date, end_date])
+        filters = Q(date__range=[start_date, end_date]) | Q(
+            due_date__range=[start_date, end_date]
+        )
         if search:
             filters &= (
-                Q(total_amount__icontains=search) |
-                Q(customer_name__icontains=search) |
-                Q(party__name__icontains=search) |
-                Q(party__tax_registration_number__icontains=search) |
-                Q(voucher_no__icontains=search) |
-                Q(remarks__icontains=search)
+                Q(total_amount__icontains=search)
+                | Q(customer_name__icontains=search)
+                | Q(party__name__icontains=search)
+                | Q(party__tax_registration_number__icontains=search)
+                | Q(voucher_no__icontains=search)
+                | Q(remarks__icontains=search)
             )
 
-        sales_vouchers = SalesVoucher.objects.filter(
-            company=request.company,
-            mode='Credit',
-            status='Issued',
-            party__isnull=False
-        ).filter(filters).order_by(sort_by)
+        sales_vouchers = (
+            SalesVoucher.objects.filter(
+                company=request.company,
+                mode="Credit",
+                status="Issued",
+                party__isnull=False,
+            )
+            .filter(filters)
+            .order_by(sort_by)
+        )
         page = self.paginate_queryset(sales_vouchers)
         serializer = SalesVoucherMinListSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
-
-    def create_payment_receipt(self, latest_entry_date, entries, vouchers, remarks, tds_amount):
+    def create_payment_receipt(
+        self, latest_entry_date, entries, vouchers, remarks, tds_amount
+    ):
         bank_account = entries[0].statement.account.bank_accounts.first().id
         saved_vouchers = []
         for voucher in vouchers:
             data = {
-                'date': latest_entry_date,
-                'bank_account': bank_account,
-                'amount': voucher.total_amount,
-                'invoice_nos': [voucher.voucher_no],
-                'invoices': [voucher.id],
-                'party_id': voucher.party.id,
-                'mode': 'Bank Deposit',
-                'tds_amount': tds_amount or 0,
+                "date": latest_entry_date,
+                "bank_account": bank_account,
+                "amount": voucher.total_amount,
+                "invoice_nos": [voucher.voucher_no],
+                "invoices": [voucher.id],
+                "party_id": voucher.party.id,
+                "mode": "Bank Deposit",
+                "tds_amount": tds_amount or 0,
             }
             if remarks:
-                data['remarks'] = remarks
+                data["remarks"] = remarks
             serializer = PaymentReceiptFormSerializer(data=data)
             serializer.is_valid(raise_exception=True)
-            serializer.validated_data['company'] = self.request.company
+            serializer.validated_data["company"] = self.request.company
             saved_vouchers.append(serializer.save())
         return saved_vouchers
 
-
     @transaction.atomic()
-    @action(detail=False, methods=["POST"], url_path="reconcile-transactions-with-sales-vouchers")
+    @action(
+        detail=False,
+        methods=["POST"],
+        url_path="reconcile-transactions-with-sales-vouchers",
+    )
     def reconcile_transactions_with_sales_vouchers(self, request):
-        statement_ids = request.data.get('statement_ids')
-        invoice_ids = request.data.get('invoice_ids')
-        remarks = request.data.get('remarks')
-        tds_amount = request.data.get('tds_amount')
+        statement_ids = request.data.get("statement_ids")
+        invoice_ids = request.data.get("invoice_ids")
+        remarks = request.data.get("remarks")
+        tds_amount = request.data.get("tds_amount")
         if not statement_ids or not invoice_ids:
-            raise ValidationError({"detail": "statement_ids and invoice_ids are required"})
-        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
+            raise ValidationError(
+                {"detail": "statement_ids and invoice_ids are required"}
+            )
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related(
+            "statement"
+        )
         vouchers = SalesVoucher.objects.filter(id__in=invoice_ids)
         # validate if all the statement of the entries has same account_id
         account_ids = set([obj.statement.account_id for obj in entries])
         if len(account_ids) > 1:
-            raise ValidationError({"detail": "All the statement entries should have the same account_id"})
+            raise ValidationError(
+                {"detail": "All the statement entries should have the same account_id"}
+            )
 
-        entries_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in entries])
+        entries_sum = sum(
+            [
+                obj.cr_amount - (obj.dr_amount or 0)
+                if obj.cr_amount
+                else -obj.dr_amount
+                for obj in entries
+            ]
+        )
         vouchers_sum = sum([obj.total_amount for obj in vouchers])
         if abs(entries_sum - vouchers_sum) > settings.BANK_RECONCILIATION_TOLERANCE:
-            raise ValidationError({"detail": "Difference between statement transactions and invoices is too large for reconciliation"})
+            raise ValidationError(
+                {
+                    "detail": "Difference between statement transactions and invoices is too large for reconciliation"
+                }
+            )
 
         latest_entry_date = max(obj.date for obj in entries)
-        saved_vouchers= self.create_payment_receipt(latest_entry_date, entries, vouchers, remarks, tds_amount)
-        transactions = Transaction.objects.filter(journal_entry__content_type=ContentType.objects.get_for_model(PaymentReceipt), journal_entry__object_id__in=[voucher.id for voucher in saved_vouchers], account_id=next(iter(account_ids)))
+        saved_vouchers = self.create_payment_receipt(
+            latest_entry_date, entries, vouchers, remarks, tds_amount
+        )
+        transactions = Transaction.objects.filter(
+            journal_entry__content_type=ContentType.objects.get_for_model(
+                PaymentReceipt
+            ),
+            journal_entry__object_id__in=[voucher.id for voucher in saved_vouchers],
+            account_id=next(iter(account_ids)),
+        )
         to_create = []
         for obj in entries:
             for transaction_data in transactions:
-                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data.id, transaction_last_updated_at=transaction_data.updated_at))
+                to_create.append(
+                    ReconciliationRowTransaction(
+                        reconciliation_row=obj,
+                        transaction_id=transaction_data.id,
+                        transaction_last_updated_at=transaction_data.updated_at,
+                    )
+                )
 
         ReconciliationRowTransaction.objects.bulk_create(to_create)
-        entries.update(status='Reconciled')
+        entries.update(status="Reconciled")
         return Response({})
 
-
     @transaction.atomic()
-    @action(detail=False, methods=["POST"], url_path="reconcile-transactions-with-sales-vouchers-and-adjustment")
+    @action(
+        detail=False,
+        methods=["POST"],
+        url_path="reconcile-transactions-with-sales-vouchers-and-adjustment",
+    )
     def reconcile_transactions_with_sales_vouchers_and_adjustment(self, request):
-        statement_ids = request.data.get('statement_ids')
-        invoice_ids = request.data.get('invoice_ids')
-        remarks = request.data.get('remarks')
-        tds_amount = request.data.get('tds_amount')
+        statement_ids = request.data.get("statement_ids")
+        invoice_ids = request.data.get("invoice_ids")
+        remarks = request.data.get("remarks")
+        tds_amount = request.data.get("tds_amount")
         if not statement_ids or not invoice_ids:
-            raise ValidationError({"detail": "statement_ids and invoice_ids are required"})
-        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
+            raise ValidationError(
+                {"detail": "statement_ids and invoice_ids are required"}
+            )
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related(
+            "statement"
+        )
         vouchers = SalesVoucher.objects.filter(id__in=invoice_ids)
         # validate if all the statement of the entries has same account_id
         account_ids = set([obj.statement.account_id for obj in entries])
         if len(account_ids) > 1:
-            raise ValidationError({"detail": "All the statement entries should have the same account_id"})
+            raise ValidationError(
+                {"detail": "All the statement entries should have the same account_id"}
+            )
 
-        entries_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in entries])
+        entries_sum = sum(
+            [
+                obj.cr_amount - (obj.dr_amount or 0)
+                if obj.cr_amount
+                else -obj.dr_amount
+                for obj in entries
+            ]
+        )
         vouchers_sum = sum([obj.total_amount for obj in vouchers])
         # find the difference
         difference = entries_sum - vouchers_sum
         # validate the difference
         if abs(difference) > settings.BANK_RECONCILIATION_ADJUSTMENT_THRESHOLD:
-            raise ValidationError({"detail": "Difference between statement transactions and invoices is too large for reconciliation"})
+            raise ValidationError(
+                {
+                    "detail": "Difference between statement transactions and invoices is too large for reconciliation"
+                }
+            )
 
         latest_entry_date = max(obj.date for obj in entries)
-        saved_vouchers = self.create_payment_receipt(latest_entry_date, entries, vouchers, remarks, tds_amount)
-        transaction_objects = Transaction.objects.filter(journal_entry__content_type=ContentType.objects.get_for_model(PaymentReceipt), journal_entry__object_id__in=[voucher.id for voucher in saved_vouchers], account_id=next(iter(account_ids)))
+        saved_vouchers = self.create_payment_receipt(
+            latest_entry_date, entries, vouchers, remarks, tds_amount
+        )
+        transaction_objects = Transaction.objects.filter(
+            journal_entry__content_type=ContentType.objects.get_for_model(
+                PaymentReceipt
+            ),
+            journal_entry__object_id__in=[voucher.id for voucher in saved_vouchers],
+            account_id=next(iter(account_ids)),
+        )
 
         adjustment = difference / len(entries)
-        entries.update(status='Reconciled', adjustment_amount=adjustment)
+        entries.update(status="Reconciled", adjustment_amount=adjustment)
         adjustment_account = Account.objects.get(
             name="Bank Reconciliation Adjustment", company=self.request.company
         )
@@ -1865,133 +2099,268 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         to_create = []
         for obj in entries:
             for transaction_data in transaction_objects:
-                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data.id, transaction_last_updated_at=transaction_data.updated_at))
+                to_create.append(
+                    ReconciliationRowTransaction(
+                        reconciliation_row=obj,
+                        transaction_id=transaction_data.id,
+                        transaction_last_updated_at=transaction_data.updated_at,
+                    )
+                )
             for transaction_data in transactions:
-                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data[0], transaction_last_updated_at=transaction_data[1]))
+                to_create.append(
+                    ReconciliationRowTransaction(
+                        reconciliation_row=obj,
+                        transaction_id=transaction_data[0],
+                        transaction_last_updated_at=transaction_data[1],
+                    )
+                )
 
         ReconciliationRowTransaction.objects.bulk_create(to_create)
         return Response({})
 
     @transaction.atomic()
-    @action(detail=False, methods=["POST"], url_path="reconcile-transactions-with-funds-transfer")
+    @action(
+        detail=False,
+        methods=["POST"],
+        url_path="reconcile-transactions-with-funds-transfer",
+    )
     def reconcile_transactions_with_funds_transfer(self, request):
-        statement_ids = request.data.get('statement_ids')
+        statement_ids = request.data.get("statement_ids")
         if not statement_ids:
             raise ValidationError({"detail": "statement_ids are required"})
         serializer = FundTransferSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         # add company to the serializer
-        serializer.validated_data['company'] = self.request.company
-        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
+        serializer.validated_data["company"] = self.request.company
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related(
+            "statement"
+        )
         # validate if all the statement of the entries has same account_id
         account_ids = set([obj.statement.account_id for obj in entries])
         if len(account_ids) > 1:
-            raise ValidationError({"detail": "All the statement entries should have the same account_id"})
+            raise ValidationError(
+                {"detail": "All the statement entries should have the same account_id"}
+            )
 
-        entries_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in entries])
+        entries_sum = sum(
+            [
+                obj.cr_amount - (obj.dr_amount or 0)
+                if obj.cr_amount
+                else -obj.dr_amount
+                for obj in entries
+            ]
+        )
         # amount of the funds transfer
-        amount = serializer.validated_data['amount'] + serializer.validated_data.get('transaction_fee', 0)
+        amount = serializer.validated_data["amount"] + serializer.validated_data.get(
+            "transaction_fee", 0
+        )
         # Since we get negative amount for entries_sum, we need to reverse the sign
         if abs(entries_sum + amount) > settings.BANK_RECONCILIATION_TOLERANCE:
-            raise ValidationError({"detail": "The sum of the statement transactions and of the funds transfer do not match"})
+            raise ValidationError(
+                {
+                    "detail": "The sum of the statement transactions and of the funds transfer do not match"
+                }
+            )
         response = serializer.save()
-        transactions = Transaction.objects.filter(journal_entry__content_type=ContentType.objects.get_for_model(FundTransfer), journal_entry__object_id=response.id, account_id=next(iter(account_ids)))
-        entries.update(status='Reconciled')
+        transactions = Transaction.objects.filter(
+            journal_entry__content_type=ContentType.objects.get_for_model(FundTransfer),
+            journal_entry__object_id=response.id,
+            account_id=next(iter(account_ids)),
+        )
+        entries.update(status="Reconciled")
         to_create = []
         for obj in entries:
             for transaction_data in transactions:
-                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data.id, transaction_last_updated_at=transaction_data.updated_at))
+                to_create.append(
+                    ReconciliationRowTransaction(
+                        reconciliation_row=obj,
+                        transaction_id=transaction_data.id,
+                        transaction_last_updated_at=transaction_data.updated_at,
+                    )
+                )
         ReconciliationRowTransaction.objects.bulk_create(to_create)
         return Response({})
 
     @transaction.atomic()
-    @action(detail=False, methods=["POST"], url_path="reconcile-transactions-with-cheque-issue")
+    @action(
+        detail=False,
+        methods=["POST"],
+        url_path="reconcile-transactions-with-cheque-issue",
+    )
     def reconcile_transactions_with_cheque_issue(self, request):
-        statement_ids = request.data.get('statement_ids')
+        statement_ids = request.data.get("statement_ids")
         if not statement_ids:
             raise ValidationError({"detail": "statement_ids are required"})
         serializer = ChequeIssueSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         # add company to the serializer
-        serializer.validated_data['company'] = self.request.company
-        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
+        serializer.validated_data["company"] = self.request.company
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related(
+            "statement"
+        )
         # validate if all the statement of the entries has same account_id
         account_ids = set([obj.statement.account_id for obj in entries])
         if len(account_ids) > 1:
-            raise ValidationError({"detail": "All the statement entries should have the same account_id"})
+            raise ValidationError(
+                {"detail": "All the statement entries should have the same account_id"}
+            )
 
-        entries_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in entries])
+        entries_sum = sum(
+            [
+                obj.cr_amount - (obj.dr_amount or 0)
+                if obj.cr_amount
+                else -obj.dr_amount
+                for obj in entries
+            ]
+        )
         # amount of the funds transfer
-        amount = serializer.validated_data['amount']
+        amount = serializer.validated_data["amount"]
         # Since we get negative amount for entries_sum, we need to reverse the sign
         if abs(entries_sum + amount) > settings.BANK_RECONCILIATION_TOLERANCE:
-            raise ValidationError({"detail": "The sum of the statement transactions and of the cheque issue do not match"})
+            raise ValidationError(
+                {
+                    "detail": "The sum of the statement transactions and of the cheque issue do not match"
+                }
+            )
         response = serializer.save()
-        transactions = Transaction.objects.filter(journal_entry__content_type=ContentType.objects.get_for_model(FundTransfer), journal_entry__object_id=response.id, account_id=next(iter(account_ids)))
-        entries.update(status='Reconciled')
+        transactions = Transaction.objects.filter(
+            journal_entry__content_type=ContentType.objects.get_for_model(FundTransfer),
+            journal_entry__object_id=response.id,
+            account_id=next(iter(account_ids)),
+        )
+        entries.update(status="Reconciled")
         to_create = []
         for obj in entries:
             for transaction_data in transactions:
-                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data.id, transaction_last_updated_at=transaction_data.updated_at))
+                to_create.append(
+                    ReconciliationRowTransaction(
+                        reconciliation_row=obj,
+                        transaction_id=transaction_data.id,
+                        transaction_last_updated_at=transaction_data.updated_at,
+                    )
+                )
         ReconciliationRowTransaction.objects.bulk_create(to_create)
         return Response({})
-
 
     @action(detail=True, url_path="updated-transactions")
     def updated_transactions(self, request, pk):
         data = self.get_object()
 
-        updated_deleted_statement_ids = data.rows.annotate(
-            transaction_count=Count('transactions')
-        ).filter(
-            Q(transaction_count__gt=0) & Q(transactions__transaction__isnull=True) |
-            Q(transactions__transaction_last_updated_at__lt=F('transactions__transaction__updated_at'))
-        ).values('id')
-
-        # Fetch bank statements with updated transactions
-        bank_statements = (
-            data.rows.filter(
-                statement__company=request.company,
-                statement__account_id=data.account_id,
-                id__in=updated_deleted_statement_ids
+        updated_deleted_statement_ids = (
+            data.rows.annotate(transaction_count=Count("transactions"))
+            .filter(
+                Q(transaction_count__gt=0) & Q(transactions__transaction__isnull=True)
+                | Q(
+                    transactions__transaction_last_updated_at__lt=F(
+                        "transactions__transaction__updated_at"
+                    )
+                )
             )
-            .values("id")
-            .annotate(
-                grouped_statements=ArrayAgg("id", distinct=True),
-                transaction_ids=Coalesce(
-                    ArrayAgg("transactions__transaction_id", distinct=True), []
-                ),
-            )
-            .order_by("-date")
+            .values_list("id", flat=True)
+            .distinct()
         )
 
-        return self.get_paginated_merged_transactions(bank_statements, request.company, data.account_id)
+        ids_string = ", ".join([str(id) for id in updated_deleted_statement_ids])
+        query = f"""
+           WITH grouped_data AS (
+                SELECT
+                    brt.transaction_id,
+                    ARRAY_AGG(DISTINCT b.id) AS grouped_statements,
+                    ARRAY_AGG(DISTINCT brt.transaction_id) FILTER (WHERE brt.transaction_id IS NOT NULL) AS transaction_ids
+                FROM bank_reconciliationrow b
+                LEFT OUTER JOIN bank_reconciliationrowtransaction brt
+                    ON b.id = brt.reconciliation_row_id
+                JOIN bank_reconciliationstatement s
+                    ON b.statement_id = s.id
+                WHERE s.account_id = {data.account_id}
+                AND b.id IN (
+                    {ids_string}
+                )
+                AND s.company_id = {request.company.id}
+                GROUP BY brt.transaction_id
+            ),
+            combined_data AS (
+                SELECT transaction_id, grouped_statements, transaction_ids
+                FROM grouped_data
+                WHERE transaction_id IS NOT NULL
 
+                UNION ALL
 
-    @action(detail=False, methods=['POST'], url_path="update-transactions")
+                SELECT NULL AS transaction_id,
+                    ARRAY[b.id]::INTEGER[] AS grouped_statements,
+                    ARRAY[NULL]::INTEGER[] AS transaction_ids
+                FROM bank_reconciliationrow b
+                JOIN bank_reconciliationstatement s
+                    ON b.statement_id = s.id
+                WHERE s.account_id = {data.account_id}
+                AND b.id IN (
+                    {ids_string}
+                )
+                AND s.company_id = {request.company.id}
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM bank_reconciliationrowtransaction brt
+                    WHERE brt.reconciliation_row_id = b.id
+                )
+            ),
+            flattened_data AS (
+                SELECT
+                    transaction_id,
+                    grouped_statements,
+                    unnest(transaction_ids) AS flattened_transaction_id
+                FROM combined_data
+            )
+            SELECT
+                jsonb_build_object(
+                    'transactions__transaction_id', MAX(transaction_id),
+                    'grouped_statements', grouped_statements,
+                    'transaction_ids', ARRAY_AGG(DISTINCT flattened_transaction_id) FILTER (WHERE flattened_transaction_id IS NOT NULL)
+                ) AS result
+            FROM flattened_data
+            GROUP BY grouped_statements
+            ORDER BY MAX(transaction_id) DESC NULLS LAST
+            """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            bank_statements = cursor.fetchall()
+
+        return self.get_paginated_merged_transactions(
+            bank_statements, request.company, data.account_id
+        )
+
+    @action(detail=False, methods=["POST"], url_path="update-transactions")
     def update_transactions(self, request):
-        statement_ids = request.data.get('statement_ids')
-        transaction_ids = request.data.get('transaction_ids')
+        statement_ids = request.data.get("statement_ids")
+        transaction_ids = request.data.get("transaction_ids")
         if not statement_ids or not transaction_ids:
-            raise ValidationError({"detail": "statement_ids and transaction_ids are required"})
-        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
+            raise ValidationError(
+                {"detail": "statement_ids and transaction_ids are required"}
+            )
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related(
+            "statement"
+        )
         # Ensure all statement entries belong to the same account_id
         account_ids = {entry.statement.account_id for entry in entries}
         if len(account_ids) > 1:
-            raise ValidationError({"detail": "All the statement entries should have the same account_id"})
+            raise ValidationError(
+                {"detail": "All the statement entries should have the same account_id"}
+            )
 
         # Fetch ReconciliationRowTransaction objects with related transaction
-        transaction_objects = ReconciliationRowTransaction.objects.filter(
-            reconciliation_row__in=entries,
-            transaction_id__in=transaction_ids
-        ).select_related("transaction").distinct()
-
+        transaction_objects = (
+            ReconciliationRowTransaction.objects.filter(
+                reconciliation_row__in=entries, transaction_id__in=transaction_ids
+            )
+            .select_related("transaction")
+            .distinct()
+        )
 
         transaction_objects.update(
             transaction_last_updated_at=Subquery(
-                transaction_objects.filter(
-                    pk=OuterRef('pk')
-                ).values('transaction__updated_at')[:1]
+                transaction_objects.filter(pk=OuterRef("pk")).values(
+                    "transaction__updated_at"
+                )[:1]
             )
         )
 
