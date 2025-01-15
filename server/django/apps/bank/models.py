@@ -478,7 +478,6 @@ class ReconciliationRow(models.Model):
     statement = models.ForeignKey(
         ReconciliationStatement, on_delete=models.CASCADE, related_name="rows"
     )
-    remarks = models.TextField(null=True, blank=True)
     # - if the amount is positive, it means the bank statement has more money than the ledger
     adjustment_amount = models.FloatField(null=True, blank=True)
 
@@ -514,4 +513,3 @@ class ReconciliationRowTransaction(models.Model):
     )
     # To keep track of the last updated transaction
     transaction_last_updated_at = models.DateTimeField()
-    
