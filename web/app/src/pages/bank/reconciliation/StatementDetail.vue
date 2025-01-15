@@ -367,6 +367,10 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
                 {{ transaction.dr_amount?.toFixed(2) || '-' }}
               </div>
             </div>
+            <!-- Show total -->
+            <div v-if="props.row.statement_transactions?.filter(t => t.dr_amount)?.length > 1" class="font-medium text-red-500 w-fit !text-left" style="border-top: 1px solid gray;">
+              {{ props.row.statement_transactions.reduce((acc, curr) => acc + Number(curr.dr_amount), 0).toFixed(2) }}
+            </div>
           </td>
         </template>
         <template #body-cell-Credit="props">
@@ -375,6 +379,9 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
               <div class="text-green-500 font-medium">
                 {{ transaction.cr_amount?.toFixed(2) }}
               </div>
+            </div>
+            <div v-if="props.row.statement_transactions.filter(t => t.cr_amount)?.length > 1" class="font-medium text-red-500 w-fit !text-left" style="border-top: 1px solid gray;">
+              {{ props.row.statement_transactions.reduce((acc, curr) => acc + Number(curr.cr_amount), 0).toFixed(2) }}
             </div>
           </td>
         </template>
