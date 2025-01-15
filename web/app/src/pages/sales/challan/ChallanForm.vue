@@ -12,7 +12,7 @@ export default {
     const deleteMsg = ref('')
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/challan/list/',
+      successRoute: `/${route.params.company}/sales/challans`,
     })
     useMeta(() => {
       return {

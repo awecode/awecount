@@ -8,7 +8,7 @@ export default {
     const endpoint = `/api/company/${route.params.company}/tax-payments/`
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/tax-payment/list/',
+      successRoute: `/${route.params.company}/tax/payments`,
     })
     useMeta(() => {
       return {

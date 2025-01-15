@@ -160,7 +160,7 @@ export default {
             v-if="checkPermissions('category.modify')"
             class="text-blue l-view-btn"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/parties/account/${props.row.party_id}/`"
+            :to="`/${$route.params.company}/crm/parties/${props.row.party_id}/account`"
           >
             {{ props.row.party_name }}
           </router-link>

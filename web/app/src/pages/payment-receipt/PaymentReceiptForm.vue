@@ -18,7 +18,7 @@ export default {
     // const invoice_nos = ref([])
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/payment-receipt/list/',
+      successRoute: `/${route.params.company}/payment-receipts`,
     })
     useMeta(() => {
       return {

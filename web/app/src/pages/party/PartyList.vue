@@ -62,7 +62,7 @@ export default {
         color="green"
         icon-right="add"
         label="New party"
-        :to="`/${$route.params.company}/party/create/`"
+        :to="`/${$route.params.company}/crm/parties/create`"
       />
     </div>
 
@@ -99,14 +99,14 @@ export default {
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/party/${props.row.id}/`"
+            :to="`/${$route.params.company}/crm/parties/${props.row.id}/edit/`"
           />
           <q-btn
             class="q-py-none q-px-md font-size-sm l-view-btn"
             color="blue"
             label="Account"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/parties/account/${props.row.id}/`"
+            :to="`/${$route.params.company}/crm/parties/${props.row.id}/account`"
           />
         </q-td>
       </template>
@@ -116,7 +116,7 @@ export default {
             v-if="checkPermissions('party.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/party/${props.row.id}/`"
+            :to="`/${$route.params.company}/crm/parties/${props.row.id}/edit/`"
           >
             {{ props.row.name }}
           </router-link>

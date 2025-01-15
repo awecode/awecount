@@ -25,7 +25,7 @@ export default {
         color="green"
         icon-right="add"
         label="New brand"
-        :to="`/${$route.params.company}/brand/create/`"
+        :to="`/${$route.params.company}/inventory/brands/create`"
       />
     </div>
     <q-table
@@ -45,7 +45,7 @@ export default {
             v-if="checkPermissions('brand.modify')"
             class="text-blue"
             style="text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/brand/${props.row.id}/`"
+            :to="`/${$route.params.company}/inventory/brands/${props.row.id}/edit/`"
           >
             {{ props.row.name }}
           </router-link>

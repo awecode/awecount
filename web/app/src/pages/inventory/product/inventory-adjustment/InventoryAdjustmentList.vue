@@ -60,7 +60,7 @@ const newColumn = [
         color="green"
         icon-right="add"
         label="Add Inventory Adjustment Voucher"
-        :to="`/${$route.params.company}/items/inventory-adjustment/create/`"
+        :to="`/${$route.params.company}/inventory/adjustments/create`"
       />
     </div>
     <q-table
@@ -140,7 +140,7 @@ const newColumn = [
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/`"
+            :to="`/${$route.params.company}/inventory/adjustments/${props.row.id}/edit/`"
           />
         </q-td>
       </template>
@@ -151,7 +151,7 @@ const newColumn = [
             v-if="checkPermissions('inventoryadjustmentvoucher.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
-            :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/`"
+            :to="`/${$route.params.company}/inventory/adjustments/${props.row.id}/edit/`"
           >
             {{ props.row.voucher_no }}
           </router-link>

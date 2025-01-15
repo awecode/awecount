@@ -32,7 +32,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Payment Mode"
-        :to="`/${$route.params.company}/settings/payment-mode/create/`"
+        :to="`/${$route.params.company}/settings/payment-modes/create`"
       />
     </div>
     <q-table
@@ -55,7 +55,7 @@ export default {
               color="blue l-view-btn"
               label="Edit"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/settings/payment-mode/${props.row.id}/`"
+              :to="`/${$route.params.company}/settings/payment-modes/${props.row.id}/edit/`"
             />
           </div>
         </q-td>

@@ -18,7 +18,7 @@ const toggleExpenses = (type) => {
 const endpoint = `/api/company/${route.params.company}/inventory-categories/`
 const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(endpoint, {
   getDefaults: true,
-  successRoute: '/inventory-category/list/',
+  successRoute: `/${route.params.company}/inventory/categories`,
 })
 fields.value.sales_account_type = 'dedicated'
 fields.value.purchase_account_type = 'dedicated'

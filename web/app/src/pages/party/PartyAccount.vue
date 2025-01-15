@@ -156,7 +156,7 @@ export default {
         <tbody>
           <tr v-if="fields.supplier_account && (fields.supplier_account.amounts.dr != null || fields.supplier_account.amounts.cr != null)">
             <td class="text-left">
-              <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${fields.supplier_account?.id}/view/`">
+              <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/ledgers/${fields.supplier_account?.id}`">
                 Vendor (Payable)
               </router-link>
             </td>
@@ -175,7 +175,7 @@ export default {
           </tr>
           <tr v-if="fields.customer_account && (fields.customer_account.amounts.dr != null || fields.customer_account.amounts.cr != null)">
             <td class="text-left">
-              <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${fields.customer_account?.id}/view/`">
+              <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/ledgers/${fields.customer_account?.id}`">
                 Customer (Receivable)
               </router-link>
             </td>

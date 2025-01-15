@@ -37,7 +37,7 @@ const { rows, resetFilters, filters, loading, searchQuery, pagination, onRequest
         color="green"
         icon-right="add"
         label="New Category"
-        :to="`/${$route.params.company}/account-category/create/`"
+        :to="`/${$route.params.company}/account/categories/create`"
       />
     </div>
     <q-table
@@ -105,7 +105,7 @@ const { rows, resetFilters, filters, loading, searchQuery, pagination, onRequest
             color="orange-7"
             label="Edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/account-category/${props.row.id}/`"
+            :to="`/${$route.params.company}/account/categories/${props.row.id}`"
           />
         </q-td>
       </template>

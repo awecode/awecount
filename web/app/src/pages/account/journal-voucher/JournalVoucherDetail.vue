@@ -148,7 +148,7 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
                 {{ row.type }}
               </div>
               <div class="col-grow">
-                <router-link class="text-blue text-weight-medium" style="text-decoration: none" :to="`/${$route.params.company}/account/${row.account_id}/view/`">
+                <router-link class="text-blue text-weight-medium" style="text-decoration: none" :to="`/${$route.params.company}/account/ledgers/${row.account_id}`">
                   {{ row.account_name }}
                 </router-link>
               </div>
@@ -200,7 +200,7 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
             color="orange"
             icon="edit"
             label="Edit"
-            :to="`/${$route.params.company}/journal-voucher/${props.id}/edit/`"
+            :to="`/${$route.params.company}/account/journal-vouchers/${props.id}/edit/`"
           />
         </div>
         <div v-if="fields?.status == 'Approved' && checkPermissions('journalvoucher.cancel')">
@@ -286,7 +286,7 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
             <td>{{ `${row.type} ` }}</td>
             <td>{{ row?.account_code }}</td>
             <td>
-              <router-link :to="`/${$route.params.company}/account/${row.account_id}/view/`">
+              <router-link :to="`/${$route.params.company}/account/ledgers/${row.account_id}`">
                 {{ row.account_name }}
               </router-link>
             </td>

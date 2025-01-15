@@ -758,7 +758,7 @@ const onFundTransferChequeIssueSuccess = () => {
                           v-if="data.source_type && data.source_id && checkPermissions(getPermissionFromSourceType(data.source_type))"
                           class="text-blue-800 text-xs hover:underline"
                           target="_blank"
-                          :to="getVoucherUrl(data) as string"
+                          :to="(getVoucherUrl(data) as string)"
                           @click.stop
                         >
                           {{ data.source_type }}

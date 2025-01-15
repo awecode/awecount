@@ -26,7 +26,7 @@ export default {
       class="text-blue"
       style="text-decoration: none"
       target="_blank"
-      :to="`/${$route.params.company}/account/?has_balance=true&category=${data.id}`"
+      :to="`/${$route.params.company}/account/ledgers/?has_balance=true&category=${data.id}`"
     >
       <strong v-if="root">{{ data.name }}</strong>
       <span v-else>{{ data.name }}</span>

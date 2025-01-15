@@ -68,7 +68,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Fund Transfer"
-        :to="`/${$route.params.company}/fund-transfer/create/`"
+        :to="`/${$route.params.company}/banking/fund-transfers/create`"
       />
     </div>
     <q-card v-if="data?.templates && data.templates.length" class="p-4 mt-4">
@@ -83,7 +83,7 @@ export default {
           color="green"
           icon-right="add"
           :label="template.name"
-          :to="{ path: `/${$route.params.company}/fund-transfer/create/`, query: { template: encodeURIComponent(JSON.stringify(template)) } }"
+          :to="{ path: `/${$route.params.company}/banking/fund-transfers/create`, query: { template: encodeURIComponent(JSON.stringify(template)) } }"
         />
       </div>
     </q-card>

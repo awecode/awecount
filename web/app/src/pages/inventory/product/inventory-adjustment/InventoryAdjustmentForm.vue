@@ -35,7 +35,7 @@ export default {
     ]
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/items/inventory-adjustment/list/',
+      successRoute: `/${route.params.company}/inventory/adjustments`,
     })
     formData.fields.value.date = formData.today
     const deleteRow = (index, errors) => {

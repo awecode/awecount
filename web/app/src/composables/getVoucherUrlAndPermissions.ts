@@ -1,42 +1,70 @@
+import { useRoute } from 'vue-router'
+
 function getVoucherUrl(row: { source_type: string, source_id: string | number }) {
-  if (!row.source_id) return ''
+  const route = useRoute()
+
   const source_type = row.source_type
-  if (source_type === 'Sales Voucher') return `/sales-voucher/${row.source_id}/view/`
-  if (source_type === 'Purchase Voucher') return `/purchase-voucher/${row.source_id}/view`
-  if (source_type === 'Journal Voucher') return `/journal-voucher/${row.source_id}/view`
-  if (source_type === 'Credit Note') return `/credit-note/${row.source_id}/view`
-  if (source_type === 'Debit Note') return `/debit-note/${row.source_id}/view`
-  // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
-  // TODO: add missing links
-  if (source_type === 'Cheque Deposit') return `/cheque-deposit/${row.source_id}/view/`
-  if (source_type === 'Payment Receipt') return `/payment-receipt/${row.source_id}/view/`
-  if (source_type === 'Cheque Issue') return `/cheque-issue/${row.source_id}/`
-  if (source_type === 'Challan') return `/challan/${row.source_id}/`
-  if (source_type === 'Account Opening Balance') return `/account-opening-balance/${row.source_id}/`
-  if (source_type === 'Item') return `/items/details/${row.source_id}/`
-  // added
-  if (source_type === 'Fund Transfer') return `/fund-transfer/${row.source_id}/`
-  if (source_type === 'Bank Cash Deposit') return `/bank/cash/cash-deposit/${row.source_id}/edit/`
-  if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
-  if (source_type === 'Inventory Adjustment Voucher') return `/items/inventory-adjustment/${row.source_id}/view/`
+  if (source_type === 'Sales Voucher') {
+    return `/${route.params.company}/sales/vouchers/${row.source_id}/`
+  }
+  if (source_type === 'Purchase Voucher') {
+    return `/${route.params.company}/purchase/vouchers/${row.source_id}/`
+  }
+  if (source_type === 'Journal Voucher') {
+    return `/${route.params.company}/account/journal-vouchers/${row.source_id}/`
+  }
+  if (source_type === 'Credit Note') {
+    return `/${route.params.company}/sales/credit-notes/${row.source_id}/`
+  }
+  if (source_type === 'Debit Note') {
+    return `/${route.params.company}/purchase/debit-notes/${row.source_id}/`
+  }
+  if (source_type === 'Challan') {
+    return `/${route.params.company}/sales/challans/${row.source_id}/`
+  }
+  if (source_type === 'Cheque Deposit') {
+    return `/${route.params.company}/banking/cheque-deposit/${row.source_id}/`
+  }
+  if (source_type === 'Payment Receipt') {
+    return `/${route.params.company}/payment-receipts/${row.source_id}/`
+  }
+  if (source_type === 'Cheque Issue') {
+    return `/${route.params.company}/banking/cheque-issue/${row.source_id}/edit`
+  }
+  if (source_type === 'Account Opening Balance') {
+    return `/${route.params.company}/account/opening-balances/${row.source_id}/edit`
+  }
+  if (source_type === 'Fund Transfer') {
+    return `/${route.params.company}/banking/fund-transfers/${row.source_id}/edit`
+  }
+  if (source_type === 'Bank Cash Deposit') {
+    return `/${route.params.company}/banking/cash-deposit/${row.source_id}/edit`
+  }
+  if (source_type === 'Tax Payment') {
+    return `/${route.params.company}/tax/payments/${row.source_id}/edit`
+  }
+  if (source_type === 'Inventory Adjustment Voucher') {
+    return `/${route.params.company}/inventory/adjustments/${row.source_id}/`
+  }
   console.error(`${source_type} not handled!`)
 }
+
 const getPermissionsWithSourceType = {
-  'Sales Voucher': 'SalesView',
-  'Purchase Voucher': 'PurchaseVoucherView',
-  'Journal Voucher': 'JournalVoucherView',
-  'Credit Note': 'CreditNoteView',
-  'Debit Note': 'DebitNoteView',
-  'Cheque Deposit': 'ChequeDepositView',
-  'Payment Receipt': 'PaymentReceiptView',
-  'Cheque Issue': 'ChequeIssueModify',
-  'Challan': 'ChallanModify',
-  'Account Opening Balance': 'AccountOpeningBalanceModify',
-  'Fund Transfer': 'FundTransferModify',
-  'Bank Cash Deposit': 'BankCashDepositModify',
-  'Tax Payment': 'TaxPaymentModify',
-  'Item': 'ItemView',
-  'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView',
+  'Account Opening Balance': 'accountopeningbalance.modify',
+  'Bank Cash Deposit': 'bankcashdeposit.modify',
+  'Challan': 'challan.modify',
+  'Cheque Deposit': 'chequedeposit.view',
+  'Cheque Issue': 'chequeissue.modify',
+  'Credit Note': 'creditnote.view',
+  'Debit Note': 'debitnote.view',
+  'Fund Transfer': 'fundtransfer.modify',
+  'Inventory Adjustment Voucher': 'inventoryadjustmentvoucher.view',
+  'Item': 'item.view',
+  'Journal Voucher': 'journalvoucher.view',
+  'Payment Receipt': 'paymentreceipt.view',
+  'Purchase Voucher': 'purchasevoucher.view',
+  'Sales Voucher': 'sales.view',
+  'Tax Payment': 'taxpayment.modify',
 } as const
 
 const getPermissionFromSourceType = (sourceType: string) => {

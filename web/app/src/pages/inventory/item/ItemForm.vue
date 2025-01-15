@@ -26,7 +26,7 @@ const staticOptions = ref({
 const activeInventoryCategory = ref(null)
 const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(endpoint, {
   getDefaults: true,
-  successRoute: '/items/list/',
+  successRoute: `/${route.params.company}/inventory/items`,
 })
 fields.value.sales_account_type = 'dedicated'
 fields.value.purchase_account_type = 'dedicated'

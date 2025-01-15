@@ -38,7 +38,7 @@ export default {
     const showDrAccount = ref(false)
     const config = {
       getDefaults: true,
-      successRoute: '/cheque-issue/list/',
+      successRoute: `/${route.params.company}/banking/cheque-issues`,
     }
     if (props.endpoint) {
       config.createDefaultsEndpoint = `/api/company/${route.params.company}/cheque-issue/create-defaults/`

@@ -47,7 +47,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Purchase Discount"
-        :to="`/${$route.params.company}/purchase-discount/create/`"
+        :to="`/${$route.params.company}/purchase/discounts/create`"
       />
     </div>
     <q-table
@@ -119,7 +119,7 @@ export default {
               color="orange-7"
               label="Edit"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/purchase-discount/${props.row.id}/`"
+              :to="`/${$route.params.company}/purchase/discounts/${props.row.id}/edit/`"
             />
           </div>
         </q-td>

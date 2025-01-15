@@ -34,7 +34,7 @@ const staticOptions = {
 }
 const { fields, errors, formDefaults, today } = useForm(endpoint, {
   getDefaults: true,
-  successRoute: '/pos',
+  successRoute: `/${route.params.company}/pos`,
 })
 const partyChoices = ref([])
 useApi(`/api/company/${route.params.company}/parties/choices/`).then((choices) => {

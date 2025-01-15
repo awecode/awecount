@@ -8,7 +8,7 @@ export default {
     const endpoint = `/api/company/${route.params.company}/sales-agent/`
     const formData = useForm(endpoint, {
       getDefaults: false,
-      successRoute: '/sales-agent/list/',
+      successRoute: `/${route.params.company}/sales/agents`,
     })
     useMeta(() => {
       return {

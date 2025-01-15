@@ -9,7 +9,7 @@ export default {
     const endpoint = `/api/company/${route.params.company}/bank-cash-deposits/`
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/cash-deposit/list/',
+      successRoute: `/${route.params.company}/banking/cash-deposits`,
     })
     const isDeleteOpen = ref(false)
     useMeta(() => {
@@ -143,7 +143,7 @@ export default {
             icon="library_books"
             label="Journal Entries"
             :loading="loading"
-            :to="`/${$route.params.company}/journal-entries/bank-cash-deposits/${id}/`"
+            :to="`/${$route.params.company}/account/journal-vouchers/${props.row.id}/edit/`"
           />
         </div>
       </q-card>

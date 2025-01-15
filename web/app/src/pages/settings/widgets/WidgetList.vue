@@ -39,7 +39,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Dashboard widget"
-        :to="`/${$route.params.company}/dashboard-widgets/create/`"
+        :to="`/${$route.params.company}/settings/dashboard-widgets/create`"
       />
     </div>
     <q-table
@@ -59,7 +59,7 @@ export default {
             v-if="checkPermissions('widget.modify')"
             class="text-blue l-edit-btn"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/dashboard-widgets/${props.row.id}/`"
+            :to="`/${$route.params.company}/settings/dashboard-widgets/${props.row.id}/edit/`"
           >
             {{ props.row.name }}
           </router-link>

@@ -200,7 +200,7 @@ export default {
                             </q-btn>
                         </span>
                         <RouterLink style="text-decoration: none" target="_blank"
-                            :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}
+                            :to="`/${$route.params.company}/account/ledgers/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}
                         </RouterLink>
                     </td>
                     <td>
@@ -239,7 +239,7 @@ export default {
             class="text-blue-6"
             style="text-decoration: none"
             target="_blank"
-            :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`"
+            :to="`/${$route.params.company}/account/ledgers/?has_balance=true&category=${item.id}`"
           >
             {{ item.name }}
           </RouterLink>
@@ -272,7 +272,7 @@ export default {
                             </q-btn>
                         </span>
                         <RouterLink style="text-decoration: none" target="_blank"
-                            :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}
+                            :to="`/${$route.params.company}/account/ledgers/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}
                         </RouterLink>
                     </td>
                     <td>{{ calculateNet(showTotalObjPeriod) }}</td>
@@ -307,7 +307,7 @@ export default {
             class="text-blue-6"
             style="text-decoration: none"
             target="_blank"
-            :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`"
+            :to="`/${$route.params.company}/account/ledgers/?has_balance=true&category=${item.id}`"
           >
             {{ item.name }}
           </RouterLink>

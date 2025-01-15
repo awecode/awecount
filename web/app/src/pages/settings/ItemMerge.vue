@@ -79,7 +79,7 @@ const onSubmit = () => {
           icon: 'check_circle',
           position: 'top-right',
         })
-        router.push('/items/list/')
+        router.push(`/${route.params.company}/inventory/items`)
       }
     })
     .catch((error) => {

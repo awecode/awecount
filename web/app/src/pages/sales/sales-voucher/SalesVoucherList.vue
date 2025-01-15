@@ -106,7 +106,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Sales"
-        :to="`/${$route.params.company}/sales-voucher/create/`"
+        :to="`/${$route.params.company}/sales/vouchers/create`"
       />
     </div>
     <q-table
@@ -246,8 +246,10 @@ export default {
               v-if="checkPermissions('paymentreceipt.view')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none"
-              :to="`/${$route.params.company}/payment-receipt/${id}/view/`"
-            >#{{ id }}</router-link>
+              :to="`/${$route.params.company}/payment-receipts/${id}`"
+            >
+              #{{ id }}
+            </router-link>
             <span v-else>#{{ id }}</span>
           </span>
         </q-td>

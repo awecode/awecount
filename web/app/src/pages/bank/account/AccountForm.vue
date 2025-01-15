@@ -8,7 +8,7 @@ export default {
     const endpoint = `/api/company/${route.params.company}/bank-account/`
     const formData = useForm(endpoint, {
       getDefaults: false,
-      successRoute: '/bank-accounts/list/',
+      successRoute: `/${route.params.company}/banking/bank-accounts`,
     })
     formData.fields.value.is_wallet = false
     useMeta(() => {

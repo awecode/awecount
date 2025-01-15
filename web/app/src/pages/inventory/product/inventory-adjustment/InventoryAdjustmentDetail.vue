@@ -228,7 +228,7 @@ export default {
               color="orange-5"
               icon="edit"
               label="Edit"
-              :to="`/${$route.params.company}/items/inventory-adjustment/${fields?.id}/`"
+              :to="`/${$route.params.company}/inventory/adjustments/${fields.id}/edit/`"
             />
             <q-btn
               v-if="checkPermissions('sales.cancel') && fields?.status !== 'Cancelled'"

@@ -13,7 +13,7 @@ export default {
     return {
       ...useForm(endpoint, {
         getDefaults: false,
-        successRoute: '/brand/list/',
+        successRoute: `/${route.params.company}/inventory/brands`,
       }),
       checkPermissions,
     }

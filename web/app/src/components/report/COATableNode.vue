@@ -200,7 +200,7 @@ const addAccount = (id: number) => {
         style="text-decoration: none"
         target="_blank"
         :class="props.root ? 'text-weight-bold' : ''"
-        :to="`/account/?has_balance=true&category=${row.id}`"
+        :to="`/account/ledgers/?has_balance=true&category=${row.id}`"
       >
         {{ row.name }}
       </RouterLink>
@@ -295,7 +295,7 @@ const addAccount = (id: number) => {
               class="text-blue-7 text-italic text-weight-regular"
               style="text-decoration: none"
               target="_blank"
-              :to="`/account/${account.id}/view/`"
+              :to="`/${$route.params.company}/account/ledgers/${account.id}`"
             >
               {{ account.name }}
             </RouterLink>

@@ -10,7 +10,7 @@ export default {
     const router = useRouter()
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/dashboard/',
+      successRoute: `/${route.params.company}/settings/dashboard-widgets`,
     })
     useMeta(() => {
       return {
@@ -36,7 +36,7 @@ export default {
               message: 'The widget has been deleted.',
               icon: 'check_circle',
             })
-            router.replace('/dashboard/')
+            router.replace(`/${route.params.company}/settings/dashboard-widgets`)
           })
           .catch((err) => {
             if (err.status === 400) {

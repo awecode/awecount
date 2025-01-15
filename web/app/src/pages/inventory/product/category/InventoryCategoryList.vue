@@ -37,7 +37,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Category"
-        :to="`/${$route.params.company}/inventory-category/create/`"
+        :to="`/${$route.params.company}/inventory/categories/create`"
       />
     </div>
     <q-table
@@ -58,7 +58,7 @@ export default {
             color="blue"
             label="view"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/account/${props.row.id}/view/`"
+            :to="`/${$route.params.company}/account/ledgers/${props.row.id}`"
           />
         </q-td>
       </template>
@@ -68,7 +68,7 @@ export default {
             v-if="checkPermissions('category.modify')"
             class="text-blue"
             style="text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/inventory-category/${props.row.id}/`"
+            :to="`/${$route.params.company}/inventory/categories/${props.row.id}/edit/`"
           >
             {{ props.row.name }}
           </router-link>

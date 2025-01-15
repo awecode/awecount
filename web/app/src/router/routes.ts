@@ -548,7 +548,7 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'vouchers/:id/material',
+        path: 'vouchers/:id/materialized-view',
         name: 'company-sales-vouchers-id-edit',
         component: () => import('pages/sales/sales-voucher/SalesVoucherMV.vue'),
         meta: {
@@ -961,11 +961,11 @@ const companyRoutes: RouteRecordRaw[] = [
       },
     ],
   },
-  // {
-  //   path: 'journal-entry/:slugUrl',
-  //   name: 'company-journal-entry',
-  //   component: () => import('pages/journal-entry/[slugUrl].vue'),
-  // },
+  {
+    path: 'journal-entries/:slugUrl',
+    name: 'company-journal-entries',
+    component: () => import('pages/journal-entry/[slugUrl].vue'),
+  },
   {
     path: 'crm',
     name: 'company-crm',

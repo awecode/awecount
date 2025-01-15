@@ -10,7 +10,7 @@ export default {
     const endpoint = `/api/company/${route.params.company}/cheque-deposits/`
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/cheque-deposit/list/',
+      successRoute: `/${route.params.company}/banking/cheque-deposits`,
     })
     useMeta(() => {
       return {

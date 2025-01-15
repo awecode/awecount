@@ -54,7 +54,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Cheque Deposit"
-        :to="`/${$route.params.company}/cheque-deposit/create/`"
+        :to="`/${$route.params.company}/banking/cheque-deposits/create`"
       />
     </div>
 
@@ -151,7 +151,7 @@ export default {
             color="blue"
             label="View"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/cheque-deposit/${props.row.id}/view/`"
+            :to="`/${$route.params.company}/banking/cheque-deposits/${props.row.id}/`"
           />
         </q-td>
       </template>

@@ -69,7 +69,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Cash Deposit"
-        :to="`/${$route.params.company}/cash-deposit/create/`"
+        :to="`/${$route.params.company}/banking/cash-deposits/create`"
       />
     </div>
 
@@ -152,7 +152,7 @@ export default {
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/cash-deposit/${props.row.id}/`"
+            :to="`/${$route.params.company}/banking/cash-deposits/${props.row.id}/edit/`"
           />
         </q-td>
       </template>

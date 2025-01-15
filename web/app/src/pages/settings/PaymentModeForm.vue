@@ -190,7 +190,7 @@ const useTransactionFeeValidation = () => {
 
 const { fields, errors, formDefaults, isEdit, submitForm, cancel, loading } = useForm(`/api/company/${$route.params.company}/payment-modes/`, {
   getDefaults: true,
-  successRoute: '/settings/payment-mode/list/',
+  successRoute: `/${route.params.company}/settings/payment-modes`,
 })
 
 fields.value.enabled_for_sales = true

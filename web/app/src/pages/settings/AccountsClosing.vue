@@ -9,7 +9,7 @@ const metaData = {
 useMeta(metaData)
 const { fields, formDefaults, submitForm, loading } = useForm(endpoint, {
   getDefaults: true,
-  successRoute: '/settings/account-closing/',
+  successRoute: `/${route.params.company}/settings/account-closing`,
 })
 watch(
   () => formDefaults.value,

@@ -270,7 +270,7 @@ export default {
                   v-if="checkPermissions('paymentreceipt.view')"
                   class="text-blue"
                   style="font-weight: 500; text-decoration: none"
-                  :to="`/${$route.params.company}/payment-receipt/${receipt.id}/view`"
+                  :to="`/${$route.params.company}/payment-receipts/${receipt.id}/`"
                 >
                   {{ receipt.id }}
                 </router-link>
@@ -305,7 +305,7 @@ export default {
               color="orange-5"
               icon="edit"
               label="Edit"
-              :to="`/${$route.params.company}/sales-voucher/${fields?.id}/`"
+              :to="`/${$route.params.company}/sales/vouchers/${fields?.id}/edit/`"
             />
             <q-btn
               v-if="fields?.status === 'Issued' && checkPermissions('sales.modify')"
@@ -338,7 +338,7 @@ export default {
             color="blue-7"
             icon="mdi-table"
             label="Materialized View"
-            :to="`/${$route.params.company}/sales-voucher/${fields?.id}/mv`"
+            :to="`/${$route.params.company}/sales/vouchers/${fields?.id}/materialized-view`"
           />
           <q-btn
             v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"

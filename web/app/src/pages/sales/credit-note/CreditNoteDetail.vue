@@ -176,7 +176,7 @@ export default {
           color="blue-7"
           icon="books"
           label="Journal Entries"
-          :to="`/${$route.params.company}/journal-entries/credit-note/${$route.params.id}/`"
+          :to="`/${$route.params.company}/journal-entries/credit-note/${fields.id}/`"
         />
       </div>
       <div v-else class="row q-gutter-x-md q-mb-md">

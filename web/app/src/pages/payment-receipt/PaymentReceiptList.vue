@@ -70,7 +70,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Receipt"
-        :to="`/${$route.params.company}/payment-receipt/create/`"
+        :to="`/${$route.params.company}/payment-receipts/create`"
       />
     </div>
     <q-table
@@ -219,7 +219,7 @@ export default {
               color="blue"
               label="View"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/payment-receipt/${props.row.id}/view`"
+              :to="`/${$route.params.company}/payment-receipts/${props.row.id}/`"
             />
           </div>
         </q-td>

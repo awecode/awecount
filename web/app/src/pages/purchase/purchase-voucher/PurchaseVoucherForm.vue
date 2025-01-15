@@ -8,7 +8,7 @@ const endpoint = `/api/company/${route.params.company}/purchase-vouchers/`
 
 const { fields, errors, formDefaults, loading, isEdit, today, submitForm } = useForm(endpoint, {
   getDefaults: true,
-  successRoute: '/purchase-voucher/list/',
+  successRoute: `/${route.params.company}/purchase/vouchers`,
 })
 
 useMeta(() => {

@@ -29,7 +29,7 @@ export default {
     }
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/debit-note/list/',
+      successRoute: `/${route.params.company}/purchase/debit-notes`,
     })
     useMeta(() => {
       return {

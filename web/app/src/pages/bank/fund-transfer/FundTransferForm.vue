@@ -32,7 +32,7 @@ const fundTransferEndpoint = props.endpoint || `/api/company/${route.params.comp
 
 const config = {
   getDefaults: true,
-  successRoute: '/fund-transfer/list/',
+  successRoute: `/${route.params.company}/banking/fund-transfers`,
 }
 if (props.endpoint) {
   config.createDefaultsEndpoint = `/api/company/${route.params.company}/fund-transfer/create-defaults/`
@@ -40,7 +40,7 @@ if (props.endpoint) {
 
 const isDeleteOpen = ref(false)
 const { fields, errors, isEdit, id, formDefaults, submitForm, cancelForm, loading, today } = useForm(fundTransferEndpoint, config)
-const route = useRoute()
+
 useMeta(() => {
   return {
     title: `${isEdit?.value ? 'Update Funds Transfer' : 'Add Funds Transfer'} | Awecount`,

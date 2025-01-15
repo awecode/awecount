@@ -54,7 +54,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Debit Note"
-        :to="`/${$route.params.company}/debit-note/create/`"
+        :to="`/${$route.params.company}/purchase/debit-notes/create`"
       />
     </div>
     <q-table

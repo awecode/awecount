@@ -85,7 +85,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Purchase"
-        :to="`/${$route.params.company}/purchase-voucher/create/`"
+        :to="`/${$route.params.company}/purchase/vouchers/create`"
       />
     </div>
     <q-table

@@ -73,7 +73,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Tax Payment"
-        :to="`/${$route.params.company}/tax-payment/create/`"
+        :to="`/${$route.params.company}/tax/payments/create`"
       />
     </div>
 
@@ -162,7 +162,7 @@ export default {
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/tax-payment/${props.row.id}/`"
+            :to="`/${$route.params.company}/tax/payments/${props.row.id}/edit/`"
           />
           <q-btn
             class="q-py-none q-px-md font-size-sm l-view-btn"

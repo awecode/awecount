@@ -345,7 +345,7 @@ export default {
                       class="text-blue-6"
                       style="text-decoration: none"
                       target="_blank"
-                      :to="`/${$route.params.company}/account/?has_balance=true&category=${parent.id}`"
+                      :to="`/${$route.params.company}/account/ledgers/?has_balance=true&category=${parent.id}`"
                     >
                       {{ parent.name }}
                     </RouterLink>
@@ -395,7 +395,7 @@ export default {
                         class="text-blue-6"
                         style="text-decoration: none"
                         target="_blank"
-                        :to="`/${$route.params.company}/account/?has_balance=true&category=${child.account_id}`"
+                        :to="`/${$route.params.company}/account/ledgers/?has_balance=true&category=${child.account_id}`"
                       >
                         {{ child.name }}
                       </RouterLink>
@@ -446,7 +446,7 @@ export default {
                     class="text-blue-6"
                     style="text-decoration: none"
                     target="_blank"
-                    :to="`/${$route.params.company}/account/?has_balance=true&category=${child.account_id}`"
+                    :to="`/${$route.params.company}/account/ledgers/?has_balance=true&category=${child.account_id}`"
                   >
                     {{ child.name }}
                   </RouterLink>

@@ -50,7 +50,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Account"
-        :to="`/${$route.params.company}/bank-accounts/create/`"
+        :to="`/${$route.params.company}/banking/bank-accounts/create`"
       />
     </div>
     <q-table
@@ -71,7 +71,7 @@ export default {
             color="blue"
             label="Account"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/account/${props.row.ledger}/view/`"
+            :to="`/${$route.params.company}/account/ledgers/${props.row.ledger}`"
           />
           <q-btn
             v-if="checkPermissions('bankaccount.modify')"
@@ -79,7 +79,7 @@ export default {
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/bank-accounts/${props.row.id}/`"
+            :to="`/${$route.params.company}/banking/bank-accounts/${props.row.id}/edit/`"
           />
         </q-td>
       </template>

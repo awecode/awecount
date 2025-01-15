@@ -24,7 +24,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Unit"
-        :to="`/${$route.params.company}/units/create/`"
+        :to="`/${$route.params.company}/inventory/units/create`"
       />
     </div>
 
@@ -45,7 +45,7 @@ export default {
             v-if="checkPermissions('unit.modify')"
             class="text-blue text-weight-medium"
             style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px; text-decoration: none"
-            :to="`/${$route.params.company}/units/${props.row.id}/`"
+            :to="`/${$route.params.company}/inventory/units/${props.row.id}/edit/`"
           >
             {{ props.row.name }}
           </router-link>

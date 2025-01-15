@@ -71,7 +71,7 @@ export default {
                   class="text-blue"
                   style="text-decoration: none"
                   target="_blank"
-                  :to="`/${$route.params.company}/payment-receipt/list?start_date=${fields.start_date}&end_date=${fields.end_date}&sales_agent=${row.invoices__sales_agent_id}`"
+                  :to="`/${$route.params.company}/payment-receipts/?start_date=${fields.start_date}&end_date=${fields.end_date}&sales_agent=${row.invoices__sales_agent_id}`"
                 >
                   {{ row.invoices__sales_agent__name }}
                 </router-link>
@@ -81,7 +81,7 @@ export default {
                   class="text-blue"
                   style="text-decoration: none"
                   target="_blank"
-                  :to="`/${$route.params.company}/payment-receipt/list?start_date=${fields.start_date}&end_date=${fields.end_date}&sales_agent=${row.invoices__sales_agent_id}`"
+                  :to="`/${$route.params.company}/payment-receipts/?start_date=${fields.start_date}&end_date=${fields.end_date}&sales_agent=${row.invoices__sales_agent_id}`"
                 >
                   {{ row.total_amount }}
                 </router-link>

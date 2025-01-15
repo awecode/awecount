@@ -47,7 +47,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Credit Note"
-        :to="`/${$route.params.company}/credit-note/create/`"
+        :to="`/${$route.params.company}/sales/credit-notes/create`"
       />
     </div>
     <q-table
