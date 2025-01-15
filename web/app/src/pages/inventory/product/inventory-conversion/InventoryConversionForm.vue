@@ -1,11 +1,11 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
+import useForm from 'src/composables/useForm'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/inventory-conversion/'
+  setup() {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/inventory-conversion/`
     const metaData = {
       title: 'Inventory Conversion | Awecount',
     }
@@ -42,7 +42,7 @@ export default {
       }
     }
     const onCancelClick = () => {
-      const url = `/v1/inventory-conversion/${formData.fields.value.id}/cancel/`
+      const url = `/api/company/${route.params.company}/inventory-conversion/${formData.fields.value.id}/cancel/`
       const body = {
         message: deleteMsg.value,
       }
@@ -123,7 +123,7 @@ export default {
       if (index > -1) {
         handleFinishedProductUpdate(finishedProductData.value[index])
       } else {
-        useApi(`/v1/bill-of-material/${id}/`, {
+        useApi(`/api/company/${route.params.company}/bill-of-material/${id}/`, {
           method: 'GET',
         }).then((data) => {
           finishedProductData.value.push(data)
@@ -220,14 +220,14 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn
-            v-if="checkPermissions('InventoryConversionVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
+            v-if="checkPermissions('inventoryconversionvoucher.delete') && isEdit && fields.status !== 'Cancelled'"
             color="red"
             label="Cancel"
             :loading="loading"
             @click.prevent="isDeleteOpen = true"
           />
           <q-btn
-            v-if="checkPermissions('InventoryConversionVoucherModify') && isEdit && fields.status !== 'Cancelled'"
+            v-if="checkPermissions('inventoryconversionvoucher.modify') && isEdit && fields.status !== 'Cancelled'"
             color="green"
             label="Update"
             type="submit"
@@ -235,7 +235,7 @@ export default {
             @click.prevent="onSubmitClick(fields.status)"
           />
           <q-btn
-            v-if="!isEdit && checkPermissions('InventoryConversionVoucherCreate')"
+            v-if="!isEdit && checkPermissions('inventoryconversionvoucher.create')"
             color="green"
             label="Create"
             type="submit"

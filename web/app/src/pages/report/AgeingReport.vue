@@ -8,38 +8,32 @@ export default {
     const reportData = ref([])
     const loading = ref(false)
     const pagination = ref(null)
-    // const
     const date = ref(route.query.date || null)
     const metaData = {
       title: 'Customer Ageing Report | Awecount',
     }
     useMeta(metaData)
+
+    // Initialize date if not set
+    if (!date.value) {
+      const now = new Date().toISOString().substring(0, 10)
+      const routeObj = {
+        path: route.path,
+        query: {
+          date: now,
+        },
+      }
+      date.value = now
+      router.push(routeObj)
+    }
+
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi(`v1/report/export-ageing-report/${query}`)
+      useApi(`/api/company/${route.params.company}/report/export-ageing-report/${query}`)
         .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Customer_Ageing_Report'))
         .catch(err => console.log('Error Due To', err))
     }
-    const fetchData = () => {
-      const endpoint = `/v1/report/ageing-report/?date=${date.value}${route.query.page ? `&page=${route.query.page}` : ''}`
-      loading.value = true
-      useApi(endpoint)
-        .then((data) => {
-          reportData.value = data.results
-          loading.value = false
-          pagination.value = {
-            page: data.pagination.page,
-            rowsPerPage: data.pagination.size,
-            rowsNumber: data.pagination.count,
-          }
-        })
-        .catch((err) => {
-          console.log(err)
-          loading.value = false
-          pagination.value = null
-        })
-      // TODO: add 404 error routing
-    }
+
     function onRequest(props) {
       let url = route.path
       if (props.pagination.page == 1) {
@@ -53,6 +47,7 @@ export default {
       router.push(url)
       fetchData()
     }
+
     function onUpdate() {
       let url = route.path
       if (route.query.page == 1) {
@@ -66,6 +61,7 @@ export default {
       router.push(url)
       fetchData()
     }
+
     const newColumns = [
       {
         name: 'party',
@@ -85,25 +81,42 @@ export default {
       { name: 'total_120', label: '120 Days', align: 'left', field: 'total_120' },
       { name: 'total_120plus', label: '120 Days Plus', align: 'left', field: 'total_120plus' },
     ]
-    // watch(() => route.query, () => {
-    //     fetchData()
-    // })
-    return { reportData, fetchData, date, newColumns, checkPermissions, pagination, onRequest, onUpdate, onDownloadXls, loading }
-  },
-  created() {
-    if (!this.date) {
-      const now = new Date().toISOString().substring(0, 10)
-      const routeObj = {
-        path: this.$route.path,
-        query: {
-          date: now,
-        },
-      }
-      this.date = now
-      this.$router.push(routeObj)
-      // route.query
+
+    const fetchData = () => {
+      const endpoint = `/api/company/${route.params.company}/report/ageing-report/?date=${date.value}${route.query.page ? `&page=${route.query.page}` : ''}`
+      loading.value = true
+      useApi(endpoint)
+        .then((data) => {
+          reportData.value = data.results
+          loading.value = false
+          pagination.value = {
+            page: data.pagination.page,
+            rowsPerPage: data.pagination.size,
+            rowsNumber: data.pagination.count,
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+          loading.value = false
+          pagination.value = null
+        })
     }
-    this.fetchData()
+
+    // Initial data fetch
+    fetchData()
+
+    return {
+      reportData,
+      fetchData,
+      date,
+      newColumns,
+      checkPermissions,
+      pagination,
+      onRequest,
+      onUpdate,
+      onDownloadXls,
+      loading
+    }
   },
 }
 </script>
@@ -144,14 +157,19 @@ export default {
       <template #body-cell-party="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('CategoryModify')"
+            v-if="checkPermissions('category.modify')"
             class="text-blue l-view-btn"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/parties/account/${props.row.party_id}/`"
+            :to="`/${$route.params.company}/parties/account/${props.row.party_id}/`"
           >
             {{ props.row.party_name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.party_name }}</span>
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
+            {{ props.row.party_name }}
+          </span>
         </q-td>
       </template>
     </q-table>

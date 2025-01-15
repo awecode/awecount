@@ -1,11 +1,11 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
+import useForm from 'src/composables/useForm'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/brands/'
+  setup() {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/brands/`
     const metaData = {
       title: 'Brands | Awecount',
     }
@@ -55,7 +55,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('BrandModify') && isEdit"
+            v-if="checkPermissions('brand.modify') && isEdit"
             class="q-ml-auto"
             color="green"
             label="Update"
@@ -64,7 +64,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="!isEdit && checkPermissions('BrandCreate')"
+            v-if="!isEdit && checkPermissions('brand.create')"
             class="q-ml-auto"
             color="green"
             label="Create"

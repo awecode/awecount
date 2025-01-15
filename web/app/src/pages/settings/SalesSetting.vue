@@ -1,13 +1,14 @@
 <script>
+import useForm from 'src/composables/useForm'
 import { modes } from 'src/helpers/constants/invoice'
 import { uploadFiles } from 'src/utils/file-upload'
 import { parseErrors } from 'src/utils/helpers'
-import useForm from '/src/composables/useForm'
 
 export default {
   setup() {
     const $q = useQuasar()
-    const endpoint = 'v1/sales-settings/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/sales-settings/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '#',
@@ -21,8 +22,11 @@ export default {
     const formLoading = ref(false)
     const onUpdateClick = async (fields) => {
       formLoading.value = true
-      fields.default_email_attachments = await uploadFiles(fields.default_email_attachments, formData.formDefaults.value?.file_upload_paths?.default_email_attachments)
-      useApi(`v1/sales-settings/${fields.id}/`, {
+      fields.default_email_attachments = await uploadFiles(
+        fields.default_email_attachments,
+        formData.formDefaults.value?.file_upload_paths?.default_email_attachments
+      )
+      useApi(`/api/company/${route.params.company}/sales-settings/${fields.id}/`, {
         method: 'PUT',
         body: fields,
       })
@@ -113,12 +117,12 @@ export default {
                 v-model.number="fields.payment_mode"
                 emit-value
                 map-options
-                endpoint="v1/sales-settings/create-defaults/payment_modes"
                 label="Mode"
                 option-label="name"
                 option-value="id"
-                :error="!!errors.mode"
-                :error-message="errors.mode"
+                :endpoint="`/api/company/${$route.params.company}/sales-settings/create-defaults/payment_modes`"
+                :error="!!modeErrors"
+                :error-message="modeErrors"
                 :options="modeOptionsComputed"
                 :static-option="fields.selected_mode_obj"
               >

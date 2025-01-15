@@ -1,14 +1,15 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
 export default {
   setup() {
     const metaData = {
       title: 'Brands | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
-    const endpoint = '/v1/brands/'
+    const endpoint = `/api/company/${route.params.company}/brands/`
     return { ...useList(endpoint), checkPermissions }
   },
 }
@@ -19,12 +20,12 @@ export default {
     <div class="row justify-between">
       <div></div>
       <q-btn
-        v-if="checkPermissions('BrandCreate')"
+        v-if="checkPermissions('brand.create')"
         class="q-ml-lg add-btn"
         color="green"
         icon-right="add"
         label="New brand"
-        to="/brand/add/"
+        :to="`/${$route.params.company}/brand/create/`"
       />
     </div>
     <q-table
@@ -41,14 +42,17 @@ export default {
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('BrandModify')"
+            v-if="checkPermissions('brand.modify')"
             class="text-blue"
             style="text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/brand/${props.row.id}/`"
+            :to="`/${$route.params.company}/brand/${props.row.id}/`"
           >
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
             {{ props.row.name }}
           </span>
         </q-td>

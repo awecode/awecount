@@ -202,7 +202,7 @@ const endpointLabelMap = {
         :endpoint="endpointLabelMap[props.label]"
         :error="error"
         :label="`${label} Account`"
-        :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
+        :modal-component="checkPermissions('account.create') ? LedgerForm : null"
         :options="props.options"
         :static-option="injectOption"
       />

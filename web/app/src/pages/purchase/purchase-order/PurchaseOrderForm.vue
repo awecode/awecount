@@ -1,15 +1,15 @@
 <script>
 import ChallanTable from 'src/components/challan/ChallanTable.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import useForm from 'src/composables/useForm'
+import CategoryForm from 'src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
-import useForm from '/src/composables/useForm'
-import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 
+const route = useRoute()
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, { emit }) {
-    const endpoint = '/v1/purchase-order/'
+  setup() {
+    const endpoint = `/api/company/${route.params.company}/purchase-order/`
     const openDatePicker = ref(false)
     const $q = useQuasar()
     const isDeleteOpen = ref(false)
@@ -46,7 +46,7 @@ export default {
     formData.fields.value.party = ''
     const onCancelClick = () => {
       formData.loading.value = true
-      useApi(`/v1/purchase-order/${formData.fields.value.id}/cancel/`, {
+      useApi(`/api/company/${route.params.company}/purchase-order/${formData.fields.value.id}/cancel/`, {
         method: 'POST',
         body: {
           message: deleteMsg.value,
@@ -131,10 +131,10 @@ export default {
             <div class="col-md-6 col-12">
               <n-auto-complete-v2
                 v-model="fields.party"
-                endpoint="/v1/purchase-order/create-defaults/parties"
                 label="Party *"
+                :endpoint="`/api/company/${$route.params.company}/purchase-order/create-defaults/parties`"
                 :error="errors?.party ? errors?.party : null"
-                :modal-component="checkPermissions('PartyCreate') ? PartyForm : null"
+                :modal-component="checkPermissions('party.create') ? PartyForm : null"
                 :options="formDefaults.collections?.parties"
                 :static-option="fields.selected_party_obj"
               />
@@ -173,14 +173,14 @@ export default {
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
         <q-btn
-          v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
+          v-if="checkPermissions('challan.create') && isEdit && fields.status === 'Issued'"
           color="blue"
           label="Issue Purchase Voucher"
           :loading="loading"
-          :to="`/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`"
+          :to="`/${$route.params.company}/purchase-voucher/create/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseOrderCancel') && isEdit && fields.status === 'Issued'"
+          v-if="checkPermissions('purchaseorder.cancel') && isEdit && fields.status === 'Issued'"
           color="red"
           icon="cancel"
           label="Cancel"
@@ -188,14 +188,14 @@ export default {
           @click.prevent="isDeleteOpen = true"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseOrderModify') && isEdit && fields.status === 'Issued'"
+          v-if="checkPermissions('purchaseorder.modify') && isEdit && fields.status === 'Issued'"
           color="green"
           label="Update"
           :loading="loading"
           @click.prevent="onSubmitClick('Issued')"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseOrderCreate') && !isEdit"
+          v-if="checkPermissions('purchaseorder.create') && !isEdit"
           color="green"
           label="Issue"
           :loading="loading"

@@ -14,9 +14,8 @@ export default {
       },
     },
   },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props) {
-
+  setup() {
+    return {}
   },
 }
 </script>
@@ -25,9 +24,9 @@ export default {
   <div style="line-height: 0.5rem">
     <router-link
       class="text-blue"
-      style="text-decoration: none; display: flex; align-items: center"
+      style="text-decoration: none"
       target="_blank"
-      :to="`/account/?has_balance=true&category=${data.id}`"
+      :to="`/${$route.params.company}/account/?has_balance=true&category=${data.id}`"
     >
       <strong v-if="root">{{ data.name }}</strong>
       <span v-else>{{ data.name }}</span>

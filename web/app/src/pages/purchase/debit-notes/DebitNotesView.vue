@@ -1,10 +1,10 @@
 <script lang="ts">
 import type { Ref } from 'vue'
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { useLoginStore } from 'src/stores/login-info'
-import DateConverter from '/src/components/date/VikramSamvat.js'
 
 interface Fields {
   status: string
@@ -20,11 +20,13 @@ interface Fields {
   discount_type: null | 'Amount' | 'Percent'
   address: string
 }
+
 export default {
   setup() {
     const metaData = {
       title: 'Debit Note | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
     const store = useLoginStore()
     const $q = useQuasar()
@@ -37,10 +39,10 @@ export default {
       let endpoint = ''
       let body: null | object = null
       if (status === 'Resolved') {
-        endpoint = `/v1/debit-note/${id}/mark_as_resolved/`
+        endpoint = `/api/company/${route.params.company}/debit-note/${id}/mark_as_resolved/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
-        endpoint = `/v1/debit-note/${id}/cancel/`
+        endpoint = `/api/company/${route.params.company}/debit-note/${id}/cancel/`
         body = { method: 'POST', body: { message: deleteMsg.value } }
       }
       isLoading.value = true
@@ -87,7 +89,7 @@ export default {
     }
     const onPrintclick = (noApiCall) => {
       if (!noApiCall) {
-        const endpoint = `/v1/debit-note/${fields.value?.id}/log-print/`
+        const endpoint = `/api/company/${route.params.company}/debit-note/${fields.value?.id}/log-print/`
         useApi(endpoint, { method: 'POST' })
           .then(() => {
             if (fields.value) {
@@ -144,7 +146,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/debit-note/${this.$route.params.id}/details/`
+    const endpoint = `/api/company/${this.$route.params.company}/debit-note/${this.$route.params.id}/details/`
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data
@@ -241,14 +243,14 @@ export default {
       <div class="row">
         <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
           <q-btn
-            v-if="checkPermissions('DebitNoteModify') && (fields.can_update_issued || fields.status === 'Draft')"
+            v-if="checkPermissions('debitnote.modify') && (fields.can_update_issued || fields.status === 'Draft')"
             color="orange-6"
             icon="edit"
             label="Edit"
-            :to="`/debit-note/${fields.id}`"
+            :to="`/${$route.params.company}/debit-note/${fields.id}`"
           />
           <q-btn
-            v-if="fields?.status === 'Issued' && checkPermissions('DebitNoteModify')"
+            v-if="fields?.status === 'Issued' && checkPermissions('debitnote.modify')"
             color="green-6"
             icon="mdi-check-all"
             label="mark as resolved"
@@ -256,7 +258,7 @@ export default {
             @click.prevent="() => submitChangeStatus(fields?.id, 'Resolved')"
           />
           <q-btn
-            v-if="checkPermissions('DebitNoteCancel')"
+            v-if="checkPermissions('debitnote.cancel')"
             color="red-5"
             icon="cancel"
             label="Cancel"
@@ -283,7 +285,7 @@ export default {
           color="blue-7"
           icon="books"
           label="Journal Entries"
-          :to="`/journal-entries/debit-note/${fields?.id}/`"
+          :to="`/${$route.params.company}/journal-entries/debit-note/${fields?.id}/`"
         />
       </div>
     </div>

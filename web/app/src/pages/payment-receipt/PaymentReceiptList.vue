@@ -1,18 +1,19 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
 import usedownloadFile from 'src/composables/usedownloadFile'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
 export default {
   setup() {
-    const endpoint = '/v1/payment-receipt/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/payment-receipt/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'Payment Receipts | Awecount',
     }
     useMeta(metaData)
     const onDownloadXls = () => {
-      useApi('v1/sales-voucher/export')
+      useApi(`/api/company/${$route.params.company}/sales-voucher/export`)
         .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Credit_Notes'))
         .catch(err => console.log('Error Due To', err))
     }
@@ -63,13 +64,13 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('PaymentReceiptCreate')" class="row q-gutter-x-md justify-end">
+    <div v-if="checkPermissions('paymentreceipt.create')" class="row q-gutter-x-md justify-end">
       <q-btn
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Receipt"
-        to="/payment-receipt/add/"
+        :to="`/${$route.params.company}/payment-receipt/create/`"
       />
     </div>
     <q-table
@@ -109,16 +110,16 @@ export default {
                   <div class="q-mx-md">
                     <n-auto-complete-v2
                       v-model="filters.party"
-                      endpoint="v1/parties/choices/"
                       label="Party"
+                      :endpoint="`/api/company/${$route.params.company}/parties/choices/`"
                       :fetch-on-mount="true"
                     />
                   </div>
                   <div class="q-mx-md">
                     <n-auto-complete-v2
                       v-model="filters.sales_agent"
-                      endpoint="v1/sales-agent/choices/"
                       label="Sales Agent"
+                      :endpoint="`/api/company/${$route.params.company}/sales-agent/choices/`"
                       :fetch-on-mount="true"
                     />
                   </div>
@@ -188,11 +189,13 @@ export default {
           <div class="row align-center text-subtitle2 text-grey-8" style="padding: 8px 8px 8px 16px">
             <span v-for="invoice in props.row.invoices" :key="invoice.id" style="margin-right: 8px">
               <router-link
-                v-if="checkPermissions('SalesView')"
+                v-if="checkPermissions('sales.view')"
                 class="text-blue"
                 style="text-decoration: none; display: flex; align-items: center"
-                :to="`/sales-voucher/${invoice.id}/view`"
-              >#{{ invoice.voucher_no }}</router-link>
+                :to="`/${$route.params.company}/sales-voucher/${invoice.id}/view`"
+              >
+                #{{ invoice.voucher_no }}
+              </router-link>
               <span v-else>#{{ invoice.voucher_no }}</span>
             </span>
           </div>
@@ -213,12 +216,12 @@ export default {
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md">
             <q-btn
-              v-if="checkPermissions('PaymentReceiptView')"
+              v-if="checkPermissions('paymentreceipt.view')"
               class="q-py-none q-px-md font-size-sm l-view-btn"
               color="blue"
               label="View"
               style="font-size: 12px"
-              :to="`/payment-receipt/${props.row.id}/view`"
+              :to="`/${$route.params.company}/payment-receipt/${props.row.id}/view`"
             />
           </div>
         </q-td>

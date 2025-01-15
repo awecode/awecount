@@ -22,7 +22,7 @@ const date = ref(route.query.date ? route.query.date : new Date().toISOString().
 const data = ref(null)
 
 async function fetchData() {
-  const res = await useApi(`/v1/transaction/day-book/?date=${date.value}`)
+  const res = await useApi(`/api/company/${route.params.company}/transaction/day-book?date=${date.value}`)
   data.value = res
   viewTransactionOnly.value = false
 }
@@ -364,7 +364,7 @@ function onPurchaseRequest(props) {
                     class="text-blue-6"
                     style="text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
                     target="_blank"
-                    :to="`/account/${props.row.account.id}/view/?start_date=${date}&end_date=${date}`"
+                    :to="`/${$route.params.company}/account/${props.row.account.id}/view/?start_date=${date}&end_date=${date}`"
                   >
                     View Transactions
                   </RouterLink>

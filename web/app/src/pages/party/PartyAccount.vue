@@ -32,7 +32,7 @@ export default {
       start_date: null,
       end_date: null,
     })
-    const endpoint = ref(withQuery(`/v1/parties/${route.params.id}/transactions/`, route.query))
+    const endpoint = ref(withQuery(`/api/company/${route.params.company}/parties/${route.params.id}/transactions/`, route.query))
     function fetchData() {
       if (fields?.value?.transactions.results) fields.value.transactions.results = null
       useApi(endpoint.value, { method: 'GET' })
@@ -54,7 +54,7 @@ export default {
       () => route.query,
       (newQuery, oldQuery) => {
         if (route.params.id && route.path.includes('/parties/account/')) {
-          const url = `/v1/parties/${route.params.id}/transactions/?`
+          const url = `/api/company/${route.params.company}/parties/${route.params.id}/transactions/?`
           if (oldQuery.page !== newQuery.page) {
             const updatedEndpoint = withQuery(url, newQuery)
             endpoint.value = updatedEndpoint
@@ -79,7 +79,7 @@ export default {
       () => route.params.id,
       (newid) => {
         if (newid && route.path.includes('/parties/account/')) {
-          const url = `/v1/parties/${newid}/transactions/?`
+          const url = `/api/company/${route.params.company}/parties/${newid}/transactions/?`
           const updatedEndpoint = withQuery(url, {})
           endpoint.value = updatedEndpoint
         }
@@ -156,7 +156,7 @@ export default {
         <tbody>
           <tr v-if="fields.supplier_account && (fields.supplier_account.amounts.dr != null || fields.supplier_account.amounts.cr != null)">
             <td class="text-left">
-              <router-link class="text-blue" style="text-decoration: none" :to="`/account/${fields.supplier_account?.id}/view/`">
+              <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${fields.supplier_account?.id}/view/`">
                 Vendor (Payable)
               </router-link>
             </td>
@@ -175,7 +175,7 @@ export default {
           </tr>
           <tr v-if="fields.customer_account && (fields.customer_account.amounts.dr != null || fields.customer_account.amounts.cr != null)">
             <td class="text-left">
-              <router-link class="text-blue" style="text-decoration: none" :to="`/account/${fields.customer_account?.id}/view/`">
+              <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${fields.customer_account?.id}/view/`">
                 Customer (Receivable)
               </router-link>
             </td>

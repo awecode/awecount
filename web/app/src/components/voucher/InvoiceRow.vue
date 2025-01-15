@@ -1,6 +1,6 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
+import ItemForm from 'src/pages/inventory/item/ItemForm.vue'
 
 export default {
   props: {
@@ -133,7 +133,9 @@ export default {
     watch(
       () => props.errors,
       (newValue) => {
-        if (newValue?.tax_scheme_id || newValue?.unit_id) expandedState.value = true
+        if (newValue?.tax_scheme_id || newValue?.unit_id) {
+          expandedState.value = true
+        }
       },
     )
     watch(
@@ -195,7 +197,7 @@ export default {
       // if (props.usedIn === 'journal') return 'journal-entries'
     })
     return {
-      ItemAdd,
+      ItemForm,
       expandedState,
       modalValue,
       amountComputed,
@@ -222,7 +224,7 @@ export default {
             label="Item"
             :disabled="usedInPos || hasChallan"
             :emit-obj="true"
-            :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/items`"
+            :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/items`"
             :error="
               errors?.item_id ? errors?.item_id[0]
               : rowEmpty ? 'Item is required'
@@ -230,7 +232,7 @@ export default {
             "
             :modal-component="
               usedInPos || hasChallan ? false
-              : checkPermissions('InventoryAccountCreate') ? ItemAdd
+              : checkPermissions('inventoryaccount.create') ? ItemForm
                 : null
             "
             :options="itemOptions"
@@ -379,7 +381,7 @@ export default {
             v-model="modalValue.unit_id"
             label="Unit"
             :emit-obj="usedInPos"
-            :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`"
+            :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/units`"
             :error="errors?.unit_id ? true : false"
             :error-message="errors?.unit_id ? errors.unit_id[0] : null"
             :options="unitOptions"

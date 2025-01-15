@@ -1,6 +1,6 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
 export default {
   setup() {
@@ -8,7 +8,8 @@ export default {
       title: 'Dashboard Widgets | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/widgets/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/widgets/`
     const listData = useList(endpoint)
     const newColumn = [
       {
@@ -33,12 +34,12 @@ export default {
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn
-        v-if="checkPermissions('WidgetCreate')"
+        v-if="checkPermissions('widget.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Dashboard widget"
-        to="/dashboard-widgets/add/"
+        :to="`/${$route.params.company}/dashboard-widgets/create/`"
       />
     </div>
     <q-table
@@ -55,14 +56,19 @@ export default {
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('WidgetModify')"
+            v-if="checkPermissions('widget.modify')"
             class="text-blue l-edit-btn"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/dashboard-widgets/${props.row.id}/`"
+            :to="`/${$route.params.company}/dashboard-widgets/${props.row.id}/`"
           >
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.name }}</span>
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
+            {{ props.row.name }}
+          </span>
         </q-td>
       </template>
     </q-table>

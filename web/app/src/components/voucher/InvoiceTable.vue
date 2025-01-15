@@ -97,6 +97,7 @@ export default {
   },
   emits: ['update:modelValue', 'deleteRowErr', 'updateVoucherMeta'],
   setup(props, { emit }) {
+    const route = useRoute()
     const modalValue = ref(props.modelValue)
     const rowEmpty = ref(false)
     watch(
@@ -151,6 +152,7 @@ export default {
             data.sameScheme = currentTaxObj.id
             data.taxObj = currentTaxObj
           } else if (data.sameScheme === currentTaxObj?.id || currentTaxObj.rate === 0) {
+            // do nothing
           } else {
             data.sameScheme = false
           }
@@ -208,7 +210,9 @@ export default {
       })
     }
     const removeRow = (index) => {
-      if (props.errors || modalValue.value[index].id) emit('deleteRowErr', index, modalValue.value[index]?.id ? modalValue.value[index] : null)
+      if (props.errors || modalValue.value[index].id) {
+        emit('deleteRowErr', index, modalValue.value[index]?.id ? modalValue.value[index] : null)
+      }
       modalValue.value.splice(index, 1)
     }
     // For purchase rows Data of Items
@@ -217,7 +221,7 @@ export default {
     const onItemIdUpdate = async (itemId) => {
       if (itemId && !itemPurchaseData.value.hasOwnProperty(itemId)) {
         try {
-          const data = await useApi(`/v1/items/${itemId}/available-stock/`)
+          const data = await useApi(`/api/company/${route.params.company}/items/${itemId}/available-stock/`)
           itemPurchaseData.value[itemId] = data
         } catch (err) {
           console.log(err)
@@ -348,7 +352,7 @@ export default {
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center text-left pt-2"></div>
-          <div class="text-weight-bolwd text-grey-8 col-4 text-center">
+          <div class="text-weight-bold text-grey-8 col-4 text-center">
             <div class="row q-pb-md">
               <div class="col-6 text-right">
                 Sub Total

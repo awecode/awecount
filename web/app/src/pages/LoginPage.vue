@@ -1,7 +1,5 @@
 <script setup>
-useMeta({
-  title: 'Login | Awecount',
-})
+useMeta({ title: 'Login | Awecount' })
 </script>
 
 <template>

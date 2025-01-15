@@ -1,8 +1,8 @@
 <script lang="ts">
 import type { Ref } from 'vue'
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import { modes } from 'src/helpers/constants/invoice'
 import { useLoginStore } from 'src/stores/login-info'
-import DateConverter from '/src/components/date/VikramSamvat.js'
 
 export default {
   props: {
@@ -31,6 +31,7 @@ export default {
   },
   emits: ['updateMode'],
   setup(props, { emit }) {
+    const route = useRoute()
     const paymentModeValue: Ref<number | null> = ref(props.fields?.payment_mode)
     const $q = useQuasar()
     const store = useLoginStore()
@@ -63,7 +64,7 @@ export default {
       }
     })
     const submitChangeModes = (id: number) => {
-      const endpoint = `v1/sales-voucher/${id}/update-payment-mode/`
+      const endpoint = `/api/company/${route.params.company}/sales-voucher/${id}/update-payment-mode/`
       const body: object = { method: 'POST', body: { payment_mode: paymentModeValue.value } }
       useApi(endpoint, body)
         .then(() => {

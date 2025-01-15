@@ -1,12 +1,12 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
-import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
+import useForm from 'src/composables/useForm'
+import CategoryForm from 'src/pages/account/category/CategoryForm.vue'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/accounts/'
+  setup(_props, _context) {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/accounts/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/account/',
@@ -19,6 +19,21 @@ export default {
     const categoryChoices = ref(null)
     const accountChoices = ref(null)
 
+    useApi(`/api/company/${route.params.company}/accounts/choices/`)
+      .then((res) => {
+        this.accountChoices = res
+      })
+      .catch((err) => {
+        console.log('error fetching choices due to', err)
+      })
+    useApi(`/api/company/${route.params.company}/categories/choices/`)
+      .then((res) => {
+        this.categoryChoices = res
+      })
+      .catch((err) => {
+        console.log('error fetching choices due to', err)
+      })
+
     return {
       ...formData,
       CategoryForm,
@@ -26,22 +41,6 @@ export default {
       accountChoices,
       checkPermissions,
     }
-  },
-  created() {
-    useApi('/v1/accounts/choices/')
-      .then((res) => {
-        this.accountChoices = res
-      })
-      .catch((err) => {
-        console.log('error fetching choices due to', err)
-      })
-    useApi('/v1/categories/choices/')
-      .then((res) => {
-        this.categoryChoices = res
-      })
-      .catch((err) => {
-        console.log('error fetching choices due to', err)
-      })
   },
 }
 </script>
@@ -74,8 +73,8 @@ export default {
             <n-auto-complete-v2
               v-if="accountChoices"
               v-model="fields.parent"
-              endpoint="v1/accounts/choices"
               label="Parent"
+              :endpoint="`/api/company/${$route.params.company}/accounts/choices`"
               :error="errors?.parent"
               :options="accountChoices"
               :static-option="fields.selected_parent_obj"
@@ -83,18 +82,18 @@ export default {
             <n-auto-complete-v2
               v-if="categoryChoices"
               v-model="fields.category"
-              endpoint="v1/categories/choices"
               label="Category *"
+              :endpoint="`/api/company/${$route.params.company}/categories/choices`"
               :error="errors?.category"
-              :modal-component="checkPermissions('CategoryCreate') ? CategoryForm : null"
+              :modal-component="checkPermissions('category.create') ? CategoryForm : null"
               :options="categoryChoices"
               :static-option="fields.selected_category_obj"
             />
             <n-auto-complete-v2
               v-if="accountChoices"
               v-model="fields.source"
-              endpoint="v1/accounts/choices"
               label="Source"
+              :endpoint="`/api/company/${$route.params.company}/accounts/choices`"
               :error="errors?.source"
               :options="accountChoices"
               :static-option="fields.selected_source_obj"
@@ -103,7 +102,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('AccountCreate') && !isEdit"
+            v-if="checkPermissions('account.create') && !isEdit"
             class="q-ml-auto"
             color="green"
             label="Create"
@@ -112,7 +111,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('AccountModify') && isEdit"
+            v-if="checkPermissions('account.modify') && isEdit"
             class="q-ml-auto"
             color="green"
             label="Update"

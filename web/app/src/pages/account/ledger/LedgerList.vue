@@ -1,11 +1,11 @@
 <script>
 export default {
   setup() {
-    const endpoint = '/v1/accounts/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/accounts/`
     const metaData = {
       title: 'Accounts | Awecount',
     }
-    const route = useRoute()
     useMeta(metaData)
     const newColumn = [
       {
@@ -75,7 +75,7 @@ export default {
               } else if (v === 'false') {
                 return [k, false]
               }
-              return [k, isNaN(v) ? v : Number.parseFloat(v)]
+              return [k, Number.isNaN(v) ? v : Number.parseFloat(v)]
             }),
           )
           listData.filters.value = cleanedFilterValues
@@ -94,12 +94,12 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('AccountCreate')"
+        v-if="checkPermissions('account.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Account"
-        to="/account/add/"
+        :to="`/${$route.params.company}/account/create/`"
       />
     </div>
 
@@ -145,8 +145,8 @@ export default {
                   <div class="q-mx-sm">
                     <n-auto-complete-v2
                       v-model="filters.category"
-                      endpoint="v1/categories/choices/"
                       label="Category"
+                      :endpoint="`/api/company/${$route.params.company}/categories/choices/`"
                       :fetch-on-mount="true"
                     />
                   </div>
@@ -174,34 +174,39 @@ export default {
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="blue" dense flat to="" /> -->
           <q-btn
-            v-if="checkPermissions('AccountView')"
+            v-if="checkPermissions('account.view')"
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             color="blue"
             label="View"
             style="font-size: 12px"
-            :to="`/account/${props.row.id}/view/`"
+            :to="`/${$route.params.company}/account/${props.row.id}/view/`"
           />
           <q-btn
-            v-if="checkPermissions('AccountModify')"
+            v-if="checkPermissions('account.modify')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/account/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/account/${props.row.id}/edit/`"
           />
         </q-td>
       </template>
       <template #body-cell-category="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('CategoryModify')"
+            v-if="checkPermissions('category.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/account-category/${props.row.category.id}/`"
+            :to="`/${$route.params.company}/account-category/${props.row.category.id}/`"
           >
             {{ props.row.category.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.category.name }}</span>
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
+            {{ props.row.category.name }}
+          </span>
         </q-td>
       </template>
       <template #body-cell-dr="props">
@@ -222,14 +227,19 @@ export default {
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('AccountView')"
+            v-if="checkPermissions('account.view')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/account/${props.row.id}/view/`"
+            :to="`/${$route.params.company}/account/${props.row.id}/view/`"
           >
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.name }}</span>
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
+            {{ props.row.name }}
+          </span>
         </q-td>
       </template>
     </q-table>

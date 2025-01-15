@@ -7,10 +7,16 @@ class CompanyConfig(AppConfig):
     name = "apps.company"
 
     def ready(self) -> None:
+        from django.core.cache import cache
         from apps.company.helpers import validate_company_in_m2m
         from apps.company.models import (
             CompanyBaseModel,
         )
+
+        from .models import get_default_permissions
+
+        global_permissions = get_default_permissions()
+        cache.set("global_permissions", global_permissions)
 
         for model in apps.get_models():
             if not issubclass(model, CompanyBaseModel):
@@ -34,3 +40,5 @@ class CompanyConfig(AppConfig):
                     sender=field.remote_field.through,
                     dispatch_uid=f"{model.__name__}_{field.name}_m2m_changed",
                 )
+
+        return super().ready()

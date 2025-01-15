@@ -1,14 +1,15 @@
 <script setup>
 import checkPermissions from 'src/composables/checkPermissions'
+import useForm from 'src/composables/useForm'
+import { useRoute } from 'vue-router'
 
-const endpoint = '/v1/sales-voucher/'
+const route = useRoute()
+const endpoint = `/api/company/${route.params.company}/sales-voucher/`
 
-const formData = useForm(endpoint, {
+const { fields, formDefaults, errors, isEdit, loading, submitForm, today } = useForm(endpoint, {
   getDefaults: true,
   successRoute: '/sales-voucher/list/',
 })
-
-const { fields, formDefaults, errors, isEdit, loading, submitForm, today } = formData
 
 useMeta(() => ({
   title: `${isEdit.value ? 'Sales Invoice Update' : 'Sales Invoice Add'} | Awecount`,
@@ -46,7 +47,7 @@ const onSubmitClick = async (status) => {
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn
-          v-if="!isEdit && checkPermissions('SalesCreate')"
+          v-if="!isEdit && checkPermissions('sales.create')"
           color="orange-8"
           data-testid="issue-btn"
           label="Save Draft"
@@ -55,7 +56,7 @@ const onSubmitClick = async (status) => {
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
         />
         <q-btn
-          v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
+          v-if="isEdit && fields.status === 'Draft' && checkPermissions('sales.modify')"
           color="orange-8"
           data-testid="draft-btn"
           type="submit"
@@ -64,7 +65,7 @@ const onSubmitClick = async (status) => {
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
         />
         <q-btn
-          v-if="checkPermissions('SalesCreate')"
+          v-if="checkPermissions('sales.create')"
           color="green"
           data-testid="create/update-btn"
           :label="

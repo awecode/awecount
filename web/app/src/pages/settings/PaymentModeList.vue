@@ -5,7 +5,8 @@ export default {
       title: 'Payment Modes | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/payment-modes/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/payment-modes/`
     const listData = useList(endpoint)
     const newColumn = [
       {
@@ -26,12 +27,12 @@ export default {
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn
-        v-if="checkPermissions('PaymentModeCreate')"
+        v-if="checkPermissions('paymentmode.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Payment Mode"
-        to="/settings/payment-mode/add/"
+        :to="`/${$route.params.company}/settings/payment-mode/create/`"
       />
     </div>
     <q-table
@@ -54,7 +55,7 @@ export default {
               color="blue l-view-btn"
               label="Edit"
               style="font-size: 12px"
-              :to="`/settings/payment-mode/${props.row.id}/`"
+              :to="`/${$route.params.company}/settings/payment-mode/${props.row.id}/`"
             />
           </div>
         </q-td>

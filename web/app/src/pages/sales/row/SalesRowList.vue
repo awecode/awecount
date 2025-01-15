@@ -1,16 +1,16 @@
 <script lang="ts">
-// import ListFilter from '/src/components/sales/row/ListFilter.vue'
 import type { Ref } from 'vue'
+import DateConverter from 'src/components/date/VikramSamvat.js'
+import MultiSelectChip from 'src/components/filter/MultiSelectChip.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import useList from 'src/composables/useList'
 import { useLoginStore } from 'src/stores/login-info'
-import DateConverter from '/src/components/date/VikramSamvat.js'
-import MultiSelectChip from '/src/components/filter/MultiSelectChip.vue'
-import useList from '/src/composables/useList'
 
 export default {
   setup() {
+    const route = useRoute()
     const store = useLoginStore()
-    const endpoint = '/v1/sales-row/'
+    const endpoint = `/api/company/${route.params.company}/sales-row/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'Sales Rows | Awecount',
@@ -157,36 +157,40 @@ export default {
                     <n-auto-complete-v2
                       v-model="filters.category"
                       fetch-on-mount
-                      endpoint="v1/sales-agent/choices"
                       label="Sales Agent"
+                      :endpoint="`/api/company/${$route.params.company}/sales-agent/choices`"
                     />
                   </div>
                   <div class="q-mx-sm">
                     <n-auto-complete-v2
                       v-model="filters.party"
                       fetch-on-mount
-                      endpoint="v1/parties/choices"
                       label="Party"
+                      :endpoint="`/api/company/${$route.params.company}/parties/choices`"
                     />
                   </div>
                   <div class="q-mx-sm">
                     <n-auto-complete-v2
                       v-model="filters.tax_scheme"
                       fetch-on-mount
-                      endpoint="v1/tax_scheme/choices/"
                       label="Tax Scheme"
+                      :endpoint="`/api/company/${$route.params.company}/tax_scheme/choices/`"
                     />
                   </div>
                   <div class="q-mx-sm">
                     <n-auto-complete-v2
                       v-model="filters.item_category"
                       fetch-on-mount
-                      endpoint="v1/inventory-categories/choices/"
                       label="Item Category"
+                      :endpoint="`/api/company/${$route.params.company}/inventory-categories/choices/`"
                     />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model="filters.item" endpoint="v1/items/sales-choices/" label="Items" />
+                    <SelectWithFetch
+                      v-model="filters.item"
+                      label="Items"
+                      :endpoint="`/api/company/${$route.params.company}/items/sales-choices/`"
+                    />
                   </div>
                   <div class="q-ma-sm">
                     <MultiSelectChip v-model="filters.status" :options="['Draft', 'Issued', 'Paid', 'Partially Paid', 'Cancelled']" />
@@ -216,14 +220,17 @@ export default {
         <q-td style="padding: 0" :props="props">
           <div class="row align-center" style="height: 100%">
             <router-link
-              v-if="checkPermissions('SalesView')"
+              v-if="checkPermissions('sales.view')"
               class="text-blue l-view-btn"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; padding: 8px 8px 8px 16px"
-              :to="`/sales-voucher/${props.row.voucher_id}/view`"
+              :to="`/${$route.params.company}/sales-voucher/${props.row.voucher_id}/view`"
             >
               {{ props.row.voucher__voucher_no }}
             </router-link>
-            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+            <span
+              v-else
+              style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+            >
               {{ props.row.voucher__voucher_no }}
             </span>
           </div>

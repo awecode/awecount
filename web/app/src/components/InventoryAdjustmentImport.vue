@@ -3,11 +3,13 @@ const emit = defineEmits('modalClose', 'onImportSuccess')
 const $q = useQuasar()
 const file = ref(null)
 const loading = ref(false)
+const route = useRoute()
+
 const onSubmit = async () => {
   const formData = new FormData()
   formData.append('file', file.value)
   loading.value = true
-  useApi('/v1/inventory-adjustment/import/', {
+  useApi(`/api/company/${route.params.company}/inventory-adjustment/import/`, {
     method: 'POST',
     body: formData,
   })

@@ -157,7 +157,7 @@ class DebitNoteCreateSerializer(
         self.assign_fiscal_year(validated_data)
         self.assign_voucher_number(validated_data)
         self.assign_discount_obj(validated_data)
-        validated_data["company_id"] = request.company_id
+        validated_data["company_id"] = request.company.id
         validated_data["user_id"] = request.user.id
         instance = DebitNote.objects.create(**validated_data)
 

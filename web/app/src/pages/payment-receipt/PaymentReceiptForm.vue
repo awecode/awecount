@@ -1,12 +1,12 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
+import useForm from 'src/composables/useForm'
 import { useLoginStore } from 'src/stores/login-info'
-import useForm from '/src/composables/useForm'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, { emit }) {
-    const endpoint = '/v1/payment-receipt/'
+  setup() {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/payment-receipt/`
     const $q = useQuasar()
     const store = useLoginStore()
     const addInoviceModal = ref(false)
@@ -34,7 +34,7 @@ export default {
       delete formData.errors.value.fiscal_year
       delete formData.errors.value.invoice_no
       if (invoiceFormData.value.invoice_no && invoiceFormData.value.fiscal_year) {
-        const url = `/v1/payment-receipt/fetch-invoice/?fiscal_year=${invoiceFormData.value.fiscal_year}&invoice_no=${invoiceFormData.value.invoice_no}`
+        const url = `/api/company/${route.params.company}/payment-receipt/fetch-invoice/?fiscal_year=${invoiceFormData.value.fiscal_year}&invoice_no=${invoiceFormData.value.invoice_no}`
         useApi(url)
           .then((data) => {
             if (!fields.party_id) {
@@ -190,10 +190,10 @@ export default {
                 v-model="fields.bank_account"
                 emit-value
                 map-options
-                endpoint="/v1/payment-receipt/create-defaults/bank_accounts"
                 label="Bank Account *"
                 option-label="name"
                 option-value="id"
+                :endpoint="`/api/company/${$route.params.company}/payment-receipt/create-defaults/bank_accounts`"
                 :error="!!errors.bank_account"
                 :error-message="errors.bank_account"
                 :options="formDefaults.collections?.bank_accounts"
@@ -242,7 +242,7 @@ export default {
 
           <div class="q-mt-lg row q-pb-lg flex justify-end">
             <q-btn
-              v-if="checkPermissions('PaymentReceiptCreate') && !isEdit"
+              v-if="checkPermissions('paymentreceipt.create') && !isEdit"
               color="green"
               label="Create"
               type="submit"
@@ -250,7 +250,7 @@ export default {
               @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
             />
             <q-btn
-              v-if="checkPermissions('PaymentReceiptModify') && isEdit"
+              v-if="checkPermissions('paymentreceipt.modify') && isEdit"
               color="green"
               label="Update"
               type="submit"

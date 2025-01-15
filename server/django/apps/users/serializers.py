@@ -51,6 +51,25 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class FiscalYearSerializer(serializers.ModelSerializer):
+    # Maintain backward compatibility with the old field names
+    start = serializers.DateField(source="start_date")
+    end = serializers.DateField(source="end_date")
+
     class Meta:
         model = FiscalYear
         exclude = ()
+
+
+class UserLiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "avatar",
+            "avatar_url",
+            "is_bot",
+            "display_name",
+        ]
+        read_only_fields = ["id", "is_bot"]

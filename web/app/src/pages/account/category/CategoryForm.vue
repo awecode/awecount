@@ -1,31 +1,18 @@
-<script>
+<script setup>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
+import useForm from 'src/composables/useForm'
+import { useRoute } from 'vue-router'
 
-export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/categories/'
-    const formData = useForm(endpoint, {
-      getDefaults: true,
-      successRoute: '/account-category/list/',
-    })
-    useMeta(() => {
-      return {
-        title: `${formData.isEdit?.value ? 'Account Category Update' : 'Account Category Add'} | Awecount`,
-      }
-    })
-    // console.log()
-    // if (!formData.fields.value?.id) {
-    //   formData.fields.value.id = null
-    // }
-    // formData.fields.value.id
-    return {
-      ...formData,
-      checkPermissions,
-    }
-  },
-}
+const route = useRoute()
+const endpoint = `/api/company/${route.params.company}/categories/`
+const { fields, errors, loading, isEdit, formDefaults, submitForm } = useForm(endpoint, {
+  getDefaults: true,
+  successRoute: `/${route.params.company}/account/categories`,
+})
+
+useMeta(() => ({
+  title: `${isEdit.value ? 'Account Category Update' : 'Account Category Add'} | Awecount`,
+}))
 </script>
 
 <template>
@@ -58,8 +45,8 @@ export default {
             <div class="lg:col-6 col-12">
               <n-auto-complete-v2
                 v-model="fields.parent"
-                endpoint="v1/categories/create-defaults/categories"
                 label="Parent *"
+                :endpoint="`/api/company/${$route.params.company}/categories/create-defaults/categories`"
                 :error="errors?.parent"
                 :options="formDefaults.collections?.categories"
                 :static-option="fields.selected_parent_obj"
@@ -69,7 +56,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('CategoryModify') && !isEdit"
+            v-if="checkPermissions('category.modify') && !isEdit"
             class="q-ml-auto"
             color="green"
             label="Create"
@@ -78,7 +65,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('CategoryModify') && isEdit"
+            v-if="checkPermissions('category.modify') && isEdit"
             class="q-ml-auto"
             color="green"
             label="Update"

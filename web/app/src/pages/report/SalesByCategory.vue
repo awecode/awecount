@@ -68,10 +68,10 @@ const fetchData = () => {
   loading.value = true
   let endpoint = ''
   if (fields.value.start_date && fields.value.end_date) {
-    endpoint = `v1/sales-row/by-category/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
+    endpoint = `/api/company/${route.params.company}/sales-row/by-category/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
     updateRouteUrl()
   } else {
-    endpoint = 'v1/sales-row/by-category/'
+    endpoint = `/api/company/${route.params.company}/sales-row/by-category/`
   }
   useApi(endpoint, { method: 'GET' })
     .then((data) => {

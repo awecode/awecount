@@ -31,7 +31,7 @@ class PaymentModeViewSet(InputChoiceMixin, CRULViewSet):
         return super().get_serializer_class()
 
     @action(detail=False)
-    def choices(self, request):
+    def choices(self, request, *args, **kwargs):
         res = super().choices(request)
         if res.data["pagination"]["page"] == 1:
             res.data["results"].insert(

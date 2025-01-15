@@ -1,12 +1,16 @@
 .DS_Store
 .thumbs.db
 node_modules
-.env
-script.js
 
 # Quasar core related directories
 .quasar
 /dist
+/quasar.config.*.temporary.compiled*
+
+# .env files
+.env
+.env.*
+!.env.example
 
 # Cordova related directories and files
 /src-cordova/node_modules

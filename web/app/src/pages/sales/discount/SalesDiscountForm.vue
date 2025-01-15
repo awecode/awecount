@@ -1,12 +1,12 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
-import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
+import useForm from 'src/composables/useForm'
+import CategoryForm from 'src/pages/account/category/CategoryForm.vue'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/sales-discount/'
+  setup() {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/sales-discount/`
     const formData = useForm(endpoint, {
       getDefaults: false,
       successRoute: '/sales-discount/list/',
@@ -93,7 +93,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('SalesDiscountCreate') && !isEdit"
+            v-if="checkPermissions('salesdiscount.create') && !isEdit"
             class="q-ml-auto"
             color="green"
             label="Create"
@@ -102,7 +102,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('SalesDiscountModify') && isEdit"
+            v-if="checkPermissions('salesdiscount.modify') && isEdit"
             class="q-ml-auto"
             color="green"
             label="Update"

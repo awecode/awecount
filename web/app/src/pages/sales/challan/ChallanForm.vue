@@ -1,12 +1,11 @@
 <script>
+import CategoryForm from 'src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
-import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, { emit }) {
-    const endpoint = '/v1/challan/'
+  setup() {
+    const endpoint = `/api/company/${route.params.company}/challan/`
     const openDatePicker = ref(false)
     const $q = useQuasar()
     const isDeleteOpen = ref(false)
@@ -61,7 +60,7 @@ export default {
     formData.fields.value.customer_name = null
     const onResolvedClick = () => {
       formData.loading.value = true
-      useApi(`/v1/challan/${formData.fields.value.id}/resolve/`, {
+      useApi(`/api/company/${route.params.company}/challan/${formData.fields.value.id}/resolve/`, {
         method: 'POST',
         body: {},
       })
@@ -84,7 +83,7 @@ export default {
         })
     }
     const onCancelClick = () => {
-      const url = `/v1/challan/${formData.fields.value.id}/cancel/`
+      const url = `/api/company/${route.params.company}/challan/${formData.fields.value.id}/cancel/`
       const body = {
         message: deleteMsg.value,
       }
@@ -200,10 +199,10 @@ export default {
                   <n-auto-complete-v2
                     v-else
                     v-model="fields.party"
-                    endpoint="/v1/challan/create-defaults/parties"
                     label="Party"
+                    :endpoint="`/api/company/${$route.params.company}/challan/create-defaults/parties`"
                     :error="errors?.party ? errors?.party : null"
-                    :modal-component="checkPermissions('PartyCreate') ? PartyForm : null"
+                    :modal-component="checkPermissions('party.create') ? PartyForm : null"
                     :options="formDefaults.collections?.parties"
                     :static-option="fields.selected_party_obj"
                   />
@@ -257,7 +256,7 @@ export default {
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
         <q-btn
-          v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'"
+          v-if="checkPermissions('challan.modify') && isEdit && fields.status === 'Issued'"
           color="green"
           icon="done_all"
           label="Mark As Resolved"
@@ -265,7 +264,7 @@ export default {
           @click.prevent="onResolvedClick"
         />
         <q-btn
-          v-if="checkPermissions('ChallanModify') && (fields.status === 'Issued' || fields.status === 'Resolved')"
+          v-if="checkPermissions('challan.modify') && (fields.status === 'Issued' || fields.status === 'Resolved')"
           color="red"
           icon="cancel"
           label="Cancel"
@@ -273,7 +272,7 @@ export default {
           @click.prevent="isDeleteOpen = true"
         />
         <q-btn
-          v-if="checkPermissions('ChallanCreate') && (!isEdit || fields.status === 'Draft')"
+          v-if="checkPermissions('challan.create') && (!isEdit || fields.status === 'Draft')"
           color="orange"
           type="submit"
           :label="isEdit ? 'Update Draft' : 'Save Draft'"
@@ -281,14 +280,14 @@ export default {
           @click.prevent="() => onSubmitClick('Draft')"
         />
         <q-btn
-          v-if="checkPermissions('ChallanCreate') && !isEdit"
+          v-if="checkPermissions('challan.create') && !isEdit"
           color="green"
           label="Create"
           :loading="loading"
           @click.prevent="() => onSubmitClick('Issued')"
         />
         <q-btn
-          v-if="checkPermissions('ChallanModify') && isEdit && fields.status !== 'Cancelled'"
+          v-if="checkPermissions('challan.modify') && isEdit && fields.status !== 'Cancelled'"
           color="green"
           :label="fields.status === 'Draft' ? 'Issue From Draft' : 'Update'"
           :loading="loading"

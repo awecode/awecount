@@ -1,10 +1,11 @@
 <script>
-import { useLoginStore } from 'src/stores/login-info'
 // import { utils, writeFile } from 'xlsx'
-import DateConverter from '/src/components/date/VikramSamvat.js'
+import DateConverter from 'src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
 
 export default {
   setup() {
+    const route = useRoute()
     const store = useLoginStore()
     const categoryTree = ref(null)
     const category_accounts = ref([])
@@ -44,12 +45,12 @@ export default {
     //     start_date: null,
     //     end_date: null,
     // })
-    // const endpoint = '/v1/trial-balance/'
+    // const endpoint = '/api/company/trial-balance/'
     // const listData = useList(endpoint)
     const fetchData = async (start_date, end_date, index) => {
       showData.value = false
-      // const endpoint = `/v1/test/data/`
-      const endpoint = `/v1/trial-balance/?start_date=${start_date}&end_date=${end_date}`
+      // const endpoint = `/api/company/${route.params.company}/test/data/`
+      const endpoint = `/api/company/${route.params.company}/trial-balance/?start_date=${start_date}&end_date=${end_date}`
       let data = null
       try {
         data = await useApi(endpoint)
@@ -148,6 +149,16 @@ export default {
         timePeriodArray.value.splice(index, 1)
       }
     }
+
+    const endpoint = `/api/company/${route.params.company}/category-tree/`
+    useApi(endpoint, { method: 'GET' })
+      .then((data) => {
+        categoryTree.value = data
+      })
+      .catch((error) => {
+        console.log('err fetching data', error)
+      })
+
     return {
       fields,
       fetchData,
@@ -164,17 +175,7 @@ export default {
       timePeriodArray,
       store,
       DateConverter,
-    }
-  },
-  created() {
-    const endpoint = '/v1/category-tree/'
-    useApi(endpoint, { method: 'GET' })
-      .then((data) => {
-        this.categoryTree = data
-      })
-      .catch((error) => {
-        console.log('err fetching data', error)
-      })
+    }>
   },
 }
 </script>

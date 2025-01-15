@@ -4,8 +4,9 @@ export default {
     const metaData = {
       title: 'Bank Accounts | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
-    const endpoint = '/v1/bank-account/'
+    const endpoint = `/api/company/${route.params.company}/bank-account/`
     const listData = useList(endpoint)
     const newColumn = [
       {
@@ -44,12 +45,12 @@ export default {
   <div class="q-pa-md w-full">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('BankAccountCreate')"
+        v-if="checkPermissions('bankaccount.create')"
         class="q-ml-lg add-btn"
         color="green"
         icon-right="add"
         label="New Account"
-        to="/bank-accounts/add/"
+        :to="`/${$route.params.company}/bank-accounts/create/`"
       />
     </div>
     <q-table
@@ -70,15 +71,15 @@ export default {
             color="blue"
             label="Account"
             style="font-size: 12px"
-            :to="`/account/${props.row.ledger}/view/`"
+            :to="`/${$route.params.company}/account/${props.row.ledger}/view/`"
           />
           <q-btn
-            v-if="checkPermissions('BankAccountModify')"
+            v-if="checkPermissions('bankaccount.modify')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/bank-accounts/${props.row.id}/`"
+            :to="`/${$route.params.company}/bank-accounts/${props.row.id}/`"
           />
         </q-td>
       </template>

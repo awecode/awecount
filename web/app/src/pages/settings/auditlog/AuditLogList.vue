@@ -5,7 +5,8 @@ export default {
       title: 'Audit Logs | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/log-entries/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/log-entries/`
     const listData = useList(endpoint)
     const onDownloadXls = () => {
       useApi('v1/log-entries/export')
@@ -77,7 +78,7 @@ export default {
               color="blue l-view-btn"
               label="Detail"
               style="font-size: 12px"
-              :to="`/audit-log/${props.row.id}/`"
+              :to="`/${$route.params.company}/audit-log/${props.row.id}/`"
             />
           </div>
         </q-td>

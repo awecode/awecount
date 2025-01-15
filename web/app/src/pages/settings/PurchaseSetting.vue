@@ -1,11 +1,12 @@
 <script>
+import useForm from 'src/composables/useForm'
 import { modes } from 'src/helpers/constants/invoice'
-import useForm from '/src/composables/useForm'
 
 export default {
   setup() {
+    const route = useRoute()
     const $q = useQuasar()
-    const endpoint = 'v1/purchase-settings/'
+    const endpoint = `/api/company/${route.params.company}/purchase-settings/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '#',
@@ -20,7 +21,7 @@ export default {
     const emailListErrors = ref(null)
     const onUpdateClick = (fields) => {
       formLoading.value = true
-      useApi(`v1/purchase-settings/${fields.id}/`, {
+      useApi(`/api/company/${route.params.company}/purchase-settings/${fields.id}/`, {
         method: 'PUT',
         body: fields,
       })
@@ -120,7 +121,7 @@ export default {
           <!-- <div class="row q-ml-sm">
             <div class="col-12 col-sm-6">
               <n-auto-complete-v2 label="Mode" v-model.number="fields.mode" :options="modeOptionsComputed"
-                :staticOption="fields.selected_mode_obj" endpoint="v1/purchase-settings/create-defaults/bank_accounts"
+                :staticOption="fields.selected_mode_obj" :endpoint="`/api/company/${$route.params.company}/purchase-settings/create-defaults/bank_accounts`"
                 option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
                 :error-message="modeErrors">
                 <template v-slot:append>
@@ -135,10 +136,10 @@ export default {
                 v-model.number="fields.payment_mode"
                 emit-value
                 map-options
-                endpoint="v1/purchase-settings/create-defaults/payment_modes"
                 label="Mode"
                 option-label="name"
                 option-value="id"
+                :endpoint="`/api/company/${$route.params.company}/purchase-settings/create-defaults/payment_modes`"
                 :error="!!modeErrors"
                 :error-message="modeErrors"
                 :options="modeOptionsComputed"

@@ -1,9 +1,9 @@
 from datetime import datetime
 from inspect import isclass
 
-from django.http import Http404
-from django.db.models import Q
 from django.core.exceptions import SuspiciousOperation, ValidationError
+from django.db.models import Q
+from django.http import Http404
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
@@ -37,9 +37,9 @@ class CompanyViewSetMixin(object):
         else:
             qs = self.serializer_class.Meta.model.objects.all()
         if not company_id:
-            if not hasattr(self.request, "company_id"):
+            if not hasattr(self.request, "company"):
                 raise APIException({"detail": "User is not assigned to any company."})
-            company_id = self.request.company_id
+            company_id = self.request.company.id
         return qs.filter(company_id=company_id)
 
     def perform_create(self, serializer):
@@ -48,7 +48,7 @@ class CompanyViewSetMixin(object):
         else:
             model = serializer.Meta.model
         if hasattr(model, "company_id"):
-            serializer.validated_data["company_id"] = self.request.company_id
+            serializer.validated_data["company_id"] = self.request.company.id
         try:
             serializer.save()
         except ValidationError as e:
@@ -56,7 +56,7 @@ class CompanyViewSetMixin(object):
 
     def perform_update(self, serializer):
         if hasattr(serializer.instance.__class__, "company_id"):
-            if serializer.instance.company_id != self.request.company_id:
+            if serializer.instance.company_id != self.request.company.id:
                 raise SuspiciousOperation("Modifying object owned by other company!")
         try:
             serializer.save()
@@ -80,15 +80,15 @@ class CompanyViewSetMixin(object):
 
 
 class CollectionViewSet(object):
-    def get_defaults(self, request=None):
+    def get_defaults(self, request=None, *args, **kwargs):
         return {}
 
-    def get_create_defaults(self, request=None):
+    def get_create_defaults(self, request=None, *args, **kwargs):
         return self.get_defaults(request=request)
 
-    def get_update_defaults(self, request=None):
+    def get_update_defaults(self, request=None, *args, **kwargs):
         return self.get_defaults(request=request)
-    
+
     def get_collection_results(self, request=None, collection=[]):
         # second argument can be a model or a queryset
         arg_2 = collection[1]
@@ -99,12 +99,12 @@ class CollectionViewSet(object):
             qs = arg_2
             model = qs.model
         if hasattr(model, "company_id"):
-            qs = qs.filter(company_id=request.company_id)
+            qs = qs.filter(company_id=request.company.id)
 
         paginate = True
         if len(collection) > 3:
             paginate = collection[3]
-        
+
         search_fields = []
         if len(collection) > 4:
             search_fields = collection[4]
@@ -134,17 +134,19 @@ class CollectionViewSet(object):
             serializer = serializer_class(qs, many=True)
             return serializer.data
 
-    def get_collections(self, request=None):
+    def get_collections(self, request=None, *args, **kwargs):
         if hasattr(self, "collections") and self.collections:
             collections_data = {}
             for collection in self.collections:
                 if len(collection) > 1:
                     key = collection[0]
-                    collections_data[key] = self.get_collection_results(request=request, collection=collection)
+                    collections_data[key] = self.get_collection_results(
+                        request=request, collection=collection
+                    )
             return collections_data
 
     @action(detail=False, url_path="create-defaults")
-    def create_defaults(self, request):
+    def create_defaults(self, request, *args, **kwargs):
         dct = dict(
             merge_dicts(self.get_defaults(request), self.get_create_defaults(request))
         )
@@ -154,17 +156,21 @@ class CollectionViewSet(object):
         return Response(dct)
 
     @action(detail=False, url_path="create-defaults/(?P<slug>[^/.]+)")
-    def create_defaults_by_slug(self, request, slug):
-        collection = next((entry for entry in self.collections if entry[0] == slug), None)
+    def create_defaults_by_slug(self, request, slug, *args, **kwargs):
+        collection = next(
+            (entry for entry in self.collections if entry[0] == slug), None
+        )
         if not collection:
             raise Http404
         response = {}
         if len(collection) > 1:
-            response = self.get_collection_results(request=request, collection=collection)
+            response = self.get_collection_results(
+                request=request, collection=collection
+            )
         return Response(response)
 
     @action(detail=True, url_path="update-defaults")
-    def update_defaults(self, request, pk):
+    def update_defaults(self, request, pk, *args, **kwargs):
         dct = dict(
             merge_dicts(self.get_defaults(request), self.get_update_defaults(request))
         )

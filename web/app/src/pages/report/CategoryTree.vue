@@ -6,9 +6,10 @@ export default {
     const metaData = {
       title: 'Category Tree | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
     const treeData: Ref<Record<string, string | object> | null> = ref(null)
-    useApi('v1/full-category-tree/')
+    useApi(`/api/company/${route.params.company}/full-category-tree/`)
       .then(data => (treeData.value = data))
       .catch(err => console.log(err))
     // TODO: add 404 error routing

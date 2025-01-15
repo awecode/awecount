@@ -1,10 +1,11 @@
 <script>
-import useForm from '/src/composables/useForm'
+import useForm from 'src/composables/useForm'
 
 export default {
   setup() {
     const $q = useQuasar()
-    const endpoint = 'v1/inventory-settings/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/inventory-settings/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '#',

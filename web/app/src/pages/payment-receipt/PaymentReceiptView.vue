@@ -17,8 +17,10 @@ interface Fields {
   amount: number
   date: Date
 }
+
 export default {
   setup() {
+    const route = useRoute()
     const metaData = {
       title: 'Payment Receipts | Awecount',
     }
@@ -34,10 +36,10 @@ export default {
       let endpoint = ''
       let body: null | object = null
       if (status === 'Cleared') {
-        endpoint = `/v1/payment-receipt/${id}/mark_as_cleared/`
+        endpoint = `/api/company/${route.params.company}/payment-receipt/${id}/mark_as_cleared/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
-        endpoint = `/v1/payment-receipt/${id}/cancel/`
+        endpoint = `/api/company/${route.params.company}/payment-receipt/${id}/cancel/`
         body = { method: 'POST', body: { message: deleteMsg.value } }
       }
       useApi(endpoint, body)
@@ -79,7 +81,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/payment-receipt/${this.$route.params.id}/details/`
+    const endpoint = `/api/company/${this.$route.params.company}/payment-receipt/${this.$route.params.id}/details/`
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data
@@ -287,11 +289,13 @@ export default {
                 <span>
                   <span v-for="invoice in fields.invoices" :key="invoice.id" class="col-6">
                     <router-link
-                      v-if="checkPermissions('SalesView')"
+                      v-if="checkPermissions('sales.view')"
                       class="text-blue q-mr-sm"
                       style="text-decoration: none"
-                      :to="`/sales-voucher/${invoice.id}/view`"
-                    >#{{ invoice.id }}</router-link>
+                      :to="`/${$route.params.company}/sales-voucher/${invoice.id}/view`"
+                    >
+                      #{{ invoice.id }}
+                    </router-link>
                     <span v-else>#{{ invoice.id }}</span>
                   </span>
                 </span>
@@ -324,14 +328,14 @@ export default {
         <div class="row q-gutter-x-sm q-mb-md print-hide">
           <span v-if="fields.status !== 'Cancelled'" class="row q-gutter-x-sm q-ml-none">
             <q-btn
-              v-if="checkPermissions('PaymentReceiptModify')"
+              v-if="checkPermissions('paymentreceipt.modify')"
               color="orange-7"
               icon="edit"
               label="Edit"
-              :to="`/payment-receipt/${fields.id}/`"
+              :to="`/${$route.params.company}/payment-receipt/${fields.id}/`"
             />
             <q-btn
-              v-if="fields.status !== 'Cleared' && checkPermissions('PaymentReceiptModify')"
+              v-if="fields.status !== 'Cleared' && checkPermissions('paymentreceipt.modify')"
               color="green"
               icon="mdi-check-all"
               label="mark as cleared"
@@ -339,7 +343,7 @@ export default {
               @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')"
             />
             <q-btn
-              v-if="checkPermissions('PaymentReceiptCancel')"
+              v-if="checkPermissions('paymentreceipt.cancel')"
               color="red"
               icon="cancel"
               label="cancel"
@@ -354,14 +358,14 @@ export default {
             color="blue-7"
             icon="mdi-checkbook"
             label="View Cheque deposit"
-            :to="`/cheque-deposit/${fields?.id}/view/`"
+            :to="`/${$route.params.company}/cheque-deposit/${fields?.id}/view/`"
           />
           <q-btn
             v-if="fields.status === 'Cleared'"
             color="blue-7"
             icon="books"
             label="Journal Entries"
-            :to="`/journal-entries/payment-receipt/${fields?.id}/`"
+            :to="`/${$route.params.company}/journal-entries/payment-receipt/${fields?.id}/`"
           />
         </div>
         <q-dialog v-model="isDeleteOpen">

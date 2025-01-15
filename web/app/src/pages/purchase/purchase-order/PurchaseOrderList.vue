@@ -1,7 +1,8 @@
 <script>
 export default {
   setup() {
-    const endpoint = '/v1/purchase-order/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/purchase-order/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'Purchase Orders | Awecount',
@@ -33,13 +34,13 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('ChallanCreate')" class="row q-gutter-x-md justify-end">
+    <div v-if="checkPermissions('purchaseorder.create')" class="row q-gutter-x-md justify-end">
       <q-btn
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Purchase Order"
-        to="/purchase-order/add/"
+        :to="`/${$route.params.company}/purchase-order/create/`"
       />
     </div>
     <q-table
@@ -132,12 +133,12 @@ export default {
         <q-td :props="props">
           <div class="row q-gutter-x-md">
             <q-btn
-              v-if="checkPermissions('PurchaseOrderModify')"
+              v-if="checkPermissions('purchaseorder.modify')"
               class="q-py-none q-px-md font-size-sm l-edit-btn"
               color="orange"
               label="Edit"
               style="font-size: 12px"
-              :to="`/purchase-order/${props.row.id}/`"
+              :to="`/${$route.params.company}/purchase-order/${props.row.id}/`"
             />
           </div>
         </q-td>
@@ -146,14 +147,17 @@ export default {
         <q-td style="padding: 0" :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('PurchaseOrderModify')"
+              v-if="checkPermissions('purchaseorder.modify')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-              :to="`/purchase-order/${props.row.id}/`"
+              :to="`/${$route.params.company}/purchase-order/${props.row.id}/`"
             >
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+            <span
+              v-else
+              style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+            >
               {{ props.row.voucher_no }}
             </span>
           </span>

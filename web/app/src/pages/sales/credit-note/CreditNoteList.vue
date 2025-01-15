@@ -18,11 +18,11 @@ export default {
       { name: 'status', label: 'Status', align: 'left', field: 'status', sortable: true },
       { name: 'actions' },
     ]
-    const endpoint = '/v1/credit-note/'
     const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/credit-note/`
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi(`/v1/credit-note/export${query}`)
+      useApi(`/api/company/${route.params.company}/credit-note/export${query}`)
         .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Credit_Notes'))
         .catch(err => console.log('Error Due To', err))
     }
@@ -42,12 +42,12 @@ export default {
         @click="onDownloadXls"
       />
       <q-btn
-        v-if="checkPermissions('CreditNoteCreate')"
+        v-if="checkPermissions('creditnote.create')"
         class="q-ml-lg add-btn"
         color="green"
         icon-right="add"
         label="New Credit Note"
-        to="/credit-note/add/"
+        :to="`/${$route.params.company}/credit-note/create/`"
       />
     </div>
     <q-table
@@ -112,12 +112,12 @@ export default {
       <template #body-cell-actions="props">
         <q-td class="row justify center" :props="props">
           <q-btn
-            v-if="checkPermissions('CreditNoteView')"
+            v-if="checkPermissions('creditnote.view')"
             class="q-py-none q-px-md font-size-sm l-view-btn"
             color="blue"
             label="View"
             style="font-size: 12px"
-            :to="`/credit-note/${props.row.id}/view`"
+            :to="`/${$route.params.company}/credit-note/${props.row.id}/view`"
           />
         </q-td>
       </template>
@@ -151,10 +151,10 @@ export default {
         <q-td style="padding: 0" :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('CreditNoteView')"
+              v-if="checkPermissions('creditnote.view')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-              :to="`/credit-note/${props.row.id}/view`"
+              :to="`/${$route.params.company}/credit-note/${props.row.id}/view`"
             >
               {{ props.row.voucher_no }}
             </router-link>

@@ -60,8 +60,8 @@ const onSwitchDrCr = (mode) => {
         <div class="col-4">
           <n-auto-complete-v2
             v-model="voucher.account_id"
-            endpoint="v1/journal-voucher/create-defaults/accounts/"
             label="Account"
+            :endpoint="`/api/company/${$route.params.company}/journal-voucher/create-defaults/accounts/`"
             :error="
               props.errors
                 ? props.errors[props.index]?.account_id
@@ -70,7 +70,7 @@ const onSwitchDrCr = (mode) => {
                 : null
             "
             :focus-on-mount="true"
-            :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
+            :modal-component="checkPermissions('account.create') ? LedgerForm : null"
             :options="props.options"
             :static-option="voucher.selected_account_obj"
           />

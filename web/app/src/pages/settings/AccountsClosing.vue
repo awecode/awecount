@@ -1,7 +1,8 @@
 <script setup>
 import checkPermissions from 'src/composables/checkPermissions'
 // const fiscal_year = ref(null)
-const endpoint = '/v1/account-closing/'
+const route = useRoute()
+const endpoint = `/api/company/${route.params.company}/account-closing/`
 const metaData = {
   title: 'Account Closing | Awecount',
 }
@@ -41,17 +42,17 @@ watch(
                   v-model="fields.fiscal_year"
                   emit-value
                   map-options
-                  endpoint="/v1/account-closing/create-defaults/fiscal_years"
                   label="Financial Year"
                   option-label="name"
                   option-value="id"
+                  :endpoint="`/api/company/${$route.params.company}/account-closing/create-defaults/fiscal_years`"
                   :options="formDefaults.collections?.fiscal_years"
                   :static-option="formDefaults?.fields?.current_fiscal_year"
                 />
               </div>
             </div>
             <q-btn
-              v-if="checkPermissions('AccountClosingCreate')"
+              v-if="checkPermissions('accountclosing.create')"
               class="q-mt-md"
               color="green"
               type="submit"

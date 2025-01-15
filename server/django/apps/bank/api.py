@@ -136,7 +136,7 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
         return ChequeDepositCreateSerializer
 
     @action(detail=True, methods=["POST"])
-    def mark_as_cleared(self, request, pk):
+    def mark_as_cleared(self, request, pk, *args, **kwargs):
         cheque_deposit = self.get_object()
         if cheque_deposit.status == "Issued":
             cheque_deposit.clear()
@@ -145,19 +145,19 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
             raise APIException("This voucher cannot be mark as cleared!")
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         cheque_deposit = self.get_object()
         cheque_deposit.cancel()
         return Response({})
 
     @action(detail=True)
-    def details(self, request, pk):
+    def details(self, request, pk, *args, **kwargs):
         qs = self.get_queryset().select_related("benefactor", "bank_account")
         data = ChequeDepositCreateSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         return Response(data)
 
     @action(detail=True, url_path="journal-entries")
-    def journal_entries(self, request, pk):
+    def journal_entries(self, request, pk, *args, **kwargs):
         obj = get_object_or_404(self.get_queryset(), pk=pk)
         journals = obj.journal_entries()
         return Response(JournalEntriesSerializer(journals, many=True).data)
@@ -193,7 +193,7 @@ class ChequeIssueViewSet(CRULViewSet):
     ]
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         obj = self.get_object()
         obj.cancel()
         return Response({})
@@ -210,7 +210,7 @@ class ChequeIssueViewSet(CRULViewSet):
         return super().get_serializer_class()
 
     @action(detail=False)
-    def export(self, request):
+    def export(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset()).annotate(
             issued=Case(
                 When(issued_to__isnull=True, then="party__name"), default="issued_to"
@@ -274,7 +274,7 @@ class FundTransferViewSet(CRULViewSet):
     ]
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         obj = self.get_object()
         obj.cancel()
         return Response({})
@@ -286,7 +286,7 @@ class FundTransferViewSet(CRULViewSet):
         return qs.order_by("-pk")
 
     @action(detail=True, url_path="journal-entries")
-    def journal_entries(self, request, pk):
+    def journal_entries(self, request, pk, *args, **kwargs):
         obj = get_object_or_404(self.get_queryset(), pk=pk)
         journals = obj.journal_entries()
         return Response(JournalEntriesSerializer(journals, many=True).data)
@@ -359,19 +359,19 @@ class CashDepositViewSet(CRULViewSet):
         return BankCashDepositCreateSerializer
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         obj = self.get_object()
         obj.cancel()
         return Response({})
 
     @action(detail=True, url_path="journal-entries")
-    def journal_entries(self, request, pk):
+    def journal_entries(self, request, pk, *args, **kwargs):
         obj = get_object_or_404(self.get_queryset(), pk=pk)
         journals = obj.journal_entries()
         return Response(JournalEntriesSerializer(journals, many=True).data)
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         obj = self.get_object()
         obj.cancel()
         return Response({})

@@ -42,12 +42,12 @@ export default {
       }
     }
 
-    // const endpoint = '/v1/trial-balance/'
+    // const endpoint = '/api/company/trial-balance/'
     // const listData = useList(endpoint)
     const fetchData = () => {
       showData.value = false
       const filedArray = ['transaction_dr', 'transaction_cr', 'opening_dr', 'opening_cr', 'closing_dr', 'closing_cr']
-      const endpoint = `/v1/inventory-account/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
+      const endpoint = `/api/company/${route.params.company}/inventory-account/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
       useApi(endpoint)
         .then((data) => {
           unCatogarizedData.value = []
@@ -166,6 +166,16 @@ export default {
       if (index >= 0) loginStore.stockTrialBalanceCollapseId.splice(index, 1)
       else loginStore.stockTrialBalanceCollapseId.push(id)
     }
+
+    const endpoint = `/api/company/${route.params.company}/inventory-categories/trial-balance/`
+    useApi(endpoint, { method: 'GET' })
+      .then((data) => {
+        categoryTree.value = data
+      })
+      .catch((error) => {
+        console.log('err fetching data', error)
+      })
+
     return {
       replaceHrefAttribute,
       onDownloadXls,
@@ -184,16 +194,6 @@ export default {
       loginStore,
       unCatogarizedData,
     }
-  },
-  created() {
-    const endpoint = '/v1/inventory-categories/trial-balance/'
-    useApi(endpoint, { method: 'GET' })
-      .then((data) => {
-        this.categoryTree = data
-      })
-      .catch((error) => {
-        console.log('err fetching data', error)
-      })
   },
 }
 </script>
@@ -345,7 +345,7 @@ export default {
                       class="text-blue-6"
                       style="text-decoration: none"
                       target="_blank"
-                      :to="`/account/?has_balance=true&category=${parent.id}`"
+                      :to="`/${$route.params.company}/account/?has_balance=true&category=${parent.id}`"
                     >
                       {{ parent.name }}
                     </RouterLink>
@@ -395,7 +395,7 @@ export default {
                         class="text-blue-6"
                         style="text-decoration: none"
                         target="_blank"
-                        :to="`/account/?has_balance=true&category=${child.account_id}`"
+                        :to="`/${$route.params.company}/account/?has_balance=true&category=${child.account_id}`"
                       >
                         {{ child.name }}
                       </RouterLink>
@@ -446,7 +446,7 @@ export default {
                     class="text-blue-6"
                     style="text-decoration: none"
                     target="_blank"
-                    :to="`/account/?has_balance=true&category=${child.account_id}`"
+                    :to="`/${$route.params.company}/account/?has_balance=true&category=${child.account_id}`"
                   >
                     {{ child.name }}
                   </RouterLink>

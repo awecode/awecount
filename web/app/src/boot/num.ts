@@ -1,8 +1,8 @@
-import { boot } from 'quasar/wrappers'
+import { defineBoot } from '#q-app/wrappers'
 
-export default boot(({ app }) => {
+export default defineBoot(({ app }) => {
   const $nf = (amount: string | number, toFixed: undefined | number) => {
-    if (!amount || isNaN(amount) || amount === 'NaN') {
+    if (!amount || Number.isNaN(amount) || amount === 'NaN') {
       amount = 0
     }
     if (typeof amount !== 'number') {
@@ -16,5 +16,6 @@ export default boot(({ app }) => {
       return returnAmount.toFixed(toFixed)
     }
   }
+
   app.config.globalProperties.$nf = $nf
 })

@@ -1,11 +1,11 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
+import useForm from 'src/composables/useForm'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/tax_scheme/'
+  setup() {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/tax_scheme/`
     const formData = useForm(endpoint, {
       getDefaults: false,
       successRoute: '/taxes/list/',
@@ -82,7 +82,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('TaxSchemeCreate') && !isEdit"
+            v-if="checkPermissions('taxscheme.create') && !isEdit"
             class="q-ml-auto q-px-lg"
             color="green"
             label="Create"
@@ -91,7 +91,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('TaxSchemeModify') && isEdit"
+            v-if="checkPermissions('taxscheme.modify') && isEdit"
             class="q-ml-auto q-px-lg"
             color="green"
             label="Update"

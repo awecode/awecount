@@ -1,6 +1,6 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
 export default {
   setup() {
@@ -8,8 +8,8 @@ export default {
       title: 'Cheque Issues | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/cheque-issue/'
     const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/cheque-issue/`
     const newColumn = [
       {
         name: 'issued_to',
@@ -54,7 +54,7 @@ export default {
     ]
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi(`v1/cheque-issue/export${query}`)
+      useApi(`/api/company/${route.params.company}/cheque-issue/export${query}`)
         //   // TODO: url not found
         .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Sales_voucher'))
         .catch(err => console.log('Error Due To', err))
@@ -75,12 +75,12 @@ export default {
         @click="onDownloadXls"
       />
       <q-btn
-        v-if="checkPermissions('ChequeIssueCreate')"
+        v-if="checkPermissions('chequeissue.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Cheque Issue"
-        to="/cheque-issue/add/"
+        :to="`/${$route.params.company}/cheque-issue/create/`"
       />
     </div>
 
@@ -120,8 +120,8 @@ export default {
                   <div class="q-mx-sm">
                     <n-auto-complete-v2
                       v-model="filters.bank_account"
-                      endpoint="v1/bank-account/choices/"
                       label="Bank Account"
+                      :endpoint="`/api/company/${$route.params.company}/bank-account/choices/`"
                       :fetch-on-mount="true"
                     />
                   </div>
@@ -154,10 +154,10 @@ export default {
       <template #body-cell-issued_to="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('ChequeIssueModify')"
+            v-if="checkPermissions('chequeissue.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
-            :to="`/cheque-issue/${props.row.id}/`"
+            :to="`/${$route.params.company}/cheque-issue/${props.row.id}/`"
           >
             {{ props.row.issued_to || props.row.party_name }}
           </router-link>
@@ -184,12 +184,12 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('ChequeIssueModify')"
+            v-if="checkPermissions('chequeissue.modify')"
             class="q-py-none q-px-md font-size-sm l-view-btn"
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/cheque-issue/${props.row.id}/`"
+            :to="`/${$route.params.company}/cheque-issue/${props.row.id}/`"
           />
         </q-td>
       </template>

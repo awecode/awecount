@@ -7,47 +7,6 @@ const useTransactionFeeValidation = () => {
   const VALID_FEE_TYPES = ['fixed', 'percentage', 'slab_based', 'sliding_scale']
   const VALID_EXTRA_FEE_TYPES = ['fixed', 'percentage']
 
-  const validateFeeConfig = (config) => {
-    validationErrors.value = {}
-
-    if (!config) {
-      return true
-    }
-
-    try {
-      if (typeof config !== 'object') {
-        validationErrors.value.transaction_fee_config = 'Fee configuration must be an object'
-        return false
-      }
-
-      if (!config.type) {
-        validationErrors.value.transaction_fee_config = 'Fee type must be specified'
-        return false
-      }
-
-      if (!VALID_FEE_TYPES.includes(config.type)) {
-        validationErrors.value.transaction_fee_config = `Invalid fee type: ${config.type}`
-        return false
-      }
-
-      const validationFunctions = {
-        fixed: validateSimpleFee,
-        percentage: validateSimpleFee,
-        slab_based: validateSlabBased,
-        sliding_scale: validateSlidingScale,
-      }
-
-      if (!validationFunctions[config.type](config)) {
-        return false
-      }
-
-      return validateFeeLimits(config)
-    } catch (error) {
-      validationErrors.value.transaction_fee_config = error.message
-      return false
-    }
-  }
-
   const validateSimpleFee = (config) => {
     if (!('value' in config)) {
       validationErrors.value.transaction_fee_config = 'Value must be specified'
@@ -182,13 +141,54 @@ const useTransactionFeeValidation = () => {
     return true
   }
 
+  const validateFeeConfig = (config) => {
+    validationErrors.value = {}
+
+    if (!config) {
+      return true
+    }
+
+    try {
+      if (typeof config !== 'object') {
+        validationErrors.value.transaction_fee_config = 'Fee configuration must be an object'
+        return false
+      }
+
+      if (!config.type) {
+        validationErrors.value.transaction_fee_config = 'Fee type must be specified'
+        return false
+      }
+
+      if (!VALID_FEE_TYPES.includes(config.type)) {
+        validationErrors.value.transaction_fee_config = `Invalid fee type: ${config.type}`
+        return false
+      }
+
+      const validationFunctions = {
+        fixed: validateSimpleFee,
+        percentage: validateSimpleFee,
+        slab_based: validateSlabBased,
+        sliding_scale: validateSlidingScale,
+      }
+
+      if (!validationFunctions[config.type](config)) {
+        return false
+      }
+
+      return validateFeeLimits(config)
+    } catch (error) {
+      validationErrors.value.transaction_fee_config = error.message
+      return false
+    }
+  }
+
   return {
     validationErrors: computed(() => validationErrors.value),
     validateFeeConfig,
   }
 }
 
-const { fields, errors, formDefaults, isEdit, submitForm, cancel, cancelForm, loading } = useForm('v1/payment-modes/', {
+const { fields, errors, formDefaults, isEdit, submitForm, cancel, loading } = useForm(`/api/company/${$route.params.company}/payment-modes/`, {
   getDefaults: true,
   successRoute: '/settings/payment-mode/list/',
 })
@@ -259,22 +259,6 @@ const slabFeeTypeOptions = [
   { label: 'Fixed Amount', value: 'amount' },
 ]
 
-const onFeeTypeChange = (type) => {
-  if (type.value === null) {
-    fields.value.transaction_fee_config = null
-    return
-  }
-
-  fields.value.transaction_fee_config = {
-    type: type.value,
-    ...(type.value === 'slab_based' || type.value === 'sliding_scale' ? { slabs: [] } : { value: 0 }),
-  }
-
-  if (type.value === 'slab_based' || type.value === 'sliding_scale') {
-    addSlab()
-  }
-}
-
 const onSlabFeeTypeChange = (index) => {
   const slab = fields.value.transaction_fee_config.slabs[index]
   if (slab.fee_type === 'rate') {
@@ -326,6 +310,22 @@ const removeSlab = (index) => {
     fields.value.transaction_fee_config.slabs[index].min_amount = previousSlab ? previousSlab.max_amount || 0 : 0
   }
 }
+
+const onFeeTypeChange = (type) => {
+  if (type.value === null) {
+    fields.value.transaction_fee_config = null
+    return
+  }
+
+  fields.value.transaction_fee_config = {
+    type: type.value,
+    ...(type.value === 'slab_based' || type.value === 'sliding_scale' ? { slabs: [] } : { value: 0 }),
+  }
+
+  if (type.value === 'slab_based' || type.value === 'sliding_scale') {
+    addSlab()
+  }
+}
 </script>
 
 <template>
@@ -355,10 +355,10 @@ const removeSlab = (index) => {
             <n-auto-complete-v2
               v-model="fields.account"
               filled
-              endpoint="v1/payment-modes/create-defaults/accounts"
               label="Account"
               option-label="name"
               option-value="id"
+              :endpoint="`/api/company/${$route.params.company}/payment-modes/create-defaults/accounts`"
               :error="!!errors.account"
               :error-message="errors.account"
               :options="formDefaults?.collections?.accounts"
@@ -410,10 +410,10 @@ const removeSlab = (index) => {
                       <n-auto-complete-v2
                         v-model="fields.transaction_fee_account"
                         filled
-                        endpoint="v1/payment-modes/create-defaults/accounts"
                         label="Transaction Fee Account"
                         option-label="name"
                         option-value="id"
+                        :endpoint="`/api/company/${$route.params.company}/payment-modes/create-defaults/accounts`"
                         :error="!!errors.transaction_fee_account"
                         :error-message="errors.transaction_fee_account"
                         :options="formDefaults?.collections?.accounts"

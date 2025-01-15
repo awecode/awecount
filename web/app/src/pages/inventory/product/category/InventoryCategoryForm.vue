@@ -3,8 +3,8 @@ import NAutoComplete from 'src/components/NAutoComplete.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const emit = defineEmits([])
+
+const route = useRoute()
 const extraFieldTypes = [
   { value: 'Text', label: 'Text' },
   { value: 'Number', label: 'Number' },
@@ -15,7 +15,7 @@ const extraFieldTypes = [
 const toggleExpenses = (type) => {
   fields.value[type] = false
 }
-const endpoint = '/v1/inventory-categories/'
+const endpoint = `/api/company/${route.params.company}/inventory-categories/`
 const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(endpoint, {
   getDefaults: true,
   successRoute: '/inventory-category/list/',
@@ -116,10 +116,10 @@ const onSubmitClick = () => {
             <div class="col-12 col-md-6">
               <n-auto-complete-v2
                 v-model="fields.default_unit_id"
-                endpoint="v1/inventory-categories/create-defaults/units"
                 label="Unit"
+                :endpoint="`/api/company/${$route.params.company}/inventory-categories/create-defaults/units`"
                 :error="errors.default_unit_id"
-                :modal-component="checkPermissions('UnitCreate') ? UnitForm : null"
+                :modal-component="checkPermissions('unit.create') ? UnitForm : null"
                 :options="formDefaults.collections?.units"
                 :static-option="fields.selected_unit_obj"
               />
@@ -129,7 +129,7 @@ const onSubmitClick = () => {
                 v-model="fields.default_tax_scheme_id"
                 label="Tax Scheme"
                 :error="errors.default_tax_scheme_id"
-                :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null"
+                :modal-component="checkPermissions('taxscheme.create') ? TaxForm : null"
                 :options="formDefaults.collections?.tax_scheme"
               />
             </div>
@@ -317,7 +317,7 @@ const onSubmitClick = () => {
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('InventoryCategoryModify') && isEdit"
+            v-if="checkPermissions('inventorycategory.modify') && isEdit"
             class="q-ml-auto q-px-xl"
             color="green"
             label="Update"
@@ -326,7 +326,7 @@ const onSubmitClick = () => {
             @click.prevent="onSubmitClick"
           />
           <q-btn
-            v-if="checkPermissions('InventoryCategoryCreate') && !isEdit"
+            v-if="checkPermissions('inventorycategory.create') && !isEdit"
             class="q-ml-auto q-px-xl"
             color="green"
             label="Create"

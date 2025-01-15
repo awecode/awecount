@@ -1,7 +1,8 @@
 <script>
 export default {
   setup() {
-    const endpoint = '/v1/fund-transfer/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/fund-transfer/`
     const metaData = {
       title: 'Fund Transfers | Awecount',
     }
@@ -62,12 +63,12 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('FundTransferCreate')"
+        v-if="checkPermissions('fundtransfer.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Fund Transfer"
-        to="/fund-transfer/add/"
+        :to="`/${$route.params.company}/fund-transfer/create/`"
       />
     </div>
     <q-card v-if="data?.templates && data.templates.length" class="p-4 mt-4">
@@ -82,7 +83,7 @@ export default {
           color="green"
           icon-right="add"
           :label="template.name"
-          :to="{ path: '/fund-transfer/add/', query: { template: encodeURIComponent(JSON.stringify(template)) } }"
+          :to="{ path: `/${$route.params.company}/fund-transfer/create/`, query: { template: encodeURIComponent(JSON.stringify(template)) } }"
         />
       </div>
     </q-card>
@@ -166,26 +167,31 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('FundTransferModify')"
+            v-if="checkPermissions('fundtransfer.modify')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/fund-transfer/${props.row.id}/`"
+            :to="`/${$route.params.company}/fund-transfer/${props.row.id}/`"
           />
         </q-td>
       </template>
       <template #body-cell-voucher_no="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('FundTransferModify')"
+            v-if="checkPermissions('fundtransfer.modify')"
             class="text-blue text-weight-medium"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/fund-transfer/${props.row.id}/`"
+            :to="`/${$route.params.company}/fund-transfer/${props.row.id}/`"
           >
             {{ props.row.voucher_no }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.voucher_no }}</span>
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
+            {{ props.row.voucher_no }}
+          </span>
         </q-td>
       </template>
     </q-table>

@@ -1,7 +1,7 @@
 <script setup>
+import BsDatePicker from 'src/components/date/BsDatePicker.vue'
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
-import BsDatePicker from '/src/components/date/BsDatePicker.vue'
-import DateConverter from '/src/components/date/VikramSamvat.js'
 
 const props = defineProps(['toLimit', 'modelValue', 'label', 'error', 'errorMessage', 'hint', 'placeholder', 'disable', 'dateType', 'notRequired'])
 const emit = defineEmits(['update:modelValue'])

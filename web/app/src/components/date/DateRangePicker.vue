@@ -1,7 +1,7 @@
 <script setup>
+import BsDatePicker from 'src/components/date/BsDatePicker.vue'
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
-import BsDatePicker from '/src/components/date/BsDatePicker.vue'
-import DateConverter from '/src/components/date/VikramSamvat.js'
 
 const props = defineProps({
   startDate: { type: String, default: undefined },
@@ -10,6 +10,15 @@ const props = defineProps({
   focusOnMount: { type: Boolean, default: false },
   id: { type: String, default: 'date-range-picker' },
 })
+
+// const showClear = computed(() => {
+// return !this.hideClear && (this.value0 || this.value1)
+// return false
+// })
+
+const emit = defineEmits(['update:startDate', 'update:endDate', 'filter'])
+
+const store = useLoginStore()
 
 // const showClear = computed(() => {
 // return !this.hideClear && (this.value0 || this.value1)

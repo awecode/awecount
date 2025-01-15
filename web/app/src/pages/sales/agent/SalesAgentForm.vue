@@ -1,11 +1,11 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
+import useForm from 'src/composables/useForm'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, { emit }) {
-    const endpoint = 'v1/sales-agent/'
+  setup() {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/sales-agent/`
     const formData = useForm(endpoint, {
       getDefaults: false,
       successRoute: '/sales-agent/list/',
@@ -58,7 +58,7 @@ export default {
       </q-card-section>
       <div class="q-ma-md row q-pb-lg justify-end">
         <q-btn
-          v-if="checkPermissions('SalesAgentCreate') && !isEdit"
+          v-if="checkPermissions('salesagent.create') && !isEdit"
           color="green"
           label="Create"
           type="submit"
@@ -66,7 +66,7 @@ export default {
           @click.prevent="submitForm"
         />
         <q-btn
-          v-if="checkPermissions('SalesAgentModify') && isEdit"
+          v-if="checkPermissions('salesagent.modify') && isEdit"
           color="green"
           label="Update"
           type="submit"

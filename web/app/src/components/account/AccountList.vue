@@ -13,7 +13,7 @@ const openState = ref(false)
   <div v-if="props.accounts.length > 2">
     <div class="transition" :class="`${openState ? '' : 'max-h-[40px]'} overflow-y-hidden accounts-con`">
       <div v-for="(account, index) in props.accounts" :key="index">
-        <router-link class="text-blue block" style="font-weight: 500; text-decoration: none" :to="`/account/${account.id}/view/`">
+        <router-link class="text-blue block" style="font-weight: 500; text-decoration: none" :to="`/${$route.params.company}/account/${account.id}/view/`">
           {{ account.name }}
         </router-link>
       </div>
@@ -30,7 +30,7 @@ const openState = ref(false)
   </div>
   <div v-else>
     <div v-for="(account, index) in props.accounts" :key="index">
-      <router-link class="text-blue block" style="font-weight: 500; text-decoration: none" :to="`/account/${account.id}/view/`">
+      <router-link class="text-blue block" style="font-weight: 500; text-decoration: none" :to="`/${$route.params.company}/account/${account.id}/view/`">
         {{ account.name }}
       </router-link>
     </div>

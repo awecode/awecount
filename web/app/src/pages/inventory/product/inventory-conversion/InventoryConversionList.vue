@@ -1,9 +1,10 @@
 <script setup>
 import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
-const endpoint = '/v1/inventory-conversion/'
+const route = useRoute()
+const endpoint = `/api/company/${route.params.company}/inventory-conversion/`
 const metaData = {
   title: 'Inventory Conversion | Awecount',
 }
@@ -37,13 +38,13 @@ const newColumn = [
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('InventoryConversionVoucherCreate')" class="row justify-end q-gutter-md">
+    <div v-if="checkPermissions('inventoryconversionvoucher.create')" class="row justify-end q-gutter-md">
       <q-btn
         class="add-btn"
         color="green"
         icon-right="add"
         label="Add Inventory Conversion Voucher"
-        to="/items/inventory-conversion/add"
+        :to="`/${$route.params.company}/items/inventory-conversion/create/`"
       />
     </div>
     <q-table
@@ -110,20 +111,20 @@ const newColumn = [
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('InventoryConversionVoucherView')"
+            v-if="checkPermissions('inventoryconversionvoucher.view')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="blue-6"
             label="View"
             style="font-size: 12px"
-            :to="`/items/inventory-conversion/${props.row.id}/view`"
+            :to="`/${$route.params.company}/items/inventory-conversion/${props.row.id}/view`"
           />
           <q-btn
-            v-if="checkPermissions('InventoryConversionVoucherModify')"
+            v-if="checkPermissions('inventoryconversionvoucher.modify')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/items/inventory-conversion/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/inventory-conversion/${props.row.id}/`"
           />
         </q-td>
       </template>
@@ -131,10 +132,10 @@ const newColumn = [
       <template #body-cell-voucher_no="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('InventoryConversionVoucherModify')"
+            v-if="checkPermissions('inventoryconversionvoucher.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
-            :to="`/items/inventory-conversion/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/inventory-conversion/${props.row.id}/`"
           >
             {{ props.row.voucher_no }}
           </router-link>

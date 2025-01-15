@@ -5,12 +5,12 @@ export default {
       title: 'Purchases/Expenses | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/purchase-vouchers/'
-    const listData = useList(endpoint)
     const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/purchase-vouchers/`
+    const listData = useList(endpoint)
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi(`v1/purchase-vouchers/export${query}`)
+      useApi(`/api/company/${route.params.company}/purchase-vouchers/export${query}`)
         .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Purchase_voucher'))
         .catch(err => console.log('Error Due To', err))
     }
@@ -80,12 +80,12 @@ export default {
         @click="showImportModal = true"
       />
       <q-btn
-        v-if="checkPermissions('PurchaseVoucherCreate')"
+        v-if="checkPermissions('purchasevoucher.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Purchase"
-        to="/purchase-voucher/add/"
+        :to="`/${$route.params.company}/purchase-voucher/create/`"
       />
     </div>
     <q-table
@@ -135,8 +135,8 @@ export default {
                 <div class="q-mx-sm">
                   <n-auto-complete-v2
                     v-model="filters.payment_mode"
-                    endpoint="v1/payment-modes/choices/"
                     label="Payment Mode"
+                    :endpoint="`/api/company/${$route.params.company}/payment-modes/choices/`"
                     :fetch-on-mount="true"
                   />
                 </div>
@@ -190,14 +190,14 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <div v-if="checkPermissions('PurchaseVoucherView')" class="row q-gutter-x-md items-center">
+          <div v-if="checkPermissions('purchasevoucher.view')" class="row q-gutter-x-md items-center">
             <q-btn
               class="q-py-none q-px-md font-size-sm l-view-btn"
               color="blue"
               data-testid="view-btn"
               label="View"
               style="font-size: 12px"
-              :to="`/purchase-voucher/${props.row.id}/view`"
+              :to="`/${$route.params.company}/purchase-voucher/${props.row.id}/view`"
             />
           </div>
         </q-td>
@@ -207,15 +207,19 @@ export default {
         <q-td style="padding: 0" :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('PurchaseVoucherView')"
+              v-if="checkPermissions('purchasevoucher.view')"
               class="text-blue"
               data-testid="voucher-no"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-              :to="`/purchase-voucher/${props.row.id}/view`"
+              :to="`/${$route.params.company}/purchase-voucher/${props.row.id}/view`"
             >
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else data-testid="voucher-no" style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+            <span
+              v-else
+              data-testid="voucher-no"
+              style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+            >
               {{ props.row.voucher_no }}
             </span>
           </span>
@@ -224,7 +228,7 @@ export default {
     </q-table>
     <XLSImport
       v-model:show-import-modal="showImportModal"
-      endpoint="/v1/purchase-vouchers/import/"
+      :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/import/`"
       help-text="Upload a .xlsx file to import purchase invoices"
       sample-file-url="/files/purchase-invoices.xlsx"
       title="Import Purchase Vouchers"

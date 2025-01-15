@@ -8,15 +8,16 @@ export interface EssentialLinkProps {
   level?: number
   hide?: boolean
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = withDefaults(defineProps<EssentialLinkProps>(), {
   caption: '',
   link: '#',
   icon: '',
   level: 0,
 })
+
 const hideParent = ref(false)
-if (props.level == 0 && props.children && props.children.length > 0) {
+
+if (props.level === 0 && props.children && props.children.length > 0) {
   const hideStatus = props.children.some(child => !child.hide)
   if (!hideStatus) hideParent.value = true
 } else {

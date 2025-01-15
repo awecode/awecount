@@ -5,7 +5,8 @@ export default {
       title: 'Cash Deposits | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/bank-cash-deposits/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/bank-cash-deposits/`
     const newColumn = [
       {
         name: 'voucher_no',
@@ -63,12 +64,12 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('BankCashDepositCreate')"
+        v-if="checkPermissions('bankcashdeposit.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Cash Deposit"
-        to="/cash-deposit/add/"
+        :to="`/${$route.params.company}/cash-deposit/create/`"
       />
     </div>
 
@@ -146,12 +147,12 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('BankCashDepositModify')"
+            v-if="checkPermissions('bankcashdeposit.modify')"
             class="q-py-none q-px-md font-size-sm"
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/cash-deposit/${props.row.id}/`"
+            :to="`/${$route.params.company}/cash-deposit/${props.row.id}/`"
           />
         </q-td>
       </template>

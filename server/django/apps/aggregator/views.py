@@ -17,7 +17,7 @@ def export_data(request):
     data = json.loads(request.body)
     user = authenticate(email=data.get("email"), password=data.get("password"))
     if user and request.user == user:
-        zipped_data = get_zipped_csvs(request.company_id)
+        zipped_data = get_zipped_csvs(request.company.id)
         response = FileResponse(zipped_data)
         filename = "accounting_export_{}.zip".format(datetime.today().date())
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
@@ -33,7 +33,7 @@ def import_data(request):
 
     if user and request.user == user:
         # TODO Move as background job
-        result = import_zipped_csvs(request.company_id, request.FILES.get("file"))
+        result = import_zipped_csvs(request.company.id, request.FILES.get("file"))
         return JsonResponse(result)
     else:
         return JsonResponse({"detail": "Please provide valid credential!"}, status=401)
@@ -73,7 +73,7 @@ def qs_to_xls(querysets):
 
 @csrf_exempt
 def export_auditlog(request):
-    if not request.user.is_authenticated or not request.company_id:
+    if not request.user.is_authenticated or not request.company.id:
         raise PermissionDenied
     resource = LogEntryResource()
     qs = LogEntry.objects.filter(

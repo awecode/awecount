@@ -25,7 +25,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
+    const endpoint = `/api/company/${this.$route.params.company}/sales-voucher/${this.$route.params.id}/details/`
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         const removeArr: Array<string> = ['discount_obj', 'voucher_meta', 'rows', 'enable_row_description', 'payment_receipts', 'can_update_issued', 'issue_datetime', 'available_bank_accounts', 'id', 'options']

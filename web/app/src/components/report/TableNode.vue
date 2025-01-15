@@ -182,7 +182,7 @@ export default {
           class="text-blue-6"
           style="text-decoration: none"
           target="_blank"
-          :to="`/account/?has_balance=true&category=${item.id}`"
+          :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`"
         >
           {{ item.name }}
         </RouterLink>
@@ -256,7 +256,7 @@ export default {
           style="text-decoration: none"
           target="_blank"
           :class="props.root ? 'text-weight-bold' : ''"
-          :to="`/account/?has_balance=true&category=${item.id}`"
+          :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`"
         >
           {{ item.name }}
         </RouterLink>
@@ -316,7 +316,7 @@ export default {
             class="text-blue-7 text-italic text-weight-regular"
             style="text-decoration: none"
             target="_blank"
-            :to="`/account/${activeObject.account_id}/view/`"
+            :to="`/${$route.params.company}/account/${activeObject.account_id}/view/`"
           >
             {{ activeObject.name }}
           </RouterLink>

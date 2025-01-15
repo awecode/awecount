@@ -1,11 +1,11 @@
 <script lang="ts">
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
 export default {
   setup() {
     const route = useRoute()
-    const endpoint = '/v1/sales-book/'
+    const endpoint = `/api/company/${route.params.company}/sales-book/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'Sales Book | Awecount',
@@ -80,7 +80,7 @@ export default {
     ]
     const onDownloadXls = () => {
       const downloadEndpoint = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi(`v1/sales-book/export${downloadEndpoint}`)
+      useApi(`/api/company/${route.params.company}/sales-book/export${downloadEndpoint}`)
         .then(data => usedownloadFile(data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Sales Book'))
         .catch(err => console.log('Error Due To', err))
     }
@@ -143,14 +143,17 @@ export default {
         <q-td style="padding: 0" :props="props">
           <div class="row align-center" style="height: 100%">
             <router-link
-              v-if="checkPermissions('SalesView')"
+              v-if="checkPermissions('sales.view')"
               class="text-blue l-view-btn"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; padding: 8px 8px 8px 16px"
-              :to="`/sales-voucher/${props.row.id}/view`"
+              :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view`"
             >
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+            <span
+              v-else
+              style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+            >
               {{ props.row.voucher_no }}
             </span>
           </div>

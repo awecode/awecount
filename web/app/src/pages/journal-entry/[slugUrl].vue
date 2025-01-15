@@ -1,10 +1,11 @@
 <script lang="ts">
 import type { Ref } from 'vue'
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import useApi from 'src/composables/useApi'
 import { useLoginStore } from 'src/stores/login-info'
-import DateConverter from '/src/components/date/VikramSamvat.js'
+
 // const getData = () =>
-//   useApi(`/v1/journal-voucher/${$this.route.params.id}/`).then((data) => {
+//   useApi(`/api/company/journal-voucher/${$this.route.params.id}/`).then((data) => {
 //     fields.value = data
 //   })
 // getData()
@@ -132,7 +133,7 @@ export default {
   created() {
     const $q = useQuasar()
     const route = useRoute()
-    useApi(`/v1/${route.params.slug}/${route.params.id}/journal-entries/`)
+    useApi(`/api/company/${route.params.company}/${route.params.slug}/${route.params.id}/journal-entries/`)
       .then((data) => {
         this.fields = data
       })
@@ -175,7 +176,7 @@ export default {
               {{ getDate[0] || '-' }}
             </div>
           </div>
-          <router-link v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : $route.params.slug}/${fields[0]?.source_id}/view`">
+          <router-link v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : $route.params.slug}/${fields[0]?.source_id}/view`">
             <div class="row items-center text-blue">
               Source
             </div>
@@ -201,7 +202,7 @@ export default {
               <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
               <div class="row q-col-gutter-md">
                 <div class="col-grow">
-                  <router-link class="text-blue" style="text-decoration: none" :to="`/account/${row.account.id}/view`">
+                  <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${row.account.id}/view`">
                     {{ row.account.name }}
                   </router-link>
                 </div>
@@ -254,7 +255,7 @@ export default {
               {{ getDate[index] || '-' }}
             </div>
           </div>
-          <router-link v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : $route.params.slug}/${voucher?.source_id}/view`">
+          <router-link v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : $route.params.slug}/${voucher?.source_id}/view`">
             <div class="row items-center text-blue">
               Source
             </div>
@@ -278,7 +279,7 @@ export default {
             <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
             <div class="row q-col-gutter-md">
               <div class="col-grow">
-                <router-link class="text-blue" style="text-decoration: none" :to="`/account/${row.account.id}/view`">
+                <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${row.account.id}/view`">
                   {{ row.account.name }}
                 </router-link>
               </div>
@@ -317,7 +318,7 @@ export default {
       <!-- <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
       <div>
         <q-btn
-          :to="`/journal-voucher/${fields?.id}/edit/`"
+          :to="`/${$route.params.company}/journal-voucher/${fields?.id}/edit/`"
           color="orange"
           icon="edit"
           label="Edit"

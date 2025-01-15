@@ -5,7 +5,8 @@ export default {
       title: 'Suppliers | Awecount',
     }
     useMeta(metaData)
-    const endpoint = 'v1/parties/suppliers/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/parties/suppliers/`
     const listData = useList(endpoint)
     const newColumn = [
       {
@@ -76,12 +77,12 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('PartyCreate')"
+        v-if="checkPermissions('party.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New party"
-        to="/party/add/"
+        :to="`/${$route.params.company}/party/create/`"
       />
     </div>
 
@@ -118,34 +119,37 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('PartyModify')"
+            v-if="checkPermissions('party.modify')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-view-btn"
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/party/${props.row.id}/`"
+            :to="`/${$route.params.company}/party/${props.row.id}/`"
           />
           <q-btn
-            v-if="checkPermissions('PartyView')"
+            v-if="checkPermissions('party.view')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="blue"
             label="Account"
             style="font-size: 12px"
-            :to="`/parties/account/${props.row.id}/`"
+            :to="`/${$route.params.company}/parties/account/${props.row.id}/`"
           />
         </q-td>
       </template>
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('PartyView')"
+            v-if="checkPermissions('party.view')"
             class="text-blue block"
-            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 16px 8px 8px 16px"
-            :to="`/parties/account/${props.row.id}/`"
+            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+            :to="`/${$route.params.company}/parties/account/${props.row.id}/`"
           >
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 16px 8px 8px 16px">
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
             {{ props.row.name }}
           </span>
         </q-td>

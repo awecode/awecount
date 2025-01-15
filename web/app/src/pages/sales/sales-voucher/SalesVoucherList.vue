@@ -5,12 +5,12 @@ export default {
       title: 'Sales Invoices | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/sales-voucher/'
-    const listData = useList(endpoint)
     const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/sales-voucher/`
+    const listData = useList(endpoint)
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi(`v1/sales-voucher/export${query}`)
+      useApi(`/api/company/${route.params.company}/sales-voucher/export${query}`)
         .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Sales_voucher'))
         .catch(err => console.log('Error Due To', err))
     }
@@ -101,12 +101,12 @@ export default {
         @click="showImportModal = true"
       />
       <q-btn
-        v-if="checkPermissions('SalesCreate')"
+        v-if="checkPermissions('sales.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Sales"
-        to="/sales-voucher/add/"
+        :to="`/${$route.params.company}/sales-voucher/create/`"
       />
     </div>
     <q-table
@@ -155,8 +155,8 @@ export default {
                 <div class="q-mx-sm">
                   <n-auto-complete-v2
                     v-model="filters.payment_mode"
-                    endpoint="v1/payment-modes/choices/"
                     label="Payment Mode"
+                    :endpoint="`/api/company/${$route.params.company}/payment-modes/choices/`"
                     :fetch-on-mount="true"
                   />
                 </div>
@@ -228,27 +228,25 @@ export default {
         <q-td :props="props">
           <div class="row q-gutter-x-md justify-start">
             <q-btn
-              v-if="checkPermissions('SalesView')"
+              v-if="checkPermissions('sales.view')"
               class="q-py-none q-px-md font-size-sm l-view-btn"
               color="blue"
               data-testid="view-btn"
               label="View"
               style="font-size: 12px"
-              :to="`/sales-voucher/${props.row.id}/view/`"
+              :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view/`"
             />
           </div>
         </q-td>
-
-        <!-- TODO: add modals -->
       </template>
       <template #body-cell-payment_receipts="props">
         <q-td :props="props">
           <span v-for="id in props.row.payment_receipts.map((item) => item.id)" :key="id">
             <router-link
-              v-if="checkPermissions('PaymentReceiptView')"
+              v-if="checkPermissions('paymentreceipt.view')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none"
-              :to="`/payment-receipt/${id}/view/`"
+              :to="`/${$route.params.company}/payment-receipt/${id}/view/`"
             >#{{ id }}</router-link>
             <span v-else>#{{ id }}</span>
           </span>
@@ -256,17 +254,21 @@ export default {
       </template>
       <template #body-cell-voucher_no="props">
         <q-td style="padding: 0" :props="props">
-          <span v-if="checkPermissions('SalesView')" data-testid="voucher-no">
+          <span v-if="checkPermissions('sales.view')" data-testid="voucher-no">
             <router-link
-              v-if="checkPermissions('SalesView') && props.row.voucher_no"
+              v-if="checkPermissions('sales.view') && props.row.voucher_no"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-              :to="`/sales-voucher/${props.row.id}/view/`"
+              :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view/`"
             >
               {{ props.row.voucher_no }}
             </router-link>
           </span>
-          <span v-else data-testid="voucher-no" style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+          <span
+            v-else
+            data-testid="voucher-no"
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
             {{ props.row.voucher_no }}
           </span>
         </q-td>
@@ -284,9 +286,10 @@ export default {
         </td>
       </template>
     </q-table>
+
     <XLSImport
       v-model:show-import-modal="showImportModal"
-      endpoint="/v1/sales-voucher/import/"
+      :endpoint="`/api/company/${$route.params.company}/sales-voucher/import/`"
       help-text="Upload a .xlsx file to import sales invoices"
       sample-file-url="/files/sales-invoices.xlsx"
       title="Import Sales Vouchers"

@@ -424,13 +424,13 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         return False
 
     @action(detail=False, url_path="list")
-    def list_items(self, request):
+    def list_items(self, request, *args, **kwargs):
         qs = super().get_queryset().order_by("name")
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
     @action(detail=False, url_path="similar-items")
-    def similar_items(self, request):
+    def similar_items(self, request, *args, **kwargs):
         from thefuzz import fuzz
 
         # TODO Use postgres trigram/cosine/levenshtein distance
@@ -481,7 +481,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         return Response(filtered_data)
 
     @action(detail=False, methods=["POST"])
-    def merge(self, request):
+    def merge(self, request, *args, **kwargs):
         groups_not_merged = []
         items_not_merged = []
         flag = False
@@ -505,7 +505,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         return Response(status=200)
 
     @action(detail=True)
-    def details(self, request, pk=None):
+    def details(self, request, pk=None, *args, **kwargs):
         qs = (
             super()
             .get_queryset()
@@ -526,7 +526,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
     # items listing for POS
     @action(detail=False)
-    def pos(self, request):
+    def pos(self, request, *args, **kwargs):
         self.filter_backends = (rf_filters.SearchFilter,)
         self.queryset = self.get_queryset().filter(can_be_sold=True)
         self.serializer_class = ItemPOSSerializer
@@ -540,19 +540,19 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         return super().list(request)
 
     @action(detail=False, url_path="sales-choices")
-    def sales_choices(self, request):
+    def sales_choices(self, request, *args, **kwargs):
         queryset = self.get_queryset().filter(can_be_sold=True)
         serializer = GenericSerializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=False, url_path="purchase-choices")
-    def purchase_choices(self, request):
+    def purchase_choices(self, request, *args, **kwargs):
         queryset = self.get_queryset().filter(can_be_purchased=True)
         serializer = GenericSerializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=["POST"], url_path="import")
-    def import_from_file(self, request):
+    def import_from_file(self, request, *args, **kwargs):
         file = request.FILES["file"]
         wb = load_workbook(file)
         ws = wb.active
@@ -714,7 +714,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         return Response({}, status=200)
 
     @action(detail=True, methods=["GET"], url_path="available-stock")
-    def available_stock_data(self, request, pk=None):
+    def available_stock_data(self, request, pk=None, *args, **kwargs):
         item = self.get_object()
         return Response(item.available_stock_data, status=200)
 
@@ -750,7 +750,7 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
     def get_queryset(self, company_id=None):
         return super().get_queryset().filter(opening_balance__gt=0)
 
-    def get_update_defaults(self, request=None):
+    def get_update_defaults(self, request=None, *args, **kwargs):
         self.collections = (
             (
                 "items",
@@ -829,7 +829,7 @@ class BookViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = BookSerializer
 
     @action(detail=False)
-    def category(self, request):
+    def category(self, request, *args, **kwargs):
         cat = Category.objects.filter(company=self.request.company, name="Book").first()
         return Response(InventoryCategorySerializer(cat).data)
 
@@ -929,7 +929,7 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
             category.refresh_from_db()
             category.apply_account_settings_to_items()
 
-    def get_collections(self, request=None):
+    def get_collections(self, request=None, *args, **kwargs):
         collections_data = super().get_collections(self.request)
         collections_data["fixed_assets_categories"] = GenericSerializer(
             AccountCategory.objects.get(
@@ -966,7 +966,7 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         return super().get_serializer_class()
 
     @action(detail=False, url_path="trial-balance")
-    def trial_balance(self, request):
+    def trial_balance(self, request, *args, **kwargs):
         qs = self.get_queryset().filter(Q(track_inventory=True) | Q(fixed_asset=True))
         return Response(InventoryCategoryTrialBalanceSerializer(qs, many=True).data)
 
@@ -992,7 +992,7 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
         return [obj.id]
 
     @action(detail=True, methods=["get"], url_path="journal-entries")
-    def journal_entries(self, request, pk=None):
+    def journal_entries(self, request, pk=None, *args, **kwargs):
         param = request.GET
         start_date = param.get("start_date")
         end_date = param.get("end_date")
@@ -1018,7 +1018,7 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
-    def transactions(self, request, pk=None):
+    def transactions(self, request, pk=None, *args, **kwargs):
         param = request.GET
         obj = self.get_object()
         serializer_class = self.get_serializer_class()
@@ -1064,7 +1064,7 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
         return Response(data)
 
     @action(detail=False, url_path="trial-balance")
-    def trial_balance(self, request, format=None):
+    def trial_balance(self, request, format=None, *args, **kwargs):
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
         if start_date and end_date:
@@ -1098,7 +1098,7 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
 class InventorySettingsViewSet(CRULViewSet):
     serializer_class = InventorySettingCreateSerializer
 
-    def get_defaults(self, request=None):
+    def get_defaults(self, request=None, *args, **kwargs):
         i_setting = self.request.company.inventory_setting
         data = {"fields": self.get_serializer(i_setting).data}
         return data
@@ -1202,7 +1202,7 @@ class InventoryAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
     ]
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         inventory_adjustment_voucher = self.get_object()
         message = request.data.get("message")
         if not message:
@@ -1213,7 +1213,7 @@ class InventoryAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
         return Response({})
 
     @action(detail=False, methods=["POST"], url_path="import")
-    def import_from_file(self, request):
+    def import_from_file(self, request, *args, **kwargs):
         file = request.FILES["file"]
         wb = load_workbook(file, data_only=True)
         ws = wb.active
@@ -1256,7 +1256,7 @@ class InventoryAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
         return Response(response, status=200)
 
     @action(detail=True, url_path="journal-entries")
-    def journal_entries(self, request, pk):
+    def journal_entries(self, request, pk, *args, **kwargs):
         inventory_adjustment_voucher = get_object_or_404(
             InventoryAdjustmentVoucher, pk=pk
         )
@@ -1293,7 +1293,7 @@ class InventoryConversionVoucherViewSet(DeleteRows, CRULViewSet):
         return InventoryConversionVoucherCreateSerializer
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         inventory_conversion_voucher = self.get_object()
         message = request.data.get("message")
         if not message:

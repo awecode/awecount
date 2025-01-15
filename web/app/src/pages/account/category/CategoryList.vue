@@ -4,8 +4,9 @@ import checkPermissions from 'src/composables/checkPermissions'
 const metaData = {
   title: 'Account Categories | Awecount',
 }
+const route = useRoute()
 useMeta(metaData)
-const endpoint = '/v1/categories/'
+const endpoint = `/api/company/${route.params.company}/categories/`
 const newColumns = [
   {
     name: 'code',
@@ -31,12 +32,12 @@ const { rows, resetFilters, filters, loading, searchQuery, pagination, onRequest
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('CategoryCreate')"
+        v-if="checkPermissions('category.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Category"
-        to="/account-category/add/"
+        :to="`/${$route.params.company}/account-category/create/`"
       />
     </div>
     <q-table
@@ -99,12 +100,12 @@ const { rows, resetFilters, filters, loading, searchQuery, pagination, onRequest
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('CategoryModify')"
+            v-if="checkPermissions('category.modify')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="orange-7"
             label="Edit"
             style="font-size: 12px"
-            :to="`/account-category/${props.row.id}/`"
+            :to="`/${$route.params.company}/account-category/${props.row.id}/`"
           />
         </q-td>
       </template>

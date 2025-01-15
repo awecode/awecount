@@ -1,16 +1,16 @@
 <script>
 export default {
   setup() {
-    const endpoint = '/v1/debit-note/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/debit-note/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'Debit Notes | Awecount',
     }
     useMeta(metaData)
-    const route = useRoute()
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi(`v1/debit-note/export${query}`)
+      useApi(`/api/company/${route.params.company}/debit-note/export${query}`)
         .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Debit_Notes'))
         .catch(err => console.log('Error Due To', err))
     }
@@ -49,12 +49,12 @@ export default {
         @click="onDownloadXls"
       />
       <q-btn
-        v-if="checkPermissions('DebitNoteCreate')"
+        v-if="checkPermissions('debitnote.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Debit Note"
-        to="/debit-note/add/"
+        :to="`/${$route.params.company}/debit-note/create/`"
       />
     </div>
     <q-table
@@ -146,13 +146,13 @@ export default {
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <div v-if="checkPermissions('DebitNoteView')" class="row q-gutter-x-md items-center">
+          <div v-if="checkPermissions('debitnote.view')" class="row q-gutter-x-md items-center">
             <q-btn
               class="q-py-none q-px-md font-size-sm l-view-btn"
               color="blue"
               label="View"
               style="font-size: 12px"
-              :to="`/debit-note/${props.row.id}/view/`"
+              :to="`/${$route.params.company}/debit-note/${props.row.id}/view/`"
             />
           </div>
         </q-td>
@@ -161,14 +161,17 @@ export default {
         <q-td style="padding: 0" :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('DebitNoteView')"
+              v-if="checkPermissions('debitnote.view')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-              :to="`/debit-note/${props.row.id}/view/`"
+              :to="`/${$route.params.company}/debit-note/${props.row.id}/view/`"
             >
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+            <span
+              v-else
+              style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+            >
               {{ props.row.voucher_no }}
             </span>
           </span>

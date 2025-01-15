@@ -1,6 +1,6 @@
 <script setup>
-import DateConverter from '/src/components/date/VikramSamvat.js'
-import { useLoginStore } from '/src/stores/login-info.js'
+import DateConverter from 'src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info.js'
 
 const props = defineProps({
   date: {

@@ -5,7 +5,8 @@ export default {
       title: 'Tax Schemes | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/tax_scheme/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/tax_scheme/`
     const listData = useList(endpoint)
     const newColumn = [
       {
@@ -58,12 +59,12 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('TaxSchemeCreate')"
+        v-if="checkPermissions('taxscheme.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Tax Scheme"
-        to="/taxes/add/"
+        :to="`/${$route.params.company}/taxes/create/`"
       />
     </div>
 
@@ -79,16 +80,21 @@ export default {
       @request="onRequest"
     >
       <template #body-cell-name="props">
-        <q-td style="padding: 0" :props="props">
+        <q-td :props="props">
           <router-link
-            v-if="checkPermissions('TaxSchemeModify')"
+            v-if="checkPermissions('taxscheme.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/taxes/${props.row.id}/`"
+            :to="`/${$route.params.company}/taxes/${props.row.id}/`"
           >
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.name }}</span>
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
+            {{ props.row.name }}
+          </span>
         </q-td>
       </template>
       <template #body-cell-recoverable="props">
@@ -108,7 +114,7 @@ export default {
             color="orange"
             label="Edit"
             style="font-size: 12px"
-            :to="`/taxes/${props.row.id}/`"
+            :to="`/${$route.params.company}/taxes/${props.row.id}/`"
           />
         </q-td>
       </template>

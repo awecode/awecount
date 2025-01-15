@@ -1,11 +1,11 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
+import useForm from 'src/composables/useForm'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/tax-payments/'
+  setup() {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/tax-payments/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/tax-payment/list/',
@@ -91,10 +91,10 @@ export default {
                 v-model="fields.cr_account"
                 emit-value
                 map-options
-                endpoint="v1/tax-payments/create-defaults/cr_accounts"
                 label="Paid From/By *"
                 option-label="name"
                 option-value="id"
+                :endpoint="`/api/company/${$route.params.company}/tax-payments/create-defaults/cr_accounts`"
                 :error="!!errors.cr_account"
                 :error-message="errors.cr_account"
                 :options="formDefaults.collections?.cr_accounts"
@@ -115,7 +115,7 @@ export default {
         <div class="q-pb-lg row justify-end q-gutter-x-md">
           <span v-if="fields.status !== 'Cancelled' && fields.status !== 'Paid'" class="row q-gutter-x-md">
             <q-btn
-              v-if="checkPermissions('TaxPaymentCreate')"
+              v-if="checkPermissions('taxpayment.create')"
               class="q-px-lg q-mb-sm"
               color="orange-6"
               label="Save Draft"
@@ -124,7 +124,7 @@ export default {
               @click.prevent="submitWithStatus('Draft', submitForm)"
             />
             <q-btn
-              v-if="!!fields.status && isEdit && checkPermissions('TaxPaymentCancel')"
+              v-if="!!fields.status && isEdit && checkPermissions('taxpayment.cancel')"
               class="q-px-lg q-mb-sm"
               color="red-6"
               icon="cancel"
@@ -133,7 +133,7 @@ export default {
               @click.prevent="isDeleteOpen = true"
             />
             <q-btn
-              v-if="checkPermissions('TaxPaymentCreate')"
+              v-if="checkPermissions('taxpayment.create')"
               class="q-px-lg q-mb-sm"
               color="green-6"
               label="Mark as paid"

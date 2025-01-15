@@ -1,18 +1,18 @@
 <script>
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import useForm from 'src/composables/useForm'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
+import CategoryForm from 'src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import { useLoginStore } from 'src/stores/login-info'
-import useForm from '/src/composables/useForm'
-import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, { emit }) {
+  setup() {
+    const route = useRoute()
     const store = useLoginStore()
-    const endpoint = '/v1/credit-note/'
+    const endpoint = `/api/company/${route.params.company}/credit-note/`
     const openDatePicker = ref(false)
     const addRefrence = ref(false)
     const discountField = ref(null)
@@ -286,7 +286,7 @@ export default {
                   v-model="fields.discount_type"
                   label="Discount"
                   :error="errors?.discount_type"
-                  :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null"
+                  :modal-component="checkPermissions('salesdiscount.create') ? SalesDiscountForm : null"
                   :options="discountOptionsComputed"
                 />
               </div>
@@ -305,8 +305,8 @@ export default {
               <n-auto-complete-v2
                 v-model="fields.payment_mode"
                 data-testid="mode-input"
-                endpoint="/v1/credit-note/create-defaults/payment_modes"
                 label="Payment Mode *"
+                :endpoint="`/api/company/${$route.params.company}/credit-note/create-defaults/payment_modes`"
                 :error="!!errors?.payment_mode"
                 :error-message="errors?.payment_mode"
                 :options="modeOptionsComputed"
@@ -374,7 +374,7 @@ export default {
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn
-          v-if="checkPermissions('CreditNoteCreate') && (!isEdit || (isEdit && fields.status === 'Draft'))"
+          v-if="checkPermissions('creditnote.create') && (!isEdit || (isEdit && fields.status === 'Draft'))"
           color="orange"
           type="submit"
           :disabled="!(fields.invoices && fields.invoices.length > 0)"

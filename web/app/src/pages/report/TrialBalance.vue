@@ -42,12 +42,12 @@ export default {
       }
     }
 
-    // const endpoint = '/v1/trial-balance/'
+    // const endpoint = '/api/company/trial-balance/'
     // const listData = useList(endpoint)
     const fetchData = () => {
       showData.value = false
-      // const endpoint = `/v1/test/data/`
-      const endpoint = `/v1/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
+      // const endpoint = `/api/company/test/data/`
+      const endpoint = `/api/company/${route.params.company}/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
       useApi(endpoint)
         .then((data) => {
           category_accounts.value = {}
@@ -151,7 +151,7 @@ export default {
     }
     function updateData() {
       const query = { ...fields.value }
-      router.push({ path: '/report/trial-balance/', query })
+      router.push({ path: `/${route.params.company}/reports/trial-balance/`, query })
       fetchData()
     }
     if (route.query.start_date && route.query.end_date) {
@@ -159,6 +159,15 @@ export default {
       fields.value.end_date = route.query.end_date
       fetchData()
     }
+
+    const endpoint = `/api/company/${route.params.company}/category-tree/`
+    useApi(endpoint, { method: 'GET' })
+      .then((data) => {
+        categoryTree.value = data
+      })
+      .catch((error) => {
+        console.log('err fetching data', error)
+      })
     return {
       replaceHrefAttribute,
       onDownloadXls,
@@ -173,16 +182,6 @@ export default {
       calculateNet,
       updateData,
     }
-  },
-  created() {
-    const endpoint = '/v1/category-tree/'
-    useApi(endpoint, { method: 'GET' })
-      .then((data) => {
-        this.categoryTree = data
-      })
-      .catch((error) => {
-        console.log('err fetching data', error)
-      })
   },
 }
 </script>

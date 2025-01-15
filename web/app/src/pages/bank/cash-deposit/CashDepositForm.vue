@@ -1,13 +1,12 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
+import useForm from 'src/composables/useForm'
 import BenefactorForm from 'src/pages/account/ledger/LedgerForm.vue'
 import CreateAccount from '../account/AccountForm.vue'
-import useForm from '/src/composables/useForm'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/bank-cash-deposits/'
+  setup() {
+    const endpoint = `/api/company/${route.params.company}/bank-cash-deposits/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/cash-deposit/list/',
@@ -46,10 +45,10 @@ export default {
             <div class="col-md-6 col-12">
               <n-auto-complete-v2
                 v-model="fields.bank_account"
-                endpoint="v1/bank-cash-deposits/create-defaults/bank_accounts"
                 label="Bank Account *"
+                :endpoint="`/api/company/${$route.params.company}/bank-cash-deposits/create-defaults/bank_accounts`"
                 :error="errors?.bank_account"
-                :modal-component="checkPermissions('BankAccountCreate') ? CreateAccount : null"
+                :modal-component="checkPermissions('bankaccount.create') ? CreateAccount : null"
                 :options="formDefaults.collections?.bank_accounts"
                 :static-option="fields.selected_bank_account_obj"
               />
@@ -57,10 +56,10 @@ export default {
             <div class="col-md-6 col-12">
               <n-auto-complete-v2
                 v-model="fields.benefactor"
-                endpoint="v1/bank-cash-deposits/create-defaults/benefactors"
                 label="Benefactor *"
+                :endpoint="`/api/company/${$route.params.company}/bank-cash-deposits/create-defaults/benefactors`"
                 :error="errors?.benefactor"
-                :modal-component="checkPermissions('AccountCreate') ? BenefactorForm : null"
+                :modal-component="checkPermissions('account.create') ? BenefactorForm : null"
                 :options="formDefaults.collections?.benefactors"
                 :static-option="fields.selected_benefactor_obj"
               />
@@ -114,7 +113,7 @@ export default {
         </q-card>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn
-            v-if="checkPermissions('BankCashDepositCreate') && !isEdit"
+            v-if="checkPermissions('bankcashdeposit.create') && !isEdit"
             color="green"
             label="Create"
             type="submit"
@@ -122,7 +121,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('BankCashDepositModify') && isEdit"
+            v-if="checkPermissions('bankcashdeposit.modify') && isEdit"
             color="green"
             label="Update"
             type="submit"
@@ -130,7 +129,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="fields?.status == 'Cleared' && checkPermissions('BankCashDepositCancel')"
+            v-if="fields?.status == 'Cleared' && checkPermissions('bankcashdeposit.cancel')"
             color="red"
             icon="block"
             label="Cancel"
@@ -138,13 +137,13 @@ export default {
             @click.prevent="isDeleteOpen = true"
           />
           <q-btn
-            v-if="fields?.status && fields?.status != 'Cancelled' && checkPermissions('BankCashDepositModify')"
+            v-if="fields?.status && fields?.status != 'Cancelled' && checkPermissions('bankcashdeposit.modify')"
             class="text-h7 q-py-sm"
             color="blue"
             icon="library_books"
             label="Journal Entries"
             :loading="loading"
-            :to="`/journal-entries/bank-cash-deposits/${id}/`"
+            :to="`/${$route.params.company}/journal-entries/bank-cash-deposits/${id}/`"
           />
         </div>
       </q-card>

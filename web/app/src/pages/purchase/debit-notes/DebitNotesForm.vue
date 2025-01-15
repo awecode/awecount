@@ -1,18 +1,18 @@
 <script>
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import useForm from 'src/composables/useForm'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
+import CategoryForm from 'src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountForm.vue'
 import { useLoginStore } from 'src/stores/login-info'
-import useForm from '/src/composables/useForm'
-import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, { emit }) {
+  setup() {
+    const route = useRoute()
     const store = useLoginStore()
-    const endpoint = '/v1/debit-note/'
+    const endpoint = `/api/company/${route.params.company}/debit-note/`
     const openDatePicker = ref(false)
     const addRefrence = ref(false)
     const discountField = ref(null)
@@ -190,7 +190,7 @@ export default {
     }
   },
   created() {
-    useApi('/v1/parties/choices/')
+    useApi(`/api/company/${this.$route.params.company}/parties/choices/`)
       .then((res) => {
         this.partyChoices = res
       })
@@ -246,8 +246,8 @@ export default {
                     />
                     <n-auto-complete-v2
                       v-model="referenceFormData.party"
-                      endpoint="/v1/parties/choices/"
                       label="Party*"
+                      :endpoint="`/api/company/${$route.params.company}/parties/choices/`"
                       :error="errors?.party"
                       :options="partyChoices"
                     />
@@ -291,7 +291,7 @@ export default {
                   v-model="fields.discount_type"
                   label="Discount"
                   :error="errors?.discount"
-                  :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null"
+                  :modal-component="checkPermissions('purchasediscount.create') ? PurchaseDiscountForm : null"
                   :options="discountOptionsComputed"
                 />
               </div>
@@ -311,10 +311,10 @@ export default {
                 v-model="fields.payment_mode"
                 emit-value
                 map-options
-                endpoint="v1/debit-note/create-defaults/payment_modes"
                 label="Payment Mode *"
                 option-label="name"
                 option-value="id"
+                :endpoint="`/api/company/${$route.params.company}/debit-note/create-defaults/payment_modes`"
                 :error="!!errors?.payment_mode"
                 :error-message="errors?.payment_mode"
                 :options="modeOptionsComputed"
@@ -360,7 +360,7 @@ export default {
           :error-message="errors?.remarks"
         />
       </div>
-      <div v-if="checkPermissions('DebitNoteCreate')" class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
+      <div v-if="checkPermissions('debitnote.create')" class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn
           v-if="!isEdit"
           color="orange"

@@ -1407,7 +1407,7 @@ class AccountClosing(CompanyBaseModel):
 
     def close(self):
         company = self.company
-        date = self.fiscal_period.end
+        date = self.fiscal_period.end_date
         pl_account = Account.objects.get(
             company=company, system_code=acc_system_codes["Profit and Loss Account"]
         )

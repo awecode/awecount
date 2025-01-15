@@ -1,10 +1,11 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
 export default {
   setup() {
-    const endpoint = '/v1/inventory-categories/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/inventory-categories/`
     const metaData = {
       title: 'Inventory Category | Awecount',
     }
@@ -30,13 +31,13 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('CategoryCreate')" class="row justify-end">
+    <div v-if="checkPermissions('category.create')" class="row justify-end">
       <q-btn
         class="q-ml-lg add-btn"
         color="green"
         icon-right="add"
         label="New Category"
-        to="/inventory-category/add/"
+        :to="`/${$route.params.company}/inventory-category/create/`"
       />
     </div>
     <q-table
@@ -57,21 +58,24 @@ export default {
             color="blue"
             label="view"
             style="font-size: 12px"
-            :to="`/account/${props.row.id}/view/`"
+            :to="`/${$route.params.company}/account/${props.row.id}/view/`"
           />
         </q-td>
       </template>
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('CategoryModify')"
+            v-if="checkPermissions('category.modify')"
             class="text-blue"
             style="text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/inventory-category/${props.row.id}/`"
+            :to="`/${$route.params.company}/inventory-category/${props.row.id}/`"
           >
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
             {{ props.row.name }}
           </span>
         </q-td>

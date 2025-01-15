@@ -1,7 +1,7 @@
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 import { joinURL, withQuery, withTrailingSlash } from 'ufo'
 import useApi from './useApi'
-import DateConverter from '/src/components/date/VikramSamvat.js'
 
 const store = useLoginStore()
 

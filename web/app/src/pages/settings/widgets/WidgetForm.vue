@@ -1,10 +1,11 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
+import useForm from 'src/composables/useForm'
 
 export default {
   setup() {
-    const endpoint = 'v1/widgets/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/widgets/`
     const $q = useQuasar()
     const router = useRouter()
     const formData = useForm(endpoint, {
@@ -28,7 +29,7 @@ export default {
         html: true,
       }).onOk(() => {
         // submitWithStatus('Cancelled')
-        useApi(`/v1/widgets/${formData.fields.value.id}/delete/`, { method: 'DELETE' })
+        useApi(`/api/company/${route.params.company}/widgets/${formData.fields.value.id}/delete/`, { method: 'DELETE' })
           .then(() => {
             $q.notify({
               color: 'green-6',
@@ -122,21 +123,21 @@ export default {
       </q-card-section>
       <div class="q-ma-md row q-pb-lg q-gutter-md justify-end">
         <q-btn
-          v-if="checkPermissions('WidgetCreate') && !isEdit"
+          v-if="checkPermissions('widget.create') && !isEdit"
           color="green-8"
           label="Create"
           type="submit"
           @click.prevent="submitForm"
         />
         <q-btn
-          v-if="isEdit && checkPermissions('TaxPaymentCancel')"
+          v-if="isEdit && checkPermissions('taxpayment.cancel')"
           color="red-6"
           icon="cancel"
           label="Delete"
           @click.prevent="onCancelClick"
         />
         <q-btn
-          v-if="checkPermissions('WidgetModify') && isEdit"
+          v-if="checkPermissions('widget.modify') && isEdit"
           color="green-8"
           label="Update"
           type="submit"

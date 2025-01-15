@@ -1,13 +1,13 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
+import useForm from 'src/composables/useForm'
 import BenefactorForm from 'src/pages/account/ledger/LedgerForm.vue'
 import CreateAccount from '../account/AccountForm.vue'
-import useForm from '/src/composables/useForm'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/cheque-deposits/'
+  setup() {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/cheque-deposits/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/cheque-deposit/list/',
@@ -56,10 +56,10 @@ export default {
             <div class="col-md-6 col-12">
               <n-auto-complete-v2
                 v-model="fields.bank_account"
-                endpoint="v1/cheque-deposits/create-defaults/bank_accounts"
                 label="Bank Account *"
+                :endpoint="`/api/company/${$route.params.company}/cheque-deposits/create-defaults/bank_accounts`"
                 :error="errors?.bank_account"
-                :modal-component="checkPermissions('BankAccountCreate') ? CreateAccount : null"
+                :modal-component="checkPermissions('bankaccount.create') ? CreateAccount : null"
                 :options="formDefaults.collections?.bank_accounts"
                 :static-option="fields.selected_bank_account_obj"
               />
@@ -67,10 +67,10 @@ export default {
             <div class="col-md-6 col-12">
               <n-auto-complete-v2
                 v-model="fields.benefactor"
-                endpoint="v1/cheque-deposits/create-defaults/benefactors"
                 label="Benefactor *"
+                :endpoint="`/api/company/${$route.params.company}/cheque-deposits/create-defaults/benefactors`"
                 :error="errors?.benefactor"
-                :modal-component="checkPermissions('AccountCreate') ? BenefactorForm : null"
+                :modal-component="checkPermissions('account.create') ? BenefactorForm : null"
                 :options="formDefaults.collections?.benefactors"
                 :static-option="fields.selected_benefactor_obj"
               />
@@ -142,7 +142,7 @@ export default {
     </q-card>
     <div class="row q-mt-md justify-end">
       <q-btn
-        v-if="checkPermissions('ChequeDepositCreate') && !isEdit"
+        v-if="checkPermissions('chequedeposit.create') && !isEdit"
         class="q-mr-md q-py-sm"
         color="orange"
         icon="fa-solid fa-pen-to-square"
@@ -152,7 +152,7 @@ export default {
         @click.prevent="onSubmitClick('Draft')"
       />
       <q-btn
-        v-if="checkPermissions('ChequeDepositCreate') && isEdit && fields?.status === 'Draft'"
+        v-if="checkPermissions('chequedeposit.create') && isEdit && fields?.status === 'Draft'"
         class="q-mr-md q-py-sm"
         color="orange"
         icon="fa-solid fa-pen-to-square"
@@ -161,7 +161,7 @@ export default {
         @click.prevent="onSubmitClick('Draft')"
       />
       <q-btn
-        v-if="checkPermissions('ChequeDepositCreate') && !isEdit"
+        v-if="checkPermissions('chequedeposit.create') && !isEdit"
         color="green-6"
         icon="fa-solid fa-floppy-disk"
         label="Issue"
@@ -169,7 +169,7 @@ export default {
         @click.prevent="onSubmitClick('Issued')"
       />
       <q-btn
-        v-if="checkPermissions('ChequeDepositModify') && isEdit"
+        v-if="checkPermissions('chequedeposit.modify') && isEdit"
         color="green-6"
         icon="fa-solid fa-floppy-disk"
         type="submit"

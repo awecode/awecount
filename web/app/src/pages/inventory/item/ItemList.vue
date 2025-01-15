@@ -1,9 +1,10 @@
 <script setup>
 import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
-const endpoint = '/v1/items'
+const route = useRoute()
+const endpoint = `/api/company/${route.params.company}/items`
 const metaData = {
   title: 'Items | Awecount',
 }
@@ -35,14 +36,17 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
         />
       </q-card>
     </q-dialog>
-    <div v-if="checkPermissions('ItemCreate')" class="row justify-end q-gutter-md">
+    <div v-if="checkPermissions('item.create')" class="row justify-end q-gutter-md">
       <q-btn color="green" label="Import From XlS" @click="isItemImportOpen = true" />
       <q-btn
         class="add-btn"
         color="green"
         icon-right="add"
         label="Add Item"
-        to="/items/add/"
+        :to="{
+          name: 'company-inventory-items-create',
+          params: { company: $route.params.company },
+        }"
       />
     </div>
     <q-table
@@ -88,8 +92,8 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
                   <div class="q-mx-sm">
                     <n-auto-complete-v2
                       v-model="filters.category"
-                      endpoint="v1/inventory-categories/choices/"
                       label="Category"
+                      :endpoint="`/api/company/${$route.params.company}/inventory-categories/choices/`"
                       :fetch-on-mount="true"
                     />
                   </div>
@@ -116,34 +120,37 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('ItemView')"
+            v-if="checkPermissions('item.view')"
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             color="blue"
             label="View"
             style="font-size: 12px"
-            :to="`/items/details/${props.row.id}/`"
+            :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }"
           />
           <q-btn
-            v-if="checkPermissions('ItemModify')"
+            v-if="checkPermissions('item.modify')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/items/${props.row.id}/`"
+            :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }"
           />
         </q-td>
       </template>
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('ItemView')"
-            class="text-blue"
+            v-if="checkPermissions('item.view')"
+            class="text-blue block"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/items/details/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/${props.row.id}/view`"
           >
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
             {{ props.row.name }}
           </span>
         </q-td>
@@ -151,10 +158,10 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
       <template #body-cell-category="props">
         <q-td :props="props">
           <router-link
-            v-if="props.row.category && checkPermissions('InventoryCategoryModify')"
+            v-if="props.row.category && checkPermissions('inventorycategory.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
-            :to="`/inventory-category/${props.row.category.id}/`"
+            :to="{ name: 'company-inventory-categories-id', params: { company: $route.params.company, id: props.row.category.id } }"
           >
             {{ props.row.category?.name }}
           </router-link>

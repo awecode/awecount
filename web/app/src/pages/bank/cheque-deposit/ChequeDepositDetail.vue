@@ -1,8 +1,8 @@
 <script setup>
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import checkPermissions from 'src/composables/checkPermissions'
 import useApi from 'src/composables/useApi'
 import { useLoginStore } from 'src/stores/login-info'
-import DateConverter from '/src/components/date/VikramSamvat.js'
 
 const props = defineProps(['id'])
 const loading = ref(false)
@@ -11,6 +11,8 @@ const metaData = {
   title: 'Cheque Deposit View | Awecount',
 }
 useMeta(metaData)
+const fields = ref(null)
+
 const getDate = computed(() => {
   const dates = {
     deposit_date: DateConverter.getRepresentation(fields.value?.date, store.isCalendarInAD ? 'ad' : 'bs'),
@@ -19,18 +21,18 @@ const getDate = computed(() => {
   }
   return dates
 })
-const fields = ref(null)
+const route = useRoute()
 const $q = useQuasar()
 const isDeleteOpen = ref(false)
 const getData = async () =>
-  await useApi(`/v1/cheque-deposits/${props.id}/details/`, { method: 'GET' }, false, true).then((data) => {
+  await useApi(`/api/company/${route.params.company}/cheque-deposits/${props.id}/details/`, { method: 'GET' }, false, true).then((data) => {
     fields.value = data
   })
 getData()
 
 const onClearedClick = () => {
   loading.value = true
-  useApi(`/v1/cheque-deposits/${props.id}/mark_as_cleared/`, {
+  useApi(`/api/company/${route.params.company}/cheque-deposits/${props.id}/mark_as_cleared/`, {
     method: 'POST',
     body: {},
   })
@@ -55,7 +57,7 @@ const onClearedClick = () => {
 
 const onCancelClick = () => {
   loading.value = true
-  useApi(`/v1/cheque-deposits/${props.id}/cancel/`, {
+  useApi(`/api/company/${route.params.company}/cheque-deposits/${props.id}/cancel/`, {
     method: 'POST',
     body: {},
   })
@@ -199,16 +201,16 @@ const onCancelClick = () => {
       </q-card-section>
     </q-card>
     <div v-if="fields" class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
-      <div v-if="checkPermissions('ChequeDepositModify')">
+      <div v-if="checkPermissions('chequedeposit.modify')">
         <q-btn
           class="text-h7 q-py-sm"
           color="orange"
           icon="edit"
           label="Edit"
-          :to="`/cheque-deposit/${id}/`"
+          :to="`/${$route.params.company}/cheque-deposit/${id}/`"
         />
       </div>
-      <div v-if="fields?.status === 'Issued' && checkPermissions('ChequeDepositModify')">
+      <div v-if="fields?.status === 'Issued' && checkPermissions('chequedeposit.modify')">
         <q-btn
           class="text-h7 q-py-sm"
           color="green"
@@ -218,7 +220,7 @@ const onCancelClick = () => {
           @click.prevent="onClearedClick"
         />
       </div>
-      <div v-if="fields?.status !== 'Cancelled' && checkPermissions('ChequeDepositCancel')">
+      <div v-if="fields?.status !== 'Cancelled' && checkPermissions('chequedeposit.cancel')">
         <q-btn
           class="text-h7 q-py-sm"
           color="red"
@@ -234,7 +236,7 @@ const onCancelClick = () => {
           color="blue"
           icon="library_books"
           label="Journal Entries"
-          :to="`/journal-entries/cheque-deposits/${fields.id}/`"
+          :to="`/${$route.params.company}/journal-entries/cheque-deposits/${fields.id}/`"
         />
       </div>
     </div>

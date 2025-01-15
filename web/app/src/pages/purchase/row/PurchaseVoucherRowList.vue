@@ -1,15 +1,16 @@
 <script lang="ts">
 import type { Ref } from 'vue'
+import DateConverter from 'src/components/date/VikramSamvat.js'
+import MultiSelectChip from 'src/components/filter/MultiSelectChip.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import useList from 'src/composables/useList'
 import { useLoginStore } from 'src/stores/login-info'
-import DateConverter from '/src/components/date/VikramSamvat.js'
-import MultiSelectChip from '/src/components/filter/MultiSelectChip.vue'
-import useList from '/src/composables/useList'
 
 export default {
   setup() {
     const store = useLoginStore()
-    const endpoint = '/v1/purchase-voucher-row/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/purchase-voucher-row/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'PurchaseVoucher Rows | Awecount',
@@ -156,28 +157,32 @@ export default {
                     <NAutoCompleteV2
                       v-model="filters.party"
                       fetch-on-mount
-                      endpoint="v1/parties/choices"
                       label="Party"
+                      :endpoint="`/api/company/${$route.params.company}/parties/choices`"
                     />
                   </div>
                   <div class="q-mx-sm">
                     <NAutoCompleteV2
                       v-model="filters.tax_scheme"
                       fetch-on-mount
-                      endpoint="v1/tax_scheme/choices"
                       label="Tax Scheme"
+                      :endpoint="`/api/company/${$route.params.company}/tax_scheme/choices`"
                     />
                   </div>
                   <div class="q-mx-sm">
                     <NAutoCompleteV2
                       v-model="filters.item_category"
                       fetch-on-mount
-                      endpoint="v1/inventory-categories/choices"
                       label="Item Category"
+                      :endpoint="`/api/company/${$route.params.company}/inventory-categories/choices`"
                     />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model="filters.item" endpoint="v1/items/purchase-choices/" label="Items" />
+                    <SelectWithFetch
+                      v-model="filters.item"
+                      label="Items"
+                      :endpoint="`/api/company/${$route.params.company}/items/purchase-choices/`"
+                    />
                   </div>
                   <div class="q-ma-sm">
                     <MultiSelectChip v-model="filters.status" :options="['Draft', 'Issued', 'Paid', 'Partially Paid', 'Cancelled']" />
@@ -206,15 +211,20 @@ export default {
       <template #body-cell-voucher_id="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('PurchaseVoucherView')"
+            v-if="checkPermissions('purchasevoucher.view')"
             class="text-blue l-view-btn"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/purchase-voucher/${props.row.voucher_id}/view`"
+            :to="`/${$route.params.company}/purchase-voucher/${props.row.voucher_id}/view`"
           >
             {{ props.row.voucher_id }}
             {{ props.row.voucher__voucher_no }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.voucher__voucher_no }}</span>
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
+            {{ props.row.voucher__voucher_no }}
+          </span>
         </q-td>
       </template>
       <template #body-cell-party_name="props">

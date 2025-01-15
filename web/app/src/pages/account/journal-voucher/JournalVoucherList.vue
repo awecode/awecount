@@ -4,8 +4,9 @@ export default {
     const metaData = {
       title: 'Journal Vouchers | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
-    const endpoint = '/v1/journal-voucher/'
+    const endpoint = `/api/company/${route.params.company}/journal-voucher/`
     const newColumns = [
       {
         name: 'voucher_no',
@@ -39,12 +40,12 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('JournalVoucherCreate')"
+        v-if="checkPermissions('journalvoucher.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Journal Voucher"
-        to="/journal-voucher/add/"
+        :to="`/${$route.params.company}/journal-voucher/create/`"
       />
     </div>
 
@@ -111,20 +112,20 @@ export default {
         <q-td :props="props">
           <div class="flex gap-4 no-wrap">
             <q-btn
-              v-if="checkPermissions('JournalVoucherView')"
+              v-if="checkPermissions('journalvoucher.view')"
               class="q-py-none q-px-md font-size-sm l-view-btn"
               color="blue"
               label="View"
               style="font-size: 12px"
-              :to="`/journal-voucher/${props.row.id}/view/`"
+              :to="`/${$route.params.company}/journal-voucher/${props.row.id}/view/`"
             />
             <q-btn
-              v-if="props.row.status !== 'Cancelled' && checkPermissions('JournalVoucherModify')"
+              v-if="props.row.status !== 'Cancelled' && checkPermissions('journalvoucher.modify')"
               class="q-py-none q-px-md font-size-sm l-edit-btn"
               color="orange-7"
               label="Edit"
               style="font-size: 12px"
-              :to="`/journal-voucher/${props.row.id}/edit/`"
+              :to="`/${$route.params.company}/journal-voucher/${props.row.id}/edit/`"
             />
           </div>
         </q-td>
@@ -150,14 +151,19 @@ export default {
         <q-td style="padding: 0" :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('JournalVoucherView')"
+              v-if="checkPermissions('journalvoucher.view')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-              :to="`/challan/${props.row.id}/`"
+              :to="`/${$route.params.company}/journal-voucher/${props.row.id}/view/`"
             >
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.voucher_no }}</span>
+            <span
+              v-else
+              style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+            >
+              {{ props.row.voucher_no }}
+            </span>
           </span>
         </q-td>
       </template>

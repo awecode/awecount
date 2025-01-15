@@ -4,11 +4,12 @@ export default {
     const metaData = {
       title: 'Purchase Discounts | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
-    const endpoint = '/v1/purchase-discount/'
+    const endpoint = `/api/company/${route.params.company}/purchase-discount/`
     const listData = useList(endpoint)
     const onDownloadXls = () => {
-      useApi('v1/sales-voucher/export')
+      useApi(`/api/company/${route.params.company}/sales-voucher/export`)
         .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Credit_Notes'))
         .catch(err => console.log('Error Due To', err))
     }
@@ -41,12 +42,12 @@ export default {
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn
-        v-if="checkPermissions('PurchaseDiscountCreate')"
+        v-if="checkPermissions('purchasediscount.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Purchase Discount"
-        to="/purchase-discount/add/"
+        :to="`/${$route.params.company}/purchase-discount/create/`"
       />
     </div>
     <q-table
@@ -113,12 +114,12 @@ export default {
         <q-td :props="props">
           <div class="row q-gutter-x-md items-center">
             <q-btn
-              v-if="checkPermissions('PurchaseDiscountModify')"
+              v-if="checkPermissions('purchasediscount.modify')"
               class="q-py-none q-px-md font-size-sm l-edit-btn"
               color="orange-7"
               label="Edit"
               style="font-size: 12px"
-              :to="`/purchase-discount/${props.row.id}/`"
+              :to="`/${$route.params.company}/purchase-discount/${props.row.id}/`"
             />
           </div>
         </q-td>

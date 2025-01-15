@@ -1,70 +1,55 @@
-<script>
+<script setup>
+import { useMeta, useQuasar } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
-import { useRouter } from 'vue-router'
-import useForm from '/src/composables/useForm'
-import PartyAlias from '/src/pages/party/PartyAlias.vue'
-import PartyRepresentative from '/src/pages/party/PartyRepresentative.vue'
+import useApi from 'src/composables/useApi'
+import useForm from 'src/composables/useForm'
+import PartyAlias from 'src/pages/party/PartyAlias.vue'
+import PartyRepresentative from 'src/pages/party/PartyRepresentative.vue'
+import { useRoute, useRouter } from 'vue-router'
 
-export default {
-  components: {
-    PartyRepresentative,
-    PartyAlias,
-  },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, { emit }) {
-    const $q = useQuasar()
-    const endpoint = '/v1/parties/'
-    const router = useRouter()
-    const formData = useForm(endpoint, {
-      getDefaults: false,
-      successRoute: '/party/list/',
-    })
-    useMeta(() => {
-      return {
-        title: `${formData.isEdit?.value ? 'Party Update' : 'Party Add'} | Awecount`,
-      }
-    })
-    const addRepresentetive = (fields) => {
-      fields.representative.push({})
-    }
+const $q = useQuasar()
+const route = useRoute()
+const router = useRouter()
+const endpoint = `/api/company/${route.params.company}/parties/`
 
-    const addAlias = (fields) => {
-      fields.aliases = fields.aliases || []
-      fields.aliases.push(null)
-    }
+const { fields, errors, loading, isEdit, submitForm } = useForm(endpoint, {
+  getDefaults: false,
+  successRoute: `/${route.params.company}/party/list`,
+})
 
-    function onDeletClick() {
-      $q.dialog({
-        title: '<span class="text-red">Delete?</span>',
-        message: 'Are you sure you want to delete?',
-        cancel: true,
-        html: true,
-      }).onOk(() => {
-        // submitWithStatus('Cancelled')
-        useApi(`/v1/parties/${formData.fields.value.id}/`, { method: 'DELETE' })
-          .then(() => {
-            router.push('/party/list/')
-          })
-          .catch((err) => {
-            if (err.status === 400) {
-              $q.notify({
-                color: 'red-6',
-                message: err.data[0],
-                icon: 'report_problem',
-              })
-            }
-          })
+useMeta(() => ({
+  title: `${isEdit.value ? 'Party Update' : 'Party Add'} | Awecount`,
+}))
+
+const addRepresentetive = (fields) => {
+  fields.representative.push({})
+}
+
+const addAlias = (fields) => {
+  fields.aliases = fields.aliases || []
+  fields.aliases.push(null)
+}
+
+function onDeletClick() {
+  $q.dialog({
+    title: '<span class="text-red">Delete?</span>',
+    message: 'Are you sure you want to delete?',
+    cancel: true,
+    html: true,
+  }).onOk(() => {
+    useApi(`/api/company/${route.params.company}/parties/${fields.value.id}/`, { method: 'DELETE' })
+      .then(() => {
+        router.push(`/${route.params.company}/party/list`)
       })
-    }
-
-    return {
-      ...formData,
-      addAlias,
-      addRepresentetive,
-      onDeletClick,
-      checkPermissions,
-    }
-  },
+      .catch((error) => {
+        console.error('Error deleting party:', error)
+        $q.notify({
+          color: 'negative',
+          message: 'Error deleting party',
+          icon: 'report_problem',
+        })
+      })
+  })
 }
 </script>
 
@@ -145,7 +130,7 @@ export default {
               @click.prevent="addRepresentetive(fields)"
             />
             <q-btn
-              v-if="checkPermissions('PartyDelete')"
+              v-if="checkPermissions('party.delete')"
               class="q-mb-sm"
               color="red-6"
               label="Delete"
@@ -153,7 +138,7 @@ export default {
               @click.prevent="onDeletClick"
             />
             <q-btn
-              v-if="checkPermissions('PartyModify')"
+              v-if="checkPermissions('party.modify')"
               class="q-mb-sm"
               color="green"
               label="Update"
@@ -163,7 +148,7 @@ export default {
             />
           </span>
           <q-btn
-            v-else-if="checkPermissions('PartyCreate')"
+            v-else-if="checkPermissions('party.create')"
             class="q-mr-sm q-mb-sm"
             color="green"
             label="Create"

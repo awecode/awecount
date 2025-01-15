@@ -1,6 +1,6 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
 export default {
   setup() {
@@ -23,12 +23,12 @@ export default {
     ]
     const filterOptions = ref({})
     useMeta(metaData)
-    const endpoint = '/v1/transaction/'
-    const listData = useList(endpoint)
     const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/transaction/`
+    const listData = useList(endpoint)
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi(`v1/transaction/export${query}`)
+      useApi(`/api/company/${route.params.company}/transaction/export${query}`)
         .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Sales_voucher'))
         .catch(err => console.log('Error Due To', err))
     }
@@ -98,44 +98,64 @@ export default {
     ]
     function getVoucherUrl(row) {
       const source_type = row.source_type
-      if (source_type === 'Sales Voucher') return `/sales-voucher/${row.source_id}/view/`
-      if (source_type === 'Purchase Voucher') return `/purchase-voucher/${row.source_id}/view`
-      if (source_type === 'Journal Voucher') return `/journal-voucher/${row.source_id}/view`
-      if (source_type === 'Credit Note') return `/credit-note/${row.source_id}/view`
-      if (source_type === 'Debit Note') return `/debit-note/${row.source_id}/view`
+      if (source_type === 'Sales Voucher') {
+        return `/${route.params.company}/sales-voucher/${row.source_id}/view/`
+      }
+      if (source_type === 'Purchase Voucher') {
+        return `/${route.params.company}/purchase-voucher/${row.source_id}/view`
+      }
+      if (source_type === 'Journal Voucher') {
+        return `/${route.params.company}/journal-voucher/${row.source_id}/view`
+      }
+      if (source_type === 'Credit Note') {
+        return `/${route.params.company}/credit-note/${row.source_id}/view`
+      }
+      if (source_type === 'Debit Note') {
+        return `/${route.params.company}/debit-note/${row.source_id}/view`
+      }
       // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
       // TODO: add missing links
-      if (source_type === 'Cheque Deposit') return `/cheque-deposit/${row.source_id}/view/`
-      if (source_type === 'Payment Receipt') return `/payment-receipt/${row.source_id}/view/`
-      if (source_type === 'Cheque Issue') return `/cheque-issue/${row.source_id}/`
+      if (source_type === 'Cheque Deposit') {
+        return `/${route.params.company}/cheque-deposit/${row.source_id}/view/`
+      }
+      if (source_type === 'Payment Receipt') {
+        return `/${route.params.company}/payment-receipt/${row.source_id}/view/`
+      }
+      if (source_type === 'Cheque Issue') {
+        return `/${route.params.company}/cheque-issue/${row.source_id}/`
+      }
       if (source_type === 'Account Opening Balance') return
-      if (source_type === 'Fund Transfer') return `/fund-transfer/${row.source_id}`
-      if (source_type === 'Bank Cash Deposit') return `/cash-deposit/${row.source_id}`
-      if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
-      if (source_type === 'Inventory Adjustment Voucher') return `/items/inventory-adjustment/${row.source_id}/view`
+      if (source_type === 'Fund Transfer') {
+        return `/${route.params.company}/fund-transfer/${row.source_id}`
+      }
+      if (source_type === 'Bank Cash Deposit') return `/${route.params.company}/cash-deposit/${row.source_id}`
+      if (source_type === 'Tax Payment') return `/${route.params.company}/tax-payment/${row.source_id}/`
+      if (source_type === 'Inventory Adjustment Voucher') {
+        return `/${route.params.company}/items/inventory-adjustment/${row.source_id}/view`
+      }
       console.error(`${source_type} not handled!`)
     }
     const getPermissionsWithSourceType = {
-      'Sales Voucher': 'SalesView',
-      'Purchase Voucher': 'PurchaseVoucherView',
-      'Journal Voucher': 'JournalVoucherView',
-      'Credit Note': 'CreditNoteView',
-      'Debit Note': 'DebitNoteView',
-      'Cheque Deposit': 'ChequeDepositView',
-      'Payment Receipt': 'PaymentReceiptView',
-      'Cheque Issue': 'ChequeIssueModify',
-      'Challan': 'ChallanModify',
-      'Account Opening Balance': 'AccountOpeningBalanceModify',
-      'Fund Transfer': 'FundTransferModify',
-      'Bank Cash Deposit': 'BankCashDepositModify',
-      'Tax Payment': 'TaxPaymentModify',
-      'Item': 'ItemView',
-      'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView',
+      'Sales Voucher': 'sales.view',
+      'Purchase Voucher': 'purchasevoucher.view',
+      'Journal Voucher': 'journalvoucher.view',
+      'Credit Note': 'creditnote.view',
+      'Debit Note': 'debitnote.view',
+      'Cheque Deposit': 'chequedeposit.view',
+      'Payment Receipt': 'paymentreceipt.view',
+      'Cheque Issue': 'chequeissue.modify',
+      'Challan': 'challan.modify',
+      'Account Opening Balance': 'accountopeningbalance.modify',
+      'Fund Transfer': 'fundtransfer.modify',
+      'Bank Cash Deposit': 'bankcashdeposit.modify',
+      'Tax Payment': 'taxpayment.modify',
+      'Item': 'item.view',
+      'Inventory Adjustment Voucher': 'inventoryadjustmentvoucher.view',
     }
     return { ...listData, newColumn, newColumnTwo, getVoucherUrl, filterOptions, groupByOption, onDownloadXls, getPermissionsWithSourceType, checkPermissions }
   },
   created() {
-    const endpoint = '/v1/transaction/create-defaults/'
+    const endpoint = `/api/company/${this.$route.params.company}/transaction/create-defaults/`
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.filterOptions = data
@@ -195,21 +215,21 @@ export default {
                 <div class="q-ma-md">
                   <FiltersOptions
                     v-model="filters.account"
-                    endpoint="v1/accounts/choices"
                     label="Account"
+                    :endpoint="`/api/company/${$route.params.company}/accounts/choices`"
                     :fetch-on-mount="true"
                     :options="filterOptions.collections?.accounts"
                   />
                   <FiltersOptions
                     v-model="filters.source"
-                    endpoint="v1/transaction/create-defaults/transaction_types"
                     label="Transaction Type"
+                    :endpoint="`/api/company/${$route.params.company}/transaction/create-defaults/transaction_types`"
                     :options="filterOptions.collections?.transaction_types"
                   />
                   <FiltersOptions
                     v-model="filters.category"
-                    endpoint="v1/categories/choices"
                     label="Category"
+                    :endpoint="`/api/company/${$route.params.company}/categories/choices`"
                     :fetch-on-mount="true"
                     :options="filterOptions.collections?.categories"
                   />
@@ -274,7 +294,12 @@ export default {
           >
             {{ props.row.voucher_no }}
           </RouterLink>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.voucher_no }}</span>
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
+            {{ props.row.voucher_no }}
+          </span>
         </q-td>
       </template>
       <template #body-cell-account="props">
@@ -283,7 +308,7 @@ export default {
             class="text-blue-6"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
             target="_blank"
-            :to="`/account/?has_balance=true&category=${props.row.category_id}`"
+            :to="`/${$route.params.company}/account/?has_balance=true&category=${props.row.category_id}`"
           >
             {{ props.row.account_name }}
           </RouterLink>
@@ -300,7 +325,12 @@ export default {
           >
             {{ props.row.source_type }}
           </RouterLink>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.source_type }}</span>
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
+            {{ props.row.source_type }}
+          </span>
         </q-td>
       </template>
     </q-table>

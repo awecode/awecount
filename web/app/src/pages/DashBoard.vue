@@ -1,28 +1,20 @@
-<script>
+<script setup lang="ts">
 import { useMeta } from 'quasar'
-import useApi from 'src/composables/useApi'
+import { $api } from 'src/composables/api'
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 
-export default {
-  setup() {
-    const metaData = {
-      title: 'Dashboard',
-      titleTemplate: title => `${title} | Awecount`,
-    }
-    useMeta(metaData)
-    const fields = ref(null)
-    return {
-      fields,
-    }
-  },
-  created() {
-    const endpoint = '/v1/widgets/data/'
-    useApi(endpoint, { method: 'GET' })
-      .then((data) => {
-        this.fields = data
-      })
-      .catch(error => console.log(error))
-  },
-}
+useMeta({
+  title: 'Dashboard',
+  titleTemplate: (title: string) => `${title} | Awecount`,
+})
+
+const route = useRoute()
+const fields = ref(null)
+
+const endpoint = `/api/company/${route.params.company}/widgets/data/`
+const res = await $api(endpoint, { method: 'GET', protected: true })
+fields.value = res
 </script>
 
 <template>
@@ -32,7 +24,7 @@ export default {
         icon="add"
         label="Add widget"
         style="font-size: 0.75rem"
-        to="/dashboard-widgets/add"
+        :to="`/${$route.params.company}/settings/dashboard-widgets/create/`"
       />
     </div>
     <div class="q-mt-md grid-con">
@@ -40,7 +32,7 @@ export default {
         <q-card class="q-py-sm q-px-md" style="height: 100%">
           <div>
             <div class="row no-wrap justify-between q-my-sm">
-              <h5 styl class="q-my-none text-h6 text-grey-8" e="flex-grow: 1">
+              <h5 class="q-my-none text-h6 text-grey-8">
                 {{ widget.name }}
               </h5>
               <span style="flex-grow: 0; flex-shrink: 0">
@@ -49,7 +41,7 @@ export default {
                   class="text-grey-8"
                   icon="edit"
                   size="sm"
-                  :to="`/dashboard-widgets/${widget.id}`"
+                  :to="`/${$route.params.company}/settings/dashboard-widgets/${widget.id}/edit`"
                 />
               </span>
             </div>

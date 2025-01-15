@@ -443,7 +443,7 @@ class SalesVoucherCreateSerializer(
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
-        validated_data["company_id"] = request.company_id
+        validated_data["company_id"] = request.company.id
         validated_data["user_id"] = request.user.id
         self.validate_invoice_date(validated_data)
         if validated_data.get("due_date"):
@@ -1045,7 +1045,7 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
         request = self.context["request"]
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
-        validated_data["company_id"] = request.company_id
+        validated_data["company_id"] = request.company.id
         validated_data["user_id"] = request.user.id
         instance = Challan.objects.create(**validated_data)
         for index, row in enumerate(rows_data):

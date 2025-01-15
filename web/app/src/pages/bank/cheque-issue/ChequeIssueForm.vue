@@ -6,7 +6,6 @@ import BenefactorForm from 'src/pages/account/ledger/LedgerForm.vue'
 // const $q = useQuasar()
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: {
     bankAccount: {
       type: Object,
@@ -30,7 +29,8 @@ export default {
     },
   },
   setup(props, context) {
-    const endpoint = props.endpoint || '/v1/cheque-issue/'
+    const endpoint =  props.endpoint || `/api/company/${route.params.company}cheque-issue/`
+
     const showDrAccount = ref(false)
     const config = {
       getDefaults: true,
@@ -184,9 +184,9 @@ export default {
               <div class="col-md-6 col-12">
                 <n-auto-complete-v2
                   v-model="fields.bank_account"
-                  endpoint="v1/cheque-issue/create-defaults/bank_accounts"
                   label="Bank Account *"
                   :disabled="isEdit || !!bankAccount?.id"
+                  :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/bank_accounts`"
                   :error="errors?.bank_account"
                   :options="formDefaults.collections?.bank_accounts"
                   :static-option="fields.selected_bank_account_obj"
@@ -225,8 +225,8 @@ export default {
                 <n-auto-complete-v2
                   v-if="!showDrAccount"
                   v-model="fields.party"
-                  endpoint="v1/cheque-issue/create-defaults/parties"
                   label="Party *"
+                  :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/parties`"
                   :error="errors?.party"
                   :options="formDefaults.collections?.parties"
                   :static-option="fields.selected_party_obj"
@@ -254,8 +254,8 @@ export default {
               <div class="col-8">
                 <n-auto-complete-v2
                   v-model="fields.dr_account"
-                  endpoint="v1/cheque-issue/create-defaults/accounts"
                   label="Dr Account"
+                  :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/accounts`"
                   :error="errors?.dr_account"
                   :modal-component="BenefactorForm"
                   :options="formDefaults.collections?.accounts"
@@ -286,7 +286,7 @@ export default {
                 @click="onChequePrint"
               />
               <q-btn
-                v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('ChequeIssueCancel')"
+                v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('chequeissue.cancel')"
                 class="q-ml-md"
                 color="red"
                 icon="block"
@@ -296,7 +296,7 @@ export default {
             </div>
             <div>
               <q-btn
-                v-if="checkPermissions('ChequeIssueCreate') && !isEdit"
+                v-if="checkPermissions('chequeissue.create') && !isEdit"
                 class="q-ml-auto"
                 color="green"
                 label="Create"
@@ -304,7 +304,7 @@ export default {
                 @click.prevent="submitForm"
               />
               <q-btn
-                v-if="checkPermissions('ChequeIssueModify') && isEdit"
+                v-if="checkPermissions('chequeissue.modify') && isEdit"
                 class="q-ml-auto"
                 color="green"
                 label="Update"

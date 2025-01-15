@@ -1,12 +1,12 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
-import LedgerForm from '/src/pages/account/ledger/LedgerForm.vue'
+import useForm from 'src/composables/useForm'
+import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/account-opening-balance/'
+  setup() {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/account-opening-balance/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/account-opening-balance/',
@@ -42,10 +42,10 @@ export default {
               <n-auto-complete-v2
                 v-if="!isEdit"
                 v-model="fields.account"
-                endpoint="v1/account-opening-balance/create-defaults/accounts"
                 label="Account *"
+                :endpoint="`/api/company/${$route.params.company}/account-opening-balance/create-defaults/accounts`"
                 :error="errors?.account"
-                :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
+                :modal-component="checkPermissions('account.create') ? LedgerForm : null"
                 :options="formDefaults.collections?.accounts"
                 :static-option="fields.selected_account_obj"
               />
@@ -79,7 +79,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('AccountOpeningBalanceCreate') && !isEdit"
+            v-if="checkPermissions('accountopeningbalance.create') && !isEdit"
             class="q-ml-auto"
             color="green"
             label="Create"
@@ -88,7 +88,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('AccountOpeningBalanceModify') && isEdit"
+            v-if="checkPermissions('accountopeningbalance.modify') && isEdit"
             class="q-ml-auto"
             color="green"
             label="Update"

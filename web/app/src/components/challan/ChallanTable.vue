@@ -3,7 +3,6 @@ import useCalcDiscount from 'src/composables/useCalcDiscount.js'
 import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: {
     itemOptions: {
       type: Object,
@@ -74,7 +73,9 @@ export default {
       })
     }
     const removeRow = (index) => {
-      if (props.errors || props.isEdit) emit('deleteRow', index, modalValue.value[index]?.id ? modalValue.value[index] : null)
+      if (props.errors || props.isEdit) {
+        emit('deleteRow', index, modalValue.value[index]?.id ? modalValue.value[index] : null)
+      }
       modalValue.value.splice(index, 1)
     }
     const onItemChange = (index) => {
@@ -126,7 +127,7 @@ export default {
               <n-auto-complete-v2
                 v-model="modalValue[index].item_id"
                 label="Item"
-                :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/items`"
+                :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/items`"
                 :error="
                   !!errors?.[index]
                     ? errors[index].item_id ? errors[index].item_id[0]
@@ -169,7 +170,7 @@ export default {
                 label="Unit"
                 option-label="name"
                 option-value="id"
-                :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`"
+                :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/units`"
                 :error="
                   !!errors?.[index]
                     ? errors[index].unit_id

@@ -503,7 +503,10 @@ async function parseExcelFile(file: File): Promise<void> {
         class="mr-5"
         color="blue"
         label="Manual Reconciliation"
-        to="/bank-reconciliation/reconcile/"
+        :to="{
+          name: 'company-bank-reconciliation-reconcile',
+          params: { company: $route.params.company }
+        }"
       />
       <q-btn
         v-if="checkPermissions('ReconciliationStatementCreate')"

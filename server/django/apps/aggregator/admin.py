@@ -4,7 +4,7 @@ from .models import Widget
 
 
 class WidgetAdmin(admin.ModelAdmin):
-    list_filter = ("user__company", "display_type", "widget", "user")
+    list_filter = ("display_type", "widget", "user")
     list_display = (
         "name",
         "widget",

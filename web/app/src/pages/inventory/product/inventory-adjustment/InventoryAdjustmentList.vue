@@ -1,14 +1,17 @@
 <script setup>
 import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
-const endpoint = '/v1/inventory-adjustment/'
+const route = useRoute()
+const endpoint = `/api/company/${route.params.company}/inventory-adjustment/`
 const metaData = {
   title: 'Inventory Adjustments | Awecount',
 }
 useMeta(metaData)
+
 const { rows, loading, searchQuery, pagination, onRequest, filters, onFilterUpdate, resetFilters } = useList(endpoint)
+
 const newColumn = [
   {
     name: 'voucher_no',
@@ -51,13 +54,13 @@ const newColumn = [
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('InventoryAdjustmentVoucherCreate')" class="row justify-end q-gutter-md">
+    <div v-if="checkPermissions('inventoryadjustmentvoucher.create')" class="row justify-end q-gutter-md">
       <q-btn
         class="add-btn"
         color="green"
         icon-right="add"
         label="Add Inventory Adjustment Voucher"
-        to="/items/inventory-adjustment/add"
+        :to="`/${$route.params.company}/items/inventory-adjustment/create/`"
       />
     </div>
     <q-table
@@ -124,20 +127,20 @@ const newColumn = [
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('InventoryAdjustmentVoucherView')"
+            v-if="checkPermissions('inventoryadjustmentvoucher.view')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="blue-6"
             label="View"
             style="font-size: 12px"
-            :to="`/items/inventory-adjustment/${props.row.id}/view`"
+            :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/view`"
           />
           <q-btn
-            v-if="checkPermissions('InventoryAdjustmentVoucherModify')"
+            v-if="checkPermissions('inventoryadjustmentvoucher.modify')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/items/inventory-adjustment/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/`"
           />
         </q-td>
       </template>
@@ -145,10 +148,10 @@ const newColumn = [
       <template #body-cell-voucher_no="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('InventoryAdjustmentVoucherModify')"
+            v-if="checkPermissions('inventoryadjustmentvoucher.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
-            :to="`/items/inventory-adjustment/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/`"
           >
             {{ props.row.voucher_no }}
           </router-link>

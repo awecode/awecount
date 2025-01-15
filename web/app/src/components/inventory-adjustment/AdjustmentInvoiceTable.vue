@@ -133,9 +133,9 @@ const onItemChange = (itemObj) => {
         <div :class="minimal ? 'col-7' : 'col-3'">
           <n-auto-complete-v2
             v-model="row.item_id"
-            endpoint="v1/inventory-adjustment/create-defaults/items"
             label="Item"
             :emit-obj="true"
+            :endpoint="`/api/company/${$route.params.company}/inventory-adjustment/create-defaults/items`"
             :error="
               errors?.item_id ? errors?.item_id[0]
               : rowEmpty ? 'Item is required'
@@ -169,8 +169,8 @@ const onItemChange = (itemObj) => {
         <div class="col-2">
           <n-auto-complete-v2
             v-model="row.unit_id"
-            endpoint="v1/inventory-adjustment/create-defaults/units"
             label="Unit"
+            :endpoint="`/api/company/${$route.params.company}/inventory-adjustment/create-defaults/units`"
             :error="errors && errors[index]?.unit_id ? errors[index].unit_id[0] : ''"
             :options="unitOptions"
             :static-option="row.selected_unit_obj"

@@ -1,11 +1,10 @@
 <script setup>
 import checkPermissions from 'src/composables/checkPermissions'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
+import useForm from 'src/composables/useForm'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
-import useForm from '/src/composables/useForm'
-import { useLoginStore } from '/src/stores/login-info.js'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const emit = defineEmits([])
+import { useLoginStore } from 'src/stores/login-info'
+
 const metaData = {
   title: 'POS | Awecount',
 }
@@ -21,7 +20,8 @@ const totalTableData = ref({
 })
 useMeta(metaData)
 const store = useLoginStore()
-const endpoint = 'v1/pos/'
+const route = useRoute()
+const endpoint = `/api/company/${route.params.company}/pos/`
 const $q = useQuasar()
 const searchTerm = ref(null)
 const searchResults = ref(null)
@@ -37,7 +37,7 @@ const { fields, errors, formDefaults, today } = useForm(endpoint, {
   successRoute: '/pos',
 })
 const partyChoices = ref([])
-useApi('/v1/parties/choices/').then((choices) => {
+useApi(`/api/company/${route.params.company}/parties/choices/`).then((choices) => {
   partyChoices.value = choices
 })
 const switchMode = (fields) => {
@@ -67,7 +67,7 @@ const onSubmitClick = (status, noPrint) => {
   fields.value.status = status
   fields.value.noPrint = noPrint
   if (!partyMode.value) fields.value.customer_name = null
-  useApi('/v1/pos/', { method: 'POST', body: fields.value })
+  useApi(`/api/company/${route.params.company}/pos/`, { method: 'POST', body: fields.value })
     .then((data) => {
       handleSubmitSuccess(data, fields.value.noPrint)
     })
@@ -82,7 +82,12 @@ const onSubmitClick = (status, noPrint) => {
           icon: 'report_problem',
         })
       } else if (err.status === 422) {
-        useHandleCancelInconsistencyError('/v1/pos/', err, fields.value, $q)
+        useHandleCancelInconsistencyError(
+          `/api/company/${route.params.company}/pos/`,
+          err,
+          fields.value,
+          $q
+        )
           .then((data) => {
             handleSubmitSuccess(data, fields.value.noPrint)
           })
@@ -108,7 +113,7 @@ fields.value.rows = []
 fields.value.due_date = today
 // handle Search
 const fetchResults = async () => {
-  useApi(`/v1/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}${`&page=${currentPage.value || 1}`}`)
+  useApi(`/api/company/${route.params.company}/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}${`&page=${currentPage.value || 1}`}`)
     .then((data) => {
       searchResults.value = data
       if (enterClicked.value) {
@@ -184,7 +189,7 @@ const getPartyObj = () => {
 }
 
 const hasItemModifyAccess = computed(() => {
-  return checkPermissions('ItemModify')
+  return checkPermissions('item.modify')
 })
 watch(
   () => formDefaults.value,
@@ -287,7 +292,7 @@ const modeOptionsComputed = computed(() => {
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%"
               target="_blank"
               :title="item.code"
-              :to="`/items/${item.id}/`"
+              :to="`/${$route.params.company}/items/${item.id}/`"
             >
               {{ item.name }}
             </router-link>
@@ -388,10 +393,10 @@ const modeOptionsComputed = computed(() => {
                       emit-value
                       map-options
                       class="col-12 col-md-6"
-                      endpoint="v1/pos/create-defaults/bank_accounts"
                       label="Mode"
                       option-label="name"
                       option-value="id"
+                      :endpoint="`/api/company/${$route.params.company}/pos/create-defaults/bank_accounts`"
                       :error="!!errors?.mode"
                       :error-message="errors?.mode ? errors.mode[0] : null"
                       :options="modeOptionsComputed"
@@ -424,10 +429,10 @@ const modeOptionsComputed = computed(() => {
                                   <n-auto-complete-v2
                                     v-else
                                     v-model="fields.party"
-                                    endpoint="v1/parties/choices/"
                                     label="Party"
+                                    :endpoint="`/api/company/${$route.params.company}/parties/choices/`"
                                     :error="errors?.party ? errors?.party[0] : null"
-                                    :modal-component="checkPermissions('PartyCreate') ? PartyForm : null"
+                                    :modal-component="checkPermissions('party.create') ? PartyForm : null"
                                     :options="partyChoices"
                                   />
                                 </div>
@@ -446,7 +451,7 @@ const modeOptionsComputed = computed(() => {
                                   v-model="fields.discount_type"
                                   label="Discount*"
                                   :error="errors?.discount_type"
-                                  :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null"
+                                  :modal-component="checkPermissions('salesdiscount.create') ? SalesDiscountForm : null"
                                   :options="discountOptionsComputed"
                                 />
                               </div>

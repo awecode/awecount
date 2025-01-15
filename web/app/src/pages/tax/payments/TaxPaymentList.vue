@@ -1,6 +1,6 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
 export default {
   setup() {
@@ -8,7 +8,8 @@ export default {
       title: 'Tax Payments | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/tax-payments/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/tax-payments/`
     const listData = useList(endpoint)
     const newColumn = [
       {
@@ -67,12 +68,12 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('TaxPaymentCreate')"
+        v-if="checkPermissions('taxpayment.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Tax Payment"
-        to="/tax-payment/add/"
+        :to="`/${$route.params.company}/tax-payment/create/`"
       />
     </div>
 
@@ -156,12 +157,12 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('TaxPaymentModify')"
+            v-if="checkPermissions('taxpayment.modify')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/tax-payment/${props.row.id}/`"
+            :to="`/${$route.params.company}/tax-payment/${props.row.id}/`"
           />
           <q-btn
             class="q-py-none q-px-md font-size-sm l-view-btn"
@@ -169,7 +170,7 @@ export default {
             label="Journal entries"
             style="font-size: 12px"
             :disable="props.row.status === 'Cancelled'"
-            :to="`/journal-entries/tax-payments/${props.row.id}/`"
+            :to="`/${$route.params.company}/journal-entries/tax-payments/${props.row.id}/`"
           />
         </q-td>
       </template>

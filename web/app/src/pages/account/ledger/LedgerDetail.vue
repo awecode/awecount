@@ -10,7 +10,7 @@ watch(
   () => route.query,
   (newQuery, oldQuery) => {
     if (route.params.id && route.path.includes('/view/')) {
-      const url = `/v1/accounts/${route.params.id}/transactions/`
+      const url = `/api/company/${route.params.company}/accounts/${route.params.id}/transactions/`
       if (oldQuery.page !== newQuery.page) {
         const updatedEndpoint = withQuery(url, newQuery)
         endpoint.value = updatedEndpoint
@@ -35,7 +35,7 @@ watch(
   () => route.params.id,
   (newid) => {
     if (newid && route.path.includes('/view/')) {
-      const url = `/v1/accounts/${route.params.id}/transactions/`
+      const url = `/api/company/${route.params.company}/accounts/${route.params.id}/transactions/`
       const updatedEndpoint = withQuery(url, {})
       endpoint.value = updatedEndpoint
     }
@@ -59,7 +59,7 @@ const filter = () => {
     router.push(`/account/${route.params.id}/view/?start_date=${startDate.value}&end_date=${endDate.value}`)
   }
 }
-const endpoint = ref(withQuery(`/v1/accounts/${route.params.id}/transactions/`, route.query))
+const endpoint = ref(withQuery(`/api/company/${route.params.company}/accounts/${route.params.id}/transactions/`, route.query))
 const getData = () => {
   if (fields?.value?.transactions.results) fields.value.transactions.results = null
   useApi(endpoint.value).then((data) => {

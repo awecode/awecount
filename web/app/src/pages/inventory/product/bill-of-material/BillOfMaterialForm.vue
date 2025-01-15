@@ -1,11 +1,11 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
+import useForm from 'src/composables/useForm'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/bill-of-material/'
+  setup() {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/bill-of-material/`
     const metaData = {
       title: 'Bill of Material | Awecount',
     }
@@ -129,7 +129,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn
-            v-if="checkPermissions('BillOfMaterialModify') && isEdit && fields.status !== 'Cancelled'"
+            v-if="checkPermissions('billofmaterial.modify') && isEdit && fields.status !== 'Cancelled'"
             color="green"
             label="Update"
             type="submit"
@@ -137,7 +137,7 @@ export default {
             @click.prevent="onSubmitClick(fields.status)"
           />
           <q-btn
-            v-if="!isEdit && checkPermissions('BillOfMaterialCreate')"
+            v-if="!isEdit && checkPermissions('billofmaterial.create')"
             color="green"
             label="Create"
             type="submit"

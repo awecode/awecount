@@ -5,7 +5,10 @@ export default {
       title: 'Account Opening Balances | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/account-opening-balance/'
+
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/account-opening-balance/`
+
     const newColumn = [
       {
         name: 'name',
@@ -42,12 +45,12 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('AccountOpeningBalanceCreate')"
+        v-if="checkPermissions('accountopeningbalance.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Opening Balance"
-        to="/account-opening-balance/add/"
+        :to="`/${$route.params.company}/account-opening-balance/create/`"
       />
     </div>
     <q-table
@@ -78,26 +81,31 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('AccountOpeningBalanceModify')"
+            v-if="checkPermissions('accountopeningbalance.modify')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/account-opening-balance/${props.row.id}/`"
+            :to="`/${$route.params.company}/account-opening-balance/${props.row.id}/`"
           />
         </q-td>
       </template>
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('AccountOpeningBalanceModify')"
+            v-if="checkPermissions('accountopeningbalance.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/account-opening-balance/${props.row.id}/`"
+            :to="`/${$route.params.company}/account-opening-balance/${props.row.id}/`"
           >
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">{{ props.row.name }}</span>
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
+            {{ props.row.name }}
+          </span>
         </q-td>
       </template>
     </q-table>

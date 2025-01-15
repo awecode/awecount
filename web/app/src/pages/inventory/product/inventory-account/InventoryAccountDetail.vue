@@ -1,8 +1,8 @@
 <script setup>
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import checkPermissions from 'src/composables/checkPermissions'
 import useApi from 'src/composables/useApi'
 import { useLoginStore } from 'src/stores/login-info'
-import DateConverter from '/src/components/date/VikramSamvat.js'
 
 const metaData = {
   title: 'Inventory Accounts Details | Awecount',
@@ -14,11 +14,11 @@ const route = useRoute()
 const startDate = ref(null)
 const endDate = ref(null)
 const filter = () => {
-  endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`
+  endpoint.value = `/api/company/${route.params.company}/inventory-account/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`
   getData()
 }
 
-const endpoint = ref(`/v1/inventory-account/${route.params.id}/transactions/`)
+const endpoint = ref(`/api/company/${route.params.company}/inventory-account/${route.params.id}/transactions/`)
 
 const getData = () =>
   useApi(endpoint.value).then((data) => {
@@ -95,31 +95,49 @@ function loadData() {
 }
 
 function onRequest(prop) {
-  endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/?${startDate.value && endDate.value ? `start_date=${startDate.value}&end_date=${endDate.value}` : ''}${startDate.value && endDate.value ? `&page=${prop.pagination.page}` : `page=${prop.pagination.page}`}`
+  endpoint.value = `/api/company/${route.params.company}/inventory-account/${route.params.id}/transactions/?${startDate.value && endDate.value ? `start_date=${startDate.value}&end_date=${endDate.value}` : ''}${startDate.value && endDate.value ? `&page=${prop.pagination.page}` : `page=${prop.pagination.page}`}`
   getData()
 }
 // TODO: add permissions
 function getVoucherUrl(row) {
   const source_type = row.source_type
-  if (source_type === 'Sales Voucher') return `/sales-voucher/${row.source_id}/view/`
-  if (source_type === 'Purchase Voucher') return `/purchase-voucher/${row.source_id}/view`
-  if (source_type === 'Journal Voucher') return `/journal-voucher/${row.source_id}/view`
-  if (source_type === 'Credit Note') return `/credit-note/${row.source_id}/view`
-  if (source_type === 'Debit Note') return `/debit-note/${row.source_id}/view`
+  if (source_type === 'Sales Voucher') {
+    return `/${route.params.company}/sales-voucher/${row.source_id}/view/`
+  }
+  if (source_type === 'Purchase Voucher') {
+    return `/${route.params.company}/purchase-voucher/${row.source_id}/view`
+  }
+  if (source_type === 'Journal Voucher') {
+    return `/${route.params.company}/journal-voucher/${row.source_id}/view`
+  }
+  if (source_type === 'Credit Note') return `/${route.params.company}/credit-note/${row.source_id}/view`
+  if (source_type === 'Debit Note') return `/${route.params.company}/debit-note/${row.source_id}/view`
   // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
   // TODO: add missing links
-  if (source_type === 'Cheque Deposit') return `/cheque-deposit/${row.source_id}/view/`
-  if (source_type === 'Payment Receipt') return `/payment-receipt/${row.source_id}/view/`
-  if (source_type === 'Cheque Issue') return `/cheque-issue/${row.source_id}/`
-  if (source_type === 'Challan') return `/challan/${row.source_id}/`
-  if (source_type === 'Account Opening Balance') return `/account/opening-balance/${row.source_id}/edit/`
-  if (source_type === 'Item') return `/items/details/${row.source_id}/`
+  if (source_type === 'Cheque Deposit') {
+    return `/${route.params.company}/cheque-deposit/${row.source_id}/view/`
+  }
+  if (source_type === 'Payment Receipt') {
+    return `/${route.params.company}/payment-receipt/${row.source_id}/view/`
+  }
+  if (source_type === 'Cheque Issue') {
+    return `/${route.params.company}/cheque-issue/${row.source_id}/`
+  }
+  if (source_type === 'Challan') return `/${route.params.company}/challan/${row.source_id}/`
+  if (source_type === 'Account Opening Balance') {
+    return `/${route.params.company}/account/opening-balance/${row.source_id}/edit/`
+  }
+  if (source_type === 'Item') return `/${route.params.company}/items/${row.source_id}/`
   // added
-  if (source_type === 'Fund Transfer') return `/fund-transfer/${row.source_id}/`
-  if (source_type === 'Bank Cash Deposit') return `/bank/cash/cash-deposit/${row.source_id}/edit/`
-  if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
-  if (source_type === 'Inventory Adjustment Voucher') return `/items/inventory-adjustment/${row.source_id}/view/`
-  if (source_type === 'Inventory Conversion Voucher') return `/items/inventory-conversion/${row.source_id}/view/`
+  if (source_type === 'Fund Transfer') {
+    return `/${route.params.company}/fund-transfer/${row.source_id}/edit/`
+  }
+  if (source_type === 'Bank Cash Deposit') {
+    return `/${route.params.company}/bank/cash/cash-deposit/${row.source_id}/edit/`
+  }
+  if (source_type === 'Tax Payment') return `/${route.params.company}/tax-payment/${row.source_id}/`
+  if (source_type === 'Inventory Adjustment Voucher') return `/${route.params.company}/items/inventory-adjustment/${row.source_id}/view/`
+  if (source_type === 'Inventory Conversion Voucher') return `/${route.params.company}/items/inventory-conversion/${row.source_id}/view/`
   console.error(`${source_type} not handled!`)
 }
 const getPermissionsWithSourceType = {
@@ -147,10 +165,10 @@ const getPermissionsWithSourceType = {
     <div class="flex justify-between">
       <div class="text-h5">
         <router-link
-          v-if="checkPermissions('InventoryAccountView')"
+          v-if="checkPermissions('inventoryaccount.view')"
           class="text-blue"
           style="font-weight: 500; text-decoration: none"
-          :to="`/items/details/${fields?.item}/`"
+          :to="`/${$route.params.company}/items/${fields?.item}/`"
         >
           {{ fields?.name }}
         </router-link>

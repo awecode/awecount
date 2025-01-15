@@ -5,13 +5,15 @@ const file = ref(null)
 const createNewCategory = ref(false)
 const createNewUnit = ref(false)
 const loading = ref(false)
+const route = useRoute()
+
 const onSubmit = async () => {
   const formData = new FormData()
   formData.append('file', file.value)
   formData.append('create_new_category', createNewCategory.value)
   formData.append('create_new_unit', createNewUnit.value)
   loading.value = true
-  useApi('/v1/items/import/', {
+  useApi(`/api/company/${route.params.company}/items/import/`, {
     method: 'POST',
     body: formData,
   })

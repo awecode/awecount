@@ -13,8 +13,8 @@ const add = (a, b) => {
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
-    const endpoint = '/v1/journal-voucher/'
     const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/journal-voucher/`
     const updateVoucher = (e, i) => {
       formData.fields.value.rows[i] = e
     }
@@ -211,7 +211,7 @@ export default {
       </div>
       <div class="row q-ma-md justify-end">
         <q-btn
-          v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
+          v-if="checkPermissions('journalvoucher.create') && !isEdit"
           class="q-mr-md q-py-sm"
           color="orange-7"
           icon="fa-solid fa-pen-to-square"
@@ -220,7 +220,7 @@ export default {
           @click.prevent="onSubmitClick('Unapproved')"
         />
         <q-btn
-          v-if="checkPermissions('JournalVoucherModify') && isEdit && fields.status === 'Draft'"
+          v-if="checkPermissions('journalvoucher.modify') && isEdit && fields.status === 'Draft'"
           class="q-mr-md q-py-sm"
           color="orange-7"
           icon="fa-solid fa-pen-to-square"
@@ -229,14 +229,14 @@ export default {
           @click.prevent="onSubmitClick('Unapproved')"
         />
         <q-btn
-          v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
+          v-if="checkPermissions('journalvoucher.create') && !isEdit"
           color="green-8"
           icon="fa-solid fa-floppy-disk"
           label="Save"
           @click.prevent="onSubmitClick('Approved')"
         />
         <q-btn
-          v-if="checkPermissions('JournalVoucherModify') && isEdit"
+          v-if="checkPermissions('journalvoucher.modify') && isEdit"
           color="green-8"
           icon="fa-solid fa-floppy-disk"
           label="Update"

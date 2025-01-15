@@ -1,14 +1,15 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
 export default {
   setup() {
     const metaData = {
       title: 'Sales Discounts | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
-    const endpoint = '/v1/sales-discount/'
+    const endpoint = `/api/company/${route.params.company}/sales-discount/`
     const listData = useList(endpoint)
     const newColumn = [
       {
@@ -48,13 +49,13 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('SalesDiscountDelete')" class="row q-gutter-x-md justify-end">
+    <div v-if="checkPermissions('salesdiscount.delete')" class="row q-gutter-x-md justify-end">
       <q-btn
         class="add-btn"
         color="green"
         icon-right="add"
         label="New sales discount"
-        to="/sales-discount/add/"
+        :to="`/${$route.params.company}/sales-discount/create/`"
       />
     </div>
     <q-table
@@ -126,26 +127,29 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('SalesDiscountModify')"
+            v-if="checkPermissions('salesdiscount.modify')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/sales-discount/${props.row.id}/`"
+            :to="`/${$route.params.company}/sales-discount/${props.row.id}/`"
           />
         </q-td>
       </template>
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('SalesDiscountModify')"
+            v-if="checkPermissions('salesdiscount.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/sales-discount/${props.row.id}/`"
+            :to="`/${$route.params.company}/sales-discount/${props.row.id}/`"
           >
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
             {{ props.row.name }}
           </span>
         </q-td>

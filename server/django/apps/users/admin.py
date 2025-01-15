@@ -8,8 +8,7 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
-from apps.api.models import AccessKey
-from apps.company.models import Company, FiscalYear
+from apps.company.models import Company, CompanyMember, FiscalYear, Permission
 from apps.ledger.models import handle_company_creation
 from apps.product.helpers import create_book_category
 from apps.product.models import Brand, Item, Unit
@@ -106,7 +105,7 @@ class CustomUserAdmin(UserAdmin):
                     "date_joined",
                     "last_login",
                     "company",
-                    "roles",
+                    "permissions",
                     "is_superuser",
                 )
             },
@@ -215,15 +214,16 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = (
         "name",
         "address",
-        "contact_no",
-        "emails",
+        "phone",
+        "email",
+        "alternate_email",
         "tax_registration_number",
     )
     list_display = (
         "name",
         "address",
-        "contact_no",
-        "emails",
+        "phone",
+        "email",
         "tax_registration_number",
     )
     list_filter = ("organization_type",)
@@ -246,20 +246,23 @@ class FiscalYearAdmin(admin.ModelAdmin):
     list_display = ("name", "start_date", "end_date")
 
     def start_date(self, obj):
-        return obj.start.strftime("%d-%m-%Y")
+        return obj.start_date.strftime("%d-%m-%Y")
 
     def end_date(self, obj):
-        return obj.end.strftime("%d-%m-%Y")
+        return obj.end_date.strftime("%d-%m-%Y")
 
 
 admin.site.register(FiscalYear, FiscalYearAdmin)
 
 
-class AccessKeyAdmin(admin.ModelAdmin):
-    list_display = ("user", "key", "enabled")
-    list_filter = ("user", "user__company", "enabled")
-    readonly_fields = ("created_at",)
-    search_fields = ("user__full_name", "user__company__name", "key")
+@admin.register(CompanyMember)
+class CompanyMemberAdmin(admin.ModelAdmin):
+    list_display = ("company", "member", "access_level")
+    search_fields = ("company__name", "member__full_name")
+    list_filter = ("access_level",)
+    actions = [create_company_defaults]
 
 
-admin.site.register(AccessKey, AccessKeyAdmin)
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    pass

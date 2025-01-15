@@ -1,14 +1,15 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
 export default {
   setup() {
+    const route = useRoute()
     const metaData = {
       title: 'Units | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/units/'
+    const endpoint = `/api/company/${route.params.company}/units/`
     return { ...useList(endpoint), checkPermissions }
   },
 }
@@ -16,14 +17,14 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('UnitCreate')" class="row justify-between">
+    <div v-if="checkPermissions('unit.create')" class="row justify-between">
       <div></div>
       <q-btn
         class="q-ml-lg add-btn"
         color="green"
         icon-right="add"
         label="New Unit"
-        to="/units/add/"
+        :to="`/${$route.params.company}/units/create/`"
       />
     </div>
 
@@ -41,14 +42,17 @@ export default {
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('UnitModify')"
+            v-if="checkPermissions('unit.modify')"
             class="text-blue text-weight-medium"
             style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px; text-decoration: none"
-            :to="`/units/${props.row.id}/`"
+            :to="`/${$route.params.company}/units/${props.row.id}/`"
           >
             {{ props.row.name }}
           </router-link>
-          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+          <span
+            v-else
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
+          >
             {{ props.row.name }}
           </span>
         </q-td>

@@ -1,9 +1,10 @@
 <script setup>
 import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
-import useList from '/src/composables/useList'
+import useList from 'src/composables/useList'
 
-const endpoint = '/v1/bill-of-material/'
+const route = useRoute()
+const endpoint = `/api/company/${route.params.company}/bill-of-material/`
 const metaData = {
   title: 'Inventory Adjustments | Awecount',
 }
@@ -23,13 +24,13 @@ const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('BillOfMaterialCreate')" class="row justify-end q-gutter-md">
+    <div v-if="checkPermissions('billofmaterial.create')" class="row justify-end q-gutter-md">
       <q-btn
         class="add-btn"
         color="green"
         icon-right="add"
         label="Add Bill of Material"
-        to="/items/bill-of-material/add"
+        :to="`/${$route.params.company}/items/bill-of-material/create/`"
       />
     </div>
     <q-table
@@ -63,12 +64,12 @@ const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('BillOfMaterialModify')"
+            v-if="checkPermissions('billofmaterial.modify')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/items/bill-of-material/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/bill-of-material/${props.row.id}/`"
           />
         </q-td>
       </template>

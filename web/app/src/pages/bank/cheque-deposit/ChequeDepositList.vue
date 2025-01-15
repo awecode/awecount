@@ -5,7 +5,8 @@ export default {
       title: 'Cheque Deposits | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/cheque-deposits/'
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/cheque-deposits/`
     const newColumn = [
       {
         name: 'bank_account_name',
@@ -48,12 +49,12 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('ChequeDepositCreate')"
+        v-if="checkPermissions('chequedeposit.create')"
         class="add-btn"
         color="green"
         icon-right="add"
         label="New Cheque Deposit"
-        to="/cheque-deposit/add/"
+        :to="`/${$route.params.company}/cheque-deposit/create/`"
       />
     </div>
 
@@ -94,8 +95,8 @@ export default {
                   <div class="q-mx-sm">
                     <n-auto-complete-v2
                       v-model="filters.bank_account"
-                      endpoint="v1/bank-account/choices/"
                       label="Bank Account"
+                      :endpoint="`/api/company/${$route.params.company}/bank-account/choices/`"
                       :fetch-on-mount="true"
                     />
                   </div>
@@ -150,7 +151,7 @@ export default {
             color="blue"
             label="View"
             style="font-size: 12px"
-            :to="`/cheque-deposit/${props.row.id}/view/`"
+            :to="`/${$route.params.company}/cheque-deposit/${props.row.id}/view/`"
           />
         </q-td>
       </template>

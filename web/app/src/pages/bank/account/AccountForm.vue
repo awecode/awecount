@@ -1,11 +1,11 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import useForm from '/src/composables/useForm'
+import useForm from 'src/composables/useForm'
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/bank-account/'
+  setup() {
+    const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/bank-account/`
     const formData = useForm(endpoint, {
       getDefaults: false,
       successRoute: '/bank-accounts/list/',
@@ -116,7 +116,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('BankAccountCreate') && !isEdit"
+            v-if="checkPermissions('bankaccount.create') && !isEdit"
             class="q-ml-auto"
             color="green"
             label="Create"
@@ -125,7 +125,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('BankAccountModify') && isEdit"
+            v-if="checkPermissions('bankaccount.modify') && isEdit"
             class="q-ml-auto"
             color="green"
             label="Update"
