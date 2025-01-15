@@ -18,7 +18,7 @@ const startDate = ref(route.query.start_date as string)
 const endDate = ref(route.query.end_date as string)
 const acceptableDifference = ref(0.01)
 const adjustmentThreshold = ref(1)
-const endpoint = 'v1/bank-reconciliation/defaults/'
+const endpoint = `/api/company/${route.params.company}/bank-reconciliation/defaults/`
 const isLoading = ref(false)
 const accountDetails: Ref<Bank | null> = ref(null)
 

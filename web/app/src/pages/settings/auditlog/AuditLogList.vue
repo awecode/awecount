@@ -9,7 +9,7 @@ export default {
     const endpoint = `/api/company/${route.params.company}/log-entries/`
     const listData = useList(endpoint)
     const onDownloadXls = () => {
-      useApi('v1/log-entries/export')
+      useApi(`/api/company/${route.params.company}/log-entries/export`)
         .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Audit Logs'))
         .catch(err => console.log('Error Due To', err))
     }

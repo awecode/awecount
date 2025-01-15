@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 const props = defineProps({
   startDate: {
@@ -79,8 +80,10 @@ const data: Ref<Response> = ref({
 const page = ref(1)
 const infiniteScroll = ref<any>(null)
 
+const route = useRoute()
+
 const fetchData = async () => {
-  const endpoint = `/v1/bank-reconciliation/matched-transactions/?start_date=${props.startDate}&end_date=${props.endDate}&account_id=${props.accountId}&page=${page.value}`
+  const endpoint = `/api/company/${route.params.company}/bank-reconciliation/matched-transactions/?start_date=${props.startDate}&end_date=${props.endDate}&account_id=${props.accountId}&page=${page.value}`
   await useApi(endpoint)
     .then((response) => {
       data.value.results = [...data.value.results, ...response.results]
@@ -111,7 +114,7 @@ const loadMore = async (index: number, done: any) => {
 
 const reconcileMatchedTransactions = (matchedTransaction: { statement_transactions: StatementTransactionData[], system_transactions: SystemTransactionData[] }) => {
   console.log('Reconciling:', matchedTransaction)
-  useApi('v1/bank-reconciliation/reconcile-transactions/', {
+  useApi(`/api/company/${route.params.company}/bank-reconciliation/reconcile-transactions/`, {
     method: 'POST',
     body: {
       statement_ids: matchedTransaction.statement_transactions.map(t => t.id),
@@ -143,7 +146,7 @@ const reconcileMatchedTransactions = (matchedTransaction: { statement_transactio
 
 const unmatchMatchedTransactions = (matchedTransaction: { statement_transactions: StatementTransactionData[], system_transactions: SystemTransactionData[] }) => {
   console.log('Unmatching:', matchedTransaction)
-  useApi('v1/bank-reconciliation/unmatch-transactions/', {
+  useApi(`/api/company/${route.params.company}/bank-reconciliation/unmatch-transactions/`, {
     method: 'POST',
     body: {
       statement_ids: matchedTransaction.statement_transactions.map(t => t.id),

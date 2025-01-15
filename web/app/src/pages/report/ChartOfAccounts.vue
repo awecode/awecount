@@ -2,6 +2,7 @@
 import checkPermissions from 'src/composables/checkPermissions'
 import AccountForm from 'src/pages/account/ledger/LedgerForm.vue'
 import CategoryForm from '../account/category/CategoryForm.vue'
+import { useRoute } from 'vue-router'
 
 interface Account {
   id: number
@@ -118,7 +119,7 @@ const dragDropUpdateType = ref<'category' | 'account' | null>(null)
 const dragDropTargetCategoryId = ref<number | null>(null)
 
 function confirmAction() {
-  const apiEndpoint = dragDropUpdateType.value === 'category' ? `/v1/categories/${dragDropUpdateItemId.value}/` : `/v1/accounts/${dragDropUpdateItemId.value}/`
+  const apiEndpoint = dragDropUpdateType.value === 'category' ? `/api/company/${route.params.company}/categories/${dragDropUpdateItemId.value}/` : `/api/company/${route.params.company}/accounts/${dragDropUpdateItemId.value}/`
 
   const data = dragDropUpdateType.value === 'category' ? { parent: dragDropTargetCategoryId.value } : { category: dragDropTargetCategoryId.value }
 
@@ -152,7 +153,7 @@ const accounts = ref<Account[]>([])
 const categoryTree = ref<CategoryTree[]>([])
 
 function fetchAccounts() {
-  useApi('/v1/chart-of-accounts/')
+  useApi(`/api/company/${route.params.company}/chart-of-accounts/`)
     .then((data) => {
       accounts.value = data
     })
@@ -164,7 +165,7 @@ function fetchAccounts() {
 fetchAccounts()
 
 function fetchCategoryTree() {
-  useApi('/v1/category-tree/?include-empty=true', { method: 'GET' })
+  useApi(`/api/company/${route.params.company}/category-tree/?include-empty=true`, { method: 'GET' })
     .then((data) => {
       categoryTree.value = data
     })

@@ -21,11 +21,11 @@ const $q = useQuasar()
 
 const statementInfo: Ref<StatementInfo | null> = ref(null)
 
-useApi(`v1/bank-reconciliation/${route.params.id}/statement-info/`).then((response) => {
+useApi(`/api/company/${route.params.company}/bank-reconciliation/${route.params.id}/statement-info/`).then((response) => {
   statementInfo.value = response
 })
 
-const endpoint = `v1/bank-reconciliation/${route.params.id}/`
+const endpoint = `/api/company/${route.params.company}/bank-reconciliation/${route.params.id}/`
 const { rows, filters, loading, searchQuery, pagination, onFilterUpdate, resetFilters, onRequest, loadData } = useList(endpoint)
 
 type align = 'left' | 'center' | 'right'
@@ -155,7 +155,7 @@ const unmatchTransactions = async (transactions: StatementTransactionData[]) => 
     cancel: true,
     html: true,
   }).onOk(() => {
-    useApi('v1/bank-reconciliation/unmatch-transactions/', {
+    useApi(`/api/company/${route.params.company}/bank-reconciliation/unmatch-transactions/`, {
       method: 'POST',
       body: {
         statement_ids: transactions.map(t => t.id),
@@ -189,7 +189,7 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
     cancel: true,
     html: true,
   }).onOk(() => {
-    useApi('v1/bank-reconciliation/unmatch-transactions/', {
+    useApi(`/api/company/${route.params.company}/bank-reconciliation/unmatch-transactions/`, {
       method: 'POST',
       body: {
         statement_ids: transactions.map(t => t.id),

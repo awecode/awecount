@@ -27,7 +27,7 @@ async function fetchData() {
   viewTransactionOnly.value = false
 }
 async function fetchSalesData() {
-  const res = await useApi(`/v1/sales-voucher/?start_date=${date.value}&end_date=${date.value}&page=${salesPage.value}&status=Partially+Paid&status=Paid&status=Issued`)
+  const res = await useApi(`/api/company/${route.params.company}/sales-voucher/?start_date=${date.value}&end_date=${date.value}&page=${salesPage.value}&status=Partially+Paid&status=Paid&status=Issued`)
   salesPagination.value = {
     page: res.pagination.page,
     rowsPerPage: res.pagination.size,
@@ -37,7 +37,7 @@ async function fetchSalesData() {
 }
 
 async function fetchPurchaseData() {
-  const res = await useApi(`/v1/purchase-vouchers/?start_date=${date.value}&end_date=${date.value}&page=${purchasePage.value}&status=Partially+Paid&status=Paid&status=Issued`)
+  const res = await useApi(`/api/company/${route.params.company}/purchase-vouchers/?start_date=${date.value}&end_date=${date.value}&page=${purchasePage.value}&status=Partially+Paid&status=Paid&status=Issued`)
   purchaseData.value = res
 }
 

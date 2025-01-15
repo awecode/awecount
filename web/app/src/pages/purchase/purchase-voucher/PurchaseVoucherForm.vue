@@ -1,7 +1,10 @@
 <script setup>
 import checkPermissions from 'src/composables/checkPermissions'
+import { useRoute } from 'vue-router'
 
-const endpoint = '/v1/purchase-vouchers/'
+const route = useRoute()
+
+const endpoint = `/api/company/${route.params.company}/purchase-vouchers/`
 
 const { fields, errors, formDefaults, loading, isEdit, today, submitForm } = useForm(endpoint, {
   getDefaults: true,

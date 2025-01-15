@@ -3,6 +3,8 @@ import checkPermissions from 'src/composables/checkPermissions'
 import formatNumberWithCommas from 'src/composables/formatNumberWithComma'
 import useGenerateChequePdf from 'src/composables/pdf/useGenerateChequePdf'
 import BenefactorForm from 'src/pages/account/ledger/LedgerForm.vue'
+import { useRoute } from 'vue-router'
+
 // const $q = useQuasar()
 
 export default {
@@ -29,6 +31,8 @@ export default {
     },
   },
   setup(props, context) {
+    const route = useRoute()
+
     const endpoint =  props.endpoint || `/api/company/${route.params.company}cheque-issue/`
 
     const showDrAccount = ref(false)
@@ -37,7 +41,7 @@ export default {
       successRoute: '/cheque-issue/list/',
     }
     if (props.endpoint) {
-      config.createDefaultsEndpoint = '/v1/cheque-issue/create-defaults/'
+      config.createDefaultsEndpoint = `/api/company/${route.params.company}/cheque-issue/create-defaults/`
     }
 
     const formData = useForm(endpoint, config)

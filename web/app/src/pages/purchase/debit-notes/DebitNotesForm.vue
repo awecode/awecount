@@ -7,6 +7,7 @@ import CategoryForm from 'src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountForm.vue'
 import { useLoginStore } from 'src/stores/login-info'
+import { useRoute } from 'vue-router'
 
 export default {
   setup() {
@@ -71,7 +72,7 @@ export default {
       delete formData.errors.value.invoice_no
       delete formData.errors.value.party
       if (referenceFormData.value.invoice_no && referenceFormData.value.fiscal_year && referenceFormData.value.party) {
-        const url = 'v1/purchase-vouchers/by-voucher-no/'
+        const url = `/api/company/${route.params.company}/purchase-vouchers/by-voucher-no/`
         useApi(`${url}?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}&party=${referenceFormData.value.party}`)
           .then((data) => {
             if (fields.invoices) {

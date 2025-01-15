@@ -1,6 +1,7 @@
 <script setup>
 import checkPermissions from 'src/composables/checkPermissions'
 import useForm from '/src/composables/useForm'
+import { useRoute } from 'vue-router'
 
 const props = defineProps({
   fromAccount: {
@@ -25,14 +26,16 @@ const props = defineProps({
   },
 })
 
-const fundTransferEndpoint = props.endpoint || '/v1/fund-transfer/'
+const route = useRoute()
+
+const fundTransferEndpoint = props.endpoint || `/api/company/${route.params.company}/fund-transfer/`
 
 const config = {
   getDefaults: true,
   successRoute: '/fund-transfer/list/',
 }
 if (props.endpoint) {
-  config.createDefaultsEndpoint = '/v1/fund-transfer/create-defaults/'
+  config.createDefaultsEndpoint = `/api/company/${route.params.company}/fund-transfer/create-defaults/`
 }
 
 const isDeleteOpen = ref(false)

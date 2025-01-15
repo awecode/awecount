@@ -1,7 +1,9 @@
 <script setup>
 import checkPermissions from 'src/composables/checkPermissions'
 import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const props = defineProps({
   label: {
     type: String,
@@ -171,10 +173,10 @@ const categoryAccountNameComputed = computed(() => {
   return null
 })
 const endpointLabelMap = {
-  'Sales': 'v1/items/create-defaults/accounts',
-  'Purchase': 'v1/items/create-defaults/accounts',
-  'Discount Allowed': 'v1/items/create-defaults/discount_allowed_accounts',
-  'Discount Received': 'v1/items/create-defaults/discount_received_accounts',
+  'Sales': `/api/company/${route.params.company}/items/create-defaults/accounts`,
+  'Purchase': `/api/company/${route.params.company}/items/create-defaults/accounts`,
+  'Discount Allowed': `/api/company/${route.params.company}/items/create-defaults/discount_allowed_accounts`,
+  'Discount Received': `/api/company/${route.params.company}/items/create-defaults/discount_received_accounts`,
 }
 </script>
 

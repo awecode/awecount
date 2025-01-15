@@ -4,6 +4,8 @@ import checkPermissions from 'src/composables/checkPermissions'
 import { getPermissionFromSourceType, getVoucherUrl } from 'src/composables/getVoucherUrlAndPermissions'
 import ChequeIssueForm from 'src/pages/bank/cheque-issue/ChequeIssueForm.vue'
 import FundTransferForm from 'src/pages/bank/fund-transfer/FundTransferForm.vue'
+import { useRoute } from 'vue-router'
+
 
 interface AccountDetails {
   ledger_id: number
@@ -80,6 +82,8 @@ interface SystemResponse {
   }
 }
 
+const route = useRoute()
+
 const statementResponse: Ref<StatementResponse> = ref({
   results: [],
   pagination: {
@@ -120,7 +124,7 @@ const fetchUnmatchedBankTransactions = async () => {
   if (!props.startDate || !props.endDate || !props.accountDetails.ledger_id) {
     return
   }
-  await useApi(`v1/bank-reconciliation/unreconciled-bank-transactions/?start_date=${props.startDate}&end_date=${props.endDate}&account_id=${props.accountDetails.ledger_id}&search=${statementSearchBy.value}&sort_by=${statementSortBy.value}&sort_dir=${statementSortDir.value}&page=${statementPage.value}`)
+  await useApi(`/api/company/${route.params.company}/bank-reconciliation/unreconciled-bank-transactions/?start_date=${props.startDate}&end_date=${props.endDate}&account_id=${props.accountDetails.ledger_id}&search=${statementSearchBy.value}&sort_by=${statementSortBy.value}&sort_dir=${statementSortDir.value}&page=${statementPage.value}`)
     .then((response) => {
       if (response.pagination.page === 1) {
         statementResponse.value.results = response.results
@@ -153,7 +157,7 @@ const fetchUnmatchedSystemTransactions = async () => {
   if (!props.startDate || !props.endDate || !props.accountDetails.ledger_id) {
     return
   }
-  await useApi(`v1/bank-reconciliation/unreconciled-system-transactions/?start_date=${props.startDate}&end_date=${props.endDate}&account_id=${props.accountDetails.ledger_id}&search=${systemSearchBy.value}&sort_by=${systemSortBy.value}&sort_dir=${systemSortDir.value}&page=${systemPage.value}`)
+  await useApi(`/api/company/${route.params.company}/bank-reconciliation/unreconciled-system-transactions/?start_date=${props.startDate}&end_date=${props.endDate}&account_id=${props.accountDetails.ledger_id}&search=${systemSearchBy.value}&sort_by=${systemSortBy.value}&sort_dir=${systemSortDir.value}&page=${systemPage.value}`)
     .then((response) => {
       // systemResponse.value.results = []
       if (response.pagination.page === 1) {
@@ -320,7 +324,7 @@ const unselectAll = () => {
 
 const reconcile = () => {
   if (selectedStatementTransactions.value.length > 0 || selectedSystemTransactions.value.length > 0) {
-    const endpoint = canReconcile.value ? 'v1/bank-reconciliation/reconcile-transactions/' : 'v1/bank-reconciliation/reconcile-with-adjustment/'
+    const endpoint = canReconcile.value ? `/api/company/${route.params.company}/bank-reconciliation/reconcile-transactions/` : `/api/company/${route.params.company}/bank-reconciliation/reconcile-with-adjustment/`
     useApi(endpoint, {
       method: 'POST',
       body: {
@@ -822,7 +826,7 @@ const onFundTransferChequeIssueSuccess = () => {
     <div class="min-w-[900px]">
       <FundTransferForm
         class="w-full"
-        endpoint="v1/bank-reconciliation/reconcile-transactions-with-funds-transfer/"
+        :endpoint="`/api/company/${$route.params.company}/bank-reconciliation/reconcile-transactions-with-funds-transfer/`"
         :amount="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)))"
         :date="findLatestDate(selectedStatementTransactions)"
         :from-account="{
@@ -841,7 +845,7 @@ const onFundTransferChequeIssueSuccess = () => {
     <div class="min-w-[900px]">
       <ChequeIssueForm
         class="w-full"
-        endpoint="v1/bank-reconciliation/reconcile-transactions-with-cheque-issue/"
+        :endpoint="`/api/company/${$route.params.company}/bank-reconciliation/reconcile-transactions-with-cheque-issue/`"
         :amount="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)))"
         :bank-account="{
           id: accountDetails.id,

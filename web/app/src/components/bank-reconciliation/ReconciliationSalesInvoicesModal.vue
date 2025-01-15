@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useRoute } from 'vue-router'
 
 const props = defineProps({
   statementTransactions: {
@@ -102,8 +103,10 @@ const filterStartDate = ref(props.startDate)
 const filterEndDate = ref(props.endDate)
 const page = ref(1)
 
+const route = useRoute()
+
 const searchInvoice = async () => {
-  await useApi(`v1/bank-reconciliation/sales-vouchers/?start_date=${filterStartDate.value}&end_date=${filterEndDate.value}&search=${search.value}&sort_by=${sortBy.value}&sort_dir=${sortDir.value}&page=${page.value}`).then((responseData: SalesInvoiceResponse) => {
+  await useApi(`/api/company/${route.params.company}/bank-reconciliation/sales-vouchers/?start_date=${filterStartDate.value}&end_date=${filterEndDate.value}&search=${search.value}&sort_by=${sortBy.value}&sort_dir=${sortDir.value}&page=${page.value}`).then((responseData: SalesInvoiceResponse) => {
     if (responseData.pagination.page === 1) {
       response.value.results = responseData.results.map((invoice) => {
         return {
@@ -223,7 +226,7 @@ const updatePrompt = (value: boolean) => {
 
 const reconcile = () => {
   if (selectedStatementTransactions.value.length > 0 || selectedInvoiceTransactions.value.length > 0) {
-    const endpoint = canReconcile.value ? 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers/' : 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers-and-adjustment/'
+    const endpoint = canReconcile.value ? `/api/company/${route.params.company}/bank-reconciliation/reconcile-transactions-with-sales-vouchers/` : `/api/company/${route.params.company}/bank-reconciliation/reconcile-transactions-with-sales-vouchers-and-adjustment/`
     useApi(endpoint, {
       method: 'POST',
       body: {

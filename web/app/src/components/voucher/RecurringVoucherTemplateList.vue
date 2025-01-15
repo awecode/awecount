@@ -1,6 +1,9 @@
 <script setup>
 import checkPermissions from 'src/composables/checkPermissions'
 import { capitalize } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 const props = defineProps({
   type: {
@@ -16,7 +19,7 @@ const metaData = {
 }
 useMeta(metaData)
 
-const endpoint = `/v1/recurring-voucher-template/?type=${capitalizedType} Voucher`
+const endpoint = `/api/company/${route.params.company}/recurring-voucher-template/?type=${capitalizedType} Voucher`
 const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)
 
 const newColumn = [

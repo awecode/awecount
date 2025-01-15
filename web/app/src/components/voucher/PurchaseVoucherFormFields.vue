@@ -4,6 +4,7 @@ import { discount_types, modes } from 'src/helpers/constants/invoice'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountForm.vue'
 import { useLoginStore } from 'src/stores/login-info'
+import { useRoute } from 'vue-router'
 
 const props = defineProps({
   formDefaults: {
@@ -25,7 +26,7 @@ const props = defineProps({
 })
 
 const loginStore = useLoginStore()
-
+const route = useRoute()
 const staticOptions = {
   discount_types,
   modes,
@@ -62,7 +63,7 @@ const fetchInvoice = async (data) => {
       })
       errors.value.invoice_no = 'The invoice has already been added!'
     } else {
-      const url = 'v1/purchase-order/by-voucher-no/'
+      const url = `/api/company/${route.params.company}/purchase-order/by-voucher-no/`
       useApi(`${url}?invoice_no=${fetchData.invoice_no}&fiscal_year=${fetchData.fiscal_year}`)
         .then((data) => {
           const response = { ...data }
@@ -260,7 +261,7 @@ onMounted(() => {
         <div class="col-md-6 col-12">
           <n-auto-complete-v2
             v-model="fields.party"
-            endpoint="/v1/sales-voucher/create-defaults/parties"
+            :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`"
             label="Party"
             :error="errors?.party ? errors?.party : ''"
             :modal-component="checkPermissions('party.create') ? PartyForm : null"
@@ -317,7 +318,7 @@ onMounted(() => {
             v-model="fields.payment_mode"
             emit-value
             map-options
-            endpoint="v1/purchase-vouchers/create-defaults/payment_modes"
+            :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/payment_modes`"
             label="Payment Mode"
             option-label="name"
             option-value="id"

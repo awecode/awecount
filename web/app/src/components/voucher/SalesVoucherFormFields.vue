@@ -5,6 +5,9 @@ import PartyAlias from 'src/pages/party/PartyAlias.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import { useLoginStore } from 'src/stores/login-info'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 const props = defineProps({
   formDefaults: {
@@ -75,7 +78,7 @@ const fetchInvoice = async (fields) => {
       })
       errors.value.invoice_no = 'The invoice has already been added!'
     } else {
-      const url = 'v1/challan/by-voucher-no/'
+      const url = `/api/company/${route.params.company}/challan/by-voucher-no/`
       try {
         const data = await useApi(`${url}?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`)
         errors.value = {}
@@ -320,7 +323,7 @@ watch(
               <n-auto-complete-v2
                 v-else
                 v-model="fields.party"
-                endpoint="/v1/sales-voucher/create-defaults/parties"
+                :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`"
                 label="Party"
                 :emit-obj="true"
                 :error="errors?.party ? errors?.party : null"
@@ -420,7 +423,7 @@ watch(
           <n-auto-complete-v2
             v-model="fields.payment_mode"
             data-testid="payment-mode-select"
-            endpoint="/v1/sales-voucher/create-defaults/payment_modes"
+            :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/payment_modes`"
             label="Payment Mode *"
             :emit-obj="true"
             :error="errors?.payment_mode ? errors?.payment_mode : null"
@@ -491,7 +494,7 @@ watch(
           v-model="fields.sales_agent"
           class="col-8"
           data-testid="sales-agent-select"
-          endpoint="v1/sales-voucher/create-defaults/sales_agents"
+          :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/sales_agents`"
           label="Sales Agent"
           :error="errors?.sales_agent"
           :options="formDefaults.collections?.sales_agents"

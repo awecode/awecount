@@ -4,6 +4,7 @@ import { parseErrors } from 'src/utils/helpers'
 import { capitalize } from 'vue'
 import PurchaseVoucherFormFields from './PurchaseVoucherFormFields.vue'
 import SalesVoucherFormFields from './SalesVoucherFormFields.vue'
+import { useRoute } from 'vue-router'
 
 const props = defineProps({
   type: {
@@ -14,7 +15,9 @@ const props = defineProps({
 
 const capitalizedType = capitalize(props.type)
 
-const endpoint = '/v1/recurring-voucher-template/'
+const route = useRoute()
+
+const endpoint = `/api/company/${route.params.company}/recurring-voucher-template/`
 
 const formData = useForm(endpoint, {
   getDefaults: true,

@@ -75,7 +75,7 @@ export default {
       delete formData.errors.value.fiscal_year
       delete formData.errors.value.invoice_no
       if (referenceFormData.value.invoice_no && referenceFormData.value.fiscal_year) {
-        const url = 'v1/sales-voucher/by-voucher-no/'
+        const url = `/api/company/${route.params.company}/sales-voucher/by-voucher-no/`
         useApi(`${url}?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`)
           .then((data) => {
             formData.errors.value = {}

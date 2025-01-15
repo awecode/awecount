@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import { getPermissionFromSourceType, getVoucherUrl } from 'src/composables/getVoucherUrlAndPermissions'
 import * as XLSX from 'xlsx'
-
+import { useRoute } from 'vue-router'
 interface SystemTransactionData {
   id: number
   date: string
@@ -28,6 +28,8 @@ interface StatementTransactionData {
   description: string
   transaction_ids: number[]
 }
+
+const route = useRoute()
 
 const $q = useQuasar()
 const openUpdateDialog = ref(false)
@@ -63,7 +65,7 @@ const isStatementProcessing = ref(false)
 const hasError = ref(false)
 const mergeDescription = ref(false)
 
-const endpoint = 'v1/bank-reconciliation/defaults/'
+const endpoint = `/api/company/${route.params.company}/bank-reconciliation/defaults/`
 const isLoading = ref(false)
 
 useApi(endpoint).then((response) => {
@@ -74,7 +76,7 @@ const rowId = ref()
 
 const fetchUpdatedTransactions = async (id: number) => {
   rowId.value = id
-  await useApi(`v1/bank-reconciliation/${id}/updated-transactions/?page=${page.value}`).then((response) => {
+  await useApi(`/api/company/${route.params.company}/bank-reconciliation/${id}/updated-transactions/?page=${page.value}`).then((response) => {
     updatedData.value = response
     openUpdateDialog.value = true
   })
@@ -87,7 +89,7 @@ const deleteStatement = (id: number) => {
     cancel: true,
     html: true,
   }).onOk(() => {
-    useApi(`v1/bank-reconciliation/${id}/`, {
+    useApi(`/api/company/${route.params.company}/bank-reconciliation/${id}/`, {
       method: 'DELETE',
     })
       .then(() => {
@@ -180,7 +182,7 @@ const filterSources = (systemTransactions: SystemTransactionData[]): { source_id
 
 const unmatchMatchedTransactions = (matchedTransaction: { statement_transactions: StatementTransactionData[], system_transactions: SystemTransactionData[] }) => {
   console.log('Unmatching:', matchedTransaction)
-  useApi('v1/bank-reconciliation/unmatch-transactions/', {
+  useApi(`/api/company/${route.params.company}/bank-reconciliation/unmatch-transactions/`, {
     method: 'POST',
     body: {
       statement_ids: matchedTransaction.statement_transactions.map(t => t.id),
@@ -215,7 +217,7 @@ const unmatchMatchedTransactions = (matchedTransaction: { statement_transactions
 
 const updateTransactions = (matchedTransaction: { statement_transactions: StatementTransactionData[], system_transactions: SystemTransactionData[] }) => {
   console.log('Reconciling:', matchedTransaction)
-  useApi('v1/bank-reconciliation/update-transactions/', {
+  useApi(`/api/company/${route.params.company}/bank-reconciliation/update-transactions/`, {
     method: 'POST',
     body: {
       statement_ids: matchedTransaction.statement_transactions.map(t => t.id),
@@ -249,7 +251,7 @@ const updateTransactions = (matchedTransaction: { statement_transactions: Statem
     })
 }
 
-const listEndpoint = '/v1/bank-reconciliation/'
+const listEndpoint = `/api/company/${route.params.company}/bank-reconciliation/`
 const { rows, resetFilters, filters, loading, searchQuery, pagination, onRequest, onFilterUpdate, loadData } = useList(listEndpoint)
 
 type MappingFunction = (header: string) => string
@@ -297,7 +299,7 @@ const submitStatement = async () => {
   }
   isLoading.value = true
 
-  useApi('v1/bank-reconciliation/import-statement/', {
+  useApi(`/api/company/${route.params.company}/bank-reconciliation/import-statement/`, {
     method: 'POST',
     body: {
       account_id: statementAccount.value,
