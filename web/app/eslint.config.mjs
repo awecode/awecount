@@ -25,12 +25,21 @@ export default antfu({
       'vue/define-emits-declaration': ['error', 'type-literal'],
 
       // enforce line breaks
-      'vue/max-attributes-per-line': ['error', { singleline: 10, multiline: 1 }],
+      'vue/max-attributes-per-line': ['error', { singleline: 3, multiline: 1 }],
       'vue/first-attribute-linebreak': ['error', { singleline: 'beside', multiline: 'below' }],
 
       // misc
       'vue/component-options-name-casing': ['error', 'kebab-case'],
       'vue/html-self-closing': ['error', { html: { normal: 'never', void: 'always' } }],
+
+      // attributes
+      'vue/attributes-order': [
+        'error',
+        {
+          order: ['DEFINITION', 'LIST_RENDERING', 'CONDITIONALS', 'RENDER_MODIFIERS', 'GLOBAL', 'UNIQUE', 'SLOT', 'TWO_WAY_BINDING', 'OTHER_DIRECTIVES', 'ATTR_SHORTHAND_BOOL', 'ATTR_STATIC', 'ATTR_DYNAMIC', 'EVENTS', 'CONTENT'],
+          alphabetical: true,
+        },
+      ],
     },
   },
 })
