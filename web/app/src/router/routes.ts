@@ -959,6 +959,22 @@ const companyRoutes: RouteRecordRaw[] = [
           breadcrumbs: ['Inventory', 'Conversions', 'Edit'],
         },
       },
+      {
+        path: 'ledgers',
+        name: 'company-inventory-ledgers',
+        component: () => import('pages/inventory/product/inventory-account/InventoryAccountList.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Ledgers'],
+        },
+      },
+      {
+        path: 'ledgers/:id',
+        name: 'company-inventory-ledgers-id',
+        component: () => import('pages/inventory/product/inventory-account/InventoryAccountDetail.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Ledgers', 'Detail'],
+        },
+      },
     ],
   },
   {
@@ -1112,11 +1128,11 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'cash-flow',
-        name: 'company-reports-cash-flow',
+        path: 'collection',
+        name: 'company-reports-collection',
         component: () => import('pages/report/CollectionReport.vue'),
         meta: {
-          breadcrumbs: ['Reports', 'Cash Flow'],
+          breadcrumbs: ['Reports', 'Collection'],
         },
       },
       {
