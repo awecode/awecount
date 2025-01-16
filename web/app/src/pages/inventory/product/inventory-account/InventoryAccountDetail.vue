@@ -177,7 +177,7 @@ const getPermissionsWithSourceType = {
           v-if="checkPermissions('inventoryaccount.view')"
           class="text-blue"
           style="font-weight: 500; text-decoration: none"
-          :to="`/${$route.params.company}/items/${fields?.item}`"
+          :to="`/${$route.params.company}/inventory/items/${fields?.item}`"
         >
           {{ fields?.name }}
         </router-link>

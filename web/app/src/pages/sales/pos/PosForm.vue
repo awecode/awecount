@@ -287,7 +287,7 @@ const modeOptionsComputed = computed(() => {
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%"
               target="_blank"
               :title="item.code"
-              :to="`/${$route.params.company}/items/${item.id}`"
+              :to="`/${$route.params.company}/inventory/items/${item.id}`"
             >
               {{ item.name }}
             </router-link>

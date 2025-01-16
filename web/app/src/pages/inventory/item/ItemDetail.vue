@@ -189,7 +189,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
       </template>
     </q-table>
-    <router-link class="no-underline" :to="`/${$route.params.company}/items/${data.id}`">
+    <router-link class="no-underline" :to="`/${$route.params.company}/inventory/items/${data.id}`">
       <q-btn class="q-mt-md q-px-lg no-underline" color="orange-7">
         Edit
       </q-btn>

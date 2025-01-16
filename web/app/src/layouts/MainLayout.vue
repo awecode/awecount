@@ -142,7 +142,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Purchases/Expenses',
         icon: 'shopping_cart',
-        link: `/${activeCompany.value}/purchase/purchase-vouchers`,
+        link: `/${activeCompany.value}/purchase/vouchers`,
         hide: !hasPermission('purchasevoucher'),
       },
       {

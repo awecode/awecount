@@ -140,7 +140,7 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
             v-if="checkPermissions('item.view')"
             class="text-blue block"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/items/${props.row.id}/view`"
+            :to="`/${$route.params.company}/inventory/items/${props.row.id}`"
           >
             {{ props.row.name }}
           </router-link>

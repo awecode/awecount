@@ -132,7 +132,7 @@ const newColumn = [
             color="blue-6"
             label="View"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/items/inventory-adjustment/${props.row.id}/view`"
+            :to="`/${$route.params.company}/inventory/adjustments/${props.row.id}`"
           />
           <q-btn
             v-if="checkPermissions('inventoryadjustmentvoucher.modify')"
