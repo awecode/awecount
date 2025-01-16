@@ -237,7 +237,7 @@ function onPurchaseRequest(props) {
                           class="text-blue"
                           style="font-weight: 500; text-decoration: none"
                           target="_blank"
-                          :to="`/sales-voucher/${props.row.id}/view`"
+                          :to="`/${$route.params.company}/sales/vouchers/${props.row.id}`"
                         >
                           {{ props.row.voucher_no }}
                         </router-link>

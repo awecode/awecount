@@ -960,6 +960,14 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'opening-stock/:id',
+        name: 'company-inventory-opening-stock-id',
+        component: () => import('pages/inventory/item/opening-stock/ItemOpeningStockForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Opening Stock', 'Edit'],
+        },
+      },
+      {
         path: 'adjustments',
         name: 'company-inventory-adjustments',
         component: () => import('pages/inventory/product/inventory-adjustment/InventoryAdjustmentList.vue'),
