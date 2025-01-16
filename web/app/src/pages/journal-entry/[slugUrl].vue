@@ -122,12 +122,23 @@ export default {
         return false
       }
     })
+
+    const CONTENT_TYPE_TO_SLUG = {
+      'purchase-vouchers': 'purchase/vouchers',
+      'sales-vouchers': 'sales/vouchers',
+      'debit-notes': 'purchase/debit-notes',
+      'credit-notes': 'sales/credit-notes',
+      'challans': 'sales/challans',
+      'payment-receipts': 'payment-receipts',
+    }
+
     return {
       fields,
       getDate,
       getAmount,
       sameTransactionsData,
       seprateTransactions,
+      CONTENT_TYPE_TO_SLUG,
     }
   },
   created() {
@@ -255,7 +266,11 @@ export default {
               {{ getDate[index] || '-' }}
             </div>
           </div>
-          <router-link v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : $route.params.slug}/${voucher?.source_id}/view`">
+          <router-link
+            v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'"
+            style="text-decoration: none"
+            :to="`/${$route.params.company}/${CONTENT_TYPE_TO_SLUG[$route.params.slug]}/${voucher?.source_id}`"
+          >
             <div class="row items-center text-blue">
               Source
             </div>
