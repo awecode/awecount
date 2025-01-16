@@ -994,7 +994,7 @@ const companyRoutes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: 'journal-entries/:slugUrl',
+    path: 'journal-entries/:slug/:id',
     name: 'company-journal-entries',
     component: () => import('pages/journal-entry/[slugUrl].vue'),
   },
