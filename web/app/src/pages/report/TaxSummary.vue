@@ -175,12 +175,12 @@ export default {
               <tr>
                 <td class="text-center text-black" colspan="2">
                   <span class="text-center" style="color: black">
-                    <th>Tax Payable</th>
+                    Tax Payable
                   </span>
                 </td>
                 <td class="text-center text-weight-bold" colspan="2">
                   <span class="text-center" style="color: black">
-                    <th>{{ $nf(reportData.sales.total_meta_tax - reportData.purchase.total_meta_tax) }}</th>
+                    {{ $nf(reportData.sales.total_meta_tax - reportData.purchase.total_meta_tax) }}
                   </span>
                 </td>
               </tr>

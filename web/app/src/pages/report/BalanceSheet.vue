@@ -175,8 +175,8 @@ export default {
       timePeriodArray,
       store,
       DateConverter,
-    }>
-  },
+    }
+  }
 }
 </script>
 

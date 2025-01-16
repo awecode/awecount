@@ -29,10 +29,7 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
         />
         <ItemImport
           @modal-close="isItemImportOpen = false"
-          @update-list="
-            isItemImportOpen = false
-            loadData()
-          "
+          @update-list="(isItemImportOpen = false, loadData())"
         />
       </q-card>
     </q-dialog>

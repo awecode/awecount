@@ -302,102 +302,52 @@ const toDateValidation = (date) => {
             </div>
             <q-list dense padding class="rounded-borders q-pr-md">
               <q-item v-ripple clickable :active="activeDate == 'today'">
-                <q-item-section
-                  @click="
-                    getToday((last = false))
-                    menuDom.hide()
-                  "
-                >
+                <q-item-section @click="(getToday((last = false)), menuDom.hide())">
                   Today
                 </q-item-section>
               </q-item>
               <q-item v-ripple clickable :active="activeDate == 'yesterday'">
-                <q-item-section
-                  @click="
-                    getToday((last = true))
-                    menuDom.hide()
-                  "
-                >
+                <q-item-section @click="(getToday((last = true)), menuDom.hide())">
                   Yesterday
                 </q-item-section>
               </q-item>
               <q-item v-ripple clickable :active="activeDate == 'last7'">
-                <q-item-section
-                  @click="
-                    getDays((last = 7))
-                    menuDom.hide()
-                  "
-                >
+                <q-item-section @click="(getDays((last = 7)), menuDom.hide())">
                   Last 7 Days
                 </q-item-section>
               </q-item>
               <q-item v-ripple clickable :active="activeDate == 'last30'">
-                <q-item-section
-                  @click="
-                    getDays((last = 30))
-                    menuDom.hide()
-                  "
-                >
+                <q-item-section @click="(getDays((last = 30)), menuDom.hide())">
                   Last 30 Days
                 </q-item-section>
               </q-item>
               <q-item v-ripple clickable :active="activeDate == 'thisMonth'">
-                <q-item-section
-                  @click="
-                    getMonth((last = false))
-                    menuDom.hide()
-                  "
-                >
+                <q-item-section @click="(getMonth((last = false)), menuDom.hide())">
                   This Month
                 </q-item-section>
               </q-item>
               <q-item v-ripple clickable :active="activeDate == 'lastMonth'">
-                <q-item-section
-                  @click="
-                    getMonth((last = true))
-                    menuDom.hide()
-                  "
-                >
+                <q-item-section @click="(getMonth((last = true)), menuDom.hide())">
                   Last Month
                 </q-item-section>
               </q-item>
               <q-item v-ripple clickable :active="activeDate == 'thisYear'">
-                <q-item-section
-                  @click="
-                    getYear((last = false))
-                    menuDom.hide()
-                  "
-                >
+                <q-item-section @click="(getYear((last = false)), menuDom.hide())">
                   This Year
                 </q-item-section>
               </q-item>
               <q-item v-ripple clickable :active="activeDate == 'lastYear'">
-                <q-item-section
-                  @click="
-                    getYear((last = true))
-                    menuDom.hide()
-                  "
-                >
+                <q-item-section @click="(getYear((last = true)), menuDom.hide())">
                   Last Year
                 </q-item-section>
               </q-item>
               <q-item v-ripple clickable :active="activeDate == 'thisFY'">
-                <q-item-section
-                  @click="
-                    getFY((last = false))
-                    menuDom.hide()
-                  "
-                >
+                <q-item-section @click="(getFY((last = false)), menuDom.hide())">
                   This FY
                 </q-item-section>
               </q-item>
               <q-item v-ripple clickable :active="activeDate == 'lastFY'">
-                <q-item-section
-                  @click="
-                    getFY((last = true))
-                    menuDom.hide()
-                  "
-                >
+                <q-item-section @click="(getFY((last = true)), menuDom.hide())">
                   Last FY
                 </q-item-section>
               </q-item>
