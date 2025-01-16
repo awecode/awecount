@@ -117,7 +117,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
       <template #body="props">
         <q-tr v-if="data.account" :props="props">
           <q-td>
-            <router-link :to="`/${$route.params.company}/inventory-account/detail/${data.account?.id}`">
+            <router-link :to="`/${$route.params.company}/inventory/ledgers/${data.account?.id}`">
               Stock
             </router-link>
           </q-td>

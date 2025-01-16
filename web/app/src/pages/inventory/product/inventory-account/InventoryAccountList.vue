@@ -80,7 +80,7 @@ export default {
             color="blue"
             label="view"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/inventory-account/detail/${props.row.id}`"
+            :to="`/${$route.params.company}/inventory/ledgers/${props.row.id}`"
           />
         </q-td>
       </template>
@@ -90,7 +90,7 @@ export default {
             v-if="checkPermissions('inventoryaccount.view')"
             class="text-blue font-medium"
             style="text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/inventory-account/detail/${props.row.id}`"
+            :to="`/${$route.params.company}/inventory/ledgers/${props.row.id}`"
           >
             {{ props.row.name }}
           </router-link>
