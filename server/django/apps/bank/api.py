@@ -1395,7 +1395,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
 
 
     @action(detail=True, url_path="statement-info")
-    def get_statement_info(self, request, pk):
+    def get_statement_info(self, request, pk, *args, **kwargs):
         instance = self.get_object()
         data = {
             'account': AccountMinSerializer(instance.account).data,
@@ -1411,7 +1411,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
 
 
     @action(detail=False, url_path="defaults")
-    def get_defaults(self, request):
+    def get_defaults(self, request, *args, **kwargs):
         banks = BankAccount.objects.filter(company=request.company).only(
             "id", "short_name", "account_number", "ledger_id"
         )
@@ -1419,7 +1419,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
 
 
     @action(detail=False, url_path="import-statement", methods=["POST"])
-    def import_statement(self, request):
+    def import_statement(self, request, *args, **kwargs):
         serializer = ReconciliationStatementImportSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -1474,7 +1474,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
 
         return Response({})
     @action(detail=False, url_path="matched-transactions")
-    def matched_transactions(self, request):
+    def matched_transactions(self, request, *args, **kwargs):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
         account_id = request.query_params.get("account_id")
@@ -1551,7 +1551,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         )
 
     @action(detail=False, url_path="unreconciled-bank-transactions")
-    def unreconciled_bank_transactions(self, request):
+    def unreconciled_bank_transactions(self, request, *args, **kwargs):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
         account_id = request.query_params.get("account_id")
@@ -1591,7 +1591,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         return self.get_paginated_response(serializer.data)
 
     @action(detail=False, url_path="unreconciled-system-transactions")
-    def unreconciled_system_transactions(self, request):
+    def unreconciled_system_transactions(self, request, *args, **kwargs):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
         account_id = request.query_params.get("account_id")
@@ -1651,7 +1651,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         return self.get_paginated_response(serializer.data)
 
     @action(detail=False, methods=["POST"], url_path="reconcile-transactions")
-    def reconcile_transactions(self, request):
+    def reconcile_transactions(self, request, *args, **kwargs):
         statement_ids = request.data.get("statement_ids")
         transaction_ids = request.data.get("transaction_ids")
         if not statement_ids or not transaction_ids:
@@ -1707,7 +1707,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
 
     @transaction.atomic()
     @action(detail=False, methods=["POST"], url_path="unmatch-transactions")
-    def unmatch_transactions(self, request):
+    def unmatch_transactions(self, request, *args, **kwargs):
         statement_ids = request.data.get("statement_ids")
         if not statement_ids or not isinstance(statement_ids, list):
             raise ValidationError({"detail": "A list of 'statement_ids' is required."})
@@ -1753,7 +1753,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
 
     @transaction.atomic()
     @action(detail=False, methods=["POST"], url_path="delete-transactions")
-    def delete_transactions(self, request):
+    def delete_transactions(self, request, *args, **kwargs):
         # Retrieve and validate `statement_ids` from the request
         statement_ids = request.data.get("statement_ids")
         if not statement_ids or not isinstance(statement_ids, list):
@@ -1792,7 +1792,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
 
     @transaction.atomic()
     @action(detail=False, methods=["POST"], url_path="reconcile-with-adjustment")
-    def reconcile_with_adjustment(self, request):
+    def reconcile_with_adjustment(self, request, *args, **kwargs):
         statement_ids = request.data.get("statement_ids")
         transaction_ids = request.data.get("transaction_ids")
         narration = request.data.get("narration")
@@ -1888,7 +1888,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         return Response({})
 
     @action(detail=False, url_path="sales-vouchers")
-    def find_sales_vouchers(self, request):
+    def find_sales_vouchers(self, request, *args, **kwargs):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
         if not start_date or not end_date:
@@ -1960,7 +1960,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         methods=["POST"],
         url_path="reconcile-transactions-with-sales-vouchers",
     )
-    def reconcile_transactions_with_sales_vouchers(self, request):
+    def reconcile_transactions_with_sales_vouchers(self, request, *args, **kwargs):
         statement_ids = request.data.get("statement_ids")
         invoice_ids = request.data.get("invoice_ids")
         remarks = request.data.get("remarks")
@@ -2028,7 +2028,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         methods=["POST"],
         url_path="reconcile-transactions-with-sales-vouchers-and-adjustment",
     )
-    def reconcile_transactions_with_sales_vouchers_and_adjustment(self, request):
+    def reconcile_transactions_with_sales_vouchers_and_adjustment(self, request, *args, **kwargs):
         statement_ids = request.data.get("statement_ids")
         invoice_ids = request.data.get("invoice_ids")
         remarks = request.data.get("remarks")
@@ -2124,7 +2124,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         methods=["POST"],
         url_path="reconcile-transactions-with-funds-transfer",
     )
-    def reconcile_transactions_with_funds_transfer(self, request):
+    def reconcile_transactions_with_funds_transfer(self, request, *args, **kwargs):
         statement_ids = request.data.get("statement_ids")
         if not statement_ids:
             raise ValidationError({"detail": "statement_ids are required"})
@@ -2187,7 +2187,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         methods=["POST"],
         url_path="reconcile-transactions-with-cheque-issue",
     )
-    def reconcile_transactions_with_cheque_issue(self, request):
+    def reconcile_transactions_with_cheque_issue(self, request, *args, **kwargs):
         statement_ids = request.data.get("statement_ids")
         if not statement_ids:
             raise ValidationError({"detail": "statement_ids are required"})
@@ -2243,7 +2243,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         return Response({})
 
     @action(detail=True, url_path="updated-transactions")
-    def updated_transactions(self, request, pk):
+    def updated_transactions(self, request, pk, *args, **kwargs):
         data = self.get_object()
 
         updated_deleted_statement_ids = (
