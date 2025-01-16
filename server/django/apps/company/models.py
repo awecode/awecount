@@ -256,11 +256,11 @@ class Company(BaseModel):
 
 
 class CompanyBaseModel(BaseModel):
-    company = models.ForeignKey(
-        Company,
-        models.CASCADE,
-        related_name="company_%(class)s",
-    )
+    # company = models.ForeignKey(
+    #     Company,
+    #     models.CASCADE,
+    #     related_name="company_%(class)s",
+    # )
 
     class Meta:
         abstract = True
