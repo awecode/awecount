@@ -1,6 +1,6 @@
 <script>
 import useCalcDiscount from 'src/composables/useCalcDiscount.js'
-import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
+import ItemAdd from 'src/pages/inventory/item/ItemForm.vue'
 import InvoiceRow from './InvoiceRow.vue'
 
 export default {
