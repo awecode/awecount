@@ -84,7 +84,7 @@ const newColumn = [
         color="green"
         icon-right="add"
         :label="`New Recurring ${capitalizedType} Invoice Template`"
-        :to="`/${type}-voucher/recurring-template/add`"
+        :to="`/${$route.params.company}/${type}/vouchers/recurring-templates/create`"
       />
     </div>
     <q-table
@@ -157,7 +157,7 @@ const newColumn = [
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/${type}-voucher/recurring-template/${props.row.id}`"
+            :to="`/${$route.params.company}/${type}/vouchers/recurring-templates/${props.row.id}`"
           />
         </q-td>
       </template>
