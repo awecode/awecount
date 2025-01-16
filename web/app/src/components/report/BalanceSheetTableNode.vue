@@ -338,7 +338,7 @@ export default {
           class="text-blue-7 text-italic text-weight-regular"
           style="text-decoration: none"
           target="_blank"
-          :to="`/${$route.params.company}/account/${activeObject.account_id}/view/`"
+          :to="`/${$route.params.company}/account/ledgers/${activeObject.account_id}/`"
         >
           {{ activeObject.name }}
         </RouterLink>
@@ -369,7 +369,7 @@ export default {
                             <span v-for="num in props.level + 1"
                                 :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
                         <RouterLink target="_blank" style="text-decoration: none"
-                            :to="`/${$route.params.company}/account/${activeObject.account_id}/view/`"
+                            :to="`/${$route.params.company}/account/ledgers/${activeObject.account_id}/`"
                             class="text-blue-7 text-italic text-weight-regular">{{ activeObject.name }}</RouterLink>
                     </td>
                     <td>{{ calculateNet(activeObject) }}</td>

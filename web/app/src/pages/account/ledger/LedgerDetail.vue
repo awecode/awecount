@@ -46,7 +46,7 @@ const endDate = ref(null)
 const resetDate = () => {
   startDate.value = null
   endDate.value = null
-  router.push(`/account/${route.params.id}/view/`)
+  router.push(`/account/ledgers/${route.params.id}/`)
 }
 const filter = () => {
   if (!startDate.value || !endDate.value) {
@@ -56,7 +56,7 @@ const filter = () => {
       icon: 'report_problem',
     })
   } else {
-    router.push(`/account/${route.params.id}/view/?start_date=${startDate.value}&end_date=${endDate.value}`)
+    router.push(`/account/ledgers/${route.params.id}/?start_date=${startDate.value}&end_date=${endDate.value}`)
   }
 }
 const endpoint = ref(withQuery(`/api/company/${route.params.company}/accounts/${route.params.id}/transactions/`, route.query))

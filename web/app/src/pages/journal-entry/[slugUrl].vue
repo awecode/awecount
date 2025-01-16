@@ -202,7 +202,7 @@ export default {
               <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
               <div class="row q-col-gutter-md">
                 <div class="col-grow">
-                  <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${row.account.id}/view`">
+                  <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/ledgers/${row.account.id}`">
                     {{ row.account.name }}
                   </router-link>
                 </div>
@@ -279,7 +279,7 @@ export default {
             <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
             <div class="row q-col-gutter-md">
               <div class="col-grow">
-                <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/${row.account.id}/view`">
+                <router-link class="text-blue" style="text-decoration: none" :to="`/${$route.params.company}/account/ledgers/${row.account.id}`">
                   {{ row.account.name }}
                 </router-link>
               </div>

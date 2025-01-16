@@ -316,7 +316,7 @@ export default {
             class="text-blue-7 text-italic text-weight-regular"
             style="text-decoration: none"
             target="_blank"
-            :to="`/${$route.params.company}/account/${activeObject.account_id}/view/`"
+            :to="`/${$route.params.company}/account/ledgers/${activeObject.account_id}/`"
           >
             {{ activeObject.name }}
           </RouterLink>

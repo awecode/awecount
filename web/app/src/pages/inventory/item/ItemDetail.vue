@@ -129,7 +129,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr :props="props">
           <q-td>
-            <router-link :to="`/${$route.params.company}/account/${data.sales_account?.id}/view/`">
+            <router-link :to="`/${$route.params.company}/account/ledgers/${data.sales_account?.id}/`">
               Sales
             </router-link>
           </q-td>
@@ -141,7 +141,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr v-if="data.purchase_account" :props="props">
           <q-td>
-            <router-link :to="`/${$route.params.company}/account/${data.purchase_account?.id}/view/`">
+            <router-link :to="`/${$route.params.company}/account/ledgers/${data.purchase_account?.id}/`">
               Purchase
             </router-link>
           </q-td>
@@ -153,7 +153,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr v-if="data.expense_account" :props="props">
           <q-td>
-            <router-link :to="`/${$route.params.company}/account/${data.expense_account?.id}/view/`">
+            <router-link :to="`/${$route.params.company}/account/ledgers/${data.expense_account?.id}/`">
               Expenses
             </router-link>
           </q-td>
@@ -165,7 +165,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr v-if="data.fixed_asset_account" :props="props">
           <q-td>
-            <router-link :to="`/${$route.params.company}/account/${data.fixed_asset_account?.id}/view`">
+            <router-link :to="`/${$route.params.company}/account/ledgers/${data.fixed_asset_account?.id}`">
               Fixed Assets
             </router-link>
           </q-td>
@@ -177,7 +177,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr v-if="data.discount_received_account" :props="props">
           <q-td>
-            <router-link :to="`/${$route.params.company}/account/${data.discount_received_account?.id}/view`">
+            <router-link :to="`/${$route.params.company}/account/ledgers/${data.discount_received_account?.id}`">
               Discount Received
             </router-link>
           </q-td>

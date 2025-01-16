@@ -640,7 +640,7 @@ async function parseExcelFile(file: File): Promise<void> {
             v-if="checkPermissions('account.view')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
-            :to="`/account/${props.row.account.id}/view/?start_date=${props.row.start_date}&end_date=${props.row.end_date}`"
+            :to="`/account/ledgers/${props.row.account.id}/?start_date=${props.row.start_date}&end_date=${props.row.end_date}`"
           >
             {{ props.row.account.name }}
           </router-link>

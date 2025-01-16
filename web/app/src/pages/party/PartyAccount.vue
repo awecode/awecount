@@ -47,7 +47,7 @@ export default {
     }
     const resetDate = () => {
       dateRef.value = { start_date: null, end_date: null }
-      router.push(`/parties/account/${route.params.id}/`)
+      router.push(`/${route.params.company}/crm/parties/${route.params.id}/account`)
     }
     watch(endpoint, () => fetchData())
     watch(
@@ -93,7 +93,7 @@ export default {
           icon: 'report_problem',
         })
       } else {
-        router.push(`/parties/account/${route.params.id}/?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`)
+        router.push(`/${route.params.company}/crm/parties/${route.params.id}/account?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`)
       }
     }
     return {
