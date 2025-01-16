@@ -18,15 +18,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:startDate', 'update:endDate', 'filter'])
 
-// const showClear = computed(() => {
-// return !this.hideClear && (this.value0 || this.value1)
-// return false
-// })
-
-const emit = defineEmits(['update:startDate', 'update:endDate', 'filter'])
-
-const store = useLoginStore()
-
 const store = useLoginStore()
 
 const menuDom = ref(null)
