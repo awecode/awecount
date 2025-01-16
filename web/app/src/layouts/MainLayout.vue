@@ -264,6 +264,11 @@ const essentialLinks: EssentialLinkProps[] = [
         icon: 'mdi-chart-gantt',
         link: `/${activeCompany.value}/reports/ageing-report`,
       },
+      {
+        title: 'Stock Movement',
+        icon: 'mdi-chart-gantt',
+        link: `/${activeCompany.value}/reports/stock-movement`,
+      },
     ],
   },
   {

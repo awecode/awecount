@@ -1216,6 +1216,14 @@ const companyRoutes: RouteRecordRaw[] = [
           breadcrumbs: ['Reports', 'Trial Balance'],
         },
       },
+      {
+        path: 'stock-movement',
+        name: 'company-reports-stock-movement',
+        component: () => import('pages/report/StockMovement.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Stock Movement'],
+        },
+      },
     ],
   },
 ]
