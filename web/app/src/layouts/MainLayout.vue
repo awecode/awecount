@@ -100,7 +100,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Sales Invoices',
         icon: 'mdi-point-of-sale',
-        link: `/${activeCompany.value}/sales/sales-vouchers`,
+        link: `/${activeCompany.value}/sales/vouchers`,
         hide: !hasPermission('sales'),
       },
       {
