@@ -117,7 +117,7 @@ export default {
             color="blue"
             label="View"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/credit-note/${props.row.id}/view`"
+            :to="`/${$route.params.company}/sales/credit-notes/${props.row.id}`"
           />
         </q-td>
       </template>
@@ -154,7 +154,7 @@ export default {
               v-if="checkPermissions('creditnote.view')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-              :to="`/${$route.params.company}/credit-note/${props.row.id}/view`"
+              :to="`/${$route.params.company}/sales/credit-notes/${props.row.id}`"
             >
               {{ props.row.voucher_no }}
             </router-link>

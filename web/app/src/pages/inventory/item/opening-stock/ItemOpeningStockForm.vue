@@ -15,7 +15,7 @@ export default {
     const onDeleteClick = (id) => {
       useApi(`/api/company/${route.params.company}/item-opening-balance/${id}/`, { method: 'DELETE' })
         .then(() => {
-          router.push('/items/opening/')
+          router.push(`/${route.params.company}/inventory/opening-stock`)
         })
         .catch((err) => {
           const { message } = useHandleFormError(err)
@@ -29,7 +29,7 @@ export default {
     return {
       ...useForm(endpoint, {
         getDefaults: true,
-        successRoute: '/items/opening/',
+        successRoute: `/${route.params.company}/inventory/opening-stock`,
       }),
       checkPermissions,
       isDeleteOpen,

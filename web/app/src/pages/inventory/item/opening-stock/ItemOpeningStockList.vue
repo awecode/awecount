@@ -77,7 +77,7 @@ export default {
             color="orange-6"
             label="EDIT"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/inventory/items/opening/${props.row.id}`"
+            :to="`/${$route.params.company}/inventory/opening-stock/${props.row.id}`"
           />
         </q-td>
       </template>

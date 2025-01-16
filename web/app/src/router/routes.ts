@@ -33,7 +33,7 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'categories/:id/',
+        path: 'categories/:id',
         name: 'company-account-categories-id',
         component: () => import('pages/account/category/CategoryForm.vue'),
         meta: {
@@ -42,7 +42,7 @@ const companyRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'categories/:id/edit',
-        name: 'company-account-categories-id',
+        name: 'company-account-categories-id-edit',
         component: () => import('pages/account/category/CategoryForm.vue'),
         meta: {
           breadcrumbs: ['Account', 'Categories', 'Edit'],
@@ -581,7 +581,7 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'inventory-settings',
+        path: 'inventory',
         name: 'company-settings-inventory',
         component: () => import('pages/settings/InventorySettings.vue'),
         meta: {
@@ -621,7 +621,7 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'purchase-settings',
+        path: 'purchase',
         name: 'company-settings-purchase',
         component: () => import('pages/settings/PurchaseSetting.vue'),
         meta: {
@@ -629,7 +629,7 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'sales-settings',
+        path: 'sales',
         name: 'company-settings-sales',
         component: () => import('pages/settings/SalesSetting.vue'),
         meta: {
@@ -661,7 +661,7 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'dashboard-widgets/create/',
+        path: 'dashboard-widgets/create',
         name: 'company-settings-dashboard-widgets-create',
         component: () => import('pages/settings/widgets/WidgetForm.vue'),
         meta: {
@@ -789,6 +789,14 @@ const companyRoutes: RouteRecordRaw[] = [
         component: () => import('pages/inventory/unit/UnitForm.vue'),
         meta: {
           breadcrumbs: ['Inventory', 'Units', 'Create'],
+        },
+      },
+      {
+        path: 'units/:id',
+        name: 'company-inventory-units-id',
+        component: () => import('pages/inventory/unit/UnitForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Units', 'Edit'],
         },
       },
       {

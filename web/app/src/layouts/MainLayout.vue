@@ -64,7 +64,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Inventory Ledger',
         icon: 'inventory',
-        link: `/${activeCompany.value}/inventory/ledger`,
+        link: `/${activeCompany.value}/inventory/ledgers`,
         hide: !hasPermission('inventoryaccount'),
       },
       {
@@ -333,19 +333,19 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Parties',
         icon: 'mdi-account-group',
-        link: `/${activeCompany.value}/party/list`,
+        link: `/${activeCompany.value}/crm/parties`,
         hide: !hasPermission('party'),
       },
       {
         title: 'Customers',
         icon: 'mdi-domain',
-        link: `/${activeCompany.value}/party/customers`,
+        link: `/${activeCompany.value}/crm/customers`,
         hide: !hasPermission('party'),
       },
       {
         title: 'Suppliers',
         icon: 'mdi-account',
-        link: `/${activeCompany.value}/party/suppliers`,
+        link: `/${activeCompany.value}/crm/suppliers`,
         hide: !hasPermission('party'),
       },
       {
