@@ -355,8 +355,8 @@ DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
 
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_PORT = os.environ.get("EMAIL_PORT")
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", False)
-EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", False)
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS") == "True"
+EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL") == "True"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 
