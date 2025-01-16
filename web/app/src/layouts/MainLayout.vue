@@ -6,7 +6,7 @@ import { useBreadcrumbItems } from 'src/composables/breadcrumb.js'
 import { useAuthStore } from 'src/stores/auth'
 import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { useLoginStore } from '../stores/login-info.js'
+import { useLoginStore } from 'src/stores/login-info'
 
 const route = useRoute()
 const router = useRouter()

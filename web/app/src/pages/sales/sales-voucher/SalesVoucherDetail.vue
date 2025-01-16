@@ -2,7 +2,7 @@
 import type { Ref } from 'vue'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import { modes } from 'src/helpers/constants/invoice'
-import { useLoginStore } from 'src/stores/login-info.js'
+import { useLoginStore } from 'src/stores/login-info'
 import { parseErrors } from 'src/utils/helpers'
 
 interface Fields {
