@@ -99,7 +99,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Account"
-        :to="`/${$route.params.company}/account/create/`"
+        :to="`/${$route.params.company}/account/create`"
       />
     </div>
 
@@ -179,7 +179,7 @@ export default {
             color="blue"
             label="View"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/account/ledgers/${props.row.id}/`"
+            :to="`/${$route.params.company}/account/ledgers/${props.row.id}`"
           />
           <q-btn
             v-if="checkPermissions('account.modify')"
@@ -187,7 +187,7 @@ export default {
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/account/ledgers/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/account/ledgers/${props.row.id}/edit`"
           />
         </q-td>
       </template>
@@ -197,7 +197,7 @@ export default {
             v-if="checkPermissions('category.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/account/categories/${props.row.category.id}/edit/`"
+            :to="`/${$route.params.company}/account/categories/${props.row.category.id}/edit`"
           >
             {{ props.row.category.name }}
           </router-link>
@@ -227,7 +227,7 @@ export default {
             v-if="checkPermissions('account.view')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/account/ledgers/${props.row.id}/`"
+            :to="`/${$route.params.company}/account/ledgers/${props.row.id}`"
           >
             {{ props.row.name }}
           </router-link>

@@ -143,7 +143,7 @@ export default {
             icon="library_books"
             label="Journal Entries"
             :loading="loading"
-            :to="`/${$route.params.company}/account/journal-vouchers/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/account/journal-vouchers/${props.row.id}/edit`"
           />
         </div>
       </q-card>

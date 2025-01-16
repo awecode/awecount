@@ -270,7 +270,7 @@ export default {
                   v-if="checkPermissions('paymentreceipt.view')"
                   class="text-blue"
                   style="font-weight: 500; text-decoration: none"
-                  :to="`/${$route.params.company}/payment-receipts/${receipt.id}/`"
+                  :to="`/${$route.params.company}/payment-receipts/${receipt.id}`"
                 >
                   {{ receipt.id }}
                 </router-link>
@@ -305,7 +305,7 @@ export default {
               color="orange-5"
               icon="edit"
               label="Edit"
-              :to="`/${$route.params.company}/sales/vouchers/${fields?.id}/edit/`"
+              :to="`/${$route.params.company}/sales/vouchers/${fields?.id}/edit`"
             />
             <q-btn
               v-if="fields?.status === 'Issued' && checkPermissions('sales.modify')"
@@ -345,7 +345,7 @@ export default {
             color="blue-7"
             icon="books"
             label="Journal Entries"
-            :to="`/${$route.params.company}/journal-entries/sales-voucher/${fields.id}/`"
+            :to="`/${$route.params.company}/journal-entries/sales-voucher/${fields.id}`"
           />
         </div>
         <q-dialog v-model="isDeleteOpen" class="overflow-visible" @before-hide="errors = {}">

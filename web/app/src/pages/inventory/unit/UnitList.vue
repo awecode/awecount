@@ -45,7 +45,7 @@ export default {
             v-if="checkPermissions('unit.modify')"
             class="text-blue text-weight-medium"
             style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px; text-decoration: none"
-            :to="`/${$route.params.company}/inventory/units/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/inventory/units/${props.row.id}/edit`"
           >
             {{ props.row.name }}
           </router-link>

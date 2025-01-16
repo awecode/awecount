@@ -330,7 +330,7 @@ export default {
               color="orange-7"
               icon="edit"
               label="Edit"
-              :to="`/${$route.params.company}/payment-receipts/${fields.id}/edit/`"
+              :to="`/${$route.params.company}/payment-receipts/${fields.id}/edit`"
             />
             <q-btn
               v-if="fields.status !== 'Cleared' && checkPermissions('paymentreceipt.modify')"
@@ -356,14 +356,14 @@ export default {
             color="blue-7"
             icon="mdi-checkbook"
             label="View Cheque deposit"
-            :to="`/${$route.params.company}/cheque-deposit/${fields?.id}/view/`"
+            :to="`/${$route.params.company}/cheque-deposit/${fields?.id}/view`"
           />
           <q-btn
             v-if="fields.status === 'Cleared'"
             color="blue-7"
             icon="books"
             label="Journal Entries"
-            :to="`/${$route.params.company}/journal-entries/payment-receipt/${fields.id}/`"
+            :to="`/${$route.params.company}/journal-entries/payment-receipt/${fields.id}`"
           />
         </div>
         <q-dialog v-model="isDeleteOpen">

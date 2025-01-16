@@ -207,7 +207,7 @@ const onCancelClick = () => {
           color="orange"
           icon="edit"
           label="Edit"
-          :to="`/${$route.params.company}/banking/cheque-deposits/${props.id}/edit/`"
+          :to="`/${$route.params.company}/banking/cheque-deposits/${props.id}/edit`"
         />
       </div>
       <div v-if="fields?.status === 'Issued' && checkPermissions('chequedeposit.modify')">
@@ -236,7 +236,7 @@ const onCancelClick = () => {
           color="blue"
           icon="library_books"
           label="Journal Entries"
-          :to="`/${$route.params.company}/journal-entries/cheque-deposits/${fields.id}/`"
+          :to="`/${$route.params.company}/journal-entries/cheque-deposits/${fields.id}`"
         />
       </div>
     </div>

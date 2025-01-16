@@ -24,7 +24,7 @@ fields.value = res
         icon="add"
         label="Add widget"
         style="font-size: 0.75rem"
-        :to="`/${$route.params.company}/settings/dashboard-widgets/create/`"
+        :to="`/${$route.params.company}/settings/dashboard-widgets/create`"
       />
     </div>
     <div class="q-mt-md grid-con">

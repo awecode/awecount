@@ -49,7 +49,7 @@ export default {
     }
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: `/${route.params.company}/account/journal-vouchers/`,
+      successRoute: `/${route.params.company}/account/journal-vouchers`,
     })
     useMeta(() => {
       return {

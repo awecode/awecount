@@ -124,7 +124,7 @@ export default {
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/crm/parties/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/crm/parties/${props.row.id}/edit`"
           />
           <q-btn
             v-if="checkPermissions('party.view')"

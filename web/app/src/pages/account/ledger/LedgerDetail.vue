@@ -46,7 +46,7 @@ const endDate = ref(null)
 const resetDate = () => {
   startDate.value = null
   endDate.value = null
-  router.push(`/account/ledgers/${route.params.id}/`)
+  router.push(`/account/ledgers/${route.params.id}`)
 }
 const filter = () => {
   if (!startDate.value || !endDate.value) {

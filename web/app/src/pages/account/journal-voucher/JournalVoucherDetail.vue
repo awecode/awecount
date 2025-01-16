@@ -200,7 +200,7 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
             color="orange"
             icon="edit"
             label="Edit"
-            :to="`/${$route.params.company}/account/journal-vouchers/${props.id}/edit/`"
+            :to="`/${$route.params.company}/account/journal-vouchers/${props.id}/edit`"
           />
         </div>
         <div v-if="fields?.status == 'Approved' && checkPermissions('journalvoucher.cancel')">

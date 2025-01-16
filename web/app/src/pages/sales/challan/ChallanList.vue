@@ -145,7 +145,7 @@ export default {
               color="orange"
               label="Edit"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/sales/challans/${props.row.id}/edit/`"
+              :to="`/${$route.params.company}/sales/challans/${props.row.id}/edit`"
             />
           </div>
         </q-td>
@@ -157,7 +157,7 @@ export default {
               v-if="checkPermissions('challan.modify')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-              :to="`/${$route.params.company}/sales/challans/${props.row.id}/edit/`"
+              :to="`/${$route.params.company}/sales/challans/${props.row.id}/edit`"
             >
               {{ props.row.voucher_no }}
             </router-link>

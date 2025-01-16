@@ -182,7 +182,7 @@ onMounted(() => {
             icon="library_books"
             label="Journal Entries"
             :loading="loading"
-            :to="`/${$route.params.company}/journal-entries/fund-transfer/${id}/`"
+            :to="`/${$route.params.company}/journal-entries/fund-transfer/${id}`"
           />
         </div>
       </q-card>

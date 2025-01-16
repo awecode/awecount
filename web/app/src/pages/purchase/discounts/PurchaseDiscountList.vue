@@ -119,7 +119,7 @@ export default {
               color="orange-7"
               label="Edit"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/purchase/discounts/${props.row.id}/edit/`"
+              :to="`/${$route.params.company}/purchase/discounts/${props.row.id}/edit`"
             />
           </div>
         </q-td>

@@ -117,7 +117,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
       <template #body="props">
         <q-tr v-if="data.account" :props="props">
           <q-td>
-            <router-link :to="`/${$route.params.company}/inventory-account/detail/${data.account?.id}/`">
+            <router-link :to="`/${$route.params.company}/inventory-account/detail/${data.account?.id}`">
               Stock
             </router-link>
           </q-td>
@@ -129,7 +129,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr :props="props">
           <q-td>
-            <router-link :to="`/${$route.params.company}/account/ledgers/${data.sales_account?.id}/`">
+            <router-link :to="`/${$route.params.company}/account/ledgers/${data.sales_account?.id}`">
               Sales
             </router-link>
           </q-td>
@@ -141,7 +141,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr v-if="data.purchase_account" :props="props">
           <q-td>
-            <router-link :to="`/${$route.params.company}/account/ledgers/${data.purchase_account?.id}/`">
+            <router-link :to="`/${$route.params.company}/account/ledgers/${data.purchase_account?.id}`">
               Purchase
             </router-link>
           </q-td>
@@ -153,7 +153,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr v-if="data.expense_account" :props="props">
           <q-td>
-            <router-link :to="`/${$route.params.company}/account/ledgers/${data.expense_account?.id}/`">
+            <router-link :to="`/${$route.params.company}/account/ledgers/${data.expense_account?.id}`">
               Expenses
             </router-link>
           </q-td>
@@ -189,7 +189,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
       </template>
     </q-table>
-    <router-link class="no-underline" :to="`/${$route.params.company}/items/${data.id}/`">
+    <router-link class="no-underline" :to="`/${$route.params.company}/items/${data.id}`">
       <q-btn class="q-mt-md q-px-lg no-underline" color="orange-7">
         Edit
       </q-btn>

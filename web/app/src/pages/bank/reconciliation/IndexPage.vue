@@ -593,7 +593,7 @@ async function parseExcelFile(file: File): Promise<void> {
             color="blue"
             label="View"
             style="font-size: 12px"
-            :to="`/bank-reconciliation/${props.row.id}/`"
+            :to="`/bank-reconciliation/${props.row.id}`"
           />
           <q-btn
             v-if="checkPermissions('reconciliationstatement.view') && props.row.reconciled_rows < props.row.total_rows"
@@ -627,7 +627,7 @@ async function parseExcelFile(file: File): Promise<void> {
             v-if="checkPermissions('category.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
-            :to="`/account-category/${props.row.category.id}/`"
+            :to="`/account-category/${props.row.category.id}`"
           >
             {{ props.row.category.name }}
           </router-link>

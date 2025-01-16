@@ -42,7 +42,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Opening Balance"
-        :to="`/${$route.params.company}/items/opening/create/`"
+        :to="`/${$route.params.company}/items/opening/create`"
       />
     </div>
     <q-table
@@ -77,7 +77,7 @@ export default {
             color="orange-6"
             label="EDIT"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/items/opening/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/opening/${props.row.id}`"
           />
         </q-td>
       </template>
@@ -87,7 +87,7 @@ export default {
             v-if="checkPermissions('item.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/items/${props.row.item_id}/`"
+            :to="`/${$route.params.company}/items/${props.row.item_id}`"
           >
             {{ props.row.name }}
           </router-link>

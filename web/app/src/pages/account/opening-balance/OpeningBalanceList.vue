@@ -86,7 +86,7 @@ export default {
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/account/opening-balances/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/account/opening-balances/${props.row.id}/edit`"
           />
         </q-td>
       </template>
@@ -96,7 +96,7 @@ export default {
             v-if="checkPermissions('accountopeningbalance.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/account/opening-balances/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/account/opening-balances/${props.row.id}/edit`"
           >
             {{ props.row.name }}
           </router-link>

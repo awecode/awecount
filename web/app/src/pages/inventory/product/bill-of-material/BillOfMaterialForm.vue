@@ -12,7 +12,7 @@ export default {
     useMeta(metaData)
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: `/${route.params.company}/inventory/bill-of-materials/`,
+      successRoute: `/${route.params.company}/inventory/bill-of-materials`,
     })
     formData.fields.value.date = formData.today
     const deleteRow = (index, errors) => {

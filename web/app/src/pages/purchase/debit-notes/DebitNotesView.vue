@@ -247,7 +247,7 @@ export default {
             color="orange-6"
             icon="edit"
             label="Edit"
-            :to="`/${$route.params.company}/purchase/debit-notes/${fields.id}/edit/`"
+            :to="`/${$route.params.company}/purchase/debit-notes/${fields.id}/edit`"
           />
           <q-btn
             v-if="fields?.status === 'Issued' && checkPermissions('debitnote.modify')"
@@ -285,7 +285,7 @@ export default {
           color="blue-7"
           icon="books"
           label="Journal Entries"
-          :to="`/${$route.params.company}/journal-entries/debit-note/${fields.id}/`"
+          :to="`/${$route.params.company}/journal-entries/debit-note/${fields.id}`"
         />
       </div>
     </div>

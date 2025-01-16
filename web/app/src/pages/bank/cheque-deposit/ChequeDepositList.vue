@@ -151,7 +151,7 @@ export default {
             color="blue"
             label="View"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/banking/cheque-deposits/${props.row.id}/`"
+            :to="`/${$route.params.company}/banking/cheque-deposits/${props.row.id}`"
           />
         </q-td>
       </template>

@@ -44,7 +44,7 @@ const newColumn = [
         color="green"
         icon-right="add"
         label="Add Inventory Conversion Voucher"
-        :to="`/${$route.params.company}/inventory/conversions/create/`"
+        :to="`/${$route.params.company}/inventory/conversions/create`"
       />
     </div>
     <q-table

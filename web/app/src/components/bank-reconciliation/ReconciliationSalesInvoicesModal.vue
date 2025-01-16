@@ -533,7 +533,7 @@ const loadSalesInvoice = async (index: number, done: any) => {
                           v-if="checkPermissions('sales.view')"
                           class="text-blue-600 text-xs hover:underline"
                           target="_blank"
-                          :to="`/sales-voucher/${data.id}/view/`"
+                          :to="`/sales-voucher/${data.id}/view`"
                         >
                           Sales Invoice
                         </router-link>

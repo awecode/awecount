@@ -68,7 +68,7 @@ export default {
             v-if="checkPermissions('category.modify')"
             class="text-blue"
             style="text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/inventory/categories/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/inventory/categories/${props.row.id}/edit`"
           >
             {{ props.row.name }}
           </router-link>

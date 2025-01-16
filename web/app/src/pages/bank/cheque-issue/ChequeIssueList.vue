@@ -157,7 +157,7 @@ export default {
             v-if="checkPermissions('chequeissue.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
-            :to="`/${$route.params.company}/banking/cheque-issues/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/banking/cheque-issues/${props.row.id}/edit`"
           >
             {{ props.row.issued_to || props.row.party_name }}
           </router-link>
@@ -189,7 +189,7 @@ export default {
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/banking/cheque-issues/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/banking/cheque-issues/${props.row.id}/edit`"
           />
         </q-td>
       </template>

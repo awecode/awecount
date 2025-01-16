@@ -55,7 +55,7 @@ export default {
               color="blue l-view-btn"
               label="Edit"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/settings/payment-modes/${props.row.id}/edit/`"
+              :to="`/${$route.params.company}/settings/payment-modes/${props.row.id}/edit`"
             />
           </div>
         </q-td>

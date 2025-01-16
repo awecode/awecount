@@ -64,7 +64,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Tax Scheme"
-        :to="`/${$route.params.company}/taxes/create/`"
+        :to="`/${$route.params.company}/taxes/create`"
       />
     </div>
 
@@ -85,7 +85,7 @@ export default {
             v-if="checkPermissions('taxscheme.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/taxes/${props.row.id}/`"
+            :to="`/${$route.params.company}/taxes/${props.row.id}`"
           >
             {{ props.row.name }}
           </router-link>
@@ -111,7 +111,7 @@ export default {
             color="orange"
             label="Edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/taxes/${props.row.id}/`"
+            :to="`/${$route.params.company}/taxes/${props.row.id}`"
           />
         </q-td>
       </template>

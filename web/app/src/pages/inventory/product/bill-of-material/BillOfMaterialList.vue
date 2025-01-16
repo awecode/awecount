@@ -30,7 +30,7 @@ const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)
         color="green"
         icon-right="add"
         label="Add Bill of Material"
-        :to="`/${$route.params.company}/inventory/bill-of-materials/create/`"
+        :to="`/${$route.params.company}/inventory/bill-of-materials/create`"
       />
     </div>
     <q-table

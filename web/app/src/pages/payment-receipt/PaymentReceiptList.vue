@@ -219,7 +219,7 @@ export default {
               color="blue"
               label="View"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/payment-receipts/${props.row.id}/`"
+              :to="`/${$route.params.company}/payment-receipts/${props.row.id}`"
             />
           </div>
         </q-td>

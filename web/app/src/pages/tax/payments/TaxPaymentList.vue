@@ -162,7 +162,7 @@ export default {
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/tax/payments/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/tax/payments/${props.row.id}/edit`"
           />
           <q-btn
             class="q-py-none q-px-md font-size-sm l-view-btn"
@@ -170,7 +170,7 @@ export default {
             label="Journal entries"
             style="font-size: 12px"
             :disable="props.row.status === 'Cancelled'"
-            :to="`/${$route.params.company}/journal-entries/tax-payments/${props.row.id}/`"
+            :to="`/${$route.params.company}/journal-entries/tax-payments/${props.row.id}`"
           />
         </q-td>
       </template>

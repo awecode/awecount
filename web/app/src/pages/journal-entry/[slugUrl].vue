@@ -318,7 +318,7 @@ export default {
       <!-- <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
       <div>
         <q-btn
-          :to="`/${$route.params.company}/journal-voucher/${fields?.id}/edit/`"
+          :to="`/${$route.params.company}/journal-voucher/${fields?.id}/edit`"
           color="orange"
           icon="edit"
           label="Edit"

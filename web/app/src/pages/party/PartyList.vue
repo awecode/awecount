@@ -99,7 +99,7 @@ export default {
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/crm/parties/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/crm/parties/${props.row.id}/edit`"
           />
           <q-btn
             class="q-py-none q-px-md font-size-sm l-view-btn"
@@ -116,7 +116,7 @@ export default {
             v-if="checkPermissions('party.modify')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/crm/parties/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/crm/parties/${props.row.id}/edit`"
           >
             {{ props.row.name }}
           </router-link>
