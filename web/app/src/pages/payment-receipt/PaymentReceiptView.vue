@@ -292,8 +292,10 @@ export default {
                       v-if="checkPermissions('sales.view')"
                       class="text-blue q-mr-sm"
                       style="text-decoration: none"
-                      :to="`/${$route.params.company}/sales-voucher/${invoice.id}/view`"
-                    >#{{ invoice.id }}</router-link>
+                      :to="`/${$route.params.company}/sales/vouchers/${invoice.id}`"
+                    >
+                      #{{ invoice.id }}
+                    </router-link>
                     <span v-else>#{{ invoice.id }}</span>
                   </span>
                 </span>

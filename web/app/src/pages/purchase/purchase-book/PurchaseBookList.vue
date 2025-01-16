@@ -137,7 +137,7 @@ export default {
 
       <template #body-cell-voucher_no="props">
         <q-td style="padding: 0" :props="props">
-          <router-link class="text-blue l-view-btn" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" :to="`/${$route.params.company}/purchase-voucher/${props.row.id}/view`">
+          <router-link class="text-blue l-view-btn" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px" :to="`/${$route.params.company}/purchase/vouchers/${props.row.id}`">
             {{ props.row.voucher_no }}
           </router-link>
         </q-td>

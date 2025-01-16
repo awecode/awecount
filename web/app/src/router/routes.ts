@@ -162,6 +162,14 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'bank-accounts/:id',
+        name: 'company-banking-bank-accounts-id',
+        component: () => import('pages/bank/account/AccountForm.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Bank Accounts', 'Edit'],
+        },
+      },
+      {
         path: 'bank-accounts/:id/edit',
         name: 'company-banking-bank-accounts-id-edit',
         component: () => import('pages/bank/account/AccountForm.vue'),
@@ -549,10 +557,10 @@ const companyRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'vouchers/:id/materialized-view',
-        name: 'company-sales-vouchers-id-edit',
+        name: 'company-sales-vouchers-id-materialized-view',
         component: () => import('pages/sales/sales-voucher/SalesVoucherMV.vue'),
         meta: {
-          breadcrumbs: ['Sales', 'Sales Vouchers', 'Material'],
+          breadcrumbs: ['Sales', 'Sales Vouchers', 'Materialized View'],
         },
       },
     ],

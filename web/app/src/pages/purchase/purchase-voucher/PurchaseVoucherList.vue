@@ -197,7 +197,7 @@ export default {
               data-testid="view-btn"
               label="View"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/purchase-voucher/${props.row.id}/view`"
+              :to="`/${$route.params.company}/purchase/vouchers/${props.row.id}`"
             />
           </div>
         </q-td>
@@ -211,7 +211,7 @@ export default {
               class="text-blue"
               data-testid="voucher-no"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-              :to="`/${$route.params.company}/purchase-voucher/${props.row.id}/view`"
+              :to="`/${$route.params.company}/purchase/vouchers/${props.row.id}`"
             >
               {{ props.row.voucher_no }}
             </router-link>

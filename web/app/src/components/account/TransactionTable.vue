@@ -26,28 +26,28 @@ export default {
     function getVoucherUrl(row) {
       const source_type = row.source_type
       if (source_type === 'Sales Voucher') {
-        return `/${route.params.company}/sales/vouchers/${row.source_id}/`
+        return `/${route.params.company}/sales/vouchers/${row.source_id}`
       }
       if (source_type === 'Purchase Voucher') {
-        return `/${route.params.company}/purchase/vouchers/${row.source_id}/`
+        return `/${route.params.company}/purchase/vouchers/${row.source_id}`
       }
       if (source_type === 'Journal Voucher') {
-        return `/${route.params.company}/account/journal-vouchers/${row.source_id}/`
+        return `/${route.params.company}/account/journal-vouchers/${row.source_id}`
       }
       if (source_type === 'Credit Note') {
-        return `/${route.params.company}/sales/credit-notes/${row.source_id}/`
+        return `/${route.params.company}/sales/credit-notes/${row.source_id}`
       }
       if (source_type === 'Debit Note') {
-        return `/${route.params.company}/purchase/debit-notes/${row.source_id}/`
+        return `/${route.params.company}/purchase/debit-notes/${row.source_id}`
       }
       if (source_type === 'Challan') {
-        return `/${route.params.company}/sales/challans/${row.source_id}/`
+        return `/${route.params.company}/sales/challans/${row.source_id}`
       }
       if (source_type === 'Cheque Deposit') {
-        return `/${route.params.company}/banking/cheque-deposit/${row.source_id}/`
+        return `/${route.params.company}/banking/cheque-deposit/${row.source_id}`
       }
       if (source_type === 'Payment Receipt') {
-        return `/${route.params.company}/payment-receipts/${row.source_id}/`
+        return `/${route.params.company}/payment-receipts/${row.source_id}`
       }
       if (source_type === 'Cheque Issue') {
         return `/${route.params.company}/banking/cheque-issue/${row.source_id}/edit`
@@ -65,7 +65,7 @@ export default {
         return `/${route.params.company}/tax/payments/${row.source_id}/edit`
       }
       if (source_type === 'Inventory Adjustment Voucher') {
-        return `/${route.params.company}/inventory/adjustments/${row.source_id}/`
+        return `/${route.params.company}/inventory/adjustments/${row.source_id}`
       }
       console.error(`${source_type} not handled!`)
     }

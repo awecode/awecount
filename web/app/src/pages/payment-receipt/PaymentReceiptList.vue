@@ -192,8 +192,10 @@ export default {
                 v-if="checkPermissions('sales.view')"
                 class="text-blue"
                 style="text-decoration: none; display: flex; align-items: center"
-                :to="`/${$route.params.company}/sales-voucher/${invoice.id}/view`"
-              >#{{ invoice.voucher_no }}</router-link>
+                :to="`/${$route.params.company}/sales/vouchers/${invoice.id}`"
+              >
+                #{{ invoice.voucher_no }}
+              </router-link>
               <span v-else>#{{ invoice.voucher_no }}</span>
             </span>
           </div>

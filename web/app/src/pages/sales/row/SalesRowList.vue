@@ -219,7 +219,7 @@ export default {
               v-if="checkPermissions('sales.view')"
               class="text-blue l-view-btn"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; padding: 8px 8px 8px 16px"
-              :to="`/${$route.params.company}/sales-voucher/${props.row.voucher_id}/view`"
+              :to="`/${$route.params.company}/sales/vouchers/${props.row.voucher_id}`"
             >
               {{ props.row.voucher__voucher_no }}
             </router-link>
