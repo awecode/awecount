@@ -1,7 +1,7 @@
 <script>
-const route = useRoute()
 export default {
   setup() {
+    const route = useRoute()
     const metaData = {
       title: 'Parties | Awecount',
     }
