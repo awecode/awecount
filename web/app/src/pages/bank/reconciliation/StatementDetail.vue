@@ -273,7 +273,7 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
                 color="blue"
                 label="Reconcile remaining"
                 style="font-size: 12px"
-                :to="`/bank-reconciliation/reconcile/?account_id=${statementInfo.account.id}&start_date=${statementInfo?.date.start}&end_date=${statementInfo?.date.end}`"
+                :to="`/${$route.params.company}/banking/reconciliation/reconcile?account_id=${statementInfo.account.id}&start_date=${statementInfo?.date.start}&end_date=${statementInfo?.date.end}`"
               />
             </div>
           </div>

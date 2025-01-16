@@ -133,6 +133,12 @@ const essentialLinks: EssentialLinkProps[] = [
         link: `/${activeCompany.value}/sales/sales-book`,
         hide: !hasPermission('sales'),
       },
+      {
+        title: 'Recurring Templates',
+        icon: 'mdi-repeat',
+        link: `/${activeCompany.value}/sales/vouchers/recurring-templates`,
+        hide: !hasPermission('sales'),
+      },
     ],
   },
   {
@@ -167,6 +173,12 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Purchase Book',
         icon: 'book',
         link: `/${activeCompany.value}/purchase/purchase-book`,
+        hide: !hasPermission('purchasevoucher'),
+      },
+      {
+        title: 'Recurring Templates',
+        icon: 'mdi-repeat',
+        link: `/${activeCompany.value}/purchase/vouchers/recurring-templates`,
         hide: !hasPermission('purchasevoucher'),
       },
     ],
@@ -303,6 +315,12 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Funds Transfers',
         icon: 'mdi-bank-transfer',
         link: `/${activeCompany.value}/banking/fund-transfers`,
+        hide: !hasPermission('fundtransfer'),
+      },
+      {
+        title: 'Reconciliation',
+        icon: 'mdi-bank-transfer',
+        link: `/${activeCompany.value}/banking/reconciliation`,
         hide: !hasPermission('fundtransfer'),
       },
     ],

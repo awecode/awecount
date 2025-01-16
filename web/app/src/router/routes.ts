@@ -273,6 +273,30 @@ const companyRoutes: RouteRecordRaw[] = [
           breadcrumbs: ['Banking', 'Fund Transfers', 'Edit'],
         },
       },
+      {
+        path: 'reconciliation',
+        name: 'company-banking-reconciliation',
+        component: () => import('pages/bank/reconciliation/IndexPage.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Reconciliation'],
+        },
+      },
+      {
+        path: 'reconciliation/reconcile',
+        name: 'company-banking-reconciliation-reconcile',
+        component: () => import('pages/bank/reconciliation/ReconcileTransactions.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Reconciliation', 'Reconcile'],
+        },
+      },
+      {
+        path: 'reconciliation/:id',
+        name: 'company-banking-reconciliation-id',
+        component: () => import('pages/bank/reconciliation/StatementDetail.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Reconciliation', 'Detail'],
+        },
+      },
     ],
   },
   {
@@ -392,6 +416,30 @@ const companyRoutes: RouteRecordRaw[] = [
         component: () => import('pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
         meta: {
           breadcrumbs: ['Purchase', 'Purchase Vouchers', 'Edit'],
+        },
+      },
+      {
+        path: 'vouchers/recurring-templates',
+        name: 'company-purchase-vouchers-recurring-templates',
+        component: () => import('pages/purchase/purchase-voucher/RecurringTemplateList.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Purchase Vouchers', 'Recurring Templates'],
+        },
+      },
+      {
+        path: 'vouchers/recurring-templates/create',
+        name: 'company-purchase-vouchers-recurring-templates-create',
+        component: () => import('pages/purchase/purchase-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Purchase Vouchers', 'Recurring Templates', 'Create'],
+        },
+      },
+      {
+        path: 'vouchers/recurring-templates/:id/edit',
+        name: 'company-purchase-vouchers-recurring-templates-id-edit',
+        component: () => import('pages/purchase/purchase-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Purchase Vouchers', 'Recurring Templates', 'Edit'],
         },
       },
     ],
@@ -561,6 +609,30 @@ const companyRoutes: RouteRecordRaw[] = [
         component: () => import('pages/sales/sales-voucher/SalesVoucherMV.vue'),
         meta: {
           breadcrumbs: ['Sales', 'Sales Vouchers', 'Materialized View'],
+        },
+      },
+      {
+        path: 'vouchers/recurring-templates',
+        name: 'company-sales-vouchers-recurring-templates',
+        component: () => import('pages/sales/sales-voucher/RecurringTemplateList.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Sales Vouchers', 'Recurring Templates'],
+        },
+      },
+      {
+        path: 'vouchers/recurring-templates/create',
+        name: 'company-sales-vouchers-recurring-templates-create',
+        component: () => import('pages/sales/sales-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Sales Vouchers', 'Recurring Templates', 'Create'],
+        },
+      },
+      {
+        path: 'vouchers/recurring-templates/:id/edit',
+        name: 'company-sales-vouchers-recurring-templates-id-edit',
+        component: () => import('pages/sales/sales-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Sales Vouchers', 'Recurring Templates', 'Edit'],
         },
       },
     ],
