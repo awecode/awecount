@@ -40,7 +40,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Purchase Order"
-        :to="`/${$route.params.company}/purchase-order/create`"
+        :to="`/${$route.params.company}/purchase/purchase-orders/create`"
       />
     </div>
     <q-table
@@ -138,7 +138,7 @@ export default {
               color="orange"
               label="Edit"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/purchase-order/${props.row.id}`"
+              :to="`/${$route.params.company}/purchase/purchase-orders/${props.row.id}`"
             />
           </div>
         </q-td>
@@ -150,7 +150,7 @@ export default {
               v-if="checkPermissions('purchaseorder.modify')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-              :to="`/${$route.params.company}/purchase-order/${props.row.id}`"
+              :to="`/${$route.params.company}/purchase/purchase-orders/${props.row.id}`"
             >
               {{ props.row.voucher_no }}
             </router-link>

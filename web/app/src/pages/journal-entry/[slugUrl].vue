@@ -187,7 +187,11 @@ export default {
               {{ getDate[0] || '-' }}
             </div>
           </div>
-          <router-link v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : $route.params.slug}/${fields[0]?.source_id}/view`">
+          <router-link
+            v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'"
+            style="text-decoration: none"
+            :to="`/${$route.params.company}/${CONTENT_TYPE_TO_SLUG[$route.params.slug]}/${fields[0]?.source_id}`"
+          >
             <div class="row items-center text-blue">
               Source
             </div>
