@@ -6,6 +6,8 @@ import CreateAccount from '../account/AccountForm.vue'
 
 export default {
   setup() {
+    const route = useRoute()
+
     const endpoint = `/api/company/${route.params.company}/bank-cash-deposits/`
     const formData = useForm(endpoint, {
       getDefaults: true,

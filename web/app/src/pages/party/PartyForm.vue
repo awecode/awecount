@@ -14,7 +14,7 @@ const endpoint = `/api/company/${route.params.company}/parties/`
 
 const { fields, errors, loading, isEdit, submitForm } = useForm(endpoint, {
   getDefaults: false,
-  successRoute: `/${route.params.company}/party/list`,
+  successRoute: `/${route.params.company}/crm/parties/list`,
 })
 
 useMeta(() => ({
@@ -39,7 +39,7 @@ function onDeletClick() {
   }).onOk(() => {
     useApi(`/api/company/${route.params.company}/parties/${fields.value.id}/`, { method: 'DELETE' })
       .then(() => {
-        router.push(`/${route.params.company}/party/list`)
+        router.push(`/${route.params.company}/crm/parties`)
       })
       .catch((error) => {
         console.error('Error deleting party:', error)

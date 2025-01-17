@@ -1016,6 +1016,14 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'bill-of-materials/:id',
+        name: 'company-inventory-bill-of-materials-id',
+        component: () => import('pages/inventory/product/bill-of-material/BillOfMaterialForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Bill of Materials', 'Detail'],
+        },
+      },
+      {
         path: 'bill-of-materials/:id/edit',
         name: 'company-inventory-bill-of-materials-id-edit',
         component: () => import('pages/inventory/product/bill-of-material/BillOfMaterialForm.vue'),
@@ -1099,6 +1107,14 @@ const companyRoutes: RouteRecordRaw[] = [
         component: () => import('pages/party/PartyForm.vue'),
         meta: {
           breadcrumbs: ['Party', 'Create'],
+        },
+      },
+      {
+        path: 'parties/:id',
+        name: 'company-party-id',
+        component: () => import('pages/party/PartyForm.vue'),
+        meta: {
+          breadcrumbs: ['Party', 'Detail'],
         },
       },
       {

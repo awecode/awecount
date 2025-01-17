@@ -82,7 +82,7 @@ export default {
         color="green"
         icon-right="add"
         label="New party"
-        :to="`/${$route.params.company}/party/create`"
+        :to="`/${$route.params.company}/crm/parties/create`"
       />
     </div>
 
@@ -124,7 +124,7 @@ export default {
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/party/${props.row.id}`"
+            :to="`/${$route.params.company}/crm/parties/${props.row.id}`"
           />
           <q-btn
             v-if="checkPermissions('party.view')"
