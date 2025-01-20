@@ -1,43 +1,67 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 
-export const useLoginStore = defineStore('login', {
-  state: () => ({
-    username: null,
-    email: null,
-    token: null,
-    companyInfo: null,
-    isCalendarInAD: true,
-    trialBalanceCollapseId: [],
-    stockTrialBalanceCollapseId: [],
-    chartOfAccountsExpandId: [],
-    userInfo: null,
-    dateRange: {
+import { useAuthStore } from './auth'
+
+export const useLoginStore = defineStore(
+  'login',
+  () => {
+    const authStore = useAuthStore()
+
+    const isCalendarInAD = ref<boolean>(true)
+    const trialBalanceCollapseId = ref<string[]>([])
+    const stockTrialBalanceCollapseId = ref<string[]>([])
+    const chartOfAccountsExpandId = ref<string[]>([])
+    const dateRange = ref<{
+      start_date: string | null
+      end_date: string | null
+    }>({
       start_date: null,
       end_date: null,
-    },
-    posData: null,
-    isFormLoading: false,
-  }),
-  actions: {
-    reset() {
-      this.username = null
-      this.email = null
-      this.token = null
-      this.companyInfo = {}
-      this.userInfo = {}
-    },
-    updateDateRange(start_date, end_date) {
-      this.dateRange.start_date = start_date
-      this.dateRange.end_date = end_date
-    },
+    })
+
+    const posData = ref<any>(null)
+    const isFormLoading = ref<boolean>(false)
+
+    const reset = async () => {
+      await authStore.logout()
+    }
+
+    const updateDateRange = (start_date: string, end_date: string) => {
+      dateRange.value.start_date = start_date
+      dateRange.value.end_date = end_date
+    }
+
+    const isLoggedIn = computed(() => {
+      return authStore.isAuthenticated
+    })
+
+    const username = computed(() => authStore.user?.display_name)
+    const email = computed(() => authStore.user?.email)
+    const token = computed(() => authStore.token)
+    const companyInfo = computed(() => authStore.company)
+    const userInfo = computed(() => authStore.user)
+
+    return {
+      username,
+      email,
+      token,
+      companyInfo,
+      userInfo,
+      isCalendarInAD,
+      trialBalanceCollapseId,
+      stockTrialBalanceCollapseId,
+      chartOfAccountsExpandId,
+      posData,
+      isFormLoading,
+      isLoggedIn,
+      reset,
+      updateDateRange,
+    }
   },
-  getters: {
-    isLoggedIn() {
-      return !!this.token
-    },
+  {
+    persist: true,
   },
-  persist: true,
-})
+)
 
 if (import.meta.hot) {
   import.meta.hot.accept(acceptHMRUpdate(useLoginStore, import.meta.hot))
