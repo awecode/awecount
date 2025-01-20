@@ -10,6 +10,12 @@ interface User {
   [key: string]: any
 }
 
+interface Company {
+  slug: string
+  name: string
+  [key: string]: any
+}
+
 const BASE_PREFIX = '_allauth/app/v1'
 
 export const AuthProcess = {
@@ -49,6 +55,7 @@ export const useAuthStore = defineStore(
     const $api = useAPI
 
     const user = ref<User | null>(null)
+    const company = ref<Company | null>(null)
 
     const accessToken = ref<string | null>(null)
     const refreshToken = ref<string | null>(null)
@@ -110,6 +117,7 @@ export const useAuthStore = defineStore(
       refreshToken.value = null
       sessionToken.value = null
       authenticatedAt.value = null
+      company.value = null
     }
 
     const _fetchPermissions = async (companySlug: string) => {
@@ -124,13 +132,24 @@ export const useAuthStore = defineStore(
       return res
     }
 
+    const _fetchCompany = async (companySlug: string) => {
+      const res = await $api(`/api/company/${companySlug}/`, {
+        method: 'GET',
+        protected: true,
+      })
+
+      company.value = res
+
+      return res
+    }
+
     const _handleRedirect = async (redirectData: any, explicitRedirectTo?: string | false) => {
       if (explicitRedirectTo === false) {
         return
       }
       if (explicitRedirectTo === undefined && redirectData?.redirect) {
-        const redirect = redirectData.redirect
-        switch (redirect) {
+        const next = redirectData.redirect
+        switch (next) {
           case 'onboarding':
             if (config.auth.onboarding.enabled) {
               window.location.href = `${url.origin}${config.auth.onboarding.route}`
@@ -149,8 +168,9 @@ export const useAuthStore = defineStore(
           case '':
             break
           default:
-            await _fetchPermissions(redirect)
-            window.location.href = `${url.origin}/${redirect}/dashboard`
+            await _fetchPermissions(next) // next is the company slug
+            await _fetchCompany(next) // next is the company slug
+            window.location.href = `${url.origin}/${next}/dashboard`
             break
         }
       }
@@ -199,6 +219,8 @@ export const useAuthStore = defineStore(
       const { data } = await _request<any>(URLs.SESSION, { method: 'GET' })
 
       user.value = data?.user
+
+      _handleRedirect(data?.user)
 
       return data
     }
@@ -277,6 +299,7 @@ export const useAuthStore = defineStore(
     // TODO: move this to a separate store/composable
     const switchCompany = async (companySlug: string) => {
       const res = await $api(URLs.SWITCH_COMPANY, { method: 'PATCH', body: { company_slug: companySlug } })
+      await _fetchCompany(companySlug)
       await _fetchPermissions(companySlug)
       window.location.href = `${url.origin}/${companySlug}/dashboard` // TODO: Use router and preserve path
       return res
@@ -338,6 +361,7 @@ export const useAuthStore = defineStore(
       token: accessToken,
       refreshToken,
       user,
+      company,
       isAuthenticated,
       onboarded,
       roles: _roles, // FIXME: Save this without exposing
