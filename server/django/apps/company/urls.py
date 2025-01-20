@@ -1,5 +1,4 @@
 from django.urls import path
-from rest_framework.routers import DefaultRouter
 
 from apps.company.views import (
     CompanyInvitationsViewset,
@@ -9,8 +8,6 @@ from apps.company.views import (
     UserCompanyInvitationsViewSet,
     UserCompanySwitchEndpoint,
 )
-
-router = DefaultRouter()
 
 urlpatterns = [
     path(

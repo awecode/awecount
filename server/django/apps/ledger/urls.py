@@ -1,10 +1,10 @@
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 
 from apps.ledger import api as ledger
 from apps.ledger.api import partner as partner_ledger
 
-router = DefaultRouter()
+router = SimpleRouter()
 
 
 router.register("parties", ledger.PartyViewSet, basename="parties")

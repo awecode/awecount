@@ -1,9 +1,9 @@
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 
 from apps.tax import api as tax
 
-router = DefaultRouter()
+router = SimpleRouter()
 
 
 router.register("tax_scheme", tax.TaxSchemeViewSet, basename="tax")

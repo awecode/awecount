@@ -1,10 +1,10 @@
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 
 from apps.aggregator import api as aggregator
 from apps.aggregator import views as aggregator_views
 
-router = DefaultRouter()
+router = SimpleRouter()
 
 router.register("log-entries", aggregator.LogEntryViewSet, basename="log-entry")
 router.register("widgets", aggregator.WidgetViewSet, basename="widget")

@@ -1,9 +1,9 @@
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 
 from apps.report import api as report_api
 
-router = DefaultRouter()
+router = SimpleRouter()
 
 # Report
 router.register("report", report_api.ReportViewSet, basename="report")

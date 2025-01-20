@@ -1,9 +1,9 @@
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 
 from apps.bank import api as bank
 
-router = DefaultRouter()
+router = SimpleRouter()
 
 router.register("cheque-deposits", bank.ChequeDepositViewSet, basename="cheque-deposit")
 router.register("bank-cash-deposits", bank.CashDepositViewSet, basename="cash-deposit")

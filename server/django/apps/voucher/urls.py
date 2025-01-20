@@ -1,5 +1,5 @@
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 
 from apps.voucher import api as voucher
 from apps.voucher.api import partner as partner_voucher
@@ -7,7 +7,7 @@ from apps.voucher.api.payment_mode import PaymentModeViewSet
 
 from . import views
 
-router = DefaultRouter()
+router = SimpleRouter()
 
 router.register("payment-modes", PaymentModeViewSet, basename="payment-modes")
 
