@@ -492,7 +492,7 @@ const breadcrumbs = useBreadcrumbItems()
               </q-tooltip>
             </q-btn>
             <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2" @click="store.isCalendarInAD = !store.isCalendarInAD">
-              {{ activeDateFormat }}
+              {{ store.isCalendarInAD ? 'AD' : 'BS' }}
               <q-tooltip :delay="1000" :offset="[0, 10]">
                 Change Date Format
               </q-tooltip>
