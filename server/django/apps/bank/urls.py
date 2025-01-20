@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import include, re_path
 from rest_framework.routers import SimpleRouter
 
 from apps.bank import api as bank
@@ -14,5 +14,5 @@ router.register("bank-reconciliation", bank.ReconciliationViewSet, basename="ban
 
 
 urlpatterns = [
-    path("api/company/<slug:company_slug>/", include(router.urls)),
+    re_path(r"^api/company/(?P<company_slug>[-\w]+)/", include(router.urls)),
 ]

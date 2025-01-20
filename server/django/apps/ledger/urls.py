@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import include, re_path
 from rest_framework.routers import SimpleRouter
 
 from apps.ledger import api as ledger
@@ -39,37 +39,37 @@ router.register(
 )
 
 urlpatterns = [
-    path(
-        "api/company/<slug:company_slug>/",
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/",
         include(router.urls),
     ),
-    path(
-        "api/company/<slug:company_slug>/category-tree/",
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/category-tree/$",
         ledger.CategoryTreeView.as_view(),
         name="category-tree",
     ),
-    path(
-        "api/company/<slug:company_slug>/full-category-tree/",
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/full-category-tree/$",
         ledger.FullCategoryTreeView.as_view(),
         name="full-category-tree",
     ),
-    path(
-        "api/company/<slug:company_slug>/trial-balance/",
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/trial-balance/$",
         ledger.TrialBalanceView.as_view(),
         name="trial-balance",
     ),
-    path(
-        "api/company/<slug:company_slug>/tax-summary/",
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/tax-summary/$",
         ledger.TaxSummaryView.as_view(),
         name="tax-summary",
     ),
-    path(
-        "api/company/<slug:company_slug>/customer-closing-summary/",
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/customer-closing-summary/$",
         ledger.CustomerClosingView.as_view(),
         name="customer-closing-summary",
     ),
-    path(
-        "api/company/<slug:company_slug>/chart-of-accounts/",
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/chart-of-accounts/$",
         ledger.ChartOfAccountsView.as_view(),
         name="chart-of-accounts",
     ),

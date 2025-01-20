@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import re_path
 
 from apps.company.views import (
     CompanyInvitationsViewset,
@@ -10,8 +10,8 @@ from apps.company.views import (
 )
 
 urlpatterns = [
-    path(
-        "api/company/<slug:company_slug>/invitations/",
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/invitations/$",
         CompanyInvitationsViewset.as_view(
             {
                 "get": "list",
@@ -20,8 +20,8 @@ urlpatterns = [
         ),
         name="company-invitations",
     ),
-    path(
-        "api/company/<slug:company_slug>/invitations/<uuid:pk>/",
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/invitations/(?P<pk>[0-9a-f-]+)/$",
         CompanyInvitationsViewset.as_view(
             {
                 "delete": "destroy",
@@ -29,13 +29,14 @@ urlpatterns = [
         ),
         name="company-invitation-detail",
     ),
-    path(
-        "api/company/<slug:company_slug>/join/<uuid:pk>/",
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/join/(?P<pk>[0-9a-f-]+)/$",
         CompanyJoinEndpoint.as_view(),
         name="company-join",
     ),
-    path(
-        "api/me/invitations/",
+
+    re_path(
+        r"^api/me/invitations/$",
         UserCompanyInvitationsViewSet.as_view(
             {
                 "get": "list",
@@ -44,18 +45,18 @@ urlpatterns = [
         ),
         name="user-company-invitations",
     ),
-    path(
-        "api/me/companies/",
+    re_path(
+        r"^api/me/companies/$",
         UserCompaniesEndpoint.as_view(),
-        name="company-info",
+        name="user-companies",
     ),
-    path(
-        "api/me/switch-company/",
+    re_path(
+        r"^api/me/switch-company/$",
         UserCompanySwitchEndpoint.as_view(),
         name="switch-company",
     ),
-    path(
-        "api/company/<slug:company_slug>/permissions/",
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/permissions/$",
         CompanyPermissionEndpoint.as_view(),
         name="company-permissions",
     ),

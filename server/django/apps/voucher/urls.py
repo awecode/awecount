@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import include, re_path
 from rest_framework.routers import SimpleRouter
 
 from apps.voucher import api as voucher
@@ -82,7 +82,7 @@ router.register("recurring-voucher-template", voucher.RecurringVoucherTemplateVi
 
 
 urlpatterns = [
-    path("api/company/<slug:company_slug>/upload-file/", views.FileUploadView.as_view(), name="upload-file"),
-    path("api/company/<slug:company_slug>/invoice-setting-update/", views.InvoiceSettingUpdateView.as_view()),
-    path("api/company/<slug:company_slug>/", include(router.urls)),
+    re_path(r"^api/company/(?P<company_slug>[-\w]+)/", include(router.urls)),
+    re_path(r"^api/company/(?P<company_slug>[-\w]+)/upload-file/$", views.FileUploadView.as_view(), name="upload-file"),
+    re_path(r"^api/company/(?P<company_slug>[-\w]+)/invoice-setting-update/$", views.InvoiceSettingUpdateView.as_view()),
 ]
