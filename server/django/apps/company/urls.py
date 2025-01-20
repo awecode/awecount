@@ -1,6 +1,7 @@
 from django.urls import re_path
 
 from apps.company.views import (
+    CompanyViewset,
     CompanyInvitationsViewset,
     CompanyJoinEndpoint,
     CompanyPermissionEndpoint,
@@ -54,6 +55,26 @@ urlpatterns = [
         r"^api/me/switch-company/$",
         UserCompanySwitchEndpoint.as_view(),
         name="switch-company",
+    ),
+
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/$",
+        CompanyViewset.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+            }
+        ),
+        name="company-info",
+    ),
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/delete/$",
+        CompanyViewset.as_view(
+            {
+                "delete": "destroy",
+            }
+        ),
+        name="company-delete",
     ),
     re_path(
         r"^api/company/(?P<company_slug>[-\w]+)/permissions/$",

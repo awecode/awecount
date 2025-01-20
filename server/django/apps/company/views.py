@@ -7,16 +7,17 @@ from django.core.validators import validate_email
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import status, views, viewsets
+from rest_framework import status, views, viewsets, mixins
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.company.models import Company, CompanyMember, CompanyMemberInvite, Permission
-from apps.company.permissions import CompanyAdminPermission, CompanyMemberPermission
+from apps.company.permissions import CompanyBasePermission, CompanyAdminPermission, CompanyMemberPermission
 from apps.company.serializers import (
     CompanyLiteSerializer,
     CompanyMemberInviteSerializer,
     CompanyMemberSerializer,
+    CompanySerializer,
 )
 from apps.users.models import User
 
@@ -352,3 +353,19 @@ class CompanyPermissionEndpoint(views.APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+class CompanyViewset(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    model = Company
+    serializer_class = CompanySerializer
+    permission_classes = [CompanyBasePermission]
+
+    lookup_field = "slug"
+    lookup_url_kwarg = "company_slug"
+
+    def get_queryset(self):
+        return self.model.objects.filter(slug=self.kwargs.get("company_slug"))
