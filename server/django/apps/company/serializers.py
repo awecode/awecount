@@ -16,6 +16,9 @@ class CompanySerializer(serializers.ModelSerializer):
     owner = UserLiteSerializer(read_only=True)
     total_members = serializers.IntegerField(read_only=True)
     logo_url = serializers.CharField(read_only=True)
+    current_fiscal_year = serializers.CharField(source="current_fiscal_year.name")
+    current_fiscal_year_id = serializers.IntegerField()
+
 
     def validate_slug(self, value):
         # Check if the slug is restricted
