@@ -1,88 +1,136 @@
+<script setup lang="ts">
+import { useAuthStore } from 'stores/auth'
+
+const emit = defineEmits<{
+  loggedIn: [Record<string, any>]
+  needsVerification: []
+}>()
+
+const $q = useQuasar()
+const { login } = useAuthStore()
+
+const showPasswordStatus = ref(false)
+const loading = ref(false)
+
+const state = reactive({
+  email: null,
+  password: null,
+})
+
+const errors = ref({
+  email: null,
+  password: null,
+})
+
+const handleLoginError = (error: any) => {
+  console.error(error)
+  const errorResponse: any = error.data || error.response?._data
+
+  const alertState = {
+    color: 'danger',
+    title: 'Authentication Failed',
+    description: 'Please check your credentials and try again.',
+    icon: 'fa-solid fa-circle-exclamation',
+  }
+
+  if (errorResponse.status === 400) {
+    const firstError = errorResponse.errors?.[0]
+    if (firstError?.code === 'email_password_mismatch') {
+      errors.value.email = ' '
+      errors.value.password = firstError.message
+      return
+    } else if (firstError?.code === 'invalid') {
+      errors.value[firstError.param] = firstError.message
+      return
+    } else if (firstError?.code === 'too_many_login_attempts') {
+      alertState.color = 'warning'
+      alertState.title = 'Too Many Login Attempts'
+      alertState.description = 'Please try again later.'
+      alertState.icon = 'fa-solid fa-circle-exclamation'
+      return
+    } else if (firstError?.code === 'account_disabled') {
+      alertState.color = 'warning'
+      alertState.title = 'Account Disabled'
+      alertState.description = 'Your account has been disabled. Please contact support.'
+      alertState.icon = 'fa-solid fa-circle-exclamation'
+      return
+    }
+  }
+
+  if (errorResponse.status === 401) {
+    const flows = errorResponse.data?.flows || []
+
+    // Check for verify_email flow
+    const verifyEmailFlow = flows.find(flow => flow.id === 'verify_email')
+    if (verifyEmailFlow?.is_pending) {
+      alertState.color = 'warning'
+      alertState.title = 'Email Verification Required'
+      alertState.description = 'Please check your email and verify your account.'
+      alertState.icon = 'fa-solid fa-envelope'
+      emit('needsVerification')
+    }
+  } else {
+    alertState.description = 'An unexpected error occurred. Please try again later.'
+  }
+
+  $q.notify({
+    position: 'top-right',
+    message: alertState.title,
+    caption: alertState.description,
+    color: alertState.color,
+    icon: alertState.icon,
+  })
+}
+
+const onLoginSubmit = async () => {
+  try {
+    loading.value = true
+    const res = await login(state)
+    emit('loggedIn', res)
+  } catch (error: any) {
+    handleLoginError(error)
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+
 <template>
   <div class="row justify-center items-center bg-white q-pa-md">
     <div class="full-width q-px-md">
-      <q-form class="text-sm" @submit="onLoginSubmit" autofocus>
-        <!-- <q-input label="Email" class="q-mb-lg" :hide-bottom-space="true"></q-input> -->
-        <q-input v-model="username" label="Email" input-class="text-body1"
-          :error="Boolean(errorMessage?.email ? true : false)" :error-message="errorMessage
-            ? errorMessage.email
-              ? errorMessage.email[0]
-              : null
-            : null
-            ">
-          <template v-slot:before>
+      <q-form autofocus class="text-sm" @submit="onLoginSubmit">
+        <q-input
+          v-model="state.email"
+          input-class="text-body1"
+          label="Email"
+          :error="!!errors.email"
+          :error-message="errors.email"
+        >
+          <template #before>
             <q-icon name="fa-solid fa-envelope" />
           </template>
         </q-input>
-        <q-input v-model="password" :type="showPasswordStatus ? 'text' : 'password'" label="Password"
-          input-class="text-body1" :error="Boolean(errorMessage?.password ? true : false)" :error-message="errorMessage
-            ? errorMessage.password
-              ? errorMessage.password[0]
-              : null
-            : null
-            ">
-          <template v-slot:before>
+        <q-input
+          v-model="state.password"
+          input-class="text-body1"
+          label="Password"
+          :error="!!errors.password"
+          :error-message="errors.password"
+          :type="showPasswordStatus ? 'text' : 'password'"
+        >
+          <template #before>
             <q-icon name="fa-solid fa-lock" />
           </template>
-          <template v-slot:append>
-            <q-icon :name="showPasswordStatus ? 'mdi-eye' : 'mdi-eye-off'"
-              @click="showPasswordStatus = !showPasswordStatus" class="cursor-pointer" />
+          <template #append>
+            <q-icon class="cursor-pointer" :name="showPasswordStatus ? 'mdi-eye' : 'mdi-eye-off'" @click="showPasswordStatus = !showPasswordStatus" />
           </template>
         </q-input>
         <div class="text-center q-mt-xl">
-          <q-btn type="submit" class="bg-blue full-width text-white q-px-lg">Login</q-btn>
+          <q-btn class="bg-blue full-width text-white q-px-lg" type="submit" :loading="loading">
+            Login
+          </q-btn>
         </div>
       </q-form>
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import useApi from '/src/composables/useApi'
-import { useQuasar } from 'quasar'
-import { useLoginStore } from '/src/stores/login-info.js'
-import { useRouter } from 'vue-router'
-const router = useRouter()
-const loginStore = useLoginStore()
-const $q = useQuasar()
-const showPasswordStatus = ref(false)
-const username = ref(null)
-const password = ref(null)
-const errorMessage = ref(null)
-const onLoginSubmit = async () => {
-  // console.log('Hi')
-  errorMessage.value = null
-  await useApi(
-    'v1/auth/login/',
-    {
-      method: 'POST',
-      body: { email: username.value, password: password.value },
-    },
-    true
-  )
-    .then((data) => {
-      loginStore.token = data.access
-      loginStore.username = data.user.full_name
-      loginStore.email = data.user.email
-      loginStore.companyInfo = data.company
-      loginStore.userInfo = data.user
-      loginStore.companyInfo.logo_url = data.company.logo_url || '/img/stockCompany.png'
-      if (data.company.config_template !== 'np') {
-        loginStore.isCalendarInAD = true
-      }
-      router.push('/dashboard')
-    })
-    .catch((err) => {
-      $q.notify({
-        color: 'red-6',
-        message:
-          [401, 400].includes(err?.status)
-            ? 'Please provide valid credentials.'
-            : 'Server Error! Please contact us with the problem.',
-        icon: 'report_problem',
-        position: 'top-right',
-      })
-    })
-}
-</script>

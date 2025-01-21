@@ -1,0 +1,16 @@
+contact_links:
+  - name: Help and support
+    about: Join our community on Discord for quick help and discussions
+    url: [Your Discord Invite Link]
+
+  - name: Dedicated support
+    url: mailto:info@awecount.com
+    about: Write to us if you'd like dedicated support using Awecount
+
+  - name: Documentation
+    url: [Your Docs URL]
+    about: Check our documentation for guides and API references
+
+  - name: Feature requests discussion
+    url: [Your GitHub Discussions URL]
+    about: Discuss feature ideas with the community

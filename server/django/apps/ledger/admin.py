@@ -197,4 +197,4 @@ class AccountClosingAdmin(admin.ModelAdmin):
     search_fields = ("company__name", "fiscal_year")
     actions = (run_account_closing, undo_account_closing)
     readonly_fields = ("status", "journal_entry")
-    ordering = ("-fiscal_period__start",)
+    ordering = ("-fiscal_period__start_date",)

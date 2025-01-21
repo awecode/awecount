@@ -91,17 +91,16 @@
   width: 20px;
 
   svg {
-      padding: 5px;
-      translate: 0.5px 1px;
-      transition: all 0.2s ease-in;
-      transform: rotate(-90deg);
+    padding: 5px;
+    translate: 0.5px 1px;
+    transition: all 0.2s ease-in;
+    transform: rotate(-90deg);
   }
 
   &.expanded {
-      svg {
-          translate: 1px 1px;
-          transform: rotate(-0deg);
-      }
+    svg {
+      translate: 1px 1px;
+      transform: rotate(-0deg);
+    }
   }
-
 }

@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from auditlog.registry import auditlog
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator
@@ -12,7 +13,7 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.utils import timezone
 
-from apps.company.models import Company
+from apps.company.models import Company, CompanyBaseModel
 from apps.ledger.models import (
     Account,
     TransactionModel,
@@ -81,7 +82,7 @@ class Brand(models.Model):
         ordering = ["-id"]
 
 
-class Category(models.Model):
+class Category(CompanyBaseModel):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
@@ -248,17 +249,22 @@ class Category(models.Model):
     def suggest_code(self, prefix=None):
         self.code = self.name.lower().replace(" ", "-")
 
-    def get_account_category(self, default_category_name, prefix=""):
+    def get_account_category(self, default_system_code, prefix=""):
+        acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
         if (
-            default_category_name
-            in ["Fixed Assets", "Direct Expenses", "Indirect Expenses"]
+            default_system_code
+            in [
+                acc_cat_system_codes["Fixed Assets"],
+                acc_cat_system_codes["Direct Expenses"],
+                acc_cat_system_codes["Indirect Expenses"],
+            ]
             and self.account_category_id
             and self.account_category
         ):
             parent_account_category = self.account_category
         else:
             parent_account_category = AccountCategory.objects.get(
-                name=default_category_name, default=True, company=self.company
+                system_code=default_system_code, company=self.company
             )
 
         if self.use_account_subcategory:
@@ -295,6 +301,8 @@ class Category(models.Model):
             purchase_account_name = self.name + " (Purchase)"
             discount_received_account_name = "Discount Received - " + self.name
 
+            acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
+
             # Update dedicated accounts
             if self.dedicated_sales_account:
                 if not self.dedicated_sales_account.name == sales_account_name:
@@ -330,7 +338,7 @@ class Category(models.Model):
             if not self.sales_account:
                 if not self.dedicated_sales_account:
                     ledger = Account(name=sales_account_name, company=self.company)
-                    ledger.add_category("Sales")
+                    ledger.add_category(acc_cat_system_codes["Sales"])
                     # account_category = self.get_account_category("Sales", prefix="Sales")
                     # ledger.category = account_category
                     ledger.suggest_code(self, prefix="C")
@@ -345,7 +353,9 @@ class Category(models.Model):
                     discount_allowed_account = Account(
                         name=discount_allowed_account_name, company=self.company
                     )
-                    discount_allowed_account.add_category("Discount Expenses")
+                    discount_allowed_account.add_category(
+                        acc_cat_system_codes["Discount Expenses"]
+                    )
                     # account_category = self.get_account_category('Discount Expenses', prefix='Discount Allowed')
                     # discount_allowed_account.category = account_category
                     discount_allowed_account.suggest_code(self, prefix="C")
@@ -361,7 +371,7 @@ class Category(models.Model):
             if not self.purchase_account:
                 if not self.dedicated_purchase_account:
                     ledger = Account(name=purchase_account_name, company=self.company)
-                    ledger.add_category("Purchase")
+                    ledger.add_category(acc_cat_system_codes["Purchase"])
                     # account_category = self.get_account_category('Purchase', prefix='Purchase')
                     # ledger.category = account_category
                     ledger.suggest_code(self, prefix="C")
@@ -376,7 +386,9 @@ class Category(models.Model):
                     discount_received_account = Account(
                         name=discount_received_account_name, company=self.company
                     )
-                    discount_received_account.add_category("Discount Income")
+                    discount_received_account.add_category(
+                        acc_cat_system_codes["Discount Income"]
+                    )
                     # account_category = self.get_account_category('Discount Income', prefix='Discount Received')
                     # discount_received_account.category = account_category
                     discount_received_account.suggest_code(self, prefix="C")
@@ -391,13 +403,16 @@ class Category(models.Model):
             # Set/Update account categories
 
             if self.can_be_sold:
-                account_category = self.get_account_category("Sales", prefix="Sales")
+                account_category = self.get_account_category(
+                    acc_cat_system_codes["Sales"], prefix="Sales"
+                )
                 self.sales_account_category = account_category
                 Account.objects.filter(sales_item__category=self).update(
                     category=account_category
                 )
                 account_category = self.get_account_category(
-                    "Discount Expenses", prefix="Discount Allowed"
+                    acc_cat_system_codes["Discount Expenses"],
+                    prefix="Discount Allowed",
                 )
                 self.discount_allowed_account_category = account_category
                 Account.objects.filter(discount_allowed_item__category=self).update(
@@ -406,14 +421,15 @@ class Category(models.Model):
 
             if self.can_be_purchased:
                 account_category = self.get_account_category(
-                    "Purchase", prefix="Purchase"
+                    acc_cat_system_codes["Purchase"], prefix="Purchase"
                 )
                 self.purchase_account_category = account_category
                 Account.objects.filter(purchase_item__category=self).update(
                     category=account_category
                 )
                 account_category = self.get_account_category(
-                    "Discount Income", prefix="Discount Received"
+                    acc_cat_system_codes["Discount Income"],
+                    prefix="Discount Received",
                 )
                 self.discount_received_account_category = account_category
                 Account.objects.filter(discount_received_item__category=self).update(
@@ -421,19 +437,25 @@ class Category(models.Model):
                 )
 
             if self.direct_expense:
-                account_category = self.get_account_category("Direct Expenses")
+                account_category = self.get_account_category(
+                    acc_cat_system_codes["Direct Expenses"]
+                )
                 self.direct_expense_account_category = account_category
                 Account.objects.filter(expense_item__category=self).update(
                     category=account_category
                 )
             elif self.indirect_expense:
-                account_category = self.get_account_category("Indirect Expenses")
+                account_category = self.get_account_category(
+                    acc_cat_system_codes["Indirect Expenses"]
+                )
                 self.indirect_expense_account_category = account_category
                 Account.objects.filter(expense_item__category=self).update(
                     category=account_category
                 )
             elif self.fixed_asset:
-                account_category = self.get_account_category("Fixed Assets")
+                account_category = self.get_account_category(
+                    acc_cat_system_codes["Fixed Assets"]
+                )
                 self.fixed_asset_account_category = account_category
                 Account.objects.filter(fixed_asset_item__category=self).update(
                     category=account_category
@@ -461,10 +483,13 @@ class Category(models.Model):
         purchase_account = None
         discount_received_account = None
 
+        acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
+        acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
         if self.can_be_sold:
             if self.items_sales_account_type == "global":
                 sales_account = Account.objects.get(
-                    name="Sales Account", default=True, company=self.company
+                    system_code=acc_system_codes["Sales Account"],
+                    company=self.company,
                 )
             elif self.items_sales_account_type == "existing":
                 sales_account = self.sales_account
@@ -472,7 +497,9 @@ class Category(models.Model):
                 if not self.dedicated_sales_account:
                     sales_account_name = self.name + " (Sales)"
                     ledger = Account(name=sales_account_name, company=self.company)
-                    ledger.add_category("Sales")
+                    ledger.add_category(
+                        acc_cat_system_codes["Sales"],
+                    )
                     ledger.suggest_code(self, prefix="C")
                     ledger.save()
                     sales_account = ledger
@@ -481,7 +508,8 @@ class Category(models.Model):
 
             if self.items_discount_allowed_account_type == "global":
                 discount_allowed_account = Account.objects.get(
-                    name="Discount Expenses", default=True, company=self.company
+                    system_code=acc_system_codes["Discount Expenses"],
+                    company=self.company,
                 )
             elif self.items_discount_allowed_account_type == "existing":
                 discount_allowed_account = self.discount_allowed_account
@@ -491,7 +519,7 @@ class Category(models.Model):
                     ledger = Account(
                         name=discount_allowed_account_name, company=self.company
                     )
-                    ledger.add_category("Discount Expenses")
+                    ledger.add_category(acc_cat_system_codes["Discount Expenses"])
                     ledger.suggest_code(self, prefix="C")
                     ledger.save()
                     discount_allowed_account = ledger
@@ -501,7 +529,8 @@ class Category(models.Model):
         if self.can_be_purchased:
             if self.items_purchase_account_type == "global":
                 purchase_account = Account.objects.get(
-                    name="Purchase Account", default=True, company=self.company
+                    system_code=acc_system_codes["Purchase Account"],
+                    company=self.company,
                 )
             elif self.items_purchase_account_type == "existing":
                 purchase_account = self.purchase_account
@@ -509,7 +538,7 @@ class Category(models.Model):
                 if not self.dedicated_purchase_account:
                     purchase_account_name = self.name + " (Purchase)"
                     ledger = Account(name=purchase_account_name, company=self.company)
-                    ledger.add_category("Purchase")
+                    ledger.add_category(acc_cat_system_codes["Purchase"])
                     ledger.suggest_code(self, prefix="C")
                     ledger.save()
                     purchase_account = ledger
@@ -518,7 +547,8 @@ class Category(models.Model):
 
             if self.items_discount_received_account_type == "global":
                 discount_received_account = Account.objects.get(
-                    name="Discount Income", default=True, company=self.company
+                    system_code=acc_system_codes["Discount Income"],
+                    company=self.company,
                 )
             elif self.items_discount_received_account_type == "existing":
                 discount_received_account = self.discount_received_account
@@ -528,7 +558,7 @@ class Category(models.Model):
                     ledger = Account(
                         name=discount_received_account_name, company=self.company
                     )
-                    ledger.add_category("Discount expenses")
+                    ledger.add_category(acc_cat_system_codes["Discount Expenses"])
                     ledger.suggest_code(self, prefix="C")
                     ledger.save()
                     discount_received_account = ledger
@@ -668,6 +698,7 @@ class Category(models.Model):
                 debit_note_row_ids = DebitNoteRow.objects.filter(item=item).values_list(
                     "id", flat=True
                 )
+                acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
                 if self.can_be_sold:
                     if self.items_sales_account_type == "dedicated":
                         item.sales_account_type = "dedicated"
@@ -690,7 +721,7 @@ class Category(models.Model):
                             if self.sales_account_category is not None:
                                 account.category = self.sales_account_category
                             else:
-                                account.add_category("Sales")
+                                account.add_category(acc_cat_system_codes["Sales"])
                             account.suggest_code(item)
                             account.save()
                             item.dedicated_sales_account = account
@@ -728,7 +759,9 @@ class Category(models.Model):
                                     self.discount_allowed_account_category
                                 )
                             else:
-                                account.add_category("Discount expenses")
+                                account.add_category(
+                                    acc_cat_system_codes["Discount Expenses"]
+                                )
                             account.suggest_code(item)
                             account.save()
                             item.dedicated_discount_allowed_account = account
@@ -762,7 +795,7 @@ class Category(models.Model):
                             if self.purchase_account_category is not None:
                                 account.category = self.purchase_account_category
                             else:
-                                account.add_category("Purchase")
+                                account.add_category(acc_cat_system_codes["Purchase"])
                             account.suggest_code(item)
                             account.save()
                             item.dedicated_purchase_account = account
@@ -801,7 +834,9 @@ class Category(models.Model):
                                     self.discount_received_account_category
                                 )
                             else:
-                                account.add_category("Discount expenses")
+                                account.add_category(
+                                    acc_cat_system_codes["Discount Expenses"]
+                                )
                             account.suggest_code(item)
                             account.save()
                             item.dedicated_discount_received_account = account
@@ -837,7 +872,10 @@ class Category(models.Model):
 
     class Meta:
         verbose_name_plural = "Categories"
-        unique_together = (("code", "company"), ("name", "company"))
+        unique_together = (
+            ("code", "company"),
+            ("name", "company"),
+        )
 
 
 class InventoryAccount(models.Model):
@@ -1420,7 +1458,7 @@ def _transaction_delete(sender, instance, **kwargs):
     )
 
 
-class Item(models.Model):
+class Item(CompanyBaseModel):
     ACCOUNT_TYPE_CHOICES = [
         ("global", "Global"),
         ("dedicated", "Dedicated"),
@@ -1641,6 +1679,7 @@ class Item(models.Model):
                     )
                     self.dedicated_discount_received_account.save()
 
+            acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
             if self.can_be_sold:
                 if not self.sales_account_id:
                     if not self.dedicated_sales_account:
@@ -1648,7 +1687,7 @@ class Item(models.Model):
                         if self.category and self.category.sales_account_category_id:
                             account.category = self.category.sales_account_category
                         else:
-                            account.add_category("Sales")
+                            account.add_category(acc_cat_system_codes["Sales"])
                         account.suggest_code(self)
                         account.save()
                         self.dedicated_sales_account = account
@@ -1670,7 +1709,9 @@ class Item(models.Model):
                                 self.category.discount_allowed_account_category
                             )
                         else:
-                            discount_allowed_account.add_category("Discount Expenses")
+                            discount_allowed_account.add_category(
+                                acc_cat_system_codes["Discount Expenses"]
+                            )
                         discount_allowed_account.suggest_code(self)
                         discount_allowed_account.save()
                         self.dedicated_discount_allowed_account = (
@@ -1692,7 +1733,7 @@ class Item(models.Model):
                         if self.category and self.category.purchase_account_category_id:
                             account.category = self.category.purchase_account_category
                         else:
-                            account.add_category("Purchase")
+                            account.add_category(acc_cat_system_codes["Purchase"])
                         account.suggest_code(self)
                         account.save()
                         self.dedicated_purchase_account = account
@@ -1715,7 +1756,9 @@ class Item(models.Model):
                                 self.category.discount_received_account_category
                             )
                         else:
-                            discount_received_acc.add_category("Discount Income")
+                            discount_received_acc.add_category(
+                                acc_cat_system_codes["Discount Income"]
+                            )
                         discount_received_acc.suggest_code(self)
                         discount_received_acc.save()
                         self.dedicated_discount_received_account = discount_received_acc
@@ -1736,7 +1779,9 @@ class Item(models.Model):
                                 self.category.direct_expense_account_category
                             )
                         else:
-                            expense_account.add_category("Direct Expenses")
+                            expense_account.add_category(
+                                acc_cat_system_codes["Direct Expenses"]
+                            )
                     else:
                         if (
                             self.category
@@ -1746,7 +1791,9 @@ class Item(models.Model):
                                 self.category.indirect_expense_account_category
                             )
                         else:
-                            expense_account.add_category("Indirect Expenses")
+                            expense_account.add_category(
+                                acc_cat_system_codes["Indirect Expenses"]
+                            )
                     expense_account.suggest_code(self)
                     expense_account.save()
                     self.expense_account = expense_account
@@ -1762,7 +1809,9 @@ class Item(models.Model):
                             self.category.fixed_asset_account_category
                         )
                     else:
-                        fixed_asset_account.add_category("Fixed Assets")
+                        fixed_asset_account.add_category(
+                            acc_cat_system_codes["Fixed Assets"]
+                        )
                     fixed_asset_account.suggest_code(self)
                     fixed_asset_account.save()
                     self.fixed_asset_account = fixed_asset_account
@@ -1799,48 +1848,66 @@ class Item(models.Model):
                 # this triggers account category update
                 self.category.save()
             else:
-                if self.sales_account and self.sales_account.category.name != "Sales":
+                if (
+                    self.sales_account
+                    and self.sales_account.category.system_code
+                    != acc_cat_system_codes["Sales"]
+                ):
                     self.sales_account.add_category("Sales")
                     self.sales_account.save()
                 if (
                     self.discount_allowed_account
-                    and self.discount_allowed_account.category.name
-                    != "Discount Expenses"
+                    and self.discount_allowed_account.category.system_code
+                    != acc_cat_system_codes["Discount Expenses"]
                 ):
-                    self.discount_allowed_account.add_category("Discount Expenses")
+                    self.discount_allowed_account.add_category(
+                        acc_cat_system_codes["Discount Expenses"]
+                    )
                     self.discount_allowed_account.save()
                 if (
                     self.purchase_account
-                    and self.purchase_account.category.name != "Purchase"
+                    and self.purchase_account.category.system_code
+                    != acc_cat_system_codes["Purchase"]
                 ):
-                    self.purchase_account.add_category("Purchase")
+                    self.purchase_account.add_category(acc_cat_system_codes["Purchase"])
                     self.purchase_account.save()
                 if (
                     self.discount_received_account
-                    and self.discount_received_account.category.name
-                    != "Discount Income"
+                    and self.discount_received_account.category.system_code
+                    != acc_cat_system_codes["Discount Income"]
                 ):
-                    self.discount_received_account.add_category("Discount Income")
+                    self.discount_received_account.add_category(
+                        acc_cat_system_codes["Discount Income"]
+                    )
                     self.discount_received_account.save()
                 if (
                     self.expense_account
                     and self.direct_expense
-                    and self.expense_account.category.name != "Direct Expenses"
+                    and self.expense_account.category.system_code
+                    != acc_cat_system_codes["Direct Expenses"]
                 ):
-                    self.expense_account.add_category("Direct Expenses")
+                    self.expense_account.add_category(
+                        acc_cat_system_codes["Direct Expenses"]
+                    )
                     self.expense_account.save()
                 if (
                     self.expense_account
                     and self.indirect_expense
-                    and self.expense_account.category.name != "Indirect Expenses"
+                    and self.expense_account.category.system_code
+                    != acc_cat_system_codes["Indirect Expenses"]
                 ):
-                    self.expense_account.add_category("Indirect Expenses")
+                    self.expense_account.add_category(
+                        acc_cat_system_codes["Indirect Expenses"]
+                    )
                     self.expense_account.save()
                 if (
                     self.fixed_asset
-                    and self.fixed_asset_account.category.name != "Fixed Assets"
+                    and self.fixed_asset_account.category.system_code
+                    != acc_cat_system_codes["Fixed Assets"]
                 ):
-                    self.fixed_asset_account.add_category("Fixed Assets")
+                    self.fixed_asset_account.add_category(
+                        acc_cat_system_codes["Fixed Assets"]
+                    )
                     self.fixed_asset_account.save()
 
             # prevents recursion
@@ -1862,8 +1929,10 @@ class Item(models.Model):
 
     class Meta:
         unique_together = (
-            "code",
-            "company",
+            (
+                "code",
+                "company",
+            ),
         )
 
 
@@ -1879,7 +1948,7 @@ class InventorySetting(models.Model):
         return "Inventory Setting - {}".format(self.company.name)
 
 
-class BillOfMaterial(models.Model):
+class BillOfMaterial(CompanyBaseModel):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="bill_of_material"
     )
@@ -1896,7 +1965,7 @@ class BillOfMaterial(models.Model):
         return self.finished_product.name
 
 
-class BillOfMaterialRow(models.Model):
+class BillOfMaterialRow(CompanyBaseModel):
     bill_of_material = models.ForeignKey(
         BillOfMaterial, on_delete=models.CASCADE, related_name="rows"
     )
@@ -1961,21 +2030,36 @@ class InventoryAdjustmentVoucher(TransactionModel, InvoiceModel):
             ):
                 row_amount = row.quantity * row.rate
                 entries = [["cr", row.item.purchase_account, row_amount]]
+                acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
                 if self.purpose == "Damaged":
                     # TODO: Do not fetch account with name
                     entries.append(
-                        ["dr", get_account(self.company, "Damage Expense"), row_amount]
+                        [
+                            "dr",
+                            get_account(
+                                self.company, acc_system_codes["Damage Expense"]
+                            ),
+                            row_amount,
+                        ]
                     )
                 elif self.purpose == "Expired":
                     entries.append(
-                        ["dr", get_account(self.company, "Expiry Expense"), row_amount]
+                        [
+                            "dr",
+                            get_account(
+                                self.company, acc_system_codes["Expiry Expense"]
+                            ),
+                            row_amount,
+                        ]
                     )
                 set_ledger_transactions(row, self.date, *entries, clear=True)
 
         self.apply_inventory_transactions()
 
 
-class InventoryAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
+class InventoryAdjustmentVoucherRow(
+    TransactionModel, InvoiceRowModel, CompanyBaseModel
+):
     voucher = models.ForeignKey(
         InventoryAdjustmentVoucher, on_delete=models.CASCADE, related_name="rows"
     )
@@ -1989,7 +2073,7 @@ class InventoryAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
     description = models.TextField(blank=True, null=True)
 
 
-class InventoryConversionVoucher(TransactionModel, InvoiceModel):
+class InventoryConversionVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
     date = models.DateField()
     finished_product = models.ForeignKey(
@@ -2016,7 +2100,9 @@ class InventoryConversionVoucher(TransactionModel, InvoiceModel):
             )
 
 
-class InventoryConversionVoucherRow(TransactionModel, InvoiceRowModel):
+class InventoryConversionVoucherRow(
+    TransactionModel, InvoiceRowModel, CompanyBaseModel
+):
     voucher = models.ForeignKey(
         InventoryConversionVoucher, on_delete=models.CASCADE, related_name="rows"
     )

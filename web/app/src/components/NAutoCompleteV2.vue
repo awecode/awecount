@@ -1,45 +1,6 @@
-<template>
-  <div class="row no-wrap">
-    <q-select :loading="fetchLoading" :autofocus="focusOnMount" v-model="modalValue" :label="label" use-input
-      :options="filteredOptions" option-value="id" option-label="name" map-options emit-value class="q-mr-xs col"
-      @update:modelValue="valUpdated" :disable="props.disabled" :error-message="props?.error" :error="!!props?.error"
-      clearable clear-icon="close" @virtual-scroll="onScroll" @filter="filterFn"
-      :virtual-scroll-slice-ratio-after="0">
-      <template #no-option>
-        <div class="py-3 px-4 bg-slate-1">No Results Found</div>
-      </template>
-      <template v-if="fetchLoading" #after-options>
-        <div class="flex justify-center pb-2 text-gray-500">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2">
-              <path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3"
-                d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z">
-                <animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0" />
-              </path>
-              <path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12">
-                <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0" />
-                <animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate"
-                  values="0 12 12;360 12 12" />
-              </path>
-            </g>
-          </svg>
-        </div>
-      </template>
-    </q-select>
-    <div>
-      <q-btn v-if="modalComponent" color="white" label="+" class="q-ml-auto text-black q-mt-md" @click="openModal" />
-    </div>
-  </div>
-  <q-dialog v-model="isModalOpen" transition-hide="none">
-    <q-card style="min-width: 80vw">
-      <component :is="modalComponent" :is-modal="true" @modalSignal="handleModalSignal" @closeModal="closeModal">
-      </component>
-    </q-card>
-  </q-dialog>
-</template>
-
 <script>
 import { withQuery } from 'ufo'
+
 export default {
   props: {
     label: {
@@ -74,24 +35,48 @@ export default {
     },
     focusOnMount: {
       type: Boolean,
-      default: false
+      default: false,
     },
     endpoint: {
       type: [String, null],
-      default: () => null
+      default: () => null,
     },
     staticOption: {
       type: [Object, undefined],
-      required: false
+      required: false,
     },
     emitObj: {
       type: Boolean,
-      default: false
+      default: false,
     },
     fetchOnMount: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
+    dataTestid: {
+      type: String,
+      required: false,
+    },
+    mapOptions: {
+      type: Boolean,
+      required: false,
+    },
+    errorMessage: {
+      type: String,
+      required: false,
+    },
+    optionValue: {
+      type: String,
+      required: false,
+    },
+    emitValue: {
+      type: Boolean,
+      required: false,
+    },
+    optionLabel: {
+      type: String,
+      required: false,
+    },
   },
   emits: ['update:modelValue', 'updateObj'],
 
@@ -103,7 +88,7 @@ export default {
     const initalAllOptions = props.options
     if (props.staticOption && props.staticOption.id) {
       initalAllOptions.results = initalAllOptions.results.filter((item) => {
-        return (props.staticOption.id !== item.id)
+        return props.staticOption.id !== item.id
       })
       initalAllOptions.results.unshift(props.staticOption)
     }
@@ -129,7 +114,7 @@ export default {
           }
           emit('updateObj', data)
         }
-      }
+      },
     )
 
     watch(
@@ -138,7 +123,7 @@ export default {
         if (!newValue) return
         if (props.staticOption && props.staticOption.id) {
           const cleanedOptions = newValue.results.filter((item) => {
-            return (props.staticOption.id !== item.id)
+            return props.staticOption.id !== item.id
           })
           cleanedOptions.unshift(props.staticOption)
           allOptions.value.results = cleanedOptions
@@ -148,7 +133,7 @@ export default {
           filteredOptions.value = newValue.results
         }
         Object.assign(allOptions.value.pagination, newValue.pagination)
-      }
+      },
     )
 
     watch(
@@ -156,13 +141,13 @@ export default {
       (newValue) => {
         if (newValue && newValue.id) {
           const cleanedOptions = allOptions.value.results.filter((item) => {
-            return (newValue.id !== item.id)
+            return newValue.id !== item.id
           })
           cleanedOptions.unshift(newValue)
           allOptions.value.results = cleanedOptions
           filteredOptions.value = cleanedOptions
         }
-      }
+      },
     )
 
     // watch(
@@ -184,13 +169,15 @@ export default {
         return
       }
       update(() => {
-        const endpoint = props.endpoint + `?search=${val}`
-        useApi(endpoint).then((data) => {
-          filteredOptions.value = data.results
-          filteredOptionsPagination.value = data.pagination
-        }).catch((err) => {
-          console.log(`Error While Fetching ${err}`)
-        })
+        const endpoint = `${props.endpoint}?search=${val}`
+        useApi(endpoint)
+          .then((data) => {
+            filteredOptions.value = data.results
+            filteredOptionsPagination.value = data.pagination
+          })
+          .catch((err) => {
+            console.log(`Error While Fetching ${err}`)
+          })
         // const needle = val.toLowerCase()
         // filteredOptions.value = allOptions.value.results.filter(
         //   (v) => v.name.toLowerCase().indexOf(needle) > -1
@@ -223,10 +210,12 @@ export default {
         if (data) {
           if (props.staticOption && props.staticOption.id) {
             const filteredOptions = data.results.filter((item) => {
-              return (props.staticOption.id !== item.id)
+              return props.staticOption.id !== item.id
             })
             allOptions.value.results.push(...filteredOptions)
-          } else allOptions.value.results.push(...data.results)
+          } else {
+            allOptions.value.results.push(...data.results)
+          }
           Object.assign(allOptions.value.pagination, data.pagination)
         }
         fetchLoading.value = false
@@ -254,22 +243,21 @@ export default {
 
     const onScroll = (scrollData) => {
       if (filteredOptionsPagination.value) {
-        if (scrollData.direction === 'increase' && scrollData.to > filteredOptions.value.length - 2 &&
-          !(filteredOptionsPagination.value.page >= filteredOptionsPagination.value.pages) && !fetchLoading.value) {
+        if (scrollData.direction === 'increase' && scrollData.to > filteredOptions.value.length - 2 && !(filteredOptionsPagination.value.page >= filteredOptionsPagination.value.pages) && !fetchLoading.value) {
           fetchLoading.value = true
-          const endpoint = props.endpoint + `?search=${serachKeyword.value}&page=${filteredOptionsPagination.value.page + 1}`
-          useApi(endpoint).then((data) => {
-            filteredOptions.value.push(...data.results)
-            filteredOptionsPagination.value = data.pagination
-            fetchLoading.value = false
-          }).catch((err) => {
-            console.log(`Error While Fetching ${err}`)
-            fetchLoading.value = false
-          })
+          const endpoint = `${props.endpoint}?search=${serachKeyword.value}&page=${filteredOptionsPagination.value.page + 1}`
+          useApi(endpoint)
+            .then((data) => {
+              filteredOptions.value.push(...data.results)
+              filteredOptionsPagination.value = data.pagination
+              fetchLoading.value = false
+            })
+            .catch((err) => {
+              console.log(`Error While Fetching ${err}`)
+              fetchLoading.value = false
+            })
         }
-      }
-      else if (scrollData.direction === 'increase' && scrollData.to > allOptions.value.results.length - 3 &&
-        allOptions.value.pagination.page !== allOptions.value.pagination.pages && !fetchLoading.value) {
+      } else if (scrollData.direction === 'increase' && scrollData.to > allOptions.value.results.length - 3 && allOptions.value.pagination.page !== allOptions.value.pagination.pages && !fetchLoading.value) {
         fetchOptions()
       }
     }
@@ -293,3 +281,101 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="row no-wrap">
+    <q-select
+      v-model="modalValue"
+      clearable
+      emit-value
+      map-options
+      use-input
+      class="q-mr-xs col"
+      clear-icon="close"
+      option-label="name"
+      option-value="id"
+      :autofocus="focusOnMount"
+      :disable="props.disabled"
+      :error="!!props?.error"
+      :error-message="props?.error"
+      :label="label"
+      :loading="fetchLoading"
+      :options="filteredOptions"
+      :virtual-scroll-slice-ratio-after="0"
+      @filter="filterFn"
+      @update:model-value="valUpdated"
+      @virtual-scroll="onScroll"
+    >
+      <template #no-option>
+        <div class="py-3 px-4 bg-slate-1">
+          No Results Found
+        </div>
+      </template>
+      <template v-if="fetchLoading" #after-options>
+        <div class="flex justify-center pb-2 text-gray-500">
+          <svg
+            height="32"
+            viewBox="0 0 24 24"
+            width="32"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-width="2"
+            >
+              <path
+                d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"
+                stroke-dasharray="60"
+                stroke-dashoffset="60"
+                stroke-opacity=".3"
+              >
+                <animate
+                  attributeName="stroke-dashoffset"
+                  dur="1.3s"
+                  fill="freeze"
+                  values="60;0"
+                />
+              </path>
+              <path d="M12 3C16.9706 3 21 7.02944 21 12" stroke-dasharray="15" stroke-dashoffset="15">
+                <animate
+                  attributeName="stroke-dashoffset"
+                  dur="0.3s"
+                  fill="freeze"
+                  values="15;0"
+                />
+                <animateTransform
+                  attributeName="transform"
+                  dur="1.5s"
+                  repeatCount="indefinite"
+                  type="rotate"
+                  values="0 12 12;360 12 12"
+                />
+              </path>
+            </g>
+          </svg>
+        </div>
+      </template>
+    </q-select>
+    <div>
+      <q-btn
+        v-if="modalComponent"
+        class="q-ml-auto text-black q-mt-md"
+        color="white"
+        label="+"
+        @click="openModal"
+      />
+    </div>
+  </div>
+  <q-dialog v-model="isModalOpen" transition-hide="none">
+    <q-card style="min-width: 80vw">
+      <component
+        :is="modalComponent"
+        :is-modal="true"
+        @close-modal="closeModal"
+        @modal-signal="handleModalSignal"
+      />
+    </q-card>
+  </q-dialog>
+</template>

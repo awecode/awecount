@@ -1,18 +1,28 @@
 import datetime
+import random
+import uuid
 from copy import deepcopy
 from decimal import Decimal
+from io import BytesIO
 from typing import Union
 
 from auditlog.registry import auditlog
+from dateutil.relativedelta import relativedelta
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.core.files.storage import default_storage
+from django.core.mail import EmailMessage
+from django.db import models, transaction
 from django.db.models import Prefetch, Q
+from django.template.loader import render_to_string
 from django.utils import timezone
+from django_q.models import Schedule
+from django_q.tasks import schedule
+from weasyprint import HTML
 
 from apps.bank.models import BankAccount, ChequeDeposit
-from apps.company.models import Company, FiscalYear
+from apps.company.models import Company, CompanyBaseModel, FiscalYear
 from apps.ledger.models import (
     JournalEntry,
     Party,
@@ -32,7 +42,12 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.helpers import merge_dicts
+from awecount.libs.helpers import (
+    deserialize_request,
+    get_relative_file_path,
+    merge_dicts,
+    use_miti,
+)
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -301,7 +316,7 @@ class TransactionFeeConfig:
         return fee
 
 
-class PaymentMode(models.Model):
+class PaymentMode(CompanyBaseModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     enabled_for_sales = models.BooleanField(default=True)
@@ -355,7 +370,7 @@ class PaymentMode(models.Model):
         return TransactionFeeConfig(self.transaction_fee_config).calculate_fee(amount)
 
 
-class Challan(TransactionModel, InvoiceModel):
+class Challan(TransactionModel, InvoiceModel, CompanyBaseModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
@@ -409,7 +424,7 @@ class Challan(TransactionModel, InvoiceModel):
         unique_together = ("company", "voucher_no", "fiscal_year")
 
 
-class ChallanRow(TransactionModel, InvoiceRowModel):
+class ChallanRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     voucher = models.ForeignKey(Challan, on_delete=models.CASCADE, related_name="rows")
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, related_name="challan_rows"
@@ -422,7 +437,7 @@ class ChallanRow(TransactionModel, InvoiceRowModel):
     key = "Challan"
 
 
-class SalesVoucher(TransactionModel, InvoiceModel):
+class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
     party = models.ForeignKey(
         Party,
@@ -493,7 +508,6 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         related_name="sales_invoices",
         on_delete=models.SET_NULL,
     )
-
     # Model key for module based permission
     key = "Sales"
 
@@ -714,6 +728,91 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         merged_data = dict(merge_dicts(merged_data, conf["sales_invoice_data"]))
         return merged_data, conf["sales_invoice_endpoint"]
 
+    def email_invoice(self, to, subject, message, attachments, attach_pdf):
+        if self.status in ["Draft", "Cancelled"]:
+            raise Exception("Draft or Cancelled invoices cannot be sent!")
+        pdf_stream = None
+        if attach_pdf:
+            html_template = render_to_string(
+                "sales_invoice_pdf.html",
+                {
+                    "invoice": {
+                        "company": {
+                            "name": self.company.name,
+                            "address": self.company.address,
+                            "contact": self.company.contact_no,
+                            "email": ", ".join(self.company.emails),
+                            "tax_registration_number": self.company.tax_registration_number,
+                            "currency_code": self.company.currency_code,
+                        },
+                        "billed_to": self.party_name(),
+                        "address": self.address,
+                        "fiscal_year": self.fiscal_year.name,
+                        "date": self.date,
+                        "miti": nepdate.string_from_tuple(nepdate.ad2bs(str(self.date)))
+                        if use_miti(self.company)
+                        else "",
+                        "payment_mode": self.payment_mode.name
+                        if self.payment_mode
+                        else "Credit",
+                        "rows": [
+                            {
+                                "item": {
+                                    "hs_code": row.item.category.hs_code
+                                    if row.item.category and row.item.category.hs_code
+                                    else "",
+                                    "name": row.item.name,
+                                },
+                                "unit": row.unit.name,
+                                "quantity": row.quantity,
+                                "rate": row.rate,
+                                "amount": row.quantity * row.rate,
+                            }
+                            for row in self.rows.all()
+                        ],
+                        "in_words": self.amount_in_words,
+                        "voucher_meta": self.get_voucher_meta(),
+                        "voucher_no": self.voucher_no,
+                        "remarks": self.remarks,
+                    }
+                },
+            )
+
+            pdf_stream = BytesIO()
+            HTML(string=html_template).write_pdf(pdf_stream)
+            pdf_stream.seek(0)
+
+        email = EmailMessage(
+            subject=subject,
+            body=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=to,
+        )
+        if attach_pdf:
+            email.attach(
+                f"Sales Invoice {self.voucher_no}.pdf",
+                pdf_stream.getvalue(),
+                "application/pdf",
+            )
+
+        for attachment in attachments:
+            if isinstance(attachment, str):
+                file_path = get_relative_file_path(attachment)
+                if default_storage.exists(file_path):
+                    with default_storage.open(file_path, "rb") as file:
+                        email.attach(
+                            file_path.split("/")[-1], file.read(), "application/pdf"
+                        )
+                else:
+                    raise ValueError(f"Failed to fetch attachment from {file_path}")
+            else:
+                email.attach(
+                    attachment.name, attachment.file.read(), attachment.content_type
+                )
+
+        email.content_subtype = "html"
+        email.send()
+
     @property
     def pdf_url(self):
         return "{}sales-voucher/{}/view?pdf=1".format(settings.BASE_URL, self.pk)
@@ -745,7 +844,162 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         )
 
 
-class SalesVoucherRow(TransactionModel, InvoiceRowModel):
+TIME_UNITS = (
+    ("Day(s)", "Day(s)"),
+    ("Week(s)", "Week(s)"),
+    ("Month(s)", "Month(s)"),
+    ("Year(s)", "Year(s)"),
+)
+
+RECURRING_TEMPLATE_TYPES = (
+    ("Sales Voucher", "Sales Voucher"),
+    ("Purchase Voucher", "Purchase Voucher"),
+)
+
+
+def add_time_to_date(date, amount, time_unit):
+    if time_unit == "Day(s)":
+        new_date = date + datetime.timedelta(days=amount)
+    elif time_unit == "Week(s)":
+        new_date = date + datetime.timedelta(weeks=amount)
+    elif time_unit == "Month(s)":
+        new_date = date + relativedelta(months=amount)
+    elif time_unit == "Year(s)":
+        new_date = date + relativedelta(years=amount)
+    return new_date
+
+
+class RecurringVoucherTemplate(CompanyBaseModel):
+    title = models.CharField(max_length=255)
+    type = models.CharField(max_length=25, choices=RECURRING_TEMPLATE_TYPES)
+    invoice_data = models.JSONField()
+    repeat_interval = models.PositiveSmallIntegerField()
+    repeat_interval_time_unit = models.CharField(max_length=10, choices=TIME_UNITS)
+    due_date_after = models.PositiveSmallIntegerField()
+    due_date_after_time_unit = models.CharField(max_length=10, choices=TIME_UNITS)
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
+    end_after = models.PositiveSmallIntegerField(blank=True, null=True)
+    send_email = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    last_generated = models.DateField(blank=True, null=True)
+    next_date = models.DateField(blank=True, null=True)
+    no_of_vouchers_created = models.PositiveSmallIntegerField(default=0)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        self.next_date = self.get_next_date()
+        if self.pk:
+            Schedule.objects.filter(name=f"recurring_voucher_{self.pk}").delete()
+        if self.is_active and self.next_date:
+            schedule(
+                "apps.voucher.models.RecurringVoucherTemplate.generate_voucher",
+                self,
+                name=f"recurring_voucher_{self.pk}",
+                next_run=self.next_date,
+                schedule_type="O",
+            )
+        super().save(*args, **kwargs)
+
+    def get_next_date(self):
+        if not self.is_active:
+            return None
+
+        if self.end_after and self.no_of_vouchers_created >= self.end_after:
+            return None
+
+        if self.last_generated:
+            last_date = self.last_generated
+            next_date = add_time_to_date(
+                last_date, self.repeat_interval, self.repeat_interval_time_unit
+            )
+            if self.end_date and next_date > self.end_date:
+                return None
+        else:
+            next_date = self.start_date
+        return next_date
+
+    @transaction.atomic
+    def generate_voucher(self):
+        invoice_data = deepcopy(self.invoice_data)
+
+        request = deserialize_request(
+            {
+                "user": self.user,
+                "company": self.company,
+                "company_id": self.company.id,
+                "user_id": self.user.id,
+                "data": invoice_data,
+            }
+        )
+        if self.type == "Sales Voucher":
+            from apps.voucher.serializers.sales import SalesVoucherCreateSerializer
+
+            invoice_data["date"] = self.next_date
+            invoice_data["due_date"] = add_time_to_date(
+                self.next_date, self.due_date_after, self.due_date_after_time_unit
+            )
+            invoice_data["status"] = "Issued"
+            serializer = SalesVoucherCreateSerializer(
+                data=invoice_data,
+                context={
+                    "request": request,
+                },
+            )
+            serializer.is_valid(raise_exception=True)
+            voucher = serializer.save()
+        else:
+            from apps.voucher.serializers.purchase import (
+                PurchaseVoucherCreateSerializer,
+            )
+
+            invoice_data["date"] = self.next_date
+            invoice_data["due_date"] = add_time_to_date(
+                self.next_date, self.due_date_after, self.due_date_after_time_unit
+            )
+            invoice_data["status"] = "Issued"
+            invoice_data["voucher_no"] = "auto-{}-{}-{}".format(
+                self.id, self.no_of_vouchers_created + 1, random.randint(1000, 9999)
+            )
+            voucher = PurchaseVoucherCreateSerializer(
+                data=invoice_data,
+                context={
+                    "request": request,
+                },
+            )
+            voucher.is_valid(raise_exception=True)
+            voucher = voucher.save()
+
+        if self.send_email:
+            success_message = f"""
+            <html>
+                <body>
+                    <h1>Recurring {self.type} Generated Successfully</h1>
+                    <p>Dear {self.user.full_name},</p>
+                    <p>We are pleased to inform you that the recurring {self.type.lower()} titled <strong>{self.title}</strong> has been successfully generated.</p>
+                <p>You can view the generated voucher in the dashboard. If you encounter any issues, please contact us.</p>
+                </body>
+            </html>
+            """
+
+            email = EmailMessage(
+                subject="Recurring Voucher Generated Successfully",
+                body=success_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[self.user.email],
+            )
+            email.content_subtype = "html"
+            email.send()
+
+        self.no_of_vouchers_created += 1
+        self.last_generated = self.next_date
+        self.save()
+
+
+class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     voucher = models.ForeignKey(
         SalesVoucher, on_delete=models.CASCADE, related_name="rows"
     )
@@ -793,7 +1047,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
         return self.net_amount - self.tax_amount + self.discount_amount
 
 
-class PurchaseOrder(TransactionModel, InvoiceModel):
+class PurchaseOrder(TransactionModel, InvoiceModel, CompanyBaseModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
@@ -836,7 +1090,7 @@ class PurchaseOrderRow(TransactionModel, InvoiceRowModel):
     key = "Purchase Order"
 
 
-class PurchaseVoucher(TransactionModel, InvoiceModel):
+class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     voucher_no = models.CharField(max_length=25, null=True, blank=True)
     party = models.ForeignKey(Party, on_delete=models.PROTECT)
     date = models.DateField(default=timezone.now)
@@ -1037,7 +1291,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
         self.apply_inventory_transaction()
 
 
-class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
+class PurchaseVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     voucher = models.ForeignKey(
         PurchaseVoucher, related_name="rows", on_delete=models.CASCADE
     )
@@ -1116,7 +1370,7 @@ CREDIT_NOTE_STATUSES = (
 )
 
 
-class CreditNote(TransactionModel, InvoiceModel):
+class CreditNote(TransactionModel, InvoiceModel, CompanyBaseModel):
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
 
@@ -1309,7 +1563,7 @@ class CreditNote(TransactionModel, InvoiceModel):
             return merged_data, conf["credit_note_endpoint"]
 
 
-class CreditNoteRow(TransactionModel, InvoiceRowModel):
+class CreditNoteRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     voucher = models.ForeignKey(
         CreditNote, on_delete=models.CASCADE, related_name="rows"
     )
@@ -1339,7 +1593,7 @@ class CreditNoteRow(TransactionModel, InvoiceRowModel):
     sales_row_data = models.JSONField(blank=True, null=True)
 
 
-class DebitNote(TransactionModel, InvoiceModel):
+class DebitNote(TransactionModel, InvoiceModel, CompanyBaseModel):
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
 
@@ -1496,7 +1750,7 @@ class DebitNote(TransactionModel, InvoiceModel):
         self.apply_inventory_transaction()
 
 
-class DebitNoteRow(TransactionModel, InvoiceRowModel):
+class DebitNoteRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     voucher = models.ForeignKey(
         DebitNote, on_delete=models.CASCADE, related_name="rows"
     )
@@ -1539,7 +1793,7 @@ PAYMENT_STATUSES = (
 )
 
 
-class PaymentReceipt(TransactionModel):
+class PaymentReceipt(TransactionModel, CompanyBaseModel):
     invoices = models.ManyToManyField(SalesVoucher, related_name="payment_receipts")
     party = models.ForeignKey(
         Party, on_delete=models.PROTECT, related_name="payment_receipts"
@@ -1584,6 +1838,7 @@ class PaymentReceipt(TransactionModel):
         return self.id
 
     def apply_transactions(self, force_update=False):
+        acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
         if self.status == "Cancelled":
             self.cancel_transactions()
             return
@@ -1592,7 +1847,7 @@ class PaymentReceipt(TransactionModel):
         if self.mode == "Cheque":
             self.cheque_deposit.apply_transactions()
         elif self.mode == "Cash":
-            dr_acc = get_account(self.company, "Cash")
+            dr_acc = get_account(self.company, acc_system_codes.get("Cash"))
         elif self.mode == "Bank Deposit":
             dr_acc = self.bank_account.ledger
         else:
@@ -1604,7 +1859,11 @@ class PaymentReceipt(TransactionModel):
             cr_amount += self.amount
         if force_update or self.tds_amount:
             entries.append(
-                ["dr", get_account(self.company, "TDS Receivables"), self.tds_amount]
+                [
+                    "dr",
+                    get_account(self.company, acc_system_codes.get("TDS Receivables")),
+                    self.tds_amount,
+                ]
             )
             cr_amount += self.tds_amount
         if cr_amount:
@@ -1689,6 +1948,34 @@ class PaymentReceipt(TransactionModel):
 
     def __str__(self):
         return str(self.date)
+
+
+IMPORT_TYPES = (
+    ("Sales Voucher", "Sales Voucher"),
+    ("Purchase Voucher", "Purchase Voucher"),
+    ("Credit Note", "Credit Note"),
+    ("Debit Note", "Debit Note"),
+    ("Item", "Item"),
+    ("Party", "Party"),
+)
+
+IMPORT_STATUSES = (
+    ("Pending", "Pending"),
+    ("Completed", "Completed"),
+    ("Failed", "Failed"),
+)
+
+
+class Import(models.Model):
+    def get_path(self, filename):
+        return "imports/{}.{}".format(uuid.uuid4(), filename.split(".")[-1])
+
+    file = models.FileField(upload_to=get_path)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    type = models.CharField(choices=IMPORT_TYPES, max_length=25)
+    status = models.CharField(choices=IMPORT_STATUSES, max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 auditlog.register(Challan)

@@ -1,8 +1,11 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from django.db.models import F
 
-from awecount.libs.serializers import StatusReversionMixin
+from apps.ledger.serializers import AccountMinSerializer, PartyMinSerializer
 from awecount.libs.CustomViewSet import GenericSerializer
+from awecount.libs.serializers import StatusReversionMixin
+from django.db.models import Q, Count
 
 from .models import (
     BankAccount,
@@ -11,8 +14,10 @@ from .models import (
     ChequeIssue,
     FundTransfer,
     FundTransferTemplate,
+    ReconciliationRow,
+    ReconciliationStatement,
 )
-from apps.ledger.serializers import PartyMinSerializer
+
 
 class BankAccountSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source="__str__")
@@ -27,6 +32,15 @@ class BankAccountMinSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankAccount
         fields = ("id", "name")
+        
+class BankAccountWithLedgerSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source="__str__")
+    cheque_no = serializers.ReadOnlyField(source="next_cheque_no")
+
+
+    class Meta:
+        model = BankAccount
+        fields = ("id", "name", "ledger_id", "cheque_no", "account_number")
 
 
 class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
@@ -206,3 +220,53 @@ class BankCashDepositCreateSerializer(
     class Meta:
         model = BankCashDeposit
         exclude = ("company",)
+
+
+class ReconciliationRowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReconciliationRow
+        exclude = ("updated_at", "statement" )
+        
+class ReconciliationStatementImportSerializer(serializers.Serializer):
+    account_id = serializers.IntegerField()
+    transactions = serializers.ListField(child=serializers.DictField())
+    start_date = serializers.DateField(required=False)
+    end_date = serializers.DateField(required=False)
+    merge_description = serializers.BooleanField(default=False)
+    
+    class Meta:
+        fields = ('account_id', 'transactions', 'start_date', 'end_date', 'merge_description')
+        
+class ReconciliationStatementListSerializer(serializers.ModelSerializer):
+    account = AccountMinSerializer()
+    total_rows = serializers.SerializerMethodField()
+    reconciled_rows = serializers.SerializerMethodField()
+    has_updated_rows = serializers.SerializerMethodField()
+    
+    def get_total_rows(self, obj):
+        return obj.rows.count()
+    
+    def get_reconciled_rows(self, obj):
+        return obj.rows.filter(status='Reconciled').count()
+    
+    def get_has_updated_rows(self, obj):
+        # find if there are any rows that have been updated
+        return obj.rows.annotate(
+            transaction_count=Count('transactions')
+        ).filter(
+            Q(transaction_count__gt=0) & Q(transactions__transaction__isnull=True) | 
+            Q(transactions__transaction_last_updated_at__lt=F('transactions__transaction__updated_at'))
+        ).exists()
+
+    class Meta:
+        model = ReconciliationStatement
+        fields = ('id', 'account', 'start_date', 'end_date', 'total_rows', 'reconciled_rows', 'has_updated_rows')
+        
+
+class ReconciliationStatementSerializer(serializers.ModelSerializer):
+    account = AccountMinSerializer()
+    entries = ReconciliationRowSerializer(many=True)
+
+    class Meta:
+        model = ReconciliationStatement
+        fields = ('id', 'account', 'start_date', 'end_date', 'entries')

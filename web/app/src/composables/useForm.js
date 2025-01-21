@@ -1,8 +1,9 @@
-import { withTrailingSlash, withoutTrailingSlash, joinURL } from 'ufo'
-import { getCurrentInstance } from 'vue'
-import useApi from './useApi'
 import { useLoginStore } from 'src/stores/login-info'
 import { useModalFormLoading } from 'src/stores/ModalFormLoading'
+import { parseErrors } from 'src/utils/helpers'
+import { joinURL, withoutTrailingSlash, withTrailingSlash } from 'ufo'
+import { getCurrentInstance } from 'vue'
+import useApi from './useApi'
 
 export default (endpoint, config) => {
   const $q = useQuasar()
@@ -21,6 +22,8 @@ export default (endpoint, config) => {
   const context = root?.setupContext
 
   const isModal = !!root?.attrs['is-modal']
+  let editId = root?.attrs['edit-id']?.toString()
+  const defaultFieldsData = root?.attrs['default-fields'] || {}
   const store = useLoginStore()
   const modalFormLoading = useModalFormLoading()
   const today = new Date().toISOString().substring(0, 10)
@@ -35,27 +38,32 @@ export default (endpoint, config) => {
     store.isLoading = true
   }
   onMounted(() => {
-    // added is modal check
-    isEdit.value = !!route.params.id && !isModal
-    if ((!config.getDefaults && !isEdit.value && !isModal)) {
-      store.isLoading = false
+    if (!editId && !isModal) {
+      editId = route.params.id
     }
-    else if (isModal && (isEdit.value || config.getDefaults)) {
+    isEdit.value = !!editId
+    if (!config.getDefaults && !isEdit.value) {
       store.isLoading = false
-    } else setModalLoadingFalse()
-    id.value = route.params.id
+    } else {
+      setModalLoadingFalse()
+    }
+    id.value = editId
     if (isEdit.value) {
       isGetEditLoading.value = true
-      useApi(withTrailingSlash(joinURL(endpoint, route.params.id))).then(
-        (data) => {
+      let fetchUrl = withTrailingSlash(joinURL(endpoint, id.value))
+      if (config.queryParams) {
+        const queryParams = new URLSearchParams(config.queryParams).toString()
+        fetchUrl += `?${queryParams}`
+      }
+      useApi(fetchUrl)
+        .then((data) => {
           fields.value = data
           isGetEditLoading.value = false
           if (!isGetDefaultLoading.value) {
             store.isLoading = false
           }
           setModalLoadingFalse()
-        }
-      )
+        })
         .catch((error) => {
           isGetEditLoading.value = false
           if (!isGetEditLoading.value) {
@@ -74,48 +82,41 @@ export default (endpoint, config) => {
     }
     if (config.getDefaults) {
       isGetDefaultLoading.value = true
-      useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then(
-        (data) => {
-          if (data.fields) {
-            if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
-          }
-
-          // From drop down branch
-          // TODO: resolve and remove this
-          // delete data.collections
-          // Object.assign(formDefaults.value, data)
-          // Object.assign(fields.value, data.fields)
-          // From drop down branch
-
-          // From main
-          formDefaults.value = data
-          isGetDefaultLoading.value = false
-          if (!isGetEditLoading.value) {
-            store.isLoading = false
-            setModalLoadingFalse()
-          }
-          // From main
+      useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then((data) => {
+        if (data.fields) {
+          if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
         }
-      )
-    }
 
+        if (defaultFieldsData) {
+          for (const key in defaultFieldsData) {
+            fields.value[key] = defaultFieldsData[key]
+          }
+        }
+
+        // From drop down branch
+        // TODO: resolve and remove this
+        // delete data.collections
+        // Object.assign(formDefaults.value, data)
+        // Object.assign(fields.value, data.fields)
+        // From drop down branch
+
+        // From main
+        formDefaults.value = data
+        isGetDefaultLoading.value = false
+        if (!isGetEditLoading.value) {
+          store.isLoading = false
+          setModalLoadingFalse()
+        }
+        // From main
+      })
+    }
   })
   const getDefaultsFetchUrl = () => {
-    return joinURL(endpoint, 'create-defaults/')
+    return config.createDefaultsEndpoint || joinURL(endpoint, 'create-defaults/')
   }
 
   const processErrors = (responseData) => {
-    const dct = Object.fromEntries(
-      Object.entries(responseData).map(([k, v]) => {
-        let val = v
-        if (Array.isArray(val)) {
-          if (typeof val[0] === 'object') {
-          } else val = val.join(' ')
-        }
-        return [k, val]
-      })
-    )
-    errors.value = dct
+    errors.value = parseErrors(responseData)
   }
 
   const removeLastUrlSegment = (url) => {
@@ -128,7 +129,7 @@ export default (endpoint, config) => {
     errors.value = {}
     let postEndpoint
     if (isEdit.value) {
-      postEndpoint = withTrailingSlash(joinURL(endpoint, route.params.id))
+      postEndpoint = withTrailingSlash(joinURL(endpoint, id.value))
     } else {
       postEndpoint = endpoint
     }
@@ -182,55 +183,55 @@ export default (endpoint, config) => {
         } else if (data.status === 422) {
           $q.dialog({
             title: `<span class="text-orange">${humanizeWord(data.data?.code)}!</span>`,
-            message:
-              `<span class="text-grey-8">Reason: ${data.data.detail}` +
-              '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
+            message: `<span class="text-grey-8">Reason: ${data.data.detail}` + '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
             cancel: true,
             html: true,
-          }).onOk(() => {
-            useApi(postEndpoint + `?${data.data?.code}=true`, {
-              method: isEdit.value ? 'PATCH' : 'POST',
-              body: { ...fields.value, status: originalStatus },
-            })
-              .then((data) => {
-                $q.notify({
-                  color: 'positive',
-                  message: 'Saved',
-                  icon: 'check_circle',
-                })
-                if (isModal) {
-                  context.emit('modalSignal', data)
-                } else {
-                  if (config.successRoute) {
-                    router.push(config.successRoute)
-                  } else {
-                    router.push(removeLastUrlSegment(route.path))
-                  }
-                }
-              })
-              .catch(() => {
-                $q.notify({
-                  color: 'negative',
-                  message: 'Something went Wrong!',
-                  icon: 'report_problem',
-                })
-              }).finally(() => {
-                loading.value = false
-              })
-          }).onCancel(() => {
-            loading.value = false
           })
-        }
-        else {
+            .onOk(() => {
+              useApi(`${postEndpoint}?${data.data?.code}=true`, {
+                method: isEdit.value ? 'PATCH' : 'POST',
+                body: { ...fields.value, status: originalStatus },
+              })
+                .then((data) => {
+                  $q.notify({
+                    color: 'positive',
+                    message: 'Saved',
+                    icon: 'check_circle',
+                  })
+                  if (isModal) {
+                    context.emit('modalSignal', data)
+                  } else {
+                    if (config.successRoute) {
+                      router.push(config.successRoute)
+                    } else {
+                      router.push(removeLastUrlSegment(route.path))
+                    }
+                  }
+                })
+                .catch(() => {
+                  $q.notify({
+                    color: 'negative',
+                    message: 'Something went Wrong!',
+                    icon: 'report_problem',
+                  })
+                })
+                .finally(() => {
+                  loading.value = false
+                })
+            })
+            .onCancel(() => {
+              loading.value = false
+            })
+        } else {
           $q.notify({
             color: 'negative',
-            message: message,
+            message,
             icon: 'report_problem',
           })
           loading.value = false
         }
         return {
-          error: 'Api Error'
+          error: 'Api Error',
         }
         // throw new Error('Api Error')
       })
@@ -248,9 +249,7 @@ export default (endpoint, config) => {
 
   const cancelForm = () => {
     if (isEdit.value) {
-      const cancelEndPoint = withTrailingSlash(
-        joinURL(endpoint, route.params.id, 'cancel')
-      )
+      const cancelEndPoint = withTrailingSlash(joinURL(endpoint, id.value, 'cancel'))
       useApi(cancelEndPoint, {
         method: 'POST',
       })
@@ -281,7 +280,9 @@ export default (endpoint, config) => {
   onUnmounted(() => {
     if (isModal) {
       if (modalFormLoading.hasOwnProperty(`${modalId}`)) delete modalFormLoading[modalId]
-    } else store.isLoading = false
+    } else {
+      store.isLoading = false
+    }
   })
 
   return {

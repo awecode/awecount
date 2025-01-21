@@ -89,12 +89,14 @@
             <p class="alignright f-bold">VAT Reg No.: {{ request.company.tax_registration_number }}</p>
         </td>
     </tr>
+    {% if object.bs_date %}
     <tr>
         <td>
             <p class="alignleft">Miti</p>
         </td>
         <td>: {{ object.bs_date }}</td>
     </tr>
+    {% endif %}
     <tr>
         <td>
             <p class="alignleft">Invoice No.</p>

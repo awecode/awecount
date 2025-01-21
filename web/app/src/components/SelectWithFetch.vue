@@ -1,17 +1,10 @@
-<template>
-  <div class="row no-wrap">
-    <q-select v-model="modalValue" input-debounce="0" :label="props.label" use-input :options="options" option-value="id"
-      option-label="name" map-options emit-value class="col" @update:modelValue="valUpdated" :disable="props?.disabled"
-      :error-message="props?.error" :error="!!props?.error" dense />
-  </div>
-</template>
-
 <script setup>
-import { ref, watch } from 'vue'
 import useApi from 'src/composables/useApi'
-const options = ref([])
+import { ref, watch } from 'vue'
+
 const props = defineProps(['modelValue', 'endpoint', 'label'])
 const emit = defineEmits(['update:modelValue'])
+const options = ref([])
 const modalValue = ref(props.modelValue)
 useApi(props.endpoint, { method: 'GET' })
   .then((data) => {
@@ -22,9 +15,31 @@ useApi(props.endpoint, { method: 'GET' })
   })
 watch(
   () => props.modelValue,
-  (newValue) => (modalValue.value = newValue)
+  newValue => (modalValue.value = newValue),
 )
 const valUpdated = (val) => {
   emit('update:modelValue', val)
 }
 </script>
+
+<template>
+  <div class="row no-wrap">
+    <q-select
+      v-model="modalValue"
+      dense
+      emit-value
+      map-options
+      use-input
+      class="col"
+      input-debounce="0"
+      option-label="name"
+      option-value="id"
+      :disable="props?.disabled"
+      :error="!!props?.error"
+      :error-message="props?.error"
+      :label="props.label"
+      :options="options"
+      @update:model-value="valUpdated"
+    />
+  </div>
+</template>

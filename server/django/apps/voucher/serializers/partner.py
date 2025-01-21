@@ -1,3 +1,4 @@
+from django.core.exceptions import SuspiciousOperation
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -140,8 +141,6 @@ class PartnerItemSelectSerializer(serializers.Serializer):
             )
             category = row_item.get("category")
             if category:
-                if category.company_id != self.context["request"].company_id:
-                    raise ValidationError("Category does not belong to the company.")
                 if category.sales_account:
                     item.sales_account_type = "category"
                     item.sales_account = category.dedicated_sales_account
@@ -303,7 +302,7 @@ class PartnerPurchaseVoucherCreateSerializer(
         purchase_orders = validated_data.pop("purchase_orders", None)
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
-        validated_data["company_id"] = request.company_id
+        validated_data["company_id"] = request.company.id
         validated_data["user_id"] = request.user.id
         instance = PurchaseVoucher.objects.create(**validated_data)
         for _, row in enumerate(rows_data):
@@ -369,7 +368,6 @@ class PartnerCreditNoteCreateSerializer(
                 )
             validated_data["extra_entries"] = extra_entries
         return super().create(validated_data)
-
 
 
 class PartnerDebitNoteRowSerializer(

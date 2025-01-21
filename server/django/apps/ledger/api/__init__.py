@@ -1,7 +1,8 @@
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Case, F, FloatField, Max, Q, Sum, When
+from django.db.models import Case, Count, F, FloatField, Max, Q, Sum, When
 from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -106,17 +107,17 @@ class PartyViewSet(
         return qs
 
     @action(detail=True)
-    def sales_vouchers(self, request, pk=None):
+    def sales_vouchers(self, request, pk=None, *args, **kwargs):
         sales_vouchers = SalesVoucher.objects.filter(party_id=pk)
         data = SaleVoucherOptionsSerializer(sales_vouchers, many=True).data
         return Response(data)
 
     @action(detail=False)
-    def customers(self, request):
+    def customers(self, request, *args, **kwargs):
         return super().list(request)
 
     @action(detail=False)
-    def suppliers(self, request):
+    def suppliers(self, request, *args, **kwargs):
         return super().list(request)
 
 
@@ -168,14 +169,6 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         #     )
         return qs
 
-    def get_accounts_by_category_name(self, category_name):
-        queryset = self.get_queryset()
-        queryset = queryset.filter(
-            category__name=category_name, company=self.request.company
-        )
-        serializer = self.get_serializer(queryset, many=True)
-        return serializer.data
-
     def get_serializer_class(self):
         if self.action == "transactions":
             return AccountDetailSerializer
@@ -186,7 +179,7 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         return AccountSerializer
 
     @action(detail=True, methods=["get"], url_path="journal-entries")
-    def journal_entries(self, request, pk=None):
+    def journal_entries(self, request, pk=None, *args, **kwargs):
         param = request.GET
         start_date = param.get("start_date")
         end_date = param.get("end_date")
@@ -214,11 +207,13 @@ class CategoryTreeView(APIView):
     action = "list"
 
     def get_queryset(self):
+        if self.request.GET.get("include-empty"):
+            return Category.objects.all()
         return Category.objects.exclude(
             Q(accounts__isnull=True) & Q(children__isnull=True)
         )
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         queryset = self.get_queryset().filter(company=request.company)
         category_tree = get_cached_trees(queryset)
         serializer = CategoryTreeSerializer(category_tree, many=True)
@@ -231,7 +226,7 @@ class FullCategoryTreeView(APIView):
     def get_queryset(self):
         return Category.objects.all()
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         queryset = self.get_queryset().filter(company=request.company)
         category_tree = get_cached_trees(queryset)
         serializer = CategoryTreeSerializer(category_tree, many=True)
@@ -244,7 +239,7 @@ class TrialBalanceView(APIView):
     def get_queryset(self):
         return Account.objects.none()
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
         if start_date and end_date:
@@ -284,6 +279,25 @@ class TrialBalanceView(APIView):
         return Response({})
 
 
+class ChartOfAccountsView(APIView):
+    action = "list"
+
+    def get_queryset(self):
+        return Account.objects.none()
+
+    def get(self, request, format=None):
+        qs = (
+            Account.objects.filter(company=request.company)
+            .annotate(
+                total_transactions=Count("transactions"),
+            )
+            .values(
+                "id", "name", "code", "system_code", "category_id", "total_transactions"
+            )
+        )
+        return Response(list(qs))
+
+
 class TaxSummaryView(APIView):
     action = "list"
 
@@ -292,7 +306,7 @@ class TaxSummaryView(APIView):
 
     def get_sales_queryset(self, **kwargs):
         return SalesVoucher.objects.filter(
-            company_id=self.request.company_id,
+            company_id=self.request.company.id,
             status__in=["Issued", "Paid", "Partially Paid"],
         )
 
@@ -301,7 +315,7 @@ class TaxSummaryView(APIView):
             PurchaseVoucher.objects.filter(is_import=False)
             .filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0))
             .filter(
-                company_id=self.request.company_id,
+                company_id=self.request.company.id,
                 status__in=["Issued", "Paid", "Partially Paid"],
             )
             .distinct()
@@ -312,13 +326,13 @@ class TaxSummaryView(APIView):
             PurchaseVoucher.objects.filter(is_import=True)
             .filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0))
             .filter(
-                company_id=self.request.company_id,
+                company_id=self.request.company.id,
                 status__in=["Issued", "Paid", "Partially Paid"],
             )
             .distinct()
         )
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
 
@@ -405,7 +419,7 @@ class CustomerClosingView(APIView):
     def get_queryset(self):
         return Account.objects.filter(customer_detail__isnull=False)
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         customers = (
             self.get_queryset()
             .filter(company_id=self.request.user.company_id)
@@ -480,7 +494,7 @@ class TransactionViewSet(
 
     def get_queryset(self):
         qs = (
-            Transaction.objects.filter(company_id=self.request.company_id)
+            Transaction.objects.filter(company_id=self.request.company.id)
             .prefetch_related("account", "journal_entry__content_type")
             .order_by("-journal_entry__date")
         )
@@ -549,7 +563,7 @@ class TransactionViewSet(
         return qs
 
     @action(detail=False)
-    def export(self, request):
+    def export(self, request, *args, **kwargs):
         queryset = self.get_queryset().order_by("-journal_entry__date")
         if not request.GET.get("group"):
             params = [("Transactions", queryset, TransactionResource)]
@@ -559,12 +573,14 @@ class TransactionViewSet(
             return qs_to_xls(params)
 
     @action(detail=False, url_path="day-book")
-    def day_book(self, request):
+    def day_book(self, request, *args, **kwargs):
         date_str = self.request.GET.get("date") or datetime.now().date().isoformat()
         try:
             target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
             raise ValidationError("Invalid date format. Use YYYY-MM-DD.")
+
+        acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
 
         combined_accounts = (
             Account.objects.filter(company=request.company)
@@ -625,7 +641,10 @@ class TransactionViewSet(
             .filter(
                 Case(
                     When(
-                        category__name__in=["Cash Accounts", "Bank Accounts"],
+                        category__system_code__in=[
+                            acc_cat_system_codes["Cash Accounts"],
+                            acc_cat_system_codes["Bank Accounts"],
+                        ],
                         then=True,
                     ),
                     When(transactions__journal_entry__date=target_date, then=True),
@@ -662,7 +681,7 @@ class AccountClosingViewSet(
 
     collections = [("fiscal_years", FiscalYear, GenericSerializer, True, ["name"])]
 
-    def get_defaults(self, request=None):
+    def get_defaults(self, request=None, *args, **kwargs):
         company = request.company
         current_fiscal_year = GenericSerializer(company.current_fiscal_year).data
         return {"fields": {"current_fiscal_year": current_fiscal_year}}

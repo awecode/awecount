@@ -1,29 +1,48 @@
+<script setup lang="ts">
+import { useMeta } from 'quasar'
+import { $api } from 'src/composables/api'
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
+
+useMeta({
+  title: 'Dashboard',
+  titleTemplate: (title: string) => `${title} | Awecount`,
+})
+
+const route = useRoute()
+const fields = ref(null)
+
+const endpoint = `/api/company/${route.params.company}/widgets/data/`
+const res = await $api(endpoint, { method: 'GET', protected: true })
+fields.value = res
+</script>
+
 <template>
   <div class="q-ma-md">
     <div>
       <q-btn
         icon="add"
         label="Add widget"
-        to="/dashboard-widgets/add"
         style="font-size: 0.75rem"
-      ></q-btn>
+        :to="`/${$route.params.company}/settings/dashboard-widgets/create`"
+      />
     </div>
     <div class="q-mt-md grid-con">
       <div v-for="widget in fields" :key="widget.id">
         <q-card class="q-py-sm q-px-md" style="height: 100%">
           <div>
             <div class="row no-wrap justify-between q-my-sm">
-              <h5 class="q-my-none text-h6 text-grey-8" styl e="flex-grow: 1">
+              <h5 class="q-my-none text-h6 text-grey-8">
                 {{ widget.name }}
               </h5>
               <span style="flex-grow: 0; flex-shrink: 0">
                 <q-btn
                   flat
-                  icon="edit"
-                  :to="`/dashboard-widgets/${widget.id}`"
-                  size="sm"
                   class="text-grey-8"
-                ></q-btn>
+                  icon="edit"
+                  size="sm"
+                  :to="`/${$route.params.company}/settings/dashboard-widgets/${widget.id}/edit`"
+                />
               </span>
             </div>
             <div>
@@ -31,25 +50,14 @@
                 <q-markup-table flat>
                   <thead>
                     <tr>
-                      <th
-                        v-for="value in widget.data.labels"
-                        :key="value"
-                        class="text-left"
-                      >
+                      <th v-for="value in widget.data.labels" :key="value" class="text-left">
                         {{ value }}
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="(row, index) in widget.data.datasets"
-                      :key="index"
-                    >
-                      <td
-                        v-for="(value, index) in row"
-                        :key="index"
-                        class="text-left"
-                      >
+                    <tr v-for="(row, index) in widget.data.datasets" :key="index">
+                      <td v-for="(value, index) in row" :key="index" class="text-left">
                         {{ value }}
                       </td>
                     </tr>
@@ -57,7 +65,7 @@
                 </q-markup-table>
               </div>
               <div v-else>
-                <ChartsView :data="widget.data"></ChartsView>
+                <ChartsView :data="widget.data" />
               </div>
             </div>
           </div>
@@ -66,32 +74,6 @@
     </div>
   </div>
 </template>
-
-<script>
-import useApi from 'src/composables/useApi'
-import { useMeta } from 'quasar'
-export default {
-  setup() {
-    const metaData = {
-      title: 'Dashboard',
-      titleTemplate: (title) => `${title} | Awecount`,
-    }
-    useMeta(metaData)
-    const fields = ref(null)
-    return {
-      fields,
-    }
-  },
-  created() {
-    const endpoint = '/v1/widgets/data/'
-    useApi(endpoint, { method: 'GET' })
-      .then((data) => {
-        this.fields = data
-      })
-      .catch((error) => console.log(error))
-  },
-}
-</script>
 
 <style lang="scss" scoped>
 .grid-con {

@@ -2,30 +2,40 @@
   <div class="w-full">
     <div class="bg-white q-pa-lg -mt-2 transition-all">
       <q-card class="mt-2">
-        <q-skeleton height="64px" square class="bg-green" />
+        <q-skeleton square class="bg-green" height="64px" />
         <q-card class="q-mx-lg q-pt-md pb-8 px-3">
           <div class="grid lg:grid-cols-2 grid-cols-1 gap-y-12 gap-x-6 py-6">
             <div class="flex gap-4">
               <div class="flex grow gap-1">
-                <q-skeleton height="45px" type="rect" class="grow">
-                </q-skeleton>
-                <q-skeleton height="45px" width="45px" type="QBtn" square>
-                </q-skeleton>
+                <q-skeleton class="grow" height="45px" type="rect" />
+                <q-skeleton
+                  square
+                  height="45px"
+                  type="QBtn"
+                  width="45px"
+                />
               </div>
-              <q-skeleton height="45px" width="65px" type="QBtn" square>
-              </q-skeleton>
+              <q-skeleton
+                square
+                height="45px"
+                type="QBtn"
+                width="65px"
+              />
             </div>
-            <q-skeleton height="45px" type="QInput"></q-skeleton>
-            <q-skeleton height="45px" type="QInput"></q-skeleton>
-            <q-skeleton height="45px" type="QInput"></q-skeleton>
+            <q-skeleton height="45px" type="QInput" />
+            <q-skeleton height="45px" type="QInput" />
+            <q-skeleton height="45px" type="QInput" />
             <div class="flex gap-4">
-              <q-skeleton height="45px" type="rect" class="grow">
-              </q-skeleton>
-              <q-skeleton height="45px" width="65px" type="QBtn" square>
-              </q-skeleton>
+              <q-skeleton class="grow" height="45px" type="rect" />
+              <q-skeleton
+                square
+                height="45px"
+                type="QBtn"
+                width="65px"
+              />
             </div>
             <div></div>
-            <q-skeleton height="45px" type="QInput"></q-skeleton>
+            <q-skeleton height="45px" type="QInput" />
             <div></div>
           </div>
           <!-- <div class="pb-10">
@@ -82,7 +92,7 @@
             </q-card>
           </div> -->
           <div class="flex justify-right">
-            <q-skeleton type="QBtn" class="bg-green" height="36px"></q-skeleton>
+            <q-skeleton class="bg-green" height="36px" type="QBtn" />
           </div>
         </q-card>
       </q-card>

@@ -1,10 +1,11 @@
+from django.conf import settings
 from django.db import models
 
-from apps.company.models import Company
+from apps.company.models import Company, CompanyBaseModel
 from apps.ledger.models import Account, JournalEntry, set_ledger_transactions
 
 
-class TaxScheme(models.Model):
+class TaxScheme(CompanyBaseModel):
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=10, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
@@ -44,16 +45,18 @@ class TaxScheme(models.Model):
         super().save(*args, **kwargs)
         post_save = False
 
+        acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
+
         if self.recoverable and not self.receivable_id:
             receivable = Account(name=self.name + " Receivable", company=self.company)
-            receivable.add_category("Tax Receivables")
+            receivable.add_category(acc_cat_system_codes["Tax Receivables"])
             receivable.suggest_code(self)
             receivable.save()
             self.receivable = receivable
             post_save = True
         if not self.payable_id:
             payable = Account(name=self.name + " Payable", company=self.company)
-            payable.add_category("Duties & Taxes")
+            payable.add_category(acc_cat_system_codes["Duties & Taxes"])
             payable.suggest_code(self)
             payable.save()
             self.payable = payable
@@ -121,7 +124,7 @@ STATUSES = (
 )
 
 
-class TaxPayment(models.Model):
+class TaxPayment(CompanyBaseModel):
     voucher_no = models.CharField(max_length=50, blank=True, null=True)
     date = models.DateField()
     tax_scheme = models.ForeignKey(

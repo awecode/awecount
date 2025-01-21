@@ -1,19 +1,14 @@
 import { api } from 'boot/ofetch'
-import { useLoginStore } from 'src/stores/login-info'
+import { useAuthStore } from 'src/stores/auth'
 import { useRouter } from 'vue-router'
 
-const useApi = async (
-  endpoint,
-  body,
-  omitToken,
-  permissionRedirect = false
-) => {
-  const loginStore = useLoginStore()
+const useApi = async (endpoint, body, omitToken, permissionRedirect = false) => {
+  const loginStore = useAuthStore()
   const router = useRouter()
   const options = {}
   if (omitToken !== true) {
     options.headers = {
-      Authorization: `${loginStore.token ? 'Token ' + loginStore.token : ''}`,
+      Authorization: `${loginStore.token ? `Token ${loginStore.token}` : ''}`,
       // mode: "no-cors", // no-cors, *cors, same-origin
     }
   }
@@ -25,18 +20,13 @@ const useApi = async (
   }
   return new Promise((resolve, reject) => {
     api(endpoint, options)
-      .then((data) => resolve(data))
+      .then(data => resolve(data))
       .catch((error) => {
         if (error.status == 401 && omitToken !== true) {
           loginStore.reset()
           router.push('/login')
         }
-        if (
-          permissionRedirect &&
-          error.status == 403 &&
-          error.data.detail ===
-            "You don't have the permission to perform this action!"
-        ) {
+        if (permissionRedirect && error.status == 403 && error.data.detail === 'You don\'t have the permission to perform this action!') {
           router.push('/no-permission')
         }
         return reject(error)

@@ -1,3 +1,13 @@
+import uuid
+
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from django.core.signing import BadSignature, Signer
+from django.utils.crypto import constant_time_compare
+from requests import Request
+
+
 def merge_dicts(dict1, dict2):
     for k in set(dict1.keys()).union(dict2.keys()):
         if k in dict1 and k in dict2:
@@ -19,3 +29,67 @@ def choice_parser(options, add_blank=False):
     if add_blank:
         data.insert(0, {"value": "", "text": "--------"})
     return data
+
+
+def get_verification_hash(value: str):
+    signer = Signer(salt="awecount.verification.hash")
+    return signer.sign(value)
+
+
+def check_verification_hash(hash_to_check, value):
+    """
+    Checks the received verification hash against this order number.
+    Returns False if the verification failed, True otherwise.
+    """
+    signer = Signer(salt="awecount.verification.hash")
+    try:
+        signed_number = signer.unsign(hash_to_check)
+    except BadSignature:
+        return False
+
+    return constant_time_compare(signed_number, value)
+
+
+def upload_file(file, folder):
+    filename = f"{uuid.uuid4()}{file.name[file.name.rfind('.'):]}"
+    if folder:
+        filename = f"{folder}/{filename}"
+    file_path = default_storage.save(filename, ContentFile(file.read()))
+    return file_path
+
+
+def get_origin():
+    return settings.URL
+
+
+def serialize_request(request):
+    """Convert a Request object into a dictionary."""
+    return {
+        "company_id": request.company_id,
+        "user": request.user,
+        "data": request.data,
+        "company": request.company,
+    }
+
+
+def deserialize_request(request_obj):
+    """Convert a dictionary into a Request object."""
+    request = Request()
+    for key, value in request_obj.items():
+        setattr(request, key, value)
+    return request
+
+
+def use_miti(company):
+    return company.config_template == "np"
+
+
+def get_full_file_url(request, relative_path):
+    return request.build_absolute_uri(default_storage.url(relative_path))
+
+
+def get_relative_file_path(file_url):
+    parts = file_url.split(settings.MEDIA_URL)
+    if len(parts) > 1:
+        return parts[1]
+    return file_url

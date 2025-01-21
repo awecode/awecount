@@ -82,7 +82,8 @@ class PurchaseVoucherCreateSerializer(
             )
 
     def validate(self, data):
-        company = self.context["request"].company
+        request = self.context["request"]
+        company = request.company
 
         party = data.get("party")
         if not party and not data.get("payment_mode") and data.get("status") != "Draft":
@@ -90,18 +91,12 @@ class PurchaseVoucherCreateSerializer(
                 {"party": ["Party is required for a credit issue."]},
             )
 
-        if party and (party.company_id != company.id):
-            raise SuspiciousOperation("Modifying object owned by other company!")
-
-        request = self.context["request"]
-
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
 
         # FIFO inconsistency check
-        if (
-            request.company.inventory_setting.enable_fifo
-            and not request.query_params.get("fifo_inconsistency")
+        if company.inventory_setting.enable_fifo and not request.query_params.get(
+            "fifo_inconsistency"
         ):
             item_ids = [x.get("item_id") for x in data.get("rows")]
             date = data["date"]
@@ -156,11 +151,11 @@ class PurchaseVoucherCreateSerializer(
             item = Item.objects.filter(pk=row.get("item_id")).first()
             if not item:
                 raise serializers.ValidationError({"item_id": ["Item not found."]})
-            if item.company_id != self.context["request"].company_id:
-                raise SuspiciousOperation("Modifying object owned by other company!")
             if row.get("discount_type") == "":
                 row["discount_type"] = None
-            row_serializer = PurchaseVoucherRowSerializer(data=row)
+            row_serializer = PurchaseVoucherRowSerializer(
+                data=row, context=self.context
+            )
             if not row_serializer.is_valid():
                 raise serializers.ValidationError(row_serializer.errors)
         return rows
@@ -178,7 +173,7 @@ class PurchaseVoucherCreateSerializer(
         purchase_orders = validated_data.pop("purchase_orders", None)
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
-        validated_data["company_id"] = request.company_id
+        validated_data["company_id"] = request.company.id
         validated_data["user_id"] = request.user.id
         instance = PurchaseVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
@@ -361,7 +356,7 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
         request = self.context["request"]
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
-        validated_data["company_id"] = request.company_id
+        validated_data["company_id"] = request.company.id
         validated_data["user_id"] = request.user.id
         instance = PurchaseOrder.objects.create(**validated_data)
         for index, row in enumerate(rows_data):

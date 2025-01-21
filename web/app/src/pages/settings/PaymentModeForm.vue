@@ -1,398 +1,11 @@
-<template>
-  <q-form class="q-pa-lg" @submit.prevent="submitForm" v-if="fields">
-    <q-card>
-      <q-card-section class="bg-green text-white">
-        <div class="text-h6">Payment Mode</div>
-      </q-card-section>
-
-      <q-card-section>
-        <div class="row q-col-gutter-md">
-          <!-- Basic Information -->
-          <div class="col-12 col-md-6">
-            <q-input
-              v-model="fields.name"
-              label="Name"
-              :rules="[v => !!v || 'Name is required']"
-              filled
-              :error="!!errors.name"
-              :error-message="errors.name"
-            />
-          </div>
-
-          <div class="col-12 col-md-6">
-            <n-auto-complete-v2
-              v-model="fields.account"
-              label="Account"
-              :options="formDefaults?.collections?.accounts"
-              :staticOption="isEdit ? fields.selected_account_obj : null"
-              endpoint="v1/payment-modes/create-defaults/accounts"
-              option-value="id"
-              option-label="name"
-              :rules="[v => !!v || 'Account is required']"
-              filled
-              :error="!!errors.account"
-              :error-message="errors.account"
-            />
-          </div>
-
-          <div class="col-12 col-md-6">
-            <q-checkbox
-              v-model="fields.enabled_for_sales"
-              label="Enable for Sales"
-              :error="!!errors.enabled_for_sales"
-              :error-message="errors.enabled_for_sales"
-            />
-          </div>
-
-          <div class="col-12 col-md-6">
-            <q-checkbox
-              v-model="fields.enabled_for_purchase"
-              label="Enable for Purchase"
-              :error="!!errors.enabled_for_purchase"
-              :error-message="errors.enabled_for_purchase"
-            />
-          </div>
-
-          <div class="col-12">
-            <q-checkbox
-              v-model="hasTransactionFee"
-              label="Transaction Fee?"
-              @update:model-value="onTransactionFeeToggle"
-            />
-          </div>
-
-          <!-- Transaction Fee Configuration -->
-          <div class="col-12" v-if="hasTransactionFee">
-            <q-card>
-                <q-card-section>
-                  <div class="row q-col-gutter-md">
-                    <div class="col-12 col-md-6">
-                      <q-select
-                        v-model="fields.transaction_fee_config.type"
-                        :options="feeTypeOptions"
-                        label="Fee Type"
-                        filled
-                        map-options
-                        @update:model-value="onFeeTypeChange"
-                      />
-                    </div>
-
-                    <template v-if="fields.transaction_fee_config.type">
-                    <div class="col-12 col-md-6">
-                      <n-auto-complete-v2
-                        v-model="fields.transaction_fee_account"
-                        label="Transaction Fee Account"
-                        :options="formDefaults?.collections?.accounts"
-                        :staticOption="isEdit ? fields.selected_transaction_fee_account_obj : null"
-                        endpoint="v1/payment-modes/create-defaults/accounts"
-                        option-value="id"
-                        option-label="name"
-                        :rules="[v => !fields.transaction_fee_config || !!v || 'Fee account is required when fee is enabled']"
-                        filled
-                        :error="!!errors.transaction_fee_account"
-                        :error-message="errors.transaction_fee_account"
-                      />
-                    </div>
-
-                    <!-- Fixed Fee -->
-                    <template v-if="fields.transaction_fee_config.type === 'fixed'">
-                      <div class="col-12 col-md-6">
-                        <q-input
-                          v-model.number="fields.transaction_fee_config.value"
-                          label="Fixed Amount"
-                          type="number"
-                          step="any"
-                          filled
-                          min="0"
-                          :rules="[v => v > 0 || 'Amount must be greater than 0']"
-                        />
-                      </div>
-                    </template>
-
-                    <!-- Percentage Fee -->
-                    <template v-if="fields.transaction_fee_config.type === 'percentage'">
-                      <div class="col-12 col-md-6">
-                        <q-input
-                          v-model.number="fields.transaction_fee_config.value"
-                          label="Percentage"
-                          type="number"
-                          step="any"
-                          filled
-                          min="0"
-                          :rules="[
-                            v => v > 0 || 'Percentage must be greater than 0',
-                            v => v <= 100 || 'Percentage must be less than or equal to 100'
-                          ]"
-                        />
-                      </div>
-                    </template>
-
-                    <!-- Slab Based Fee -->
-                    <template v-if="fields.transaction_fee_config.type === 'slab_based' || fields.transaction_fee_config.type === 'sliding_scale'">
-                      <div class="col-12">
-                        <div class="text-subtitle2 q-mb-sm">{{ fields.transaction_fee_config.type === 'slab_based' ? 'Fee Slabs' : 'Sliding Scale Slabs' }}</div>
-                        <div v-for="(slab, index) in fields.transaction_fee_config.slabs" :key="index" class="row q-col-gutter-sm q-mb-md">
-                          <div class="col-12 col-md-3">
-                            <q-input
-                              v-model.number="slab.min_amount"
-                              label="Min Amount"
-                              type="number"
-                              step="any"
-                              filled
-                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.min_amount"
-                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.min_amount"
-                              min="0"
-                              :rules="[v => v >= 0 || 'Minimum amount must be greater than or equal to 0']"
-                            />
-                          </div>
-                          <div class="col-12 col-md-3" v-if="fields.transaction_fee_config.type === 'slab_based'">
-                            <q-input
-                              v-model.number="slab.max_amount"
-                              label="Max Amount"
-                              type="number"
-                              step="any"
-                              filled
-                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.max_amount"
-                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.max_amount"
-                              min="0"
-                              :rules="[v => v >= 0 || 'Maximum amount must be greater than or equal to 0']"
-                            />
-                          </div>
-                          <div class="col-12 col-md-3">
-                            <q-select
-                              v-model="slab.fee_type"
-                              :options="slabFeeTypeOptions"
-                              label="Fee Type"
-                              filled
-                              emit-value
-                              map-options
-                              @update:model-value="onSlabFeeTypeChange(index)"
-                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.fee_type"
-                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.fee_type"
-                            />
-                          </div>
-                          <div class="col-12 col-md-2">
-                            <q-input
-                              v-model.number="slab.rate"
-                              v-if="slab.fee_type === 'rate'"
-                              label="Rate (%)"
-                              type="number"
-                              step="any"
-                              filled
-                              min="0"
-                              :rules="[v => v >= 0 || 'Rate must be greater than or equal to 0', v => v <= 100 || 'Rate must be less than or equal to 100']"
-                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.rate"
-                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.rate"
-                            />
-                            <q-input
-                              v-else
-                              v-model.number="slab.amount"
-                              label="Fixed Amount"
-                              type="number"
-                              step="any"
-                              filled
-                              min="0"
-                              :rules="[v => v >= 0 || 'Amount must be greater than or equal to 0']"
-                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.amount"
-                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.amount"
-                            />
-                          </div>
-                          <div class="col-12 col-md-1 flex items-center">
-                            <q-btn
-                              flat
-                              round
-                              color="negative"
-                              icon="delete"
-                              @click="removeSlab(index)"
-                            />
-                          </div>
-                        </div>
-                        <q-btn
-                          color="primary"
-                          :label="`Add ${fields.transaction_fee_config.type === 'slab_based' ? 'Slab' : 'Scale'}`"
-                          @click="addSlab"
-                          class="q-mb-md"
-                        />
-                      </div>
-                    </template>
-
-                    <!-- Fee Limits -->
-                    <div class="col-12">
-                      <div class="text-subtitle2 q-mb-sm">Fee Limits</div>
-
-                      <div class="row q-col-gutter-md">
-                      <div class="col-12 col-md-6">
-                        <q-input
-                          v-model.number="fields.transaction_fee_config.min_fee"
-                          label="Minimum Fee"
-                          type="number"
-                          step="any"
-                          filled
-                          min="0"
-                          :rules="[v => {
-                            if (v && v < 0) {
-                              return 'Minimum fee must be greater than or equal to 0'
-                            }
-                            if (v && fields.transaction_fee_config.max_fee && v > fields.transaction_fee_config.max_fee) {
-                              return 'Minimum fee must be less than or equal to maximum fee'
-                            }
-                            return true
-                          }]"
-                        />
-                      </div>
-                      <div class="col-12 col-md-6">
-                      <q-input
-                        v-model.number="fields.transaction_fee_config.max_fee"
-                        label="Maximum Fee"
-                        type="number"
-                        step="any"
-                        filled
-                        min="0"
-                        :rules="[v => {
-                          if (v && v < 0) {
-                            return 'Maximum fee must be greater than or equal to 0'
-                          }
-                          if (v && fields.transaction_fee_config.min_fee && v < fields.transaction_fee_config.min_fee) {
-                            return 'Maximum fee must be greater than or equal to minimum fee'
-                          }
-                          return true
-                        }]"
-                      />
-                      </div>
-                      </div>
-                    </div>
-                    <!-- Extra Fee -->
-                    <div class="col-12">
-                      <q-checkbox
-                        v-model="hasExtraFee"
-                        label="Add Extra Fee"
-                        @update:model-value="onExtraFeeToggle"
-                      />
-                    </div>
-
-                    <template v-if="hasExtraFee && fields.transaction_fee_config.extra_fee">
-                      <div class="col-12 col-md-4">
-                        <q-select
-                          v-model="fields.transaction_fee_config.extra_fee.type"
-                          :options="extraFeeTypeOptions"
-                          label="Extra Fee Type"
-                          filled
-                          emit-value
-                          map-options
-                        />
-                      </div>
-                      <div class="col-12 col-md-4">
-                        <q-input
-                          v-model.number="fields.transaction_fee_config.extra_fee.value"
-                          :label="fields.transaction_fee_config.extra_fee.type === 'fixed' ? 'Amount' : 'Percentage'"
-                          type="number"
-                          step="any"
-                          filled
-                        />
-                      </div>
-                    </template>
-                    </template>
-                  </div>
-
-                </q-card-section>
-
-                <!-- errors -->
-                <q-card-section v-if="fields.transaction_fee_config">
-                  <div class="text-negative">
-                    <div v-if="errors.transaction_fee_config">
-                      {{ errors.transaction_fee_config }}
-                    </div>
-                    <div v-else-if="errors.transaction_fee_config?.slabs">
-                      <div v-for="(error, index) in errors.transaction_fee_config.slabs" :key="index">
-                        {{ error }}
-                      </div>
-                    </div>
-                  </div>
-                  <div class="text-negative">
-                    <div v-if="validationErrors.transaction_fee_config?.slabs">
-                      <div v-for="(error, index) in validationErrors.transaction_fee_config.slabs" :key="index">
-                        <div v-for="(message, key) in error" :key="key">
-                          {{ key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) }}: {{ message }}
-                        </div>
-                      </div>
-                    </div>
-                    <div v-else-if="validationErrors.transaction_fee_config">
-                      {{ validationErrors.transaction_fee_config }}
-                    </div>
-                  </div>
-                </q-card-section>
-            </q-card>
-          </div>
-        </div>
-      </q-card-section>
-
-      <q-card-actions align="right" class="q-pa-md">
-        <q-btn
-          color="red"
-          @click="cancel"
-          label="Cancel"
-        />
-        <q-btn
-          type="submit"
-          color="primary"
-          :loading="loading"
-          label="Save"
-          :disable="loading || !!Object.keys(validationErrors).length || Object.keys(errors).length"
-        />
-      </q-card-actions>
-    </q-card>
-  </q-form>
-</template>
-
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const useTransactionFeeValidation = () => {
   const validationErrors = ref({})
 
   const VALID_FEE_TYPES = ['fixed', 'percentage', 'slab_based', 'sliding_scale']
   const VALID_EXTRA_FEE_TYPES = ['fixed', 'percentage']
-
-  const validateFeeConfig = (config) => {
-    validationErrors.value = {}
-
-    if (!config) {
-      return true
-    }
-
-    try {
-      if (typeof config !== 'object') {
-        validationErrors.value.transaction_fee_config = 'Fee configuration must be an object'
-        return false
-      }
-
-      if (!config.type) {
-        validationErrors.value.transaction_fee_config = 'Fee type must be specified'
-        return false
-      }
-
-      if (!VALID_FEE_TYPES.includes(config.type)) {
-        validationErrors.value.transaction_fee_config = `Invalid fee type: ${config.type}`
-        return false
-      }
-
-      const validationFunctions = {
-        fixed: validateSimpleFee,
-        percentage: validateSimpleFee,
-        slab_based: validateSlabBased,
-        sliding_scale: validateSlidingScale
-      }
-
-      if (!validationFunctions[config.type](config)) {
-        return false
-      }
-
-      return validateFeeLimits(config)
-    } catch (error) {
-      validationErrors.value.transaction_fee_config = error.message
-      return false
-    }
-  }
 
   const validateSimpleFee = (config) => {
     if (!('value' in config)) {
@@ -429,7 +42,7 @@ const useTransactionFeeValidation = () => {
       }
 
       // Check fee type (rate or amount, but not both)
-      if (('rate' in slab) === ('amount' in slab)) {
+      if ('rate' in slab === 'amount' in slab) {
         slabError.fee_type = 'Each slab must specify either rate or amount, but not both'
       }
 
@@ -473,7 +86,7 @@ const useTransactionFeeValidation = () => {
         slabError.min_amount = 'Minimum amount must be specified'
       }
 
-      if (('rate' in slab) === ('amount' in slab)) {
+      if ('rate' in slab === 'amount' in slab) {
         slabError.fee_type = 'Each slab must specify either rate or amount, but not both'
       }
 
@@ -528,16 +141,56 @@ const useTransactionFeeValidation = () => {
     return true
   }
 
+  const validateFeeConfig = (config) => {
+    validationErrors.value = {}
+
+    if (!config) {
+      return true
+    }
+
+    try {
+      if (typeof config !== 'object') {
+        validationErrors.value.transaction_fee_config = 'Fee configuration must be an object'
+        return false
+      }
+
+      if (!config.type) {
+        validationErrors.value.transaction_fee_config = 'Fee type must be specified'
+        return false
+      }
+
+      if (!VALID_FEE_TYPES.includes(config.type)) {
+        validationErrors.value.transaction_fee_config = `Invalid fee type: ${config.type}`
+        return false
+      }
+
+      const validationFunctions = {
+        fixed: validateSimpleFee,
+        percentage: validateSimpleFee,
+        slab_based: validateSlabBased,
+        sliding_scale: validateSlidingScale,
+      }
+
+      if (!validationFunctions[config.type](config)) {
+        return false
+      }
+
+      return validateFeeLimits(config)
+    } catch (error) {
+      validationErrors.value.transaction_fee_config = error.message
+      return false
+    }
+  }
+
   return {
     validationErrors: computed(() => validationErrors.value),
-    validateFeeConfig
+    validateFeeConfig,
   }
 }
 
-
-const { fields, errors, formDefaults, isEdit, submitForm, cancel, cancelForm, loading } = useForm('v1/payment-modes/', {
+const { fields, errors, formDefaults, isEdit, submitForm, cancel, loading } = useForm(`/api/company/${$route.params.company}/payment-modes/`, {
   getDefaults: true,
-  successRoute: '/settings/payment-mode/list/',
+  successRoute: `/${route.params.company}/settings/payment-modes`,
 })
 
 fields.value.enabled_for_sales = true
@@ -550,30 +203,31 @@ const { validationErrors, validateFeeConfig } = useTransactionFeeValidation()
 const hasTransactionFee = ref(false)
 const hasExtraFee = ref(false)
 
-watch(() => fields.value.transaction_fee_config, (value) => {
-  hasTransactionFee.value = !!value
+watch(
+  () => fields.value.transaction_fee_config,
+  (value) => {
+    hasTransactionFee.value = !!value
 
-  if (value) {
-    hasExtraFee.value = !!value.extra_fee
-    
-    validateFeeConfig(value)
-    if(value.min_fee === '') {
-      delete fields.value.transaction_fee_config.min_fee
+    if (value) {
+      hasExtraFee.value = !!value.extra_fee
+
+      validateFeeConfig(value)
+      if (value.min_fee === '') {
+        delete fields.value.transaction_fee_config.min_fee
+      }
+      if (value.max_fee === '') {
+        delete fields.value.transaction_fee_config.max_fee
+      }
     }
-    if(value.max_fee === '') {
-      delete fields.value.transaction_fee_config.max_fee
-    }
-  }
-}, {
-  immediate: true ,
-  deep: true
-})
-
-
-
+  },
+  {
+    immediate: true,
+    deep: true,
+  },
+)
 
 const onTransactionFeeToggle = (value) => {
-  if (!!fields.value.transaction_fee_config) {
+  if (fields.value.transaction_fee_config) {
     return
   }
 
@@ -581,7 +235,7 @@ const onTransactionFeeToggle = (value) => {
     fields.value.transaction_fee_config = {
       type: 'fixed',
       value: 0,
-      extra_fee: null
+      extra_fee: null,
     }
   } else {
     fields.value.transaction_fee_config = null
@@ -592,34 +246,18 @@ const feeTypeOptions = [
   { label: 'Fixed', value: 'fixed' },
   { label: 'Percentage', value: 'percentage' },
   { label: 'Slab Based', value: 'slab_based' },
-  { label: 'Sliding Scale', value: 'sliding_scale' }
+  { label: 'Sliding Scale', value: 'sliding_scale' },
 ]
 
 const extraFeeTypeOptions = [
   { label: 'Fixed', value: 'fixed' },
-  { label: 'Percentage', value: 'percentage' }
+  { label: 'Percentage', value: 'percentage' },
 ]
 
 const slabFeeTypeOptions = [
   { label: 'Rate (%)', value: 'rate' },
-  { label: 'Fixed Amount', value: 'amount' }
+  { label: 'Fixed Amount', value: 'amount' },
 ]
-
-const onFeeTypeChange = (type) => {
-  if (type.value === null) {
-    fields.value.transaction_fee_config = null
-    return
-  }
-
-  fields.value.transaction_fee_config = {
-    type: type.value,
-    ...(type.value === 'slab_based' || type.value === 'sliding_scale' ? { slabs: [] } : { value: 0 })
-  }
-
-  if (type.value === 'slab_based' || type.value === 'sliding_scale') {
-    addSlab()
-  }
-}
 
 const onSlabFeeTypeChange = (index) => {
   const slab = fields.value.transaction_fee_config.slabs[index]
@@ -636,7 +274,7 @@ const onExtraFeeToggle = (value) => {
   if (value) {
     fields.value.transaction_fee_config.extra_fee = {
       type: 'fixed',
-      value: 0
+      value: 0,
     }
   } else {
     fields.value.transaction_fee_config.extra_fee = null
@@ -652,7 +290,7 @@ const addSlab = () => {
   const newSlab = {
     min_amount: minAmount,
     fee_type: 'rate',
-    rate: 0
+    rate: 0,
   }
 
   if (fields.value.transaction_fee_config.type === 'slab_based') {
@@ -673,4 +311,359 @@ const removeSlab = (index) => {
   }
 }
 
+const onFeeTypeChange = (type) => {
+  if (type.value === null) {
+    fields.value.transaction_fee_config = null
+    return
+  }
+
+  fields.value.transaction_fee_config = {
+    type: type.value,
+    ...(type.value === 'slab_based' || type.value === 'sliding_scale' ? { slabs: [] } : { value: 0 }),
+  }
+
+  if (type.value === 'slab_based' || type.value === 'sliding_scale') {
+    addSlab()
+  }
+}
 </script>
+
+<template>
+  <q-form v-if="fields" class="q-pa-lg" @submit.prevent="submitForm">
+    <q-card>
+      <q-card-section class="bg-green text-white">
+        <div class="text-h6">
+          Payment Mode
+        </div>
+      </q-card-section>
+
+      <q-card-section>
+        <div class="row q-col-gutter-md">
+          <!-- Basic Information -->
+          <div class="col-12 col-md-6">
+            <q-input
+              v-model="fields.name"
+              filled
+              label="Name"
+              :error="!!errors.name"
+              :error-message="errors.name"
+              :rules="[(v) => !!v || 'Name is required']"
+            />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <n-auto-complete-v2
+              v-model="fields.account"
+              filled
+              label="Account"
+              option-label="name"
+              option-value="id"
+              :endpoint="`/api/company/${$route.params.company}/payment-modes/create-defaults/accounts`"
+              :error="!!errors.account"
+              :error-message="errors.account"
+              :options="formDefaults?.collections?.accounts"
+              :rules="[(v) => !!v || 'Account is required']"
+              :static-option="isEdit ? fields.selected_account_obj : null"
+            />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <q-checkbox
+              v-model="fields.enabled_for_sales"
+              label="Enable for Sales"
+              :error="!!errors.enabled_for_sales"
+              :error-message="errors.enabled_for_sales"
+            />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <q-checkbox
+              v-model="fields.enabled_for_purchase"
+              label="Enable for Purchase"
+              :error="!!errors.enabled_for_purchase"
+              :error-message="errors.enabled_for_purchase"
+            />
+          </div>
+
+          <div class="col-12">
+            <q-checkbox v-model="hasTransactionFee" label="Transaction Fee?" @update:model-value="onTransactionFeeToggle" />
+          </div>
+
+          <!-- Transaction Fee Configuration -->
+          <div v-if="hasTransactionFee" class="col-12">
+            <q-card>
+              <q-card-section>
+                <div class="row q-col-gutter-md">
+                  <div class="col-12 col-md-6">
+                    <q-select
+                      v-model="fields.transaction_fee_config.type"
+                      filled
+                      map-options
+                      label="Fee Type"
+                      :options="feeTypeOptions"
+                      @update:model-value="onFeeTypeChange"
+                    />
+                  </div>
+
+                  <template v-if="fields.transaction_fee_config.type">
+                    <div class="col-12 col-md-6">
+                      <n-auto-complete-v2
+                        v-model="fields.transaction_fee_account"
+                        filled
+                        label="Transaction Fee Account"
+                        option-label="name"
+                        option-value="id"
+                        :endpoint="`/api/company/${$route.params.company}/payment-modes/create-defaults/accounts`"
+                        :error="!!errors.transaction_fee_account"
+                        :error-message="errors.transaction_fee_account"
+                        :options="formDefaults?.collections?.accounts"
+                        :rules="[(v) => !fields.transaction_fee_config || !!v || 'Fee account is required when fee is enabled']"
+                        :static-option="isEdit ? fields.selected_transaction_fee_account_obj : null"
+                      />
+                    </div>
+
+                    <!-- Fixed Fee -->
+                    <template v-if="fields.transaction_fee_config.type === 'fixed'">
+                      <div class="col-12 col-md-6">
+                        <q-input
+                          v-model.number="fields.transaction_fee_config.value"
+                          filled
+                          label="Fixed Amount"
+                          min="0"
+                          step="any"
+                          type="number"
+                          :rules="[(v) => v > 0 || 'Amount must be greater than 0']"
+                        />
+                      </div>
+                    </template>
+
+                    <!-- Percentage Fee -->
+                    <template v-if="fields.transaction_fee_config.type === 'percentage'">
+                      <div class="col-12 col-md-6">
+                        <q-input
+                          v-model.number="fields.transaction_fee_config.value"
+                          filled
+                          label="Percentage"
+                          min="0"
+                          step="any"
+                          type="number"
+                          :rules="[(v) => v > 0 || 'Percentage must be greater than 0', (v) => v <= 100 || 'Percentage must be less than or equal to 100']"
+                        />
+                      </div>
+                    </template>
+
+                    <!-- Slab Based Fee -->
+                    <template v-if="fields.transaction_fee_config.type === 'slab_based' || fields.transaction_fee_config.type === 'sliding_scale'">
+                      <div class="col-12">
+                        <div class="text-subtitle2 q-mb-sm">
+                          {{ fields.transaction_fee_config.type === 'slab_based' ? 'Fee Slabs' : 'Sliding Scale Slabs' }}
+                        </div>
+                        <div v-for="(slab, index) in fields.transaction_fee_config.slabs" :key="index" class="row q-col-gutter-sm q-mb-md">
+                          <div class="col-12 col-md-3">
+                            <q-input
+                              v-model.number="slab.min_amount"
+                              filled
+                              label="Min Amount"
+                              min="0"
+                              step="any"
+                              type="number"
+                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.min_amount"
+                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.min_amount"
+                              :rules="[(v) => v >= 0 || 'Minimum amount must be greater than or equal to 0']"
+                            />
+                          </div>
+                          <div v-if="fields.transaction_fee_config.type === 'slab_based'" class="col-12 col-md-3">
+                            <q-input
+                              v-model.number="slab.max_amount"
+                              filled
+                              label="Max Amount"
+                              min="0"
+                              step="any"
+                              type="number"
+                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.max_amount"
+                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.max_amount"
+                              :rules="[(v) => v >= 0 || 'Maximum amount must be greater than or equal to 0']"
+                            />
+                          </div>
+                          <div class="col-12 col-md-3">
+                            <q-select
+                              v-model="slab.fee_type"
+                              emit-value
+                              filled
+                              map-options
+                              label="Fee Type"
+                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.fee_type"
+                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.fee_type"
+                              :options="slabFeeTypeOptions"
+                              @update:model-value="onSlabFeeTypeChange(index)"
+                            />
+                          </div>
+                          <div class="col-12 col-md-2">
+                            <q-input
+                              v-if="slab.fee_type === 'rate'"
+                              v-model.number="slab.rate"
+                              filled
+                              label="Rate (%)"
+                              min="0"
+                              step="any"
+                              type="number"
+                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.rate"
+                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.rate"
+                              :rules="[(v) => v >= 0 || 'Rate must be greater than or equal to 0', (v) => v <= 100 || 'Rate must be less than or equal to 100']"
+                            />
+                            <q-input
+                              v-else
+                              v-model.number="slab.amount"
+                              filled
+                              label="Fixed Amount"
+                              min="0"
+                              step="any"
+                              type="number"
+                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.amount"
+                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.amount"
+                              :rules="[(v) => v >= 0 || 'Amount must be greater than or equal to 0']"
+                            />
+                          </div>
+                          <div class="col-12 col-md-1 flex items-center">
+                            <q-btn
+                              flat
+                              round
+                              color="negative"
+                              icon="delete"
+                              @click="removeSlab(index)"
+                            />
+                          </div>
+                        </div>
+                        <q-btn
+                          class="q-mb-md"
+                          color="primary"
+                          :label="`Add ${fields.transaction_fee_config.type === 'slab_based' ? 'Slab' : 'Scale'}`"
+                          @click="addSlab"
+                        />
+                      </div>
+                    </template>
+
+                    <!-- Fee Limits -->
+                    <div class="col-12">
+                      <div class="text-subtitle2 q-mb-sm">
+                        Fee Limits
+                      </div>
+
+                      <div class="row q-col-gutter-md">
+                        <div class="col-12 col-md-6">
+                          <q-input
+                            v-model.number="fields.transaction_fee_config.min_fee"
+                            filled
+                            label="Minimum Fee"
+                            min="0"
+                            step="any"
+                            type="number"
+                            :rules="[
+                              (v) => {
+                                if (v && v < 0) {
+                                  return 'Minimum fee must be greater than or equal to 0'
+                                }
+                                if (v && fields.transaction_fee_config.max_fee && v > fields.transaction_fee_config.max_fee) {
+                                  return 'Minimum fee must be less than or equal to maximum fee'
+                                }
+                                return true
+                              },
+                            ]"
+                          />
+                        </div>
+                        <div class="col-12 col-md-6">
+                          <q-input
+                            v-model.number="fields.transaction_fee_config.max_fee"
+                            filled
+                            label="Maximum Fee"
+                            min="0"
+                            step="any"
+                            type="number"
+                            :rules="[
+                              (v) => {
+                                if (v && v < 0) {
+                                  return 'Maximum fee must be greater than or equal to 0'
+                                }
+                                if (v && fields.transaction_fee_config.min_fee && v < fields.transaction_fee_config.min_fee) {
+                                  return 'Maximum fee must be greater than or equal to minimum fee'
+                                }
+                                return true
+                              },
+                            ]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Extra Fee -->
+                    <div class="col-12">
+                      <q-checkbox v-model="hasExtraFee" label="Add Extra Fee" @update:model-value="onExtraFeeToggle" />
+                    </div>
+
+                    <template v-if="hasExtraFee && fields.transaction_fee_config.extra_fee">
+                      <div class="col-12 col-md-4">
+                        <q-select
+                          v-model="fields.transaction_fee_config.extra_fee.type"
+                          emit-value
+                          filled
+                          map-options
+                          label="Extra Fee Type"
+                          :options="extraFeeTypeOptions"
+                        />
+                      </div>
+                      <div class="col-12 col-md-4">
+                        <q-input
+                          v-model.number="fields.transaction_fee_config.extra_fee.value"
+                          filled
+                          step="any"
+                          type="number"
+                          :label="fields.transaction_fee_config.extra_fee.type === 'fixed' ? 'Amount' : 'Percentage'"
+                        />
+                      </div>
+                    </template>
+                  </template>
+                </div>
+              </q-card-section>
+
+              <!-- errors -->
+              <q-card-section v-if="fields.transaction_fee_config">
+                <div class="text-negative">
+                  <div v-if="errors.transaction_fee_config">
+                    {{ errors.transaction_fee_config }}
+                  </div>
+                  <div v-else-if="errors.transaction_fee_config?.slabs">
+                    <div v-for="(error, index) in errors.transaction_fee_config.slabs" :key="index">
+                      {{ error }}
+                    </div>
+                  </div>
+                </div>
+                <div class="text-negative">
+                  <div v-if="validationErrors.transaction_fee_config?.slabs">
+                    <div v-for="(error, index) in validationErrors.transaction_fee_config.slabs" :key="index">
+                      <div v-for="(message, key) in error" :key="key">
+                        {{ key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()) }}: {{ message }}
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else-if="validationErrors.transaction_fee_config">
+                    {{ validationErrors.transaction_fee_config }}
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+      </q-card-section>
+
+      <q-card-actions align="right" class="q-pa-md">
+        <q-btn color="red" label="Cancel" @click="cancel" />
+        <q-btn
+          color="primary"
+          label="Save"
+          type="submit"
+          :disable="loading || !!Object.keys(validationErrors).length || Object.keys(errors).length"
+          :loading="loading"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-form>
+</template>

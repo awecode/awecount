@@ -138,6 +138,7 @@ class BaseWidget(object):
 
     def get_data(self):
         data = self.process_queryset()
+
         if self.is_table():
             self.datasets = data
             self.labels = self.get_table_headings(data)
@@ -203,7 +204,7 @@ class BaseWidget(object):
                 qs = qs.annotate(year=ExtractYear(self.date_attribute))
             elif self.group_by == "week":
                 qs = qs.annotate(week=ExtractWeek(self.date_attribute))
-        qs = qs.values(self.label_field).order_by(self.label_field, self.group_by)
+        qs = qs.values(self.label_field).order_by(self.label_field)
         return qs
 
     def get_series_queryset(self):

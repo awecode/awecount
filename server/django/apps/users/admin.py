@@ -5,11 +5,12 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.admin import UserChangeForm as DjangoUserChangeForm
 from django.contrib.auth.admin import UserCreationForm as DjangoUserCreationForm
 from django.contrib.auth.models import Group
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
-from apps.api.models import AccessKey
-from apps.company.models import Company, FiscalYear
+from apps.company.models import Company, CompanyMember, FiscalYear, Permission
 from apps.ledger.models import handle_company_creation
+from apps.product.helpers import create_book_category
 from apps.product.models import Brand, Item, Unit
 from apps.product.models import Category as InventoryCategory
 from apps.tax.models import TaxScheme
@@ -104,7 +105,7 @@ class CustomUserAdmin(UserAdmin):
                     "date_joined",
                     "last_login",
                     "company",
-                    "roles",
+                    "permissions",
                     "is_superuser",
                 )
             },
@@ -167,54 +168,16 @@ def setup_basic_units(modeladmin, request, queryset):
 setup_basic_units.short_description = "Setup Basic Units"
 
 
-def create_book_category(modeladmin, request, queryset):
+def create_book_category_for_companies(modeladmin, request, queryset):
     for company in queryset:
-        unit, __ = Unit.objects.get_or_create(
-            short_name="pcs", company=company, defaults={"name": "Pieces"}
-        )
-        tax, __ = TaxScheme.objects.get_or_create(
-            short_name="Taxless",
-            company=company,
-            defaults={"name": "Taxless", "rate": 0},
-        )
-        extra_fields = [
-            {"name": "nepali_title", "type": "Text", "enable_search": True},
-            {"name": "english_subtitle", "type": "Text", "enable_search": False},
-            {"name": "nepali_subtitle", "type": "Text", "enable_search": False},
-            {"name": "english_description", "type": "Text", "enable_search": False},
-            {"name": "nepali_description", "type": "Text", "enable_search": False},
-            {"name": "genre", "type": "Choices", "enable_search": False},
-            {"name": "authors", "type": "Text", "enable_search": True},
-            {"name": "pages", "type": "Text", "enable_search": False},
-            {"name": "format", "type": "Choices", "enable_search": False},
-            {"name": "language", "type": "Choices", "enable_search": False},
-            {"name": "edition", "type": "Choices", "enable_search": False},
-            {"name": "published_date", "type": "Text", "enable_search": False},
-            {"name": "published_year", "type": "Text", "enable_search": False},
-            {"name": "published_month", "type": "Text", "enable_search": False},
-            {"name": "height", "type": "Text", "enable_search": False},
-            {"name": "width", "type": "Text", "enable_search": False},
-            {"name": "thickness", "type": "Text", "enable_search": False},
-            {"name": "weight", "type": "Text", "enable_search": False},
-        ]
         try:
-            InventoryCategory.objects.create(
-                name="Book",
-                code="book",
-                company=company,
-                default_unit=unit,
-                default_tax_scheme=tax,
-                track_inventory=True,
-                can_be_sold=True,
-                can_be_purchased=True,
-                extra_fields=extra_fields,
-            )
+            create_book_category(company)
             messages.success(request, "Book category created!")
-        except IntegrityError:
+        except ValidationError:
             messages.error(request, "Book category already exists!")
 
 
-create_book_category.short_description = "Create Book Category"
+create_book_category_for_companies.short_description = "Create Book Category"
 
 
 def import_sold_books(modeladmin, request, queryset):
@@ -251,15 +214,16 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = (
         "name",
         "address",
-        "contact_no",
-        "emails",
+        "phone",
+        "email",
+        "alternate_email",
         "tax_registration_number",
     )
     list_display = (
         "name",
         "address",
-        "contact_no",
-        "emails",
+        "phone",
+        "email",
         "tax_registration_number",
     )
     list_filter = ("organization_type",)
@@ -267,7 +231,7 @@ class CompanyAdmin(admin.ModelAdmin):
         create_company_defaults,
         setup_nepali_tax_schemes,
         setup_basic_units,
-        create_book_category,
+        create_book_category_for_companies,
         import_sold_books,
     ]
 
@@ -282,20 +246,23 @@ class FiscalYearAdmin(admin.ModelAdmin):
     list_display = ("name", "start_date", "end_date")
 
     def start_date(self, obj):
-        return obj.start.strftime("%d-%m-%Y")
+        return obj.start_date.strftime("%d-%m-%Y")
 
     def end_date(self, obj):
-        return obj.end.strftime("%d-%m-%Y")
+        return obj.end_date.strftime("%d-%m-%Y")
 
 
 admin.site.register(FiscalYear, FiscalYearAdmin)
 
 
-class AccessKeyAdmin(admin.ModelAdmin):
-    list_display = ("user", "key", "enabled")
-    list_filter = ("user", "user__company", "enabled")
-    readonly_fields = ("created_at",)
-    search_fields = ("user__full_name", "user__company__name", "key")
+@admin.register(CompanyMember)
+class CompanyMemberAdmin(admin.ModelAdmin):
+    list_display = ("company", "member", "access_level")
+    search_fields = ("company__name", "member__full_name")
+    list_filter = ("access_level",)
+    actions = [create_company_defaults]
 
 
-admin.site.register(AccessKey, AccessKeyAdmin)
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    pass

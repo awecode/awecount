@@ -1,10 +1,11 @@
 import datetime
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from rest_framework.exceptions import ValidationError as RestValidatoinError
+from rest_framework.exceptions import ValidationError as RestValidationError
 
-from apps.company.models import Company
+from apps.company.models import Company, CompanyBaseModel
 from apps.ledger.models import (
     Account,
     JournalEntry,
@@ -12,10 +13,11 @@ from apps.ledger.models import (
     TransactionModel,
     set_ledger_transactions,
 )
+from apps.ledger.models.base import Transaction
 from awecount.libs import wGenerator
 
 
-class BankAccount(models.Model):
+class BankAccount(CompanyBaseModel):
     is_wallet = models.BooleanField(default=False)
     account_name = models.CharField(max_length=150, blank=True, null=True)
     account_number = models.CharField(max_length=150, blank=True, null=True)
@@ -37,22 +39,23 @@ class BankAccount(models.Model):
     def save(self, *args, **kwargs):
         if self.is_wallet:
             if not self.bank_name:
-                raise RestValidatoinError({"bank_name": ["Wallet name is required!"]})
+                raise RestValidationError({"bank_name": ["Wallet name is required!"]})
         else:
             if not self.account_number:
-                raise RestValidatoinError(
+                raise RestValidationError(
                     {"account_number": ["Account Number is required!"]}
                 )
             if not self.next_cheque_no:
-                raise RestValidatoinError(
+                raise RestValidationError(
                     {"next_cheque_no": ["Cheque No. can not be empty value!"]}
                 )
             elif not self.next_cheque_no.isdigit():
-                raise RestValidatoinError(
+                raise RestValidationError(
                     {"next_cheque_no": ["Cheque No. can only contain digits!"]}
                 )
         super().save(*args, **kwargs)
         post_save = False
+        acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
         if (
             self.is_wallet
             and self.transaction_commission_percent
@@ -61,14 +64,14 @@ class BankAccount(models.Model):
             commission_account = Account(
                 name=self.full_name + " Commission", company=self.company
             )
-            commission_account.add_category("Bank Charges")
+            commission_account.add_category(acc_cat_system_codes["Bank Charges"])
             commission_account.suggest_code(self)
             commission_account.save()
             self.commission_account = commission_account
             post_save = True
         if not self.ledger:
             ledger = Account(name=self.full_name, company=self.company)
-            ledger.add_category("Bank Accounts")
+            ledger.add_category(acc_cat_system_codes["Bank Accounts"])
             ledger.suggest_code(self)
             ledger.save()
             self.ledger = ledger
@@ -103,7 +106,7 @@ class BankAccount(models.Model):
         ordering = ["-id"]
 
 
-class ChequeDeposit(TransactionModel):
+class ChequeDeposit(TransactionModel, CompanyBaseModel):
     STATUSES = (
         ("Draft", "Draft"),
         ("Issued", "Issued"),
@@ -185,7 +188,7 @@ class ChequeDeposit(TransactionModel):
 #         return self.cheque_deposit_id
 
 
-class ChequeIssue(models.Model):
+class ChequeIssue(CompanyBaseModel):
     STATUSES = (
         ("Issued", "Issued"),
         ("Cancelled", "Cancelled"),
@@ -217,7 +220,7 @@ class ChequeIssue(models.Model):
             if not self.dr_account:
                 raise ValidationError("Dr Account is required.")
 
-        super(ChequeIssue, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         self.apply_transactions()
 
     def get_voucher_no(self):
@@ -274,7 +277,7 @@ class ChequeIssue(models.Model):
         #     date = models.DateField()
 
 
-class FundTransfer(TransactionModel):
+class FundTransfer(TransactionModel, CompanyBaseModel):
     STATUSES = (
         ("Issued", "Issued"),
         ("Cancelled", "Cancelled"),
@@ -301,9 +304,10 @@ class FundTransfer(TransactionModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
-        if "Bank Accounts" not in [
-            self.from_account.category.name,
-            self.to_account.category.name,
+        acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
+        if acc_cat_system_codes["Bank Accounts"] not in [
+            self.from_account.category.system_code,
+            self.to_account.category.system_code,
         ]:
             raise ValidationError("One of the account needs to be a bank account.")
         if self.from_account_id == self.to_account_id:
@@ -311,10 +315,10 @@ class FundTransfer(TransactionModel):
         if self.pk and not self.voucher_no:
             self.voucher_no = self.pk
         super().save(*args, **kwargs)
-        self.apply_transactions()
         if not self.voucher_no:
             self.voucher_no = self.pk
-            super().save(*args, **kwargs)
+            super().save(update_fields=["voucher_no"])
+        self.apply_transactions()
 
     def get_voucher_no(self):
         return self.voucher_no
@@ -354,7 +358,7 @@ class FundTransfer(TransactionModel):
         self.cancel_transactions()
 
 
-class FundTransferTemplate(models.Model):
+class FundTransferTemplate(CompanyBaseModel):
     name = models.CharField(max_length=255)
     from_account = models.ForeignKey(
         Account,
@@ -385,7 +389,7 @@ class FundTransferTemplate(models.Model):
         # return '{} -> {}'.format(str(self.from_account), str(self.to_account))
 
 
-class BankCashDeposit(TransactionModel):
+class BankCashDeposit(TransactionModel, CompanyBaseModel):
     STATUSES = (
         ("Cleared", "Cleared"),
         ("Cancelled", "Cancelled"),
@@ -435,3 +439,77 @@ class BankCashDeposit(TransactionModel):
         self.status = "Cancelled"
         self.save()
         self.cancel_transactions()
+
+
+BANK_RECONCILIATION_STATUS = (
+    ("Reconciled", "Reconciled"),
+    ("Matched", "Matched"),
+    ("Unreconciled", "Unreconciled"),
+)
+
+
+class ReconciliationStatement(models.Model):
+    account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name="bank_reconciliation_statements"
+    )
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="bank_reconciliation_statements"
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.file_name or str(self.start_date)
+
+
+class ReconciliationRow(models.Model):
+    status = models.CharField(
+        choices=BANK_RECONCILIATION_STATUS,
+        default=BANK_RECONCILIATION_STATUS[0][0],
+        max_length=20,
+    )
+    date = models.DateField()
+    dr_amount = models.FloatField(null=True, blank=True)
+    cr_amount = models.FloatField(null=True, blank=True)
+    balance = models.FloatField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    statement = models.ForeignKey(
+        ReconciliationStatement, on_delete=models.CASCADE, related_name="rows"
+    )
+    # - if the amount is positive, it means the bank statement has more money than the ledger
+    adjustment_amount = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return str(self.date)
+
+    @property
+    def voucher_no(self):
+        return self.id
+
+    def apply_transactions(self, adjustment_account, date):
+        if not self.adjustment_amount:
+            return
+        entries = []
+
+        bank_account = self.statement.account
+
+        adjustment_amount_absolute = abs(self.adjustment_amount)
+        if self.adjustment_amount < 0:
+            entries.append(("cr", bank_account, adjustment_amount_absolute))
+            entries.append(("dr", adjustment_account, adjustment_amount_absolute))
+        elif self.adjustment_amount > 0:
+            entries.append(("dr", bank_account, adjustment_amount_absolute))
+            entries.append(("cr", adjustment_account, adjustment_amount_absolute))
+        set_ledger_transactions(self, date, *entries, clear=True)
+
+
+
+class ReconciliationRowTransaction(models.Model):
+    transaction = models.ForeignKey(Transaction, null=True, on_delete=models.SET_NULL, related_name="reconciliation_rows_transactions")
+    reconciliation_row = models.ForeignKey(
+        ReconciliationRow, on_delete=models.CASCADE, related_name="transactions"
+    )
+    # To keep track of the last updated transaction
+    transaction_last_updated_at = models.DateTimeField()

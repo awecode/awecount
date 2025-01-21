@@ -1,5 +1,8 @@
 import datetime
 
+from django.conf import settings
+from django.core.exceptions import SuspiciousOperation
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import F
 from django.utils import timezone
 from rest_framework import serializers
@@ -11,13 +14,17 @@ from apps.product.models import Item
 from apps.product.serializers import ItemSalesSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
+from apps.voucher.models.discounts import PurchaseDiscount
+from apps.voucher.serializers.purchase import PurchaseVoucherCreateSerializer
 from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
+from awecount.libs.helpers import get_full_file_url
 from awecount.libs.serializers import StatusReversionMixin
 
 from ..models import (
     PurchaseVoucher,
+    RecurringVoucherTemplate,
     SalesDiscount,
     SalesVoucher,
     SalesVoucherRow,
@@ -373,7 +380,9 @@ class SalesVoucherCreateSerializer(
 
     def validate_rows(self, rows):
         for row in rows:
-            row_serializer = SalesVoucherRowSerializer(data=row)
+            row_serializer = SalesVoucherRowSerializer(
+                data=row, context={"request": self.context["request"]}
+            )
             if not row_serializer.is_valid():
                 raise serializers.ValidationError(row_serializer.errors)
         return rows
@@ -434,7 +443,7 @@ class SalesVoucherCreateSerializer(
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
-        validated_data["company_id"] = request.company_id
+        validated_data["company_id"] = request.company.id
         validated_data["user_id"] = request.user.id
         self.validate_invoice_date(validated_data)
         if validated_data.get("due_date"):
@@ -505,6 +514,169 @@ class SalesVoucherCreateSerializer(
         )
 
 
+class RecurringVoucherTemplateSalesInvoiceDataSerializer(SalesVoucherCreateSerializer):
+    class Meta:
+        model = SalesVoucher
+        exclude = (
+            "company",
+            "user",
+            "bank_account",
+            "discount_obj",
+            "fiscal_year",
+            "date",
+            "due_date",
+        )
+
+
+class RecurringVoucherTemplatePurchaseInvoiceDataSerializer(
+    PurchaseVoucherCreateSerializer
+):
+    def validate(self, data):
+        company = self.context["request"].company
+
+        party = data.get("party")
+        if not party and not data.get("payment_mode") and data.get("status") != "Draft":
+            raise ValidationError(
+                {"party": ["Party is required for a credit issue."]},
+            )
+
+        if data.get("discount_type") and str(data.get("discount_type")).isdigit():
+            if not PurchaseDiscount.objects.filter(
+                company=company, id=data.get("discount_type")
+            ).exists():
+                raise ValidationError(
+                    {"discount_type": ["Discount type does not exist."]},
+                )
+
+        if party and (party.company_id != company.id):
+            raise ValidationError(
+                {"party": ["Party does not belong to the company."]},
+            )
+
+        if (
+            data.get("payment_mode")
+            and data.get("payment_mode").company_id != company.id
+        ):
+            raise ValidationError(
+                {"payment_mode": ["Payment mode does not belong to the company."]},
+            )
+
+        if data.get("discount") and data.get("discount") < 0:
+            raise ValidationError({"discount": ["Discount cannot be negative."]})
+
+        return data
+
+    class Meta:
+        model = PurchaseVoucher
+        exclude = (
+            "company",
+            "user",
+            "bank_account",
+            "fiscal_year",
+            "date",
+            "due_date",
+            "voucher_no",
+        )
+
+
+class RecurringVoucherTemplateCreateSerializer(serializers.ModelSerializer):
+    repeat_interval = serializers.IntegerField()
+
+    def validate_repeat_interval(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Ensure this value is greater than 0.")
+        return value
+
+    def validate(self, data):
+        invoice_data = data.get("invoice_data")
+        type = data.get("type")
+        start_date = data.get("start_date")
+        end_date = data.get("end_date")
+
+        if end_date and start_date and end_date < start_date:
+            raise ValidationError({"end_date": "End date must be after start date."})
+
+        serializer_class = (
+            RecurringVoucherTemplateSalesInvoiceDataSerializer
+            if type == "Sales Voucher"
+            else RecurringVoucherTemplatePurchaseInvoiceDataSerializer
+        )
+        invoice_serializer = serializer_class(data=invoice_data, context=self.context)
+        if invoice_serializer.is_valid() is False:
+            raise ValidationError({"invoice_data": invoice_serializer.errors})
+        return super().validate(data)
+
+    def create(self, validated_data):
+        validated_data["user_id"] = self.context["request"].user.id
+        return super().create(validated_data)
+
+    class Meta:
+        model = RecurringVoucherTemplate
+        exclude = (
+            "company",
+            "user",
+            "last_generated",
+            "next_date",
+            "no_of_vouchers_created",
+            "created_at",
+            "updated_at",
+        )
+
+
+class FileOrStringField(serializers.Field):
+    def to_internal_value(self, data):
+        if isinstance(data, InMemoryUploadedFile):
+            max_file_upload_size = settings.MAX_FILE_UPLOAD_SIZE
+            if data.size > max_file_upload_size:
+                max_file_upload_size_mb = max_file_upload_size / (1024 * 1024)
+                raise serializers.ValidationError(
+                    f"File size exceeds the maximum limit of {max_file_upload_size_mb:.2f} MB"
+                )
+            return data
+
+        if isinstance(data, str):
+            return data
+
+        raise serializers.ValidationError(
+            "This field must be either a file or a string."
+        )
+
+    def to_representation(self, value):
+        return value
+
+
+class EmailInvoiceRequestSerializer(serializers.Serializer):
+    attachments = serializers.ListField(
+        child=FileOrStringField(),
+        default=list,
+        max_length=settings.MAX_EMAIL_ATTACHMENTS,
+    )
+    attach_pdf = serializers.BooleanField()
+    to = serializers.ListField(child=serializers.EmailField())
+    subject = serializers.CharField()
+    message = serializers.CharField()
+
+    def validate_to(self, value):
+        if not value:
+            raise serializers.ValidationError("To field is required.")
+        return value
+
+
+class ImportRequestSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+    def validate_file(self, value):
+        if not value.name.endswith(".xlsx"):
+            raise serializers.ValidationError("File must be an Excel file.")
+        max_file_upload_size = settings.MAX_IMPORT_FILE_SIZE
+        if value.size > max_file_upload_size:
+            max_file_upload_size_mb = max_file_upload_size / (1024 * 1024)
+            raise ValidationError(
+                f"File size exceeds the maximum limit of {max_file_upload_size_mb:.2f} MB"
+            )
+        return value
+
+
 class SalesAgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesAgent
@@ -531,6 +703,7 @@ class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
 class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
     party_contact_no = serializers.ReadOnlyField(source="party.contact_no")
+    party_email = serializers.ReadOnlyField(source="party.email")
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     discount_obj = SalesDiscountSerializer()
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
@@ -570,6 +743,13 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
         options = {}
         amt_qt_setting = obj.company.sales_setting.show_rate_quantity_in_voucher
         options["show_rate_quantity_in_voucher"] = amt_qt_setting
+        request = self.context.get("request")
+        if request.user.id:
+            options["default_email_attachments"] = [
+                get_full_file_url(request, file)
+                for file in obj.company.sales_setting.default_email_attachments
+            ]
+
         return options
 
     class Meta:
@@ -585,6 +765,22 @@ class SalesVoucherChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesVoucher
         fields = ("id", "voucher_no", "date", "status", "customer_name", "total_amount")
+        
+        
+class SalesVoucherMinListSerializer(serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source="party.name")
+    
+    class Meta:
+        model = SalesVoucher
+        fields = (
+            "id",
+            "voucher_no",
+            "party_name",
+            "date",
+            "customer_name",
+            "total_amount",
+            "remarks",
+        )
 
 
 class SalesVoucherListSerializer(serializers.ModelSerializer):
@@ -849,7 +1045,7 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
         request = self.context["request"]
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
-        validated_data["company_id"] = request.company_id
+        validated_data["company_id"] = request.company.id
         validated_data["user_id"] = request.user.id
         instance = Challan.objects.create(**validated_data)
         for index, row in enumerate(rows_data):

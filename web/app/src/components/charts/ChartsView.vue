@@ -1,15 +1,6 @@
-<template>
-  <div>
-    <canvas
-      id="chartDiagram"
-      ref="chartDiagram"
-      style="max-height: 300px; width: 100%"
-    ></canvas>
-  </div>
-</template>
-
 <script>
 import Chart from 'chart.js/auto'
+
 export default {
   props: {
     data: {
@@ -48,17 +39,17 @@ export default {
     })
     const multiplyArray = (arr, n) => {
       let newArr = []
-      ;[...Array(n)].forEach(() => {
+      ;[...new Array(n)].forEach(() => {
         newArr = newArr.concat(arr)
       })
       return newArr
     }
     const datacomputed = computed(() => {
-      let data = props.data
+      const data = props.data
       if (data && data.datasets && data.datasets.length) {
         data.datasets.forEach((dataset, index) => {
           if (isSeries.value) {
-            let colorIndex = index % colors.length
+            const colorIndex = index % colors.length
             dataset.backgroundColor = colors[colorIndex]
             dataset.borderColor = colors[colorIndex]
             dataset.lineTension = 0
@@ -67,10 +58,7 @@ export default {
               dataset.type = 'line'
             }
           } else {
-            dataset.backgroundColor = multiplyArray(
-              colors,
-              Math.ceil(dataset.data.length / colors.length)
-            )
+            dataset.backgroundColor = multiplyArray(colors, Math.ceil(dataset.data.length / colors.length))
           }
         })
       }
@@ -79,8 +67,7 @@ export default {
     onMounted(() => {
       // chartDiagram = new
       new Chart(chartDiagram.value, {
-        type:
-          datacomputed.value.type === 'mixed' ? 'bar' : datacomputed.value.type,
+        type: datacomputed.value.type === 'mixed' ? 'bar' : datacomputed.value.type,
         data: {
           labels: datacomputed.value.labels,
           datasets: datacomputed.value.datasets,
@@ -91,3 +78,9 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div>
+    <canvas id="chartDiagram" ref="chartDiagram" style="max-height: 300px; width: 100%"></canvas>
+  </div>
+</template>

@@ -1,5 +1,6 @@
 import datetime
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db.models import F, Q
@@ -7,6 +8,7 @@ from rest_framework import serializers
 
 from apps.ledger.models import Account
 from apps.ledger.serializers import AccountBalanceSerializer, AccountMinSerializer
+from apps.product.helpers import create_book_category
 from apps.product.models import Item, Transaction
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs import get_next_voucher_no
@@ -173,27 +175,28 @@ class BookSerializer(ItemSerializer):
             name="Book", company=request.user.company
         ).first()
         if not category:
-            raise ValidationError({"detail": 'Please create "Book" category first!'})
+            category = create_book_category(request.company)
         validated_data["category"] = category
 
+        acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
         if category.items_purchase_account_type == "global":
             validated_data["purchase_account"] = Account.objects.get(
-                name="Purchase Account", default=True
+                system_code=acc_system_codes["Purchase Account"]
             )
 
         if category.items_sales_account_type == "global":
             validated_data["sales_account"] = Account.objects.get(
-                name="Sales Account", default=True
+                system_code=acc_system_codes["Sales Account"]
             )
 
         if category.items_discount_allowed_account_type == "global":
             validated_data["discount_allowed_account"] = Account.objects.get(
-                name="Discount Expenses", default=True
+                system_code=acc_system_codes["Discount Expenses"],
             )
 
         if category.items_discount_received_account_type == "global":
             validated_data["discount_received_account"] = Account.objects.get(
-                name="Discount Income", default=True
+                system_code=acc_system_codes["Discount Income"],
             )
 
         instance = super(BookSerializer, self).create(validated_data)

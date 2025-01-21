@@ -14,7 +14,7 @@ export default function numberToText(num: number, isCurrency?: boolean) {
   if (num >= 0) {
     return toText(num, isCurrency)
   } else {
-    return 'Negative ' + toText(num * -1, isCurrency)
+    return `Negative ${toText(num * -1, isCurrency)}`
   }
 }
 
@@ -27,17 +27,16 @@ function toText(num: number, isCurrency: boolean) {
   const useAnd: boolean = !(fract_part > 0) || USE_AND_EVEN_IF_DECIMAL
 
   if (fract_part > 0) {
-    if (isCurrency)
-      fract_num =
-        'and ' + toIndianText(fract_part, isCurrency, false) + ' Paisa'
-    else fract_num = ' Point ' + toIndianText(fract_part, isCurrency)
+    if (isCurrency) fract_num = `and ${toIndianText(fract_part, isCurrency, false)} Paisa`
+    else fract_num = ` Point ${toIndianText(fract_part, isCurrency)}`
   }
 
   if (isCurrency) {
     const rupeeString = Math.floor(num) == 1 ? ' Rupee ' : ' Rupees '
-    res =
-      toIndianText(num, isCurrency, useAnd) + rupeeString + fract_num + ' only'
-  } else res = toIndianText(num, isCurrency, useAnd) + fract_num
+    res = `${toIndianText(num, isCurrency, useAnd) + rupeeString + fract_num} only`
+  } else {
+    res = toIndianText(num, isCurrency, useAnd) + fract_num
+  }
 
   return res
 }
@@ -61,53 +60,21 @@ function toIndianText(num: number, isCurrency?: boolean, useAnd?: boolean) {
   let res = ''
 
   if (Gn > 0) {
-    res += toIndianText(Gn) + ' Crore'
+    res += `${toIndianText(Gn)} Crore`
   }
   if (kn > 0) {
-    res += (res == '' ? '' : ' ') + toIndianText(kn) + ' Lakh'
+    res += `${(res == '' ? '' : ' ') + toIndianText(kn)} Lakh`
   }
   if (Hn > 0) {
-    res += (res == '' ? '' : ' ') + toIndianText(Hn) + ' Thousand'
+    res += `${(res == '' ? '' : ' ') + toIndianText(Hn)} Thousand`
   }
 
   if (Dn) {
-    res += (res == '' ? '' : ' ') + toIndianText(Dn) + ' Hundred'
+    res += `${(res == '' ? '' : ' ') + toIndianText(Dn)} Hundred`
   }
 
-  const ones: Array<string> = [
-    '',
-    'One',
-    'Two',
-    'Three',
-    'Four',
-    'Five',
-    'Six',
-    'Seven',
-    'Eight',
-    'Nine',
-    'Ten',
-    'Eleven',
-    'Twelve',
-    'Thirteen',
-    'Fourteen',
-    'Fifteen',
-    'Sixteen',
-    'Seventeen',
-    'Eighteen',
-    'Nineteen',
-  ]
-  const tens: Array<string> = [
-    '',
-    '',
-    'Twenty',
-    'Thirty',
-    'Fourty',
-    'Fifty',
-    'Sixty',
-    'Seventy',
-    'Eighty',
-    'Ninety',
-  ]
+  const ones: Array<string> = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']
+  const tens: Array<string> = ['', '', 'Twenty', 'Thirty', 'Fourty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
 
   if (tn > 0 || one > 0) {
     if (isCurrency && useAnd) {
@@ -121,7 +88,7 @@ function toIndianText(num: number, isCurrency?: boolean, useAnd?: boolean) {
     } else {
       res += tens[tn]
       if (one > 0) {
-        res += '-' + ones[one]
+        res += `-${ones[one]}`
       }
     }
   }

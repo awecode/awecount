@@ -8,6 +8,7 @@ from apps.voucher.models import (
     CreditNoteRow,
     DebitNote,
     DebitNoteRow,
+    Import,
     PaymentReceipt,
     PurchaseDiscount,
     PurchaseVoucher,
@@ -80,7 +81,7 @@ class SalesVoucherAdmin(admin.ModelAdmin):
         "user",
     ]
 
-    def get_queryset(self, request):
+    def get_queryset(self, request, *args, **kwargs):
         qs = super(SalesVoucherAdmin, self).get_queryset(request)
         changelist_path = reverse(
             "admin:%s_%s_changelist"
@@ -92,6 +93,18 @@ class SalesVoucherAdmin(admin.ModelAdmin):
                 "company",
             )
         return qs
+
+
+class ImportAdmin(admin.ModelAdmin):
+    list_display = (
+        "company",
+        "user",
+        "type",
+        "status",
+        "created_at",
+    )
+    search_fields = ("company__name", "user__full_name")
+    list_filter = ("company", "status", "type")
 
 
 class CreditNoteAdmin(admin.ModelAdmin):
@@ -115,6 +128,7 @@ admin.site.register(SalesVoucherRow)
 admin.site.register(CreditNote, CreditNoteAdmin)
 admin.site.register(CreditNoteRow)
 admin.site.register(InvoiceDesign)
+admin.site.register(Import, ImportAdmin)
 
 
 class DebitNoteAdmin(admin.ModelAdmin):

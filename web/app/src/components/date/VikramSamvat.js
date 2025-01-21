@@ -101,18 +101,18 @@ bs[2088] = [30, 31, 32, 32, 30, 31, 30, 30, 29, 30, 30, 30]
 bs[2089] = [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 30, 30]
 // bs[2090] = [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 30, 30]
 
-var _MS_PER_DAY = 1000 * 60 * 60 * 24
+const _MS_PER_DAY = 1000 * 60 * 60 * 24
 
 function dateDiffInDays(a, b) {
   // Discard the time and time-zone information.
-  var utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())
-  var utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate())
+  const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())
+  const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate())
 
   return Math.floor((utc2 - utc1) / _MS_PER_DAY)
 }
 
 const Converter = {
-  countBsDays: function (begin_bs_date, end_bs_date) {
+  countBsDays(begin_bs_date, end_bs_date) {
     // Returns the number of days between the two given B.S. dates.
     // begin_ad_date : A tuple in the format (year,month,day) that specify the date to start counting from.
     // end_ad_date : A tuple in the format (year,month,day) that specify the date to end counting.
@@ -120,18 +120,14 @@ const Converter = {
     // Tuple in the dictionary starts from 0
     // The range(a,b) function starts from a and ends at b-1
 
-    let [begin_year, begin_month, begin_day] = begin_bs_date
-      .split('-')
-      .map((data) => parseInt(data))
-    let [end_year, end_month, end_day] = end_bs_date
-      .split('-')
-      .map((data) => parseInt(data))
+    const [begin_year, begin_month, begin_day] = begin_bs_date.split('-').map(data => Number.parseInt(data))
+    const [end_year, end_month, end_day] = end_bs_date.split('-').map(data => Number.parseInt(data))
 
     let days = 0
 
     // 1) First add total days in all the years
     for (let year = begin_year; year < end_year + 1; year++) {
-      for (let days_in_month of bs[year]) {
+      for (const days_in_month of bs[year]) {
         days = days + days_in_month
       }
     }
@@ -155,35 +151,33 @@ const Converter = {
     return days
   },
 
-  countAdDays: function (begin_ad_date, end_ad_date) {
+  countAdDays(begin_ad_date, end_ad_date) {
     // Returns the number of days between the two given A.D. dates.
     // begin_ad_date : A tuple in the format (year,month,day) that specify the date to start counting from.
     // end_ad_date : A tuple in the format (year,month,day) that specify the date to end counting.
-    let date_begin = new Date(begin_ad_date)
-    let date_end = new Date(end_ad_date)
+    const date_begin = new Date(begin_ad_date)
+    const date_end = new Date(end_ad_date)
 
     return dateDiffInDays(date_begin, date_end)
   },
 
-  addAdDays: function (ad_date, num_days) {
+  addAdDays(ad_date, num_days) {
     // Adds the given number of days to the given A.D. date and returns it as a tuple in the format (year,month,day)
     // ad_date : A tuple in the format (year,month,day)
     // num_days : Number of days to add to the given date
-    let date = new Date(ad_date)
+    const date = new Date(ad_date)
     date.setDate(date.getDate() + num_days)
-    return `${date.getFullYear()}-${this.zeroPad(
-      date.getMonth() + 1
-    )}-${this.zeroPad(date.getDate())}`
+    return `${date.getFullYear()}-${this.zeroPad(date.getMonth() + 1)}-${this.zeroPad(date.getDate())}`
   },
 
-  addBsDays: function (bs_date, num_days) {
+  addBsDays(bs_date, num_days) {
     // Adds the given number of days to the given B.S. date and returns it as a tuple in the format (year,month,day)
     // bs_date : a tuple in the format (year,month,day)
     // num_days : Number of days to add to the given date
     // Note:
     // Tuple in the dictionary starts from 0
 
-    let [year, month, day] = bs_date.split('-').map((data) => parseInt(data))
+    let [year, month, day] = bs_date.split('-').map(data => Number.parseInt(data))
 
     // 1) Add the total number of days to the original days
     day = day + num_days
@@ -207,19 +201,19 @@ const Converter = {
     return `${year}-${this.zeroPad(month)}-${this.zeroPad(day)}`
   },
 
-  zeroPad: function (num) {
-    var zero = 2 - num.toString().length + 1
-    return Array(+(zero > 0 && zero)).join('0') + num
+  zeroPad(num) {
+    const zero = 2 - num.toString().length + 1
+    return Array.from({ length: +(zero > 0 && zero) }).join('0') + num
   },
 
-  bs2ad: function (bs_date, roundOff) {
+  bs2ad(bs_date, roundOff) {
     // input and output in string
     if (this.isValid(bs_date)) {
-      let date_delta = this.countBsDays(BS_EQIV, bs_date)
+      const date_delta = this.countBsDays(BS_EQIV, bs_date)
       return this.addAdDays(AD_EQIV, date_delta)
     } else {
       if (roundOff) {
-        let dateArray = bs_date.split('-')
+        const dateArray = bs_date.split('-')
         let day = Number(bs_date.split('-')[2])
         let dateString = bs_date
         do {
@@ -228,17 +222,21 @@ const Converter = {
           dateString = dateArray.join('-')
         } while (day > 28 && !this.isValid(dateString))
         if (this.isValid(dateString)) {
-          let date_delta = this.countBsDays(BS_EQIV, dateString)
+          const date_delta = this.countBsDays(BS_EQIV, dateString)
           return this.addAdDays(AD_EQIV, date_delta)
-        } else throw 'Invalid BS Date'
-      } else throw 'Invalid BS Date'
+        } else {
+          throw 'Invalid BS Date'
+        }
+      } else {
+        throw 'Invalid BS Date'
+      }
     }
   },
 
-  ad2bs: function (ad_date) {
-    let dt = new Date(ad_date)
+  ad2bs(ad_date) {
+    const dt = new Date(ad_date)
     if (dt != 'Invalid Date') {
-      let date_delta = this.countAdDays(AD_EQIV, ad_date)
+      const date_delta = this.countAdDays(AD_EQIV, ad_date)
       return this.addBsDays(BS_EQIV, date_delta)
     }
     // } catch (e) {
@@ -253,26 +251,26 @@ const Converter = {
     }
   },
 
-  getBSYear: function (ad_date) {
-    let bs_date = this.ad2bs(ad_date)
-    return parseInt(bs_date.split('-')[0])
+  getBSYear(ad_date) {
+    const bs_date = this.ad2bs(ad_date)
+    return Number.parseInt(bs_date.split('-')[0])
   },
 
-  getBSMonth: function (ad_date) {
-    let bs_date = this.ad2bs(ad_date)
-    return parseInt(bs_date.split('-')[1])
+  getBSMonth(ad_date) {
+    const bs_date = this.ad2bs(ad_date)
+    return Number.parseInt(bs_date.split('-')[1])
   },
-  isValidAD: function (date_as_str) {
+  isValidAD(date_as_str) {
     return (
-      date_as_str.length > 7 &&
-      !isNaN(Date.parse(date_as_str)) &&
-      isNaN(date_as_str) &&
-      Date.parse(date_as_str) > -8520356476000 && // after 1699-12-12
-      !(date_as_str.length == 8 && date_as_str.endsWith('-'))
+      date_as_str.length > 7
+      && !isNaN(Date.parse(date_as_str))
+      && isNaN(date_as_str)
+      && Date.parse(date_as_str) > -8520356476000 // after 1699-12-12
+      && !(date_as_str.length == 8 && date_as_str.endsWith('-'))
     )
   },
 
-  isValid: function (date_as_str) {
+  isValid(date_as_str) {
     // """
     // Checks if the fed date string is a valid B.S. date
     // date_as_str: String in the format 'YYYY-MM-DD'
@@ -280,7 +278,7 @@ const Converter = {
     // """
     let [year, month, day] = [null, null, null]
     try {
-      ;[year, month, day] = date_as_str.split('-').map((data) => parseInt(data))
+      ;[year, month, day] = date_as_str.split('-').map(data => Number.parseInt(data))
     } catch (e) {
       return false
     }
@@ -322,53 +320,32 @@ const Converter = {
   },
 
   getMonths() {
-    return [
-      'Baishakh',
-      'Jestha',
-      'Asadh',
-      'Shrawan',
-      'Bhadra',
-      'Ashwin',
-      'Kartik',
-      'Mangsir',
-      'Poush',
-      'Magh',
-      'Falgun',
-      'Chaitra',
-    ]
+    return ['Baishakh', 'Jestha', 'Asadh', 'Shrawan', 'Bhadra', 'Ashwin', 'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra']
   },
 
   getDays() {
-    return [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-    ]
+    return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   },
 
   getRepresentation(adDate, calendarType, showTime = false) {
     if (typeof adDate === 'undefined' || adDate === null || adDate === '') {
       return
     }
-    let time = new Date(adDate + ' GMT').toUTCString().slice(-12, -4)
+    const time = new Date(`${adDate} GMT`).toUTCString().slice(-12, -4)
     if (calendarType === 'ad' && time !== '00:00:00') {
       let dateStr = new Date(adDate).toISOString().slice(0, 10)
       if (showTime) {
-        dateStr += dateStr + ' ' + time
+        dateStr += `${dateStr} ${time}`
       }
       return dateStr
     }
     if (calendarType === 'bs' && time !== '00:00:00' && showTime) {
-      return this.ad2bs(adDate) + ' ' + time
+      return `${this.ad2bs(adDate)} ${time}`
     } else if (calendarType === 'bs') {
       return this.ad2bs(adDate)
     } else {
       try {
-        return new Date(adDate + ' GMT').toISOString().substr(0, 10)
+        return new Date(`${adDate} GMT`).toISOString().substr(0, 10)
       } catch (err) {
         if (err.message == 'invalid date') {
           return new Date(adDate).toISOString().substr(0, 10)
@@ -378,9 +355,7 @@ const Converter = {
     }
   },
   date2str(date) {
-    return `${date.getFullYear()}-${this.zeroPad(
-      date.getMonth() + 1
-    )}-${this.zeroPad(date.getDate())}`
+    return `${date.getFullYear()}-${this.zeroPad(date.getMonth() + 1)}-${this.zeroPad(date.getDate())}`
   },
 }
 
