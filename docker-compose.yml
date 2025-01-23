@@ -91,10 +91,8 @@ services:
       FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-5242880}
       BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
     depends_on:
-      - web
-      - api
-      - space
-      - admin
+      - frontend
+      - backend
 
 volumes:
   pgdata:
