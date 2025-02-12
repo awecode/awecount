@@ -104,8 +104,6 @@ class CustomUserAdmin(UserAdmin):
                     "password",
                     "date_joined",
                     "last_login",
-                    "company",
-                    "permissions",
                     "is_superuser",
                 )
             },
