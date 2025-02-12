@@ -1,7 +1,7 @@
 import requests
 from django import forms
 from django.contrib import admin, messages
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.admin import UserChangeForm as DjangoUserChangeForm
 from django.contrib.auth.admin import UserCreationForm as DjangoUserCreationForm
 from django.contrib.auth.models import Group
@@ -74,7 +74,7 @@ class UserChangeForm(DjangoUserChangeForm):
         return self.initial["password"]
 
 
-class CustomUserAdmin(UserAdmin):
+class UserAdmin(DjangoUserAdmin):
     ordering = ("email",)
     form = UserChangeForm
     add_form = UserCreationForm
@@ -136,7 +136,7 @@ class CustomUserAdmin(UserAdmin):
     )
 
 
-admin.site.register(User, CustomUserAdmin)
+admin.site.register(User, UserAdmin)
 admin.site.register(Role)
 
 

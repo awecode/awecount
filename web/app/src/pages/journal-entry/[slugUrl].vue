@@ -26,7 +26,7 @@ export default {
       narration: string
       id: number
     }
-    const seprateTransactions = ref(false)
+    const separateTransactions = ref(false)
     const store = useLoginStore()
     const getDate = computed(() => {
       if (Array.isArray(fields.value) && fields.value.length > 0) {
@@ -137,7 +137,7 @@ export default {
       getDate,
       getAmount,
       sameTransactionsData,
-      seprateTransactions,
+      separateTransactions,
       CONTENT_TYPE_TO_SLUG,
     }
   },
@@ -162,7 +162,7 @@ export default {
 </script>
 
 <template>
-  <template v-if="sameTransactionsData && !seprateTransactions">
+  <template v-if="sameTransactionsData && !separateTransactions">
     <q-form class="q-pa-lg">
       <q-card>
         <q-card-section class="bg-grey-4 text-black">
@@ -373,7 +373,7 @@ export default {
   </template>
   <template v-if="sameTransactionsData && fields?.length > 1">
     <div class="q-ma-md flex justify-end">
-      <q-btn color="green" :label="seprateTransactions ? 'View Merged Transactions' : 'View Sperate Transactions'" @click="seprateTransactions = !seprateTransactions" />
+      <q-btn color="green" :label="separateTransactions ? 'View Merged Transactions' : 'View Separate Transactions'" @click="separateTransactions = !separateTransactions" />
     </div>
   </template>
 </template>
