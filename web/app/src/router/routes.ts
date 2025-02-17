@@ -1346,6 +1346,31 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/LoginPage.vue'),
   },
   {
+    path: '/signup',
+    name: 'signup-page',
+    component: () => import('pages/SignupPage.vue'),
+  },
+  {
+    path: '/auth',
+    children: [
+      {
+        path: 'verify-email/:token',
+        name: 'verify-email',
+        component: () => import('pages/auth/verify-email/[token].vue'),
+      },
+      {
+        path: 'forgot-password',
+        name: 'forgot-password',
+        component: () => import('pages/auth/forgot-password.vue'),
+      },
+      {
+        path: 'password/reset/:token',
+        name: 'password-reset',
+        component: () => import('pages/auth/password/reset/[token].vue'),
+      },
+    ],
+  },
+  {
     path: '/:company',
     name: 'company',
     component: () => import('layouts/MainLayout.vue'),

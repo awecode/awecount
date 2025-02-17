@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import { useQuasar } from 'quasar'
 import { useAuthStore } from 'stores/auth'
+import { reactive, ref } from 'vue'
 
 const emit = defineEmits<{
-  loggedIn: [Record<string, any>]
+  signedUp: [Record<string, any>]
 }>()
 
 const $q = useQuasar()
-const { login, resendVerificationEmail } = useAuthStore()
+const { signup, resendVerificationEmail } = useAuthStore()
 
 const showPasswordStatus = ref(false)
 const loading = ref(false)
@@ -22,7 +24,7 @@ const errors = ref({
   password: null,
 })
 
-const handleLoginError = (error: any) => {
+const handleSignupError = (error: any) => {
   const errorResponse: any = error.data || error.response?._data
 
   if (errorResponse.status === 401) {
@@ -35,45 +37,36 @@ const handleLoginError = (error: any) => {
     }
   }
 
-  if (errorResponse.status === 400) {
-    const firstError = errorResponse.errors?.[0]
-    if (firstError?.code === 'email_password_mismatch') {
-      errors.value.email = ' '
-      errors.value.password = firstError.message
-      return
-    } else if (firstError?.code === 'invalid') {
+  if (errorResponse?.errors?.[0]) {
+    const firstError = errorResponse.errors[0]
+    if (firstError.param) {
       errors.value[firstError.param] = firstError.message
-      return
-    } else if (firstError?.code === 'too_many_login_attempts') {
-      $q.notify({
-        position: 'top-right',
-        message: 'Too Many Login Attempts',
-        caption: 'Please try again later.',
-        color: 'warning',
-        icon: 'fa-solid fa-circle-exclamation',
-      })
-      return
-    } else if (firstError?.code === 'account_disabled') {
-      $q.notify({
-        position: 'top-right',
-        message: 'Account Disabled',
-        caption: 'Your account has been disabled. Please contact support.',
-        color: 'warning',
-        icon: 'fa-solid fa-circle-exclamation',
-      })
       return
     }
   }
 
   $q.notify({
     position: 'top-right',
-    message: 'Login Failed',
+    message: 'Signup Failed',
     caption: error.message || 'Please try again later',
     color: 'negative',
     icon: 'fa-solid fa-circle-exclamation',
   })
 
   console.error(error)
+}
+
+const onSignupSubmit = async () => {
+  try {
+    loading.value = true
+    const res = await signup(state)
+    showVerificationModal.value = true
+    emit('signedUp', res)
+  } catch (error: any) {
+    handleSignupError(error)
+  } finally {
+    loading.value = false
+  }
 }
 
 const handleResendVerification = async () => {
@@ -97,24 +90,12 @@ const handleResendVerification = async () => {
     })
   }
 }
-
-const onLoginSubmit = async () => {
-  try {
-    loading.value = true
-    const res = await login(state)
-    emit('loggedIn', res)
-  } catch (error: any) {
-    handleLoginError(error)
-  } finally {
-    loading.value = false
-  }
-}
 </script>
 
 <template>
   <div class="row justify-center items-center bg-white q-pa-md">
     <div class="full-width q-px-md">
-      <q-form autofocus class="text-sm" @submit="onLoginSubmit">
+      <q-form autofocus class="text-sm" @submit="onSignupSubmit">
         <q-input
           v-model="state.email"
           input-class="text-body1"
@@ -147,32 +128,20 @@ const onLoginSubmit = async () => {
           </template>
         </q-input>
 
-        <div class="row justify-start q-mt-sm">
-          <q-btn
-            dense
-            flat
-            class="q-px-none text-caption"
-            color="primary"
-            to="/auth/forgot-password"
-          >
-            Forgot Password?
-          </q-btn>
-        </div>
-
         <div class="text-center q-mt-xl">
           <q-btn class="bg-blue full-width text-white q-px-lg q-mb-md" type="submit" :loading="loading">
-            Login
+            Sign Up
           </q-btn>
           <div class="text-grey-7 q-mt-sm">
-            Don't have an account?
+            Already have an account?
             <q-btn
               dense
               flat
               class="q-px-sm"
               color="primary"
-              to="/signup"
+              to="/login"
             >
-              Sign up here
+              Login here
             </q-btn>
           </div>
         </div>
@@ -196,9 +165,8 @@ const onLoginSubmit = async () => {
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <p>Your email address needs to be verified before you can log in.</p>
           <p>We've sent a verification email to <strong>{{ state.email }}</strong></p>
-          <p>Please check your inbox and click the verification link to complete the verification.</p>
+          <p>Please check your inbox and click the verification link to complete your registration.</p>
         </q-card-section>
 
         <q-card-actions align="right" class="text-primary">
