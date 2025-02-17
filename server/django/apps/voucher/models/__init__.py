@@ -557,7 +557,7 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
             content_type__model="salesvoucherrow", object_id__in=row_ids
         ).delete()
 
-    def _get_or_create_bank_payment_mode(company, bank_account):
+    def _get_or_create_bank_payment_mode(self, company, bank_account):
         kwargs = {
             "company": company,
             "account": bank_account.ledger,
