@@ -8,7 +8,13 @@ from rest_framework import mixins, status, views, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from apps.company.models import Company, CompanyMember, CompanyMemberInvite, FiscalYear, Permission
+from apps.company.models import (
+    Company,
+    CompanyMember,
+    CompanyMemberInvite,
+    FiscalYear,
+    Permission,
+)
 from apps.company.permissions import (
     CompanyAdminPermission,
     CompanyBasePermission,
@@ -22,6 +28,7 @@ from apps.company.serializers import (
     CompanySerializer,
 )
 from apps.users.models import User
+from awecount.libs.nepdate import ad2bs, bs, bs2ad
 
 
 class CompanyInvitationsViewset(viewsets.ModelViewSet):
@@ -399,3 +406,67 @@ class CompanyViewset(
         if self.action == "create":
             return [AllowAny()]
         return super().get_permissions()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # Create the company member
+        CompanyMember.objects.create(
+            company=serializer.instance,
+            member=request.user,
+            role=CompanyMember.Role.OWNER,
+        )
+
+        country_iso = serializer.instance.country_iso
+        current_year = timezone.now().year
+
+        fiscal_year_details = self._get_fiscal_year_details(country_iso, current_year)
+
+        fiscal_year, _ = FiscalYear.objects.get_or_create(
+            start_date=fiscal_year_details["start_date"],
+            end_date=fiscal_year_details["end_date"],
+            name=fiscal_year_details["label"],
+        )
+
+        serializer.instance.current_fiscal_year = fiscal_year
+        serializer.instance.save()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def _get_fiscal_year_details(self, country_iso, current_year):
+        """Returns fiscal year details based on country ISO."""
+        if country_iso == "NP":
+            return self._get_nepal_fiscal_year_details()
+
+        fiscal_year_map = {
+            "IN": {
+                "start_date": f"{current_year}-04-01",
+                "end_date": f"{current_year+1}-03-31",
+                "label": f"FY {current_year}-{(current_year+1)%100}",  # 2021-22
+            },
+            "US": {
+                "start_date": f"{current_year}-01-01",
+                "end_date": f"{current_year}-12-31",
+                "label": f"FY{current_year%100}",  # FY21
+            },
+        }
+        return fiscal_year_map.get(country_iso, {})
+
+    def _get_nepal_fiscal_year_details(self):
+        """Returns the fiscal year start/end dates for Nepal (BS to AD conversion)."""
+        date = timezone.now().date()
+        bs_date = ad2bs(date.strftime("%Y-%m-%d"))
+
+        start = bs2ad(f"{bs_date[0]}-04-01")
+        end = bs2ad(f"{bs_date[0] + 1}-03-{bs[bs_date[0]+1][2]}")
+
+        return {
+            "start_date": f"{start[0]}-{start[1]:02d}-{start[2]:02d}",
+            "end_date": f"{end[0]}-{end[1]:02d}-{end[2]:02d}",
+            "label": f"{bs_date[0]%100}/{(bs_date[0]+1)%100}",  # 78/79
+        }

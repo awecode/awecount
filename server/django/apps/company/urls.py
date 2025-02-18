@@ -58,6 +58,15 @@ urlpatterns = [
     ),
 
     re_path(
+        r"^api/company/$",
+        CompanyViewset.as_view(
+            {
+                "post": "create",
+            }
+        ),
+        name="company-create",
+    ),
+    re_path(
         r"^api/company/(?P<company_slug>[-\w]+)/$",
         CompanyViewset.as_view(
             {
