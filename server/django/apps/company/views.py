@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from apps.company.models import Company, CompanyMember, CompanyMemberInvite, Permission
 from apps.company.permissions import CompanyBasePermission, CompanyAdminPermission, CompanyMemberPermission
 from apps.company.serializers import (
+    CompanyCreateSerializer,
     CompanyLiteSerializer,
     CompanyMemberInviteSerializer,
     CompanyMemberSerializer,
@@ -389,6 +390,7 @@ class CompanyPermissionEndpoint(views.APIView):
         )
 
 class CompanyViewset(
+    mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
@@ -403,3 +405,13 @@ class CompanyViewset(
 
     def get_queryset(self):
         return self.model.objects.filter(slug=self.kwargs.get("company_slug"))
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CompanyCreateSerializer
+        return super().get_serializer_class()
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [AllowAny()]
+        return super().get_permissions()

@@ -12,12 +12,25 @@ class CompanyLiteSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class CompanyCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = [
+            "name",
+            "organization_type",
+            "tax_registration_number",
+            "country",
+            "country_iso",
+            "currency",
+        ]
+
+
 class CompanySerializer(serializers.ModelSerializer):
     owner = UserLiteSerializer(read_only=True)
     total_members = serializers.IntegerField(read_only=True)
     logo_url = serializers.CharField(read_only=True)
-    current_fiscal_year = serializers.CharField(source="current_fiscal_year.name")
-    current_fiscal_year_id = serializers.IntegerField()
+    current_fiscal_year = serializers.CharField(source="current_fiscal_year.name", read_only=True)
+    current_fiscal_year_id = serializers.IntegerField(read_only=True)
 
 
     def validate_slug(self, value):
