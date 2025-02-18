@@ -1240,6 +1240,14 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'chart-of-accounts',
+        name: 'company-reports-chart-of-accounts',
+        component: () => import('pages/report/ChartOfAccounts.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Chart of Accounts'],
+        },
+      },
+      {
         path: 'collection',
         name: 'company-reports-collection',
         component: () => import('pages/report/CollectionReport.vue'),
