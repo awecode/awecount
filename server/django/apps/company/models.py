@@ -285,7 +285,6 @@ class CompanyBaseModel(BaseModel):
     class Meta:
         abstract = True
 
-
     def check_company_references(self, instance):
         """
         Check that all ForeignKey relationships that reference a `Company`
@@ -317,7 +316,6 @@ class CompanyBaseModel(BaseModel):
     def save(self, *args, **kwargs):
         self.check_company_references(self)
         super().save(*args, **kwargs)
-
 
 
 class Permission(BaseModel):
@@ -372,9 +370,7 @@ class CompanyMember(BaseModel):
         on_delete=models.CASCADE,
         related_name="member_company",
     )
-    role = models.CharField(
-        max_length=20, choices=Role.choices, default=Role.MEMBER
-    )
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.MEMBER)
     permissions = models.ManyToManyField(Permission, related_name="member_permission")
     is_active = models.BooleanField(default=True)
 
@@ -384,7 +380,7 @@ class CompanyMember(BaseModel):
             models.UniqueConstraint(
                 fields=["company", "role"],
                 condition=models.Q(
-                    role="owner" # FIXME: Refactor this to use Role.OWNER
+                    role="owner"  # FIXME: Refactor this to use Role.OWNER
                 ),
                 name="company_unique_owner",
             ),
@@ -501,4 +497,14 @@ class CompanyMemberInvite(BaseModel):
         super().save(*args, **kwargs)
 
     def get_token(self):
-        return urlsafe_base64_encode(force_bytes(json.dumps({"id": self.id, "email": self.email, "company_slug": self.company.slug})))
+        return urlsafe_base64_encode(
+            force_bytes(
+                json.dumps(
+                    {
+                        "id": self.id,
+                        "email": self.email,
+                        "company_slug": self.company.slug,
+                    }
+                )
+            )
+        )
