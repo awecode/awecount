@@ -1,3 +1,4 @@
+import json
 import re
 import uuid
 import warnings
@@ -7,12 +8,14 @@ from typing import Dict
 
 from django.apps import apps
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
-from django.core.exceptions import ValidationError, SuspiciousOperation
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.db import models
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 
 from apps.company.constants import RESTRICTED_COMPANY_SLUGS
+from apps.company.signals import company_created
 from lib.models import BaseModel
 from lib.models.mixins import TimeAuditModel
 
@@ -246,6 +249,22 @@ class Company(BaseModel):
     def __str__(self):
         """Return name of the Company"""
         return self.name
+
+    def _get_company_default_slug(self):
+        chunks = self.name.lower().strip().split(" ")
+        first_chunk = chunks[0]
+        return f"{first_chunk[:38]}-{uuid.uuid4().hex[:9]}"
+
+    def save(self, *args, **kwargs):
+        is_creating = self._state.adding
+
+        if is_creating and not self.slug:
+            self.slug = self._get_company_default_slug()
+
+        super().save(*args, **kwargs)
+
+        if is_creating:
+            company_created.send(sender=self.__class__, company=self)
 
     def get_fiscal_years(self):
         # TODO Assign fiscal years to companies (m2m), return related fiscal years here
