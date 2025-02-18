@@ -15,7 +15,7 @@ from mptt.models import MPTTModel
 from rest_framework.exceptions import ValidationError as RestValidationError
 
 from apps.company.models import Company, CompanyBaseModel, FiscalYear
-from apps.users.signals import company_creation
+from apps.company.signals import company_created
 from awecount.libs import decimalize, none_for_zero, zero_for_none
 from awecount.libs.exception import BadOperation
 
@@ -686,7 +686,7 @@ def delete_rows(rows, model):
             instance.delete()
 
 
-@receiver(company_creation)
+@receiver(company_created)
 def handle_company_creation(sender, **kwargs):
     company = kwargs.get("company")
     # TODO make default Categories uneditable
