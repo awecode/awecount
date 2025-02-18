@@ -5,8 +5,9 @@ from allauth.headless.base.response import (
     AuthenticationResponse,
     ForbiddenResponse,
 )
+from allauth.headless.base.views import APIView as AllauthAPIView
 from allauth.headless.internal.decorators import app_view
-from allauth.headless.internal.restkit.response import ErrorResponse
+from allauth.headless.internal.restkit.response import APIResponse, ErrorResponse
 from allauth.socialaccount.internal import flows
 from allauth.socialaccount.providers.base import ProviderException
 from allauth.socialaccount.providers.base.constants import AuthError
@@ -16,10 +17,37 @@ from allauth.socialaccount.providers.oauth2.client import (
 from allauth.socialaccount.providers.oauth2.views import (
     OAuth2CallbackView as AllauthOAuth2CallbackView,
 )
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
 from requests import RequestException
 
 from .adapters import GoogleOAuth2Adapter
+from .inputs import EmailCheckInput
+
+
+class EmailCheckView(AllauthAPIView):
+    input_class = EmailCheckInput
+
+    def post(self, request, *args, **kwargs):
+        email = self.input.cleaned_data.get("email")
+
+        user = get_user_model().objects.filter(email=email).first()
+        existing = user is not None
+        status = "MAGIC_CODE"
+
+        if user and user.has_usable_password():
+            status = "CREDENTIALS"
+
+        return APIResponse(
+            request,
+            status=200,
+            data={
+                "existing": existing,
+                "status": status,
+                "signup_allowed": settings.SIGNUP_ALLOWED and not existing,
+            },
+        )
 
 
 class OAuth2CallbackView(AllauthOAuth2CallbackView):
