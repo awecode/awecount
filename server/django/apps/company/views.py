@@ -38,101 +38,135 @@ class CompanyInvitationsViewset(viewsets.ModelViewSet):
             .select_related("company", "company__owner", "created_by")
         )
 
-    def create(self, request, company_slug):
-        emails = request.data.get("emails", [])
-        # Check if email is provided
+
+    def _validate_emails(self, emails):
+        """Validate email format and required fields."""
         if not emails:
-            return Response(
-                {"error": "Emails are required"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            raise ValidationError("Emails are required")
 
-        # check for role level of the requesting user
-        requesting_user = CompanyMember.objects.get(
-            company__slug=company_slug, member=request.user, is_active=True
-        )
+        for email_data in emails:
+            if not email_data.get("email"):
+                raise ValidationError("Email is required")
+            validate_email(email_data.get("email"))
 
-        # Check if any invited user has an higher role
-        if len(
-            [
-                email
-                for email in emails
-                if int(email.get("role", 5)) > requesting_user.role
-            ]
-        ):
-            return Response(
-                {"error": "You cannot invite a user with higher role"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            if email_data.get("role", "member") not in ["member", "admin"]:
+                raise ValidationError("Invalid role")
 
-        # Get the company object
-        company = Company.objects.get(slug=company_slug)
+    def _validate_permissions(self, requesting_user, emails):
+        """Validate user permissions for inviting members."""
+        role_permissions = {
+            "member": [],
+            "admin": ["member"],
+            "owner": ["member", "admin"]
+        }
 
-        # Check if user is already a member of company
-        company_members = CompanyMember.objects.filter(
-            company_id=company.id,
+        allowed_roles = role_permissions.get(requesting_user.role, [])
+        if not allowed_roles:
+            raise ValidationError("Members cannot invite anyone")
+
+        for email_data in emails:
+            role = email_data.get("role", "member")
+            if role not in allowed_roles:
+                raise ValidationError(f"{requesting_user.role.title()}s can only invite {' and '.join(allowed_roles)}")
+
+    def _check_existing_members(self, company_id, emails):
+        """Check if any invited users are already company members."""
+        existing_members = CompanyMember.objects.filter(
+            company_id=company_id,
             member__email__in=[email.get("email") for email in emails],
-            is_active=True,
+            is_active=True
         ).select_related("member", "company", "company__owner")
 
-        if company_members:
-            return Response(
+        if existing_members.exists():
+            return CompanyMemberSerializer(existing_members, many=True).data
+        return None
+
+    def _create_invitations(self, emails, company_id, created_by):
+        """Create invitation objects for each email."""
+        invitations = []
+        for email_data in emails:
+            email = email_data.get("email").strip().lower()
+            token = jwt.encode(
                 {
-                    "error": "Some users are already member of company",
-                    "company_users": CompanyMemberSerializer(
-                        company_members, many=True
-                    ).data,
+                    "email": email_data,
+                    "timestamp": datetime.now().timestamp()
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                settings.SECRET_KEY,
+                algorithm="HS256"
             )
 
-        company_invitations = []
-        for email in emails:
-            try:
-                validate_email(email.get("email"))
-                company_invitations.append(
-                    CompanyMemberInvite(
-                        email=email.get("email").strip().lower(),
-                        company_id=company.id,
-                        token=jwt.encode(
-                            {"email": email, "timestamp": datetime.now().timestamp()},
-                            settings.SECRET_KEY,
-                            algorithm="HS256",
-                        ),
-                        role=email.get("role", 5),
-                        created_by=request.user,
-                    )
+            invitations.append(
+                CompanyMemberInvite(
+                    email=email,
+                    company_id=company_id,
+                    token=token,
+                    role=email_data.get("role", "member"),
+                    created_by=created_by
                 )
-            except ValidationError:
+            )
+
+        return CompanyMemberInvite.objects.bulk_create(
+            invitations,
+            batch_size=10,
+            ignore_conflicts=True
+        )
+
+    def create(self, request, company_slug):
+        try:
+            emails = request.data.get("emails", [])
+            self._validate_emails(emails)
+
+            requesting_user = CompanyMember.objects.get(
+                company__slug=company_slug,
+                member=request.user,
+                is_active=True
+            )
+
+            self._validate_permissions(requesting_user, emails)
+
+            company = Company.objects.get(slug=company_slug)
+            existing_members = self._check_existing_members(company.id, emails)
+
+            if existing_members:
                 return Response(
                     {
-                        "error": f"Invalid email - {email} provided a valid email address is required to send the invite"
+                        "error": "Some users are already member of company",
+                        "company_users": existing_members
                     },
-                    status=status.HTTP_400_BAD_REQUEST,
+                    status=status.HTTP_400_BAD_REQUEST
                 )
-        # Create company member invite
-        company_invitations = CompanyMemberInvite.objects.bulk_create(
-            company_invitations, batch_size=10, ignore_conflicts=True
-        )
 
-        # current_site = request.META.get("HTTP_ORIGIN")
+            company_invitations = self._create_invitations(
+                emails,
+                company.id,
+                request.user
+            )
 
-        # Send invitations
-        # for invitation in company_invitations:
-        #     company_invitation.delay(
-        #         invitation.email,
-        #         company.id,
-        #         invitation.token,
-        #         current_site,
-        #         request.user.email,
-        #     )
+            # Commented out email sending logic as in original
+            # current_site = request.META.get("HTTP_ORIGIN")
+            # for invitation in company_invitations:
+            #     company_invitation.delay(
+            #         invitation.email,
+            #         company.id,
+            #         invitation.token,
+            #         current_site,
+            #         request.user.email,
+            #     )
 
-        return Response(
-            {"message": "Emails sent successfully"}, status=status.HTTP_200_OK
-        )
+            return Response(
+                {"message": "Emails sent successfully"},
+                status=status.HTTP_200_OK
+            )
+
+        except ValidationError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def destroy(self, request, company_slug, pk):
-        company_member_invite = CompanyMemberInvite.objects.get(
-            pk=pk, company__slug=company_slug
+        company_member_invite = get_object_or_404(
+            CompanyMemberInvite, pk=pk, company__slug=company_slug,
         )
         company_member_invite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -348,7 +382,7 @@ class CompanyPermissionEndpoint(views.APIView):
 
         return Response(
             {
-                "access_level": company_member.access_level,
+                "role": company_member.role,
                 "permissions": company_member.permissions_dict,
             },
             status=status.HTTP_200_OK,

@@ -255,9 +255,9 @@ admin.site.register(FiscalYear, FiscalYearAdmin)
 
 @admin.register(CompanyMember)
 class CompanyMemberAdmin(admin.ModelAdmin):
-    list_display = ("company", "member", "access_level")
+    list_display = ("company", "member", "role")
     search_fields = ("company__name", "member__full_name")
-    list_filter = ("access_level",)
+    list_filter = ("role",)
     actions = [create_company_defaults]
 
 

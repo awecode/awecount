@@ -81,7 +81,7 @@ erDiagram
     CompanyMember ||--|{ Permission : "has"
 
     CompanyMember {
-        enum access_level
+        enum role
         boolean is_active
         json permissions_dict
     }

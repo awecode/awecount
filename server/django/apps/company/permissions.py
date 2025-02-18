@@ -39,9 +39,9 @@ class CompanyBasePermission(BasePermission):
                 member=request.user,
                 company=request.company,
                 is_active=True,
-                access_level__in=[
-                    CompanyMember.AccessLevel.OWNER,
-                    CompanyMember.AccessLevel.ADMIN,
+                role__in=[
+                    CompanyMember.Role.OWNER,
+                    CompanyMember.Role.ADMIN,
                 ],
             ).exists()
 
@@ -51,7 +51,7 @@ class CompanyBasePermission(BasePermission):
                 member=request.user,
                 company=request.company,
                 is_active=True,
-                access_level=CompanyMember.AccessLevel.OWNER,
+                role=CompanyMember.Role.OWNER,
             ).exists()
 
 
@@ -63,7 +63,7 @@ class CompanyOwnerPermission(BasePermission):
         return CompanyMember.objects.filter(
             company=request.company,
             member=request.user,
-            access_level=CompanyMember.AccessLevel.OWNER,
+            role=CompanyMember.Role.OWNER,
             is_active=True,
         ).exists()
 
@@ -76,9 +76,9 @@ class CompanyAdminPermission(BasePermission):
         return CompanyMember.objects.filter(
             member=request.user,
             company=request.company,
-            access_level__in=[
-                CompanyMember.AccessLevel.OWNER,
-                CompanyMember.AccessLevel.ADMIN,
+            role__in=[
+                CompanyMember.Role.OWNER,
+                CompanyMember.Role.ADMIN,
             ],
             is_active=True,
         ).exists()
@@ -98,9 +98,9 @@ class CompanyMemberPermission(BasePermission):
         if not company_member:
             return False
 
-        if company_member.access_level in [
-            CompanyMember.AccessLevel.OWNER,
-            CompanyMember.AccessLevel.ADMIN,
+        if company_member.role in [
+            CompanyMember.Role.OWNER,
+            CompanyMember.Role.ADMIN,
         ]:
             return True
 

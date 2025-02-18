@@ -331,7 +331,7 @@ class Permission(BaseModel):
 
 
 class CompanyMember(BaseModel):
-    class AccessLevel(models.TextChoices):
+    class Role(models.TextChoices):
         OWNER = "owner", "Owner"  # owner can do anything
         ADMIN = "admin", "Admin"  # admin can do anything except deleting the company
         MEMBER = "member", "Member"  # need to explicitly manage permissions
@@ -353,8 +353,8 @@ class CompanyMember(BaseModel):
         on_delete=models.CASCADE,
         related_name="member_company",
     )
-    access_level = models.CharField(
-        max_length=20, choices=AccessLevel.choices, default=AccessLevel.MEMBER
+    role = models.CharField(
+        max_length=20, choices=Role.choices, default=Role.MEMBER
     )
     permissions = models.ManyToManyField(Permission, related_name="member_permission")
     is_active = models.BooleanField(default=True)
@@ -363,10 +363,10 @@ class CompanyMember(BaseModel):
         unique_together = ["company", "member"]
         constraints = [
             models.UniqueConstraint(
-                fields=["company", "access_level"],
+                fields=["company", "role"],
                 condition=models.Q(
-                    access_level="owner"
-                ),  # FIXME: Refactor this to use AccessLevel.OWNER
+                    role="owner" # FIXME: Refactor this to use Role.OWNER
+                ),
                 name="company_unique_owner",
             ),
         ]
@@ -384,17 +384,17 @@ class CompanyMember(BaseModel):
     @property
     def is_owner(self):
         """Check if the member has owner role"""
-        return self.access_level == self.AccessLevel.OWNER
+        return self.role == self.Role.OWNER
 
     @property
     def is_admin(self):
         """Check if the member has admin role"""
-        return self.access_level == self.AccessLevel.ADMIN
+        return self.role == self.Role.ADMIN
 
     @property
     def is_member(self):
         """Check if the member has member role"""
-        return self.access_level == self.AccessLevel.MEMBER
+        return self.role == self.Role.MEMBER
 
     @cached_property
     def permissions_dict(self):
@@ -423,10 +423,10 @@ class CompanyMember(BaseModel):
 
     def clean(self):
         """Validate that there is only one owner per company"""
-        if self.access_level == self.AccessLevel.OWNER and not self.pk:
+        if self.role == self.Role.OWNER and not self.pk:
             if CompanyMember.objects.filter(
                 company=self.company,
-                role_type=self.AccessLevel.OWNER,
+                role_type=self.Role.OWNER,
             ).exists():
                 raise ValidationError("Company already has an owner")
         super().clean()
@@ -454,10 +454,10 @@ class CompanyMemberInvite(BaseModel):
     token = models.CharField(max_length=255)
     message = models.TextField(null=True)
     responded_at = models.DateTimeField(null=True)
-    access_level = models.CharField(
+    role = models.CharField(
         max_length=20,
-        choices=CompanyMember.AccessLevel.choices,
-        default=CompanyMember.AccessLevel.MEMBER,
+        choices=CompanyMember.Role.choices,
+        default=CompanyMember.Role.MEMBER,
     )
     permissions = models.ManyToManyField(Permission, related_name="invite_permission")
     is_active = models.BooleanField(default=True)
@@ -475,7 +475,7 @@ class CompanyMemberInvite(BaseModel):
         return f"{self.company.name}-{self.email}-{"Accepted" if self.accepted else "Pending"}"
 
     def clean(self):
-        if self.access_level == CompanyMember.AccessLevel.OWNER:
+        if self.role == CompanyMember.Role.OWNER:
             raise ValidationError("Cannot create an owner invite")
         return super().clean()
 
