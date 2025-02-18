@@ -296,6 +296,8 @@ REST_FRAMEWORK = {
 ######################################################################
 # Allauth & Simple JWT
 ######################################################################
+SIGNUP_ALLOWED = os.environ.get("SIGNUP_ALLOWED", "True") == "True"
+
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
