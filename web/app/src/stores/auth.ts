@@ -35,6 +35,7 @@ export const URLs = {
   VERIFY_EMAIL: `${BASE_PREFIX}/auth/email/verify`,
   PROVIDERS: `${BASE_PREFIX}/account/providers`,
   EMAIL: `${BASE_PREFIX}/account/email`,
+  CHECK_EMAIL: `${BASE_PREFIX}/auth/email/check`,
   CHANGE_PASSWORD: `${BASE_PREFIX}/account/password/change`,
 
   // Switch company
@@ -126,7 +127,7 @@ export const useAuthStore = defineStore(
         protected: true,
       })
 
-      _roles.value = [...(res?.roles || []), ...(res?.access_level ? [res.access_level] : [])]
+      _roles.value = [...(res?.roles || []), ...(res?.role ? [res.role] : [])]
       _permissions.value = res?.permissions || {}
 
       return res
@@ -231,6 +232,10 @@ export const useAuthStore = defineStore(
 
     const resetPassword = async (data: Record<string, any>) => {
       return await _request(URLs.RESET_PASSWORD, { method: 'POST', body: data })
+    }
+
+    const checkEmail = async (email: string) => {
+      return await _request(URLs.CHECK_EMAIL, { method: 'POST', body: { email } })
     }
 
     const verifyEmail = async (key: string) => {
@@ -379,6 +384,7 @@ export const useAuthStore = defineStore(
       requestPasswordReset,
       resetPassword,
       verifyEmail,
+      checkEmail,
       changePassword,
       providerSignup,
       redirectToProvider,
