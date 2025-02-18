@@ -285,7 +285,7 @@ class ChartOfAccountsView(APIView):
     def get_queryset(self):
         return Account.objects.none()
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         qs = (
             Account.objects.filter(company=request.company)
             .annotate(
