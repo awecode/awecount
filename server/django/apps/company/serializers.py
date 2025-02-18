@@ -22,7 +22,9 @@ class CompanyCreateSerializer(serializers.ModelSerializer):
             "country",
             "country_iso",
             "currency",
+            "slug",
         ]
+        read_only_fields = ["slug"]
 
 
 class CompanySerializer(serializers.ModelSerializer):
