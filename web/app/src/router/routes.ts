@@ -1379,6 +1379,11 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/onboarding',
+    name: 'onboarding',
+    component: () => import('pages/onboarding.vue'),
+  },
+  {
     path: '/:company',
     name: 'company',
     component: () => import('layouts/MainLayout.vue'),
