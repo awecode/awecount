@@ -211,6 +211,7 @@ class Company(BaseModel):
     state = models.CharField(max_length=255, blank=True, null=True)
     country = models.CharField(max_length=255, blank=True, null=True)
     country_iso = models.CharField(max_length=2, blank=True, null=True)
+    currency = models.CharField(max_length=3, blank=True, null=True)
     postal_code = models.CharField(max_length=6, blank=True, null=True)
     phone = models.CharField(max_length=18, blank=True, null=True)
     alternate_phone = models.CharField(max_length=18, blank=True, null=True)
