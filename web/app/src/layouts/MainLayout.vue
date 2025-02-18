@@ -3,15 +3,19 @@ import type { EssentialLinkProps } from 'components/EssentialLink.vue'
 
 import { $api } from 'src/composables/api'
 import { useBreadcrumbItems } from 'src/composables/breadcrumb.js'
+
 import { useAuthStore } from 'src/stores/auth'
+import { useLoginStore } from 'src/stores/login-info'
+
 import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { useLoginStore } from 'src/stores/login-info'
 
 const route = useRoute()
 const router = useRouter()
 
 const miniState = ref(false)
+const logoutDialogOpen = ref(false)
+
 const store = useLoginStore()
 
 const companies = ref([])
@@ -243,6 +247,11 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Stock Trial Balance',
         icon: 'mdi-shuffle',
         link: `/${activeCompany.value}/reports/stock-trial-balance`,
+      },
+      {
+        title: 'Chart of Accounts',
+        icon: 'mdi-chart-gantt',
+        link: `/${activeCompany.value}/reports/chart-of-accounts`,
       },
       {
         title: 'Income Statement',
@@ -515,7 +524,7 @@ const breadcrumbs = useBreadcrumbItems()
 
                 <q-separator />
 
-                <q-item v-close-popup clickable @click="logoutDiologueOpen = true">
+                <q-item v-close-popup clickable @click="logoutDialogOpen = true">
                   <q-item-section avatar>
                     <q-icon name="logout" />
                   </q-item-section>
@@ -523,7 +532,7 @@ const breadcrumbs = useBreadcrumbItems()
                 </q-item>
               </q-list>
             </q-btn-dropdown>
-            <q-dialog v-model="logoutDiologueOpen">
+            <q-dialog v-model="logoutDialogOpen">
               <q-card style="min-width: min(40vw, 450px)">
                 <div style="margin: 20px 30px 10px">
                   <div class="text-h6 text-grey-9">
@@ -535,7 +544,7 @@ const breadcrumbs = useBreadcrumbItems()
                         flat
                         class="text-grey-8"
                         label="Cancel"
-                        @click="logoutDiologueOpen = false"
+                        @click="logoutDialogOpen = false"
                       />
                       <q-btn
                         flat
@@ -593,7 +602,7 @@ const breadcrumbs = useBreadcrumbItems()
               </q-item>
             </template>
 
-            <template v-if="hasAnyRole(['superuser', 'admin'])">
+            <template v-if="hasAnyRole(['owner', 'admin'])">
               <q-separator />
 
               <q-item v-close-popup clickable @click="router.push('/settings/company')">
@@ -609,14 +618,13 @@ const breadcrumbs = useBreadcrumbItems()
                 </q-item-section>
                 <q-item-section>Invite colleague or accountant</q-item-section>
               </q-item>
-
-              <q-item v-close-popup clickable @click="router.push('/company/create/')">
-                <q-item-section avatar>
-                  <q-icon name="add" />
-                </q-item-section>
-                <q-item-section>Add company</q-item-section>
-              </q-item>
             </template>
+            <q-item v-close-popup clickable @click="router.push('/company/create/')">
+              <q-item-section avatar>
+                <q-icon name="add" />
+              </q-item-section>
+              <q-item-section>Add company</q-item-section>
+            </q-item>
           </q-list>
         </q-btn-dropdown>
 
