@@ -8,7 +8,7 @@ const emit = defineEmits<{
 }>()
 
 const $q = useQuasar()
-const { signup, resendVerificationEmail } = useAuthStore()
+const { signup, resendVerificationEmail, checkEmail } = useAuthStore()
 
 const showPasswordStatus = ref(false)
 const loading = ref(false)
@@ -59,6 +59,11 @@ const handleSignupError = (error: any) => {
 const onSignupSubmit = async () => {
   try {
     loading.value = true
+    const { data } = await checkEmail(state.email)
+    if (data.existing) {
+      errors.value.email = 'User already exists'
+      return
+    }
     const res = await signup(state)
     showVerificationModal.value = true
     emit('signedUp', res)
@@ -171,7 +176,15 @@ const handleResendVerification = async () => {
 
         <q-card-actions align="right" class="text-primary">
           <q-btn flat label="Resend Email" @click="handleResendVerification" />
-          <q-btn v-close-popup flat label="OK" />
+          <q-btn
+            v-close-popup
+            flat
+            label="OK"
+            @click="() => {
+              showVerificationModal = false
+              $router.push('/login')
+            }"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>

@@ -35,6 +35,16 @@ const handleLoginError = (error: any) => {
     }
   }
 
+  if (errorResponse.status === 409) {
+    $q.notify({
+      position: 'top-right',
+      message: 'You are already logged in',
+      caption: 'Please log out to continue',
+      color: 'warning',
+      icon: 'fa-solid fa-circle-exclamation',
+    })
+  }
+
   if (errorResponse.status === 400) {
     const firstError = errorResponse.errors?.[0]
     if (firstError?.code === 'email_password_mismatch') {
