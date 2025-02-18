@@ -11,21 +11,32 @@ const { verifyEmail } = useAuthStore()
 const loading = ref(true)
 const error = ref(null)
 
+const handleSuccess = () => {
+  $q.notify({
+    position: 'top-right',
+    message: 'Email Verified Successfully',
+    caption: 'You can now log in',
+    color: 'positive',
+    icon: 'fa-solid fa-check-circle',
+  })
+
+  router.push('/login')
+}
+
 onMounted(async () => {
   try {
     const token = route.params.token as string
     await verifyEmail(token)
-
-    $q.notify({
-      position: 'top-right',
-      message: 'Email Verified Successfully',
-      caption: 'You can now log in',
-      color: 'positive',
-      icon: 'fa-solid fa-check-circle',
-    })
-
-    router.push('/login')
+    handleSuccess()
   } catch (err: any) {
+    if (err.data?.status === 401 && err.data?.meta?.is_authenticated === false) {
+      handleSuccess()
+      return
+    } else if (err.data?.status === 400 && err.data?.errors?.find((e: any) => e.code === 'invalid_or_expired_key')) {
+      error.value = 'Verification link has expired'
+      return
+    }
+
     error.value = err.message || 'Verification failed'
 
     $q.notify({
