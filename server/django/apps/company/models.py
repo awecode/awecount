@@ -451,8 +451,6 @@ class CompanyMemberInvite(BaseModel):
     )
     email = models.CharField(max_length=255)
     accepted = models.BooleanField(default=False)
-    token = models.CharField(max_length=255)
-    message = models.TextField(null=True)
     responded_at = models.DateTimeField(null=True)
     role = models.CharField(
         max_length=20,
@@ -482,3 +480,6 @@ class CompanyMemberInvite(BaseModel):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+
+    def get_token(self):
+        return urlsafe_base64_encode(force_bytes(json.dumps({"id": self.id, "email": self.email, "company_slug": self.company.slug})))
