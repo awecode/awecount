@@ -9,7 +9,7 @@ from allauth.socialaccount.providers.google.views import (
 
 from django.conf import settings
 
-from apps.authentication.utils.redirection_path import get_redirection_path
+from apps.authentication.helpers.redirection_path import get_redirection_path
 from apps.users.models import User
 
 
