@@ -207,11 +207,22 @@ const isSettingUp = ref(false)
 const completeOnboarding = async () => {
   loading.value = true
 
-  // Clear storage
-  sessionStorage.removeItem('onboarding-state')
-  sessionStorage.removeItem('onboarding-step')
+  try {
+    await $api('/api/me/onboarded/', { method: 'PATCH', body: { is_onboarded: true } })
 
-  await switchCompany(companySlug.value)
+    // Clear storage
+    sessionStorage.removeItem('onboarding-state')
+    sessionStorage.removeItem('onboarding-step')
+
+    await switchCompany(companySlug.value)
+  } catch (err: any) {
+    $q.notify({
+      type: 'negative',
+      message: err.response?.data?.message || 'Failed to complete onboarding. Please try again.',
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
 const createCompany = async () => {

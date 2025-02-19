@@ -27,7 +27,7 @@ urlpatterns += [
     path("", include("apps.product.urls")),
     path("", include("apps.report.urls")),
     path("", include("apps.tax.urls")),
-    # path("", include("apps.user.urls")),
+    path("", include("apps.users.urls")),
     path("", include("apps.voucher.urls")),
 ]
 
