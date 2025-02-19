@@ -1384,6 +1384,17 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/onboarding.vue'),
   },
   {
+    path: '/company/create',
+    name: 'company-create',
+    component: () => import('pages/company/create.vue'),
+    meta: {
+      breadcrumbs: ['Create Company'],
+      auth: {
+        protected: true,
+      },
+    },
+  },
+  {
     path: '/:company',
     name: 'company',
     component: () => import('layouts/MainLayout.vue'),
