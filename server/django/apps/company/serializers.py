@@ -21,7 +21,7 @@ class CompanyCreateSerializer(serializers.ModelSerializer):
             "tax_registration_number",
             "country",
             "country_iso",
-            "currency",
+            "currency_code",
             "slug",
         ]
         read_only_fields = ["slug"]

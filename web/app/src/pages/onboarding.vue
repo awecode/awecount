@@ -235,7 +235,7 @@ const createCompany = async () => {
       company_type: state.industry,
       country: countries.find(c => c.value === state.country)?.label,
       country_iso: state.country,
-      currency: state.currency,
+      currency_code: state.currency,
       tax_registration_number: state.taxRegistrationNumber,
     }
 
