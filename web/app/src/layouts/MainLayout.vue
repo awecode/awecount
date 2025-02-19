@@ -6,6 +6,7 @@ import { useBreadcrumbItems } from 'src/composables/breadcrumb.js'
 
 import { useAuthStore } from 'src/stores/auth'
 import { useLoginStore } from 'src/stores/login-info'
+import { getGravatarUrl } from 'src/utils/gravatar'
 
 import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
@@ -21,7 +22,7 @@ const store = useLoginStore()
 const companies = ref([])
 const activeCompany = computed(() => route.params.company as string)
 
-const { hasPermission, logout, hasAnyRole, switchCompany } = useAuthStore()
+const { hasPermission, logout, hasAnyRole, switchCompany, user } = useAuthStore()
 
 const fetchCompanies = async () => {
   try {
@@ -510,7 +511,7 @@ const breadcrumbs = useBreadcrumbItems()
             <q-btn-dropdown flat>
               <template #label>
                 <q-avatar size="32px">
-                  <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
+                  <img :src="getGravatarUrl(user?.email ?? '')" />
                 </q-avatar>
               </template>
 
@@ -586,12 +587,9 @@ const breadcrumbs = useBreadcrumbItems()
                 @click="switchCompany(company.slug)"
               >
                 <q-item-section avatar>
-                  <q-avatar size="28px">
-                    <img v-if="company.logo" :src="company.logo" />
-                    <!-- <div v-else class="text-h6 text-white bg-primary flex items-center justify-center" style="width: 28px; height: 28px">
-                      {{ company.name.split(' ').map((w) => w.charAt(0)).slice(0, 2).join('') }}
-                    </div> -->
-                  </q-avatar>
+                  <div class="text-h6 text-white flex items-center justify-center bg-primary" style="width: 28px; height: 28px; border-radius: 4px; line-height: 0;">
+                    {{ company.name.charAt(0).toUpperCase() }}
+                  </div>
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>{{ company.name }}</q-item-label>
