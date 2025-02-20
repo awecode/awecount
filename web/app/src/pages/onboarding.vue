@@ -64,16 +64,6 @@ const countries = [
     value: 'NP',
     defaults: {
       currency: 'NPR',
-      tax: {
-        enabled: true,
-        registrationNumber: '',
-        schemes: [{
-          type: 'vat',
-          rate: 13,
-          name: 'VAT',
-          description: 'Value Added Tax',
-        }],
-      },
     },
   },
   {
@@ -81,16 +71,6 @@ const countries = [
     value: 'IN',
     defaults: {
       currency: 'INR',
-      tax: {
-        enabled: true,
-        registrationNumber: '',
-        schemes: [{
-          type: 'gst',
-          rate: 18,
-          name: 'GST',
-          description: 'Goods and Services Tax',
-        }],
-      },
     },
   },
   {
@@ -98,16 +78,6 @@ const countries = [
     value: 'US',
     defaults: {
       currency: 'USD',
-      tax: {
-        enabled: true,
-        registrationNumber: '',
-        schemes: [{
-          type: 'sales_tax',
-          rate: 8.875,
-          name: 'Sales Tax',
-          description: 'State and Local Sales Tax',
-        }],
-      },
     },
   },
   // Add more countries as needed
@@ -123,7 +93,6 @@ const currencies = [
 
 const roles = [
   { label: 'Admin', value: 'admin' },
-  // { label: 'Accountant', value: 'accountant' },
   { label: 'Member', value: 'member' },
 ]
 
