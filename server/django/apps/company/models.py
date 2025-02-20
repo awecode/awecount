@@ -282,6 +282,7 @@ class Company(BaseModel):
 
 
 class CompanyBaseModel(BaseModel):
+    # TODO: uncomment this for DRY
     # company = models.ForeignKey(
     #     Company,
     #     models.CASCADE,
