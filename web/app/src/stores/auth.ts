@@ -39,7 +39,7 @@ export const URLs = {
   CHANGE_PASSWORD: `${BASE_PREFIX}/account/password/change`,
 
   // Switch company
-  SWITCH_COMPANY: `/api/me/switch-company/`,
+  SWITCH_COMPANY: `/api/user/me/switch-company/`,
 
   // Auth: Social
   PROVIDER_SIGNUP: `${BASE_PREFIX}/auth/provider/signup`,

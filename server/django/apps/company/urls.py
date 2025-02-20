@@ -72,7 +72,7 @@ urlpatterns = [
     # User-related URLs
     # TODO: api/me -> api/user/me
     re_path(
-        r"^api/me/invitations/$",
+        r"^api/user/me/invitations/$",
         UserCompanyInvitationsViewSet.as_view(
             {
                 "get": "list",
@@ -82,12 +82,12 @@ urlpatterns = [
         name="user-company-invitations",
     ),
     re_path(
-        r"^api/me/companies/$",
+        r"^api/user/me/companies/$",
         UserCompaniesEndpoint.as_view(),
         name="user-companies",
     ),
     re_path(
-        r"^api/me/switch-company/$",
+        r"^api/user/me/switch-company/$",
         UserCompanySwitchEndpoint.as_view(),
         name="switch-company",
     ),

@@ -26,7 +26,7 @@ const { hasPermission, logout, hasAnyRole, switchCompany, user } = useAuthStore(
 
 const fetchCompanies = async () => {
   try {
-    companies.value = await $api('/api/me/companies/', { method: 'GET' })
+    companies.value = await $api('/api/user/me/companies/', { method: 'GET' })
   } catch (error) {
     console.error('Error fetching companies:', error)
   }

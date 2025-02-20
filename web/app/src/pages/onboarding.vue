@@ -208,7 +208,7 @@ const completeOnboarding = async () => {
   loading.value = true
 
   try {
-    await $api('/api/me/onboarded/', { method: 'PATCH', body: { is_onboarded: true } })
+    await $api('/api/user/me/onboarded/', { method: 'PATCH', body: { is_onboarded: true } })
 
     // Clear storage
     sessionStorage.removeItem('onboarding-state')
