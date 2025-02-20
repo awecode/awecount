@@ -19,7 +19,7 @@ if settings.DEBUG:
 urlpatterns += [
     path(admin_path, admin.site.urls),
     path("", include("apps.aggregator.urls")),
-    # path("", include("apps.api.urls")),
+    path("", include("apps.api.urls")),
     path("", include("apps.authentication.urls")),
     path("", include("apps.bank.urls")),
     path("", include("apps.company.urls")),
