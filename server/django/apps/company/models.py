@@ -481,6 +481,12 @@ class CompanyMemberInvite(BaseModel):
     permissions = models.ManyToManyField(Permission, related_name="invite_permission")
     is_active = models.BooleanField(default=True)
 
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+
     class Meta:
         unique_together = ["email", "company"]
         verbose_name = "Company Member Invite"
