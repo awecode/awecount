@@ -10,6 +10,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.db import models
+from django.dispatch import receiver
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
@@ -521,3 +522,11 @@ class CompanyMemberInvite(BaseModel):
                 )
             )
         )
+
+
+@receiver(company_created)
+def create_default_permission(sender, company, **kwargs):
+    Permission.objects.get_or_create(
+        company=company,
+        name="Default",
+    )
