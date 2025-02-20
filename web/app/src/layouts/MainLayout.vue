@@ -390,8 +390,8 @@ const essentialLinks: EssentialLinkProps[] = [
     ],
   },
   {
-    title: 'Settings',
-    icon: 'settings',
+    title: 'Miscellaneous',
+    icon: 'mdi-dots-horizontal',
     children: [
       {
         title: 'Company Settings',
@@ -422,23 +422,6 @@ const essentialLinks: EssentialLinkProps[] = [
         icon: 'mdi-cash',
         link: `/${activeCompany.value}/settings/payment-modes`,
         hide: !hasPermission('paymentmode'),
-      },
-      {
-        title: 'Sales Settings',
-        icon: 'mdi-point-of-sale',
-        link: `/${activeCompany.value}/settings/sales`,
-        hide: !hasPermission('salessetting'),
-      },
-      {
-        title: 'Purchase Settings',
-        icon: 'mdi-shopping',
-        link: `/${activeCompany.value}/settings/purchase`,
-        hide: !hasPermission('purchasesetting'),
-      },
-      {
-        title: 'Inventory Settings',
-        icon: 'mdi-calendar-multiple-check',
-        link: `/${activeCompany.value}/settings/inventory`,
       },
       {
         title: 'Item Merge',
@@ -603,18 +586,11 @@ const breadcrumbs = useBreadcrumbItems()
             <template v-if="hasAnyRole(['owner', 'admin'])">
               <q-separator />
 
-              <q-item v-close-popup clickable @click="router.push('/settings/company')">
+              <q-item v-close-popup clickable :to="`/${activeCompany}/settings`">
                 <q-item-section avatar>
                   <q-icon name="settings" />
                 </q-item-section>
                 <q-item-section>Company settings</q-item-section>
-              </q-item>
-
-              <q-item v-close-popup clickable @click="router.push('/settings/invite')">
-                <q-item-section avatar>
-                  <q-icon name="person_add" />
-                </q-item-section>
-                <q-item-section>Invite colleague or accountant</q-item-section>
               </q-item>
             </template>
             <q-item v-close-popup clickable @click="router.push('/company/create/')">
