@@ -26,13 +26,13 @@ class AllAuthHeadlessAdapter(DefaultHeadlessAdapter):
     def serialize_user(self, user: User):
         ret = super().serialize_user(user)
 
-        ret["avatar"] = (
-            user_field(user, "avatar").url if user_field(user, "avatar") else None
-        )
-
-        ret["redirect"] = get_redirection_path(user)
-
-        return ret
+        return {
+            "is_onboarded": getattr(user, "profile", None)
+            and getattr(user.profile, "is_onboarded", False),
+            "redirect": get_redirection_path(user),
+            "full_name": user_field(user, "full_name"),
+            "email": ret["email"],
+        }
 
 
 class GoogleOAuth2Adapter(AllauthGoogleOAuth2Adapter):
