@@ -132,6 +132,9 @@ class FiscalYear(TimeAuditModel):
     start_date = models.DateField()
     end_date = models.DateField()
 
+    class PermissionsMeta:
+        exclude = True
+
     def __str__(self):
         return self.name
 
