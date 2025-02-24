@@ -517,7 +517,7 @@ class CompanyMemberInvite(BaseModel):
             force_bytes(
                 json.dumps(
                     {
-                        "id": self.id,
+                        "id": str(self.id),
                         "email": self.email,
                         "company_slug": self.company.slug,
                     }
