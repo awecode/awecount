@@ -534,7 +534,7 @@ const breadcrumbs = useBreadcrumbItems()
                         flat
                         class="text-red"
                         label="Yes"
-                        @click="() => logout()"
+                        @click="() => logout({ redirectTo: '/login' })"
                       />
                     </div>
                   </div>
