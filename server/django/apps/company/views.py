@@ -386,7 +386,7 @@ class UserCompanyInvitationsEndpoint(views.APIView):
                     role=invitation.role,
                 )
 
-                member.permissions.set(invitation.permissions)
+                member.permissions.set(invitation.permissions.all())
 
             invitation.is_active = False
             invitation.accepted = response.get("response") == "accept"
@@ -508,7 +508,7 @@ class UserCompanyJoinEndpoint(views.APIView):
                 role=invitation.role,
             )
 
-            member.permissions.set(invitation.permissions)
+            member.permissions.set(invitation.permissions.all())
 
         return Response(
             {"message": f"Company invitation {accept_or_reject}ed"},
