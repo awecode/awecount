@@ -9,15 +9,17 @@ urlpatterns = [
         name="update-user-onboarded",
     ),
     re_path(
-        r"^api/me/$",
-        UserViewset.as_view({
-            "get": "retrieve",
-            "patch": "update",
-        }),
+        r"^api/user/me/$",
+        UserViewset.as_view(
+            {
+                "get": "retrieve",
+                "patch": "update",
+            }
+        ),
         name="user",
     ),
     re_path(
-        r"^api/me/deactivate/$",
+        r"^api/user/me/deactivate/$",
         UserViewset.as_view({"patch": "deactivate"}),
         name="deactivate-user",
     ),
