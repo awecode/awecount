@@ -122,7 +122,7 @@ export const useAuthStore = defineStore(
     }
 
     const _fetchPermissions = async (companySlug: string) => {
-      const res = await $api(`/api/company/${companySlug}/permissions/`, {
+      const res = await $api(`/api/company/${companySlug}/permissions/mine/`, {
         method: 'GET',
         protected: true,
       })
