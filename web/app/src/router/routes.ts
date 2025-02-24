@@ -1365,13 +1365,24 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/invitations/:token?',
+    path: '/invitations',
     name: 'invitations',
     component: () => import('pages/profile/invitations.vue'),
     meta: {
       breadcrumbs: ['Invitations'],
       auth: {
         required: true,
+      },
+    },
+  },
+  {
+    path: '/invitations/:token',
+    name: 'invitations-token',
+    component: () => import('pages/profile/invitations.vue'),
+    meta: {
+      breadcrumbs: ['Invitations'],
+      auth: {
+        required: false,
       },
     },
   },

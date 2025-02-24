@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
 import { $api } from 'src/composables/api'
-import { useRouter } from 'vue-router'
+import { useAuthStore } from 'src/stores/auth'
+import { computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 const $q = useQuasar()
 const router = useRouter()
+const route = useRoute()
+const token = route.params.token as string | undefined
 
 // Add invitation state
 interface Invitation {
@@ -15,10 +19,29 @@ interface Invitation {
   }
   role: string
   created_at: string
+  selected?: boolean
 }
 
 const invitations = ref<Invitation[]>([])
 const loading = ref(false)
+
+// Add auth store
+const { isAuthenticated } = useAuthStore()
+
+// Add token validation state
+const tokenData = ref<{
+  company: {
+    name: string
+    slug: string
+  }
+  role: string
+  email: string
+} | null>(null)
+
+const tokenValidationError = ref<string | null>(null)
+const tokenValidating = ref(false)
+
+const selectedInvitations = ref<string[]>([])
 
 // Load invitations
 const loadInvitations = async () => {
@@ -37,41 +60,127 @@ const loadInvitations = async () => {
   }
 }
 
-// Handle invitation response
-const respondToInvitation = async (accept: boolean) => {
-  if (!invitations.value.length) return
+// Validate token if present
+const validateToken = async () => {
+  if (!token) return
+
+  tokenValidating.value = true
+  try {
+    const response = await $api('/api/user/me/invitations/join/', {
+      headers: {
+        'X-Invitation-Token': token
+      }
+    })
+    tokenData.value = response
+  } catch (err: any) {
+    console.error('Failed to validate invitation:', err)
+    tokenValidationError.value = err.response?.data?.error || 'Invalid or expired invitation link'
+  } finally {
+    tokenValidating.value = false
+  }
+}
+
+// Handle invitation responses
+const handleInvitation = async (accept: boolean) => {
+  try {
+    if (token) {
+      // Handle token-based invitation
+      if (accept && !isAuthenticated) {
+        // Redirect to login while preserving invitation token
+        router.push(`/login?next=/invitations/${token}`)
+        return
+      }
+
+      await $api('/api/user/me/invitations/join/', {
+        method: 'POST',
+        body: {
+          token,
+          response: accept ? 'accept' : 'reject'
+        }
+      })
+
+      if (accept) {
+        $q.notify({
+          type: 'positive',
+          message: 'Invitation accepted successfully',
+        })
+        // Redirect to the company
+        router.push(`/${tokenData.value?.company.slug}/dashboard`)
+      } else {
+        $q.notify({
+          type: 'info',
+          message: 'Invitation declined',
+        })
+        router.push(isAuthenticated ? '/profile' : '/login')
+      }
+    } else {
+      // Handle bulk invitations for authenticated user
+      await respondToInvitations(accept)
+    }
+  } catch (err: any) {
+    console.error('Failed to handle invitation:', err)
+    $q.notify({
+      type: 'negative',
+      message: err.response?.data?.error || `Failed to ${accept ? 'accept' : 'decline'} invitation`,
+    })
+  }
+}
+
+// Handle bulk invitation responses
+const respondToInvitations = async (accept: boolean) => {
+  // Get selected invitations or all if none selected
+  const invitesToRespond = selectedInvitations.value.length > 0
+    ? invitations.value.filter(inv => selectedInvitations.value.includes(inv.id))
+    : invitations.value
+
+  if (!invitesToRespond.length) {
+    $q.notify({
+      type: 'warning',
+      message: 'Please select at least one invitation'
+    })
+    return
+  }
 
   try {
     await $api('/api/user/me/invitations/', {
       method: 'POST',
       body: {
-        invitations: invitations.value.map(inv => inv.id),
-      },
+        responses: invitesToRespond.map(invite => ({
+          id: invite.id,
+          response: accept ? 'accept' : 'reject'
+        }))
+      }
     })
 
     $q.notify({
       type: 'positive',
-      message: `Invitation ${accept ? 'accepted' : 'declined'} successfully`,
+      message: accept ? 'Invitations accepted successfully' : 'Invitations declined'
     })
 
     if (accept) {
-      // Redirect to the first company
-      const company = invitations.value[0].company.slug
-      router.push(`/${company}/dashboard`)
+      // Redirect to the first selected company dashboard
+      router.push(`/${invitesToRespond[0].company.slug}/dashboard`)
     } else {
       router.push('/profile')
     }
-  } catch (err) {
-    console.error('Failed to respond to invitation:', err)
+  } catch (err: any) {
+    console.error('Failed to respond to invitations:', err)
     $q.notify({
       type: 'negative',
-      message: 'Failed to respond to invitation',
+      message: err.response?.data?.error || 'Failed to process invitations'
     })
   }
 }
 
+// Update the template section for token-based invitation
+const showTokenInvitation = computed(() => token && tokenData.value && !tokenValidationError.value)
+
 onMounted(() => {
-  loadInvitations()
+  if (token) {
+    validateToken()
+  } else {
+    loadInvitations()
+  }
 })
 </script>
 
@@ -83,34 +192,142 @@ onMounted(() => {
         <q-img src="/logo.svg" width="120px" />
       </div>
 
-      <!-- Content -->
-      <div v-if="invitations.length > 0">
+      <!-- Token Validation Loading -->
+      <div v-if="token && tokenValidating" class="text-center">
+        <q-spinner color="primary" size="2em" />
+        <div class="text-subtitle1 q-mt-sm">
+          Validating invitation...
+        </div>
+      </div>
+
+      <!-- Token Validation Error -->
+      <div v-else-if="token && tokenValidationError" class="text-center">
+        <div class="q-mb-xl">
+          <q-icon class="text-negative" name="error_outline" size="64px" />
+        </div>
+        <div class="text-h5 q-mb-md text-negative">
+          Invalid Invitation
+        </div>
+        <div class="text-grey-7 q-mb-xl">
+          {{ tokenValidationError }}
+        </div>
+        <q-btn
+          flat
+          color="primary"
+          :label="isAuthenticated ? 'Go to Profile' : 'Go to Login'"
+          :to="isAuthenticated ? '/profile' : '/login'"
+        />
+      </div>
+
+      <!-- Token-based Invitation -->
+      <div v-else-if="showTokenInvitation" class="text-center">
+        <div class="text-h5 q-mb-xl">
+          You've been invited to join
+        </div>
+
+        <div class="workspace-item q-pa-lg q-mb-xl">
+          <div class="row items-center justify-center">
+            <div class="company-avatar q-mr-md">
+              {{ tokenData.company.name.charAt(0).toUpperCase() }}
+            </div>
+            <div class="text-center">
+              <div class="text-h6">
+                {{ tokenData.company.name }}
+              </div>
+              <div class="text-caption text-grey-7">
+                as {{ tokenData.role }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row justify-center q-gutter-md">
+          <q-btn
+            outline
+            color="primary"
+            label="Decline"
+            @click="handleInvitation(false)"
+          />
+          <q-btn
+            unelevated
+            color="primary"
+            label="Accept Invitation"
+            @click="handleInvitation(true)"
+          />
+        </div>
+      </div>
+
+      <!-- Regular Invitations List -->
+      <div v-else-if="invitations.length > 0">
         <div class="text-h6 text-center q-mb-xl">
           We see that someone has invited you to
         </div>
 
         <div class="text-h5 text-center q-mb-xl">
-          Join a workspace
+          Join a company
         </div>
 
         <div class="workspace-list q-mb-xl">
-          <div v-for="invite in invitations" :key="invite.id" class="workspace-item q-pa-md q-mb-sm">
+          <div
+            v-for="invite in invitations"
+            :key="invite.id"
+            class="workspace-item q-pa-md q-mb-sm cursor-pointer"
+            :class="{ 'selected': selectedInvitations.includes(invite.id) }"
+            @click="
+              selectedInvitations.includes(invite.id)
+                ? selectedInvitations = selectedInvitations.filter(id => id !== invite.id)
+                : selectedInvitations.push(invite.id)
+            "
+          >
             <div class="row items-center">
+              <!-- Selection Checkbox -->
+              <div class="col-auto">
+                <q-checkbox
+                  v-model="selectedInvitations"
+                  :val="invite.id"
+                  :label="null"
+                  @click.stop
+                />
+              </div>
+
               <!-- Company Initial -->
-              <div class="company-avatar">
+              <div class="company-avatar q-ml-md">
                 {{ invite.company.name.charAt(0).toUpperCase() }}
               </div>
               <div class="col q-ml-md">
-                <div class="text-subtitle1">{{ invite.company.name }}</div>
-                <div class="text-caption text-grey-7">{{ invite.role }}</div>
+                <div class="text-subtitle1">
+                  {{ invite.company.name }}
+                </div>
+                <div class="text-caption text-grey-7">
+                  {{ invite.role }}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <div class="row justify-between">
-          <q-btn flat color="primary" label="Go Home" @click="router.push('/profile')" />
-          <q-btn unelevated color="primary" label="Accept & Join" @click="respondToInvitation(true)" />
+          <q-btn
+            flat
+            color="primary"
+            label="Go Home"
+            @click="router.push('/profile')"
+          />
+          <div class="row q-gutter-sm">
+            <q-btn
+              outline
+              color="primary"
+              label="Decline Selected"
+              :disable="selectedInvitations.length === 0"
+              @click="respondToInvitations(false)"
+            />
+            <q-btn
+              unelevated
+              color="primary"
+              :label="selectedInvitations.length ? 'Accept Selected' : 'Accept All'"
+              @click="respondToInvitations(true)"
+            />
+          </div>
         </div>
       </div>
 
@@ -118,17 +335,26 @@ onMounted(() => {
         <div class="q-mb-xl">
           <q-icon class="text-grey-4" name="mail_outline" size="120px" />
         </div>
-        <div class="text-h5 q-mb-md">No pending invites</div>
+        <div class="text-h5 q-mb-md">
+          No pending invites
+        </div>
         <div class="text-grey-7 q-mb-xl">
           You can see here if someone invites you to a workspace.
         </div>
-        <q-btn flat color="primary" label="Back to home" @click="router.push('/profile')" />
+        <q-btn
+          flat
+          color="primary"
+          label="Back to home"
+          @click="router.push('/profile')"
+        />
       </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="text-center">
         <q-spinner color="primary" size="2em" />
-        <div class="text-subtitle1 q-mt-sm">Loading invitations...</div>
+        <div class="text-subtitle1 q-mt-sm">
+          Loading invitations...
+        </div>
       </div>
     </div>
   </div>
@@ -170,6 +396,21 @@ onMounted(() => {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+.workspace-item:hover {
+  border-color: var(--q-primary);
+  background: #f3f4f6;
+}
+
+.workspace-item.selected {
+  border-color: var(--q-primary);
+  background: #EEF2FF;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 .company-avatar {
