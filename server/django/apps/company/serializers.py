@@ -87,6 +87,7 @@ class CompanyMemberSerializer(serializers.ModelSerializer):
 
 class CompanyMemberInviteSerializer(serializers.ModelSerializer):
     created_by = UserLiteSerializer(read_only=True)
+    company = CompanyLiteSerializer(read_only=True)
     permissions = CompanyPermissionLiteSerializer(read_only=True, many=True)
 
     class Meta:
