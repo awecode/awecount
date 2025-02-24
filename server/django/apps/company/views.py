@@ -352,13 +352,16 @@ class UserCompanyInvitationsEndpoint(views.APIView):
     model = CompanyMemberInvite
 
     def get(self, request):
+        qs = self.model.objects.filter(
+            email=request.user.email,
+            is_active=True,
+        ).select_related(
+            "company",
+            "created_by",
+        )
+
         return Response(
-            CompanyMemberInviteSerializer(
-                self.model.objects.filter(email=request.user.email).select_related(
-                    "company", "created_by"
-                ),
-                many=True,
-            ).data,
+            CompanyMemberInviteSerializer(qs, many=True).data,
             status=status.HTTP_200_OK,
         )
 
