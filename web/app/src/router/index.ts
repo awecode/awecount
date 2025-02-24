@@ -1,24 +1,22 @@
 import { defineRouter } from '#q-app/wrappers'
 
-import { createMemoryHistory, createRouter, createWebHistory } from 'vue-router'
-
-import routes from './routes'
-
 import { auth as authConfig } from 'src/config'
+
 import { useAuthStore } from 'stores/auth'
+
+import { createMemoryHistory, createRouter, createWebHistory } from 'vue-router'
+import routes from './routes'
 
 export default defineRouter(({ store }) => {
   const createHistory = import.meta.env.SSR ? createMemoryHistory : createWebHistory
 
   const { isAuthenticated, onboarded, hasAnyRole, hasAnyPermission, user, switchCompany } = useAuthStore(store)
 
-
   const Router = createRouter({
     routes,
     scrollBehavior: () => ({ left: 0, top: 0 }),
     history: createHistory(import.meta.env.VUE_ROUTER_BASE),
   })
-
 
   Router.beforeEach((to, from) => {
     if (to.name === undefined) return
@@ -34,7 +32,7 @@ export default defineRouter(({ store }) => {
 
     if (redirectIfLoggedIn && isAuthenticated) {
       // return { path: redirectIfLoggedIn } // TODO: how can we support dynamic redirectIfLoggedIn?
-      return switchCompany(user.redirect)
+      return { path: `${user.redirect}/dashboard` }
     }
 
     if (!authRequired) {
@@ -58,7 +56,7 @@ export default defineRouter(({ store }) => {
 
     if (onboarded && authConfig.onboarding.enabled && to.fullPath === authConfig.onboarding.route) {
       // FIXME: This is a hack to get the user to prevent them from accessing the onboarding route if they are already onboarded
-      return switchCompany(user.redirect)
+      return { path: `${user.redirect}/dashboard` }
     }
 
     if (routeRoles && hasAnyRole(routeRoles)) {
