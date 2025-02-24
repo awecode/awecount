@@ -19,6 +19,7 @@ from apps.company.constants import RESTRICTED_COMPANY_SLUGS
 from apps.company.signals import company_created
 from lib.models import BaseModel
 from lib.models.mixins import TimeAuditModel
+from lib.string import to_snake
 
 
 def get_default_permissions() -> Dict[str, Dict[str, bool]]:
@@ -37,7 +38,8 @@ def get_default_permissions() -> Dict[str, Dict[str, bool]]:
     ```python
     class UserModel(models.Model):
         class PermissionsMeta:
-            key = 'user' # Optional, defaults to model._meta.model_name.lower()
+            key = 'user' # Optional, defaults to to_snake(model.__name__)
+            exclude = True # Optional, defaults to False (exclude the model from the permissions)
             actions = ['read', 'create', 'update', 'delete', 'custom_action'] # Required
             # or, actions = {'read': True, 'create': True, ...}
             # or, actions = ['read', 'create', {'update': False}, ...]
@@ -58,23 +60,36 @@ def get_default_permissions() -> Dict[str, Dict[str, bool]]:
     }
 
     ret = {}
-    for model in apps.get_models():
+    app_models = apps.get_models()
+    filtered_models = [
+        model
+        for model in app_models
+        if model._meta.app_label
+        in ["api", "company", "ledger", "product", "tax", "voucher"]
+    ]
+
+    for model in filtered_models:
         # Get model key - either from PermissionsMeta or model name
-        key = model._meta.model_name.lower()
+        key = to_snake(model.__name__)
 
         # If model doesn't have PermissionsMeta, set default CRUD permissions
         if not hasattr(model, "PermissionsMeta"):
             ret[key] = DEFAULT_CRUD_ACTIONS.copy()
             continue
 
+        # If model is excluded, skip
+        if getattr(model.PermissionsMeta, "exclude", False):
+            continue
+
         # If has PermissionsMeta, get custom key if specified
         key = getattr(model.PermissionsMeta, "key", key)
 
-        # Validate key contains only alphabetical characters
-        if not re.match(r"^[a-z]+$", key):
+        # Validate key contains only alphabetical characters and underscores
+        if not re.match(r"^[a-z_]+$", key):
             raise ValueError(
                 f"PermissionsMeta key for {model.__name__} "
-                "can only contain lowercase alphabetical characters"
+                "can only contain lowercase alphabetical characters and underscores"
+                f"Got: {key}"
             )
 
         # If no actions defined, use default CRUD actions

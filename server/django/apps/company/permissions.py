@@ -3,6 +3,7 @@ from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 # Module imports
 from apps.company.models import CompanyMember
+from lib.string import to_snake
 
 
 class CompanyBasePermission(BasePermission):
@@ -124,7 +125,7 @@ class CompanyMemberPermission(BasePermission):
             "DELETE": "delete",
         }
 
-        model = view.model.__name__.lower()
+        model = to_snake(view.model.__name__)
         action = None
 
         # Get the action from the view.action and if it is not present in the
