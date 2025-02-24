@@ -8,7 +8,7 @@ from apps.company.views import (
     CompanyPermissionViewSet,
     CompanyViewset,
     UserCompaniesEndpoint,
-    UserCompanyInvitationsViewSet,
+    UserCompanyInvitationsEndpoint,
     UserCompanySwitchEndpoint,
 )
 
@@ -128,12 +128,7 @@ urlpatterns = [
     # TODO: api/me -> api/user/me
     re_path(
         r"^api/user/me/invitations/$",
-        UserCompanyInvitationsViewSet.as_view(
-            {
-                "get": "list",
-                "post": "respond",
-            }
-        ),
+        UserCompanyInvitationsEndpoint.as_view(),
         name="user-company-invitations",
     ),
     re_path(

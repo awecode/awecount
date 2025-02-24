@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_q.tasks import async_task
@@ -433,50 +432,19 @@ class CompanyJoinEndpoint(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class UserCompanyInvitationsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class UserCompanyInvitationsEndpoint(views.APIView):
     model = CompanyMemberInvite
-    serializer_class = CompanyMemberInviteSerializer
 
-    def get_queryset(self):
-        return (
-            self.model.objects.filter(email=self.request.user.email)
-            .select_related("company", "created_by")
-            .annotate(total_members=Count("company__company_member"))
+    def get(self, request):
+        return Response(
+            CompanyMemberInviteSerializer(
+                self.model.objects.filter(email=request.user.email).select_related(
+                    "company", "created_by"
+                ),
+                many=True,
+            ).data,
+            status=status.HTTP_200_OK,
         )
-
-    @action(detail=False, methods=["post"])
-    def respond(self, request, *args, **kwargs):
-        invitations = request.data.get("invitations", [])
-        company_invitations = CompanyMemberInvite.objects.filter(
-            pk__in=invitations,
-            email=request.user.email,
-        ).order_by("-created_at")
-
-        # If the user is already a member of company and was deactivated then activate the user
-        for invitation in company_invitations:
-            CompanyMember.objects.filter(
-                company_id=invitation.company_id,
-                member=request.user,
-            ).update(is_active=True, role=invitation.role)
-
-        # Bulk create the user for all the companys
-        CompanyMember.objects.bulk_create(
-            [
-                CompanyMember(
-                    company=invitation.company,
-                    member=request.user,
-                    role=invitation.role,
-                    created_by=request.user,
-                )
-                for invitation in company_invitations
-            ],
-            ignore_conflicts=True,
-        )
-
-        # Delete joined company invites
-        company_invitations.delete()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UserCompaniesEndpoint(views.APIView):
