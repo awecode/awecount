@@ -2,7 +2,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.utils.html import strip_tags
 
 from apps.company.models import Company, CompanyMemberInvite
 
@@ -23,11 +22,11 @@ def company_invitation(email, company_id, invitation_id, invitor):
     abs_url = str(settings.APP_URL) + relative_link
 
     # Subject of the email
-    subject = f"{user.first_name or user.display_name or user.email} has invited you to join them in {company.name} on Awecount"
+    subject = f"{user.full_name or user.email} has invited you to join them in {company.name} on Awecount"
 
     context = {
         "email": email,
-        "first_name": user.first_name or user.display_name or user.email,
+        "full_name": user.full_name or user.email,
         "company_name": company.name,
         "abs_url": abs_url,
     }
@@ -36,7 +35,9 @@ def company_invitation(email, company_id, invitation_id, invitor):
         "emails/invitations/company_invitation.html", context
     )
 
-    text_content = strip_tags(html_content)
+    text_content = render_to_string(
+        "emails/invitations/company_invitation.txt", context
+    )
 
     msg = EmailMultiAlternatives(
         subject=subject,

@@ -1,0 +1,13 @@
+Hi {{ full_name }},
+
+You've been invited to join {{ company_name }} on Awecount.
+
+Click or copy the following link to accept the invitation and join the company:
+
+{{ abs_url }}
+
+If you did not expect this invitation, you can safely ignore this email.
+
+This invitation was sent to {{ email }}
+
+© {% now "Y" %} Awecount. All rights reserved.
