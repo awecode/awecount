@@ -128,7 +128,9 @@ export const useAuthStore = defineStore(
       })
 
       _roles.value = [...(res?.roles || []), ...(res?.role ? [res.role] : [])]
-      _permissions.value = res?.permissions || {}
+      _permissions.value = Object.fromEntries(
+        Object.entries(res?.permissions || {}).map(([key, value]) => [key.replace(/_/g, ''), value])
+      ) as Record<string, Record<string, boolean>>
 
       return res
     }
@@ -298,7 +300,14 @@ export const useAuthStore = defineStore(
     }
 
     const changePassword = async (data: Record<string, any>) => {
-      return await _request(URLs.CHANGE_PASSWORD, { method: 'POST', body: data })
+      try {
+        return await _request(URLs.CHANGE_PASSWORD, { method: 'POST', body: data })
+      } catch (error) {
+        if (error.response?.status === 401) {
+          return error.response._data
+        }
+        throw error
+      }
     }
 
     // TODO: move this to a separate store/composable
