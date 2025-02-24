@@ -1,10 +1,13 @@
+import json
+
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.http import urlsafe_base64_decode
 from django_q.tasks import async_task
 from rest_framework import mixins, status, views, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
@@ -29,7 +32,6 @@ from apps.company.serializers import (
     CompanyPermissionSerializer,
     CompanySerializer,
 )
-from apps.users.models import User
 from awecount.libs.nepdate import ad2bs, bs, bs2ad
 
 
@@ -346,92 +348,6 @@ class CompanyInvitationViewset(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class CompanyJoinEndpoint(views.APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request, company_slug, pk):
-        company_invite = CompanyMemberInvite.objects.get(
-            pk=pk, company__slug=company_slug
-        )
-
-        email = request.data.get("email", "")
-
-        # Check the email
-        if email == "" or company_invite.email != email:
-            return Response(
-                {"error": "You do not have permission to join the company"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        # If already responded then return error
-        if company_invite.responded_at is None:
-            company_invite.accepted = request.data.get("accepted", False)
-            company_invite.responded_at = timezone.now()
-            company_invite.save()
-
-            if company_invite.accepted:
-                # Check if the user created account after invitation
-                user = User.objects.filter(email=email).first()
-
-                # If the user is present then create the company member
-                if user is not None:
-                    # Check if the user was already a member of company then activate the user
-                    company_member = CompanyMember.objects.filter(
-                        company=company_invite.company, member=user
-                    ).first()
-                    if company_member is not None:
-                        company_member.is_active = True
-                        company_member.role = company_invite.role
-                        company_member.save()
-                    else:
-                        # Create a Company
-                        _ = CompanyMember.objects.create(
-                            company=company_invite.company,
-                            member=user,
-                            role=company_invite.role,
-                        )
-
-                    # Set the user last_company_id to the accepted company
-                    user.last_company_id = company_invite.company.id
-                    user.save()
-
-                    # Delete the invitation
-                    company_invite.delete()
-
-                # # Send event
-                # company_invite_event.delay(
-                #     user=user.id if user is not None else None,
-                #     email=email,
-                #     user_agent=request.META.get("HTTP_USER_AGENT"),
-                #     ip=request.META.get("REMOTE_ADDR"),
-                #     event_name="MEMBER_ACCEPTED",
-                #     accepted_from="EMAIL",
-                # )
-
-                return Response(
-                    {"message": "Company Invitation Accepted"},
-                    status=status.HTTP_200_OK,
-                )
-
-            # Company invitation rejected
-            return Response(
-                {"message": "Company Invitation was not accepted"},
-                status=status.HTTP_200_OK,
-            )
-
-        return Response(
-            {"error": "You have already responded to the invitation request"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    def get(self, request, company_slug, pk):
-        company_invitation = CompanyMemberInvite.objects.get(
-            company__slug=company_slug, pk=pk
-        )
-        serializer = CompanyMemberInviteSerializer(company_invitation)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 class UserCompanyInvitationsEndpoint(views.APIView):
     model = CompanyMemberInvite
 
@@ -443,6 +359,159 @@ class UserCompanyInvitationsEndpoint(views.APIView):
                 ),
                 many=True,
             ).data,
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request):
+        responses = request.data.get("responses", [])
+
+        for response in responses:
+            invitation = CompanyMemberInvite.objects.get(
+                id=response.get("id"),
+            )
+
+            if invitation.email != request.user.email:
+                return Response(
+                    {
+                        "error": "You do not have permission to respond to this invitation"
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            if response.get("response") == "accept":
+                # Create a new company member
+                member = CompanyMember.objects.create(
+                    company=invitation.company,
+                    member=request.user,
+                    role=invitation.role,
+                )
+
+                member.permissions.set(invitation.permissions)
+
+            invitation.is_active = False
+            invitation.accepted = response.get("response") == "accept"
+            invitation.responded_at = timezone.now()
+            invitation.save()
+
+        return Response(
+            {"message": "Companies joined successfully"},
+            status=status.HTTP_200_OK,
+        )
+
+
+class UserCompanyJoinEndpoint(views.APIView):
+    model = CompanyMemberInvite
+
+    def _decode_token(self, token):
+        decoded_token = json.loads(urlsafe_base64_decode(token).decode("utf-8"))
+        if not decoded_token:
+            return None
+        return decoded_token
+
+    def get(self, request):
+        token = request.headers.get("X-Invitation-Token")
+        if not token:
+            return Response(
+                {"error": "Invitation token is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # decode the token
+        decoded_token = self._decode_token(token)
+
+        if not decoded_token:
+            return Response(
+                {"error": "Invalid invitation token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            invitation = CompanyMemberInvite.objects.get(
+                id=decoded_token.get("id"),
+                email=decoded_token.get("email"),
+                company__slug=decoded_token.get("company_slug"),
+                is_active=True,
+            )
+        except CompanyMemberInvite.DoesNotExist:
+            return Response(
+                {"error": "Invalid invitation token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            CompanyMemberInviteSerializer(invitation).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @permission_classes([AllowAny])
+    def post(self, request):
+        token = request.data.get("token")
+        accept_or_reject = request.data.get("response")
+
+        if not token:
+            return Response(
+                {"error": "Invitation token is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if accept_or_reject not in ["accept", "reject"]:
+            return Response(
+                {"error": "Invalid response"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not request.user.is_authenticated and accept_or_reject == "accept":
+            return Response(
+                {"error": "You must be logged in to accept the invitation"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        decoded_token = self._decode_token(token)
+        if not decoded_token:
+            return Response(
+                {"error": "Invalid invitation token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            invitation = CompanyMemberInvite.objects.get(
+                id=decoded_token.get("id"),
+                email=decoded_token.get("email"),
+                company__slug=decoded_token.get("company_slug"),
+                is_active=True,
+            )
+        except CompanyMemberInvite.DoesNotExist:
+            return Response(
+                {"error": "Invalid invitation token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if request.user.is_authenticated:
+            if request.user.email != invitation.email:
+                return Response(
+                    {
+                        "error": "You do not have permission to respond to this invitation"
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        invitation.accepted = accept_or_reject == "accept"
+        invitation.responded_at = timezone.now()
+        invitation.is_active = False
+        invitation.save()
+
+        if accept_or_reject == "accept":
+            # Create a new company member
+            member = CompanyMember.objects.create(
+                company=invitation.company,
+                member=request.user,
+                role=invitation.role,
+            )
+
+            member.permissions.set(invitation.permissions)
+
+        return Response(
+            {"message": f"Company invitation {accept_or_reject}ed"},
             status=status.HTTP_200_OK,
         )
 

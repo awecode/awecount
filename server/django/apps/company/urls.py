@@ -9,6 +9,7 @@ from apps.company.views import (
     CompanyViewset,
     UserCompaniesEndpoint,
     UserCompanyInvitationsEndpoint,
+    UserCompanyJoinEndpoint,
     UserCompanySwitchEndpoint,
 )
 
@@ -130,6 +131,11 @@ urlpatterns = [
         r"^api/user/me/invitations/$",
         UserCompanyInvitationsEndpoint.as_view(),
         name="user-company-invitations",
+    ),
+    re_path(
+        r"^api/user/me/invitations/join/$",
+        UserCompanyJoinEndpoint.as_view(),
+        name="user-company-invite-join",
     ),
     re_path(
         r"^api/user/me/companies/$",
