@@ -42,7 +42,7 @@ APP_URL = os.environ.get("APP_URL", "http://localhost:3000")
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = [*default_headers, "X-Session-Token"]
+CORS_ALLOW_HEADERS = [*default_headers, "X-Session-Token", "X-Invitation-Token"]
 
 CORS_ORIGIN_WHITELIST = os.environ.get("CORS_ORIGIN_WHITELIST", APP_URL).split(",")
 
