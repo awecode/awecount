@@ -271,6 +271,9 @@ class Company(BaseModel):
         #     ),
         # ]
 
+    class PermissionsMeta:
+        exclude = True
+
     def __str__(self):
         """Return name of the Company"""
         return self.name
@@ -519,7 +522,7 @@ class CompanyMemberInvite(BaseModel):
         actions = ["view", "create", "modify", "delete"]
 
     def __str__(self):
-        return f"{self.company.name}-{self.email}-{"Accepted" if self.accepted else "Pending"}"
+        return f"{self.company.name}-{self.email}-{'Accepted' if self.accepted else 'Pending'}"
 
     def clean(self):
         if self.role == CompanyMember.Role.OWNER:
