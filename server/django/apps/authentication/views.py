@@ -51,6 +51,7 @@ class EmailCheckView(AllauthAPIView):
 
 
 class OAuth2CallbackView(AllauthOAuth2CallbackView):
+    # TODO: check allauth.account.internal.flows.login_by_code.request_login_code for stashing state
     def dispatch(self, request, *args, **kwargs):
         if not request.method == "POST":
             return ErrorResponse(
