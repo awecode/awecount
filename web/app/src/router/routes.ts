@@ -1290,14 +1290,29 @@ const routes: RouteRecordRaw[] = [
     path: '/login',
     name: 'login-page',
     component: () => import('pages/LoginPage.vue'),
+    meta: {
+      auth: {
+        redirectIfLoggedIn: '/',
+      },
+    },
   },
   {
     path: '/signup',
     name: 'signup-page',
     component: () => import('pages/SignupPage.vue'),
+    meta: {
+      auth: {
+        redirectIfLoggedIn: '/',
+      },
+    },
   },
   {
     path: '/auth',
+    meta: {
+      auth: {
+        redirectIfLoggedIn: '/',
+      },
+    },
     children: [
       {
         path: 'verify-email/:token',
@@ -1320,6 +1335,11 @@ const routes: RouteRecordRaw[] = [
     path: '/onboarding',
     name: 'onboarding',
     component: () => import('pages/onboarding.vue'),
+    meta: {
+      auth: {
+        required: true,
+      },
+    },
   },
   {
     path: '/company/create',
@@ -1328,9 +1348,10 @@ const routes: RouteRecordRaw[] = [
     meta: {
       breadcrumbs: ['Create Company'],
       auth: {
-        protected: true,
+        required: true,
       },
     },
+
   },
   {
     path: '/profile',
@@ -1338,14 +1359,20 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/profile/index.vue'),
     meta: {
       breadcrumbs: ['Profile'],
+      auth: {
+        required: true,
+      },
     },
   },
   {
-    path: '/invitations',
+    path: '/invitations/:token?',
     name: 'invitations',
     component: () => import('pages/profile/invitations.vue'),
     meta: {
       breadcrumbs: ['Invitations'],
+      auth: {
+        required: true,
+      },
     },
   },
   {
@@ -1353,6 +1380,11 @@ const routes: RouteRecordRaw[] = [
     name: 'company',
     component: () => import('layouts/MainLayout.vue'),
     children: companyRoutes,
+    meta: {
+      auth: {
+        required: true,
+      },
+    },
   },
 ]
 

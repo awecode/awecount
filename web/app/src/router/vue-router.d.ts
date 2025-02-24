@@ -1,6 +1,6 @@
 import 'vue-router'
 
-export {} // This is To ensure it is treated as a module and prevent type reset
+export { } // This is To ensure it is treated as a module and prevent type reset
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -10,7 +10,7 @@ declare module 'vue-router' {
       to?: string
     }
     auth?: {
-      protected?: boolean
+      required?: boolean
       roles?: Array<'owner' | 'admin' | 'member'>
       permissions?: string[]
       loginRoute?: string

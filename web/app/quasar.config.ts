@@ -8,7 +8,7 @@ export default defineConfig((/* ctx */) => {
 
     css: ['app.scss'],
 
-    boot: ['ofetch', 'num', 'sentry', 'rbac'],
+    boot: ['ofetch', 'num', 'sentry'],
 
     extras: ['mdi-v7', 'fontawesome-v6', 'roboto-font', 'material-icons'],
 

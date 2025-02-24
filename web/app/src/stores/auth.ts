@@ -63,8 +63,8 @@ export const useAuthStore = defineStore(
     const sessionToken = ref<string | null>(null)
     const authenticatedAt = ref<number | null>(null)
 
-    const isAuthenticated = computed(() => !!accessToken.value && !!sessionToken.value)
-    const onboarded = computed(() => user.value?.teams?.length > 0 && user.value?.last_active_team)
+    const isAuthenticated = computed(() => !!accessToken.value && !!refreshToken.value)
+    const onboarded = computed(() => user.value?.is_onboarded)
 
     const _roles = ref<string[]>([])
     const _permissions = ref<Record<string, Record<string, boolean>>>({})
@@ -313,6 +313,10 @@ export const useAuthStore = defineStore(
     // TODO: move this to a separate store/composable
     const switchCompany = async (companySlug: string) => {
       const res = await $api(URLs.SWITCH_COMPANY, { method: 'PATCH', body: { company_slug: companySlug } })
+      user.value = {
+        ...user.value,
+        redirect: companySlug,
+      }
       await _fetchCompany(companySlug)
       await _fetchPermissions(companySlug)
       window.location.href = `${url.origin}/${companySlug}/dashboard` // TODO: Use router and preserve path

@@ -35,7 +35,7 @@ export const useLoginStore = defineStore(
       return authStore.isAuthenticated
     })
 
-    const username = computed(() => authStore.user?.display_name)
+    const username = computed(() => authStore.user?.full_name)
     const email = computed(() => authStore.user?.email)
     const token = computed(() => authStore.token)
     const companyInfo = computed(() => authStore.company)
