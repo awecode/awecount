@@ -639,70 +639,43 @@ const companyRoutes: RouteRecordRaw[] = [
   },
   {
     path: 'settings',
-    name: 'company-settings',
-    meta: {
-      breadcrumbs: ['Settings'],
-    },
+    component: () => import('layouts/SettingsLayout.vue'),
     children: [
       {
-        path: 'company-settings',
-        name: 'company-settings-company',
-        component: () => import('pages/settings/AccountsClosing.vue'),
+        path: '',
+        name: 'company-settings',
+        component: () => import('pages/company/settings/index.vue'),
         meta: {
-          breadcrumbs: ['Settings', 'Company Settings'],
+          breadcrumbs: ['Settings', 'General'],
         },
       },
       {
-        path: 'import-export',
-        name: 'company-settings-import-export',
-        component: () => import('pages/settings/ImportExport.vue'),
+        path: 'members',
+        name: 'company-settings-members',
+        component: () => import('pages/company/settings/members.vue'),
         meta: {
-          breadcrumbs: ['Settings', 'Import/Export'],
+          breadcrumbs: ['Settings', 'Members'],
         },
       },
       {
-        path: 'inventory',
-        name: 'company-settings-inventory',
-        component: () => import('pages/settings/InventorySettings.vue'),
+        path: 'permissions',
+        name: 'company-settings-permissions',
+        component: () => import('pages/company/settings/permissions.vue'),
         meta: {
-          breadcrumbs: ['Settings', 'Inventory Settings'],
+          breadcrumbs: ['Settings', 'Permissions'],
         },
       },
       {
-        path: 'item-merge',
-        name: 'company-settings-item-merge',
-        component: () => import('pages/settings/ItemMerge.vue'),
+        path: 'api-tokens',
+        name: 'company-settings-api-tokens',
+        component: () => import('pages/company/settings/api-tokens.vue'),
         meta: {
-          breadcrumbs: ['Settings', 'Item Merge'],
-        },
-      },
-      {
-        path: 'payment-modes',
-        name: 'company-settings-payment-modes',
-        component: () => import('pages/settings/PaymentModeList.vue'),
-        meta: {
-          breadcrumbs: ['Settings', 'Payment Modes'],
-        },
-      },
-      {
-        path: 'payment-modes/create',
-        name: 'company-settings-payment-modes-create',
-        component: () => import('pages/settings/PaymentModeForm.vue'),
-        meta: {
-          breadcrumbs: ['Settings', 'Payment Modes', 'Create'],
-        },
-      },
-      {
-        path: 'payment-modes/:id/edit',
-        name: 'company-settings-payment-modes-id-edit',
-        component: () => import('pages/settings/PaymentModeForm.vue'),
-        meta: {
-          breadcrumbs: ['Settings', 'Payment Modes', 'Edit'],
+          breadcrumbs: ['Settings', 'API Tokens'],
         },
       },
       {
         path: 'purchase',
-        name: 'company-settings-purchase',
+        name: 'company-settings-purchase-settings',
         component: () => import('pages/settings/PurchaseSetting.vue'),
         meta: {
           breadcrumbs: ['Settings', 'Purchase Settings'],
@@ -710,50 +683,15 @@ const companyRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'sales',
-        name: 'company-settings-sales',
+        name: 'company-settings-sales-settings',
         component: () => import('pages/settings/SalesSetting.vue'),
-        meta: {
-          breadcrumbs: ['Settings', 'Sales Settings'],
-        },
       },
       {
-        path: 'audit-logs',
-        name: 'company-settings-audit-logs',
-        component: () => import('pages/settings/auditlog/AuditLogList.vue'),
+        path: 'inventory',
+        name: 'company-settings-inventory-settings',
+        component: () => import('pages/settings/InventorySettings.vue'),
         meta: {
-          breadcrumbs: ['Settings', 'Audit Logs'],
-        },
-      },
-      {
-        path: 'audit-logs/:id',
-        name: 'company-settings-audit-logs-id',
-        component: () => import('pages/settings/auditlog/AuditLogDetail.vue'),
-        meta: {
-          breadcrumbs: ['Settings', 'Audit Logs', 'Detail'],
-        },
-      },
-      {
-        path: 'dashboard-widgets',
-        name: 'company-settings-dashboard-widgets',
-        component: () => import('pages/settings/widgets/WidgetList.vue'),
-        meta: {
-          breadcrumbs: ['Settings', 'Dashboard Widgets'],
-        },
-      },
-      {
-        path: 'dashboard-widgets/create',
-        name: 'company-settings-dashboard-widgets-create',
-        component: () => import('pages/settings/widgets/WidgetForm.vue'),
-        meta: {
-          breadcrumbs: ['Settings', 'Dashboard Widgets', 'Create'],
-        },
-      },
-      {
-        path: 'dashboard-widgets/:id/edit',
-        name: 'company-settings-dashboard-widgets-id-edit',
-        component: () => import('pages/settings/widgets/WidgetForm.vue'),
-        meta: {
-          breadcrumbs: ['Settings', 'Dashboard Widgets', 'Edit'],
+          breadcrumbs: ['Settings', 'Inventory Settings'],
         },
       },
     ],
