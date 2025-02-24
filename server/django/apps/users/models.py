@@ -82,10 +82,7 @@ class User(AbstractBaseUser):
 
     # the is' es
     is_superuser = models.BooleanField(default=False)
-    is_password_expired = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    is_email_verified = models.BooleanField(default=False)
-    is_password_autoset = models.BooleanField(default=False)
 
     # the last's
     last_active = models.DateTimeField(default=timezone.now, null=True)
