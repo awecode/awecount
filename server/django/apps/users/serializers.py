@@ -44,7 +44,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = (
-            "company",
             "date_joined",
             "password",
         )
@@ -64,12 +63,6 @@ class UserLiteSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "id",
-            "first_name",
-            "last_name",
-            "avatar",
-            "avatar_url",
-            "is_bot",
-            "display_name",
+            "full_name",
+            "email",
         ]
-        read_only_fields = ["id", "is_bot"]
