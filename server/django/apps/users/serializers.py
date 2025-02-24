@@ -38,17 +38,6 @@ class RoleSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "modules")
 
 
-class UserSerializer(serializers.ModelSerializer):
-    roles = serializers.ReadOnlyField(source="role_modules")
-
-    class Meta:
-        model = User
-        exclude = (
-            "date_joined",
-            "password",
-        )
-
-
 class FiscalYearSerializer(serializers.ModelSerializer):
     # Maintain backward compatibility with the old field names
     start = serializers.DateField(source="start_date")
@@ -57,6 +46,13 @@ class FiscalYearSerializer(serializers.ModelSerializer):
     class Meta:
         model = FiscalYear
         exclude = ()
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["full_name", "email", "phone_number"]
+        read_only_fields = ["email"]
 
 
 class UserLiteSerializer(serializers.ModelSerializer):
