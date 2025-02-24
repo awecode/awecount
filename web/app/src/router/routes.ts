@@ -1395,6 +1395,22 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/profile',
+    name: 'profile',
+    component: () => import('pages/profile/index.vue'),
+    meta: {
+      breadcrumbs: ['Profile'],
+    },
+  },
+  {
+    path: '/invitations',
+    name: 'invitations',
+    component: () => import('pages/profile/invitations.vue'),
+    meta: {
+      breadcrumbs: ['Invitations'],
+    },
+  },
+  {
     path: '/:company',
     name: 'company',
     component: () => import('layouts/MainLayout.vue'),

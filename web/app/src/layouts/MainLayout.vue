@@ -499,7 +499,7 @@ const breadcrumbs = useBreadcrumbItems()
               </template>
 
               <q-list>
-                <q-item v-close-popup clickable @click="router.push('/settings/profile')">
+                <q-item v-close-popup clickable @click="router.push('/profile')">
                   <q-item-section avatar>
                     <q-icon name="manage_accounts" />
                   </q-item-section>
