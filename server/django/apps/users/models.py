@@ -1,10 +1,7 @@
-import random
-import string
 import uuid
 
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
-from django.utils import timezone
 from rest_framework.exceptions import APIException
 
 from apps.company.models import Company
@@ -84,15 +81,6 @@ class User(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
-    # the last's
-    last_active = models.DateTimeField(default=timezone.now, null=True)
-    last_login_time = models.DateTimeField(null=True)
-    last_logout_time = models.DateTimeField(null=True)
-    last_login_ip = models.CharField(max_length=255, blank=True)
-    last_logout_ip = models.CharField(max_length=255, blank=True)
-    last_login_medium = models.CharField(max_length=20, default="email")
-    last_login_uagent = models.TextField(blank=True)
-
     USERNAME_FIELD = "email"
 
     objects = UserManager()
@@ -116,18 +104,6 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_superuser
-
-    def save(self, *args, **kwargs):
-        self.email = self.email.lower().strip()
-
-        if not self.full_name:
-            self.full_name = (
-                self.email.split("@")[0]
-                if len(self.email.split("@"))
-                else "".join(random.choice(string.ascii_letters) for _ in range(6))
-            )
-
-        super(User, self).save(*args, **kwargs)
 
     def has_module_perms(self, app_label):
         return self.is_superuser
