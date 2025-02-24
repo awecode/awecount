@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_q.tasks import async_task
 from rest_framework import mixins, status, views, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
@@ -14,6 +15,7 @@ from apps.company.models import (
     CompanyMemberInvite,
     FiscalYear,
     Permission,
+    get_default_permissions,
 )
 from apps.company.permissions import (
     CompanyAdminPermission,
@@ -25,27 +27,200 @@ from apps.company.serializers import (
     CompanyLiteSerializer,
     CompanyMemberInviteSerializer,
     CompanyMemberSerializer,
+    CompanyPermissionSerializer,
     CompanySerializer,
 )
 from apps.users.models import User
 from awecount.libs.nepdate import ad2bs, bs, bs2ad
 
 
-class CompanyInvitationsViewset(viewsets.ModelViewSet):
-    """Endpoint for creating, listing and  deleting companys"""
+class CompanyViewset(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    model = Company
+    serializer_class = CompanySerializer
+    permission_classes = [CompanyBasePermission]
 
+    lookup_field = "slug"
+    lookup_url_kwarg = "company_slug"
+
+    def get_queryset(self):
+        return self.model.objects.filter(slug=self.kwargs.get("company_slug"))
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CompanyCreateSerializer
+        return super().get_serializer_class()
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [AllowAny()]
+        return super().get_permissions()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # Create the company member
+        CompanyMember.objects.create(
+            company=serializer.instance,
+            member=request.user,
+            role=CompanyMember.Role.OWNER,
+        )
+
+        country_iso = serializer.instance.country_iso
+        current_year = timezone.now().year
+
+        fiscal_year_details = self._get_fiscal_year_details(country_iso, current_year)
+
+        fiscal_year, _ = FiscalYear.objects.get_or_create(
+            start_date=fiscal_year_details["start_date"],
+            end_date=fiscal_year_details["end_date"],
+            name=fiscal_year_details["label"],
+        )
+
+        serializer.instance.current_fiscal_year = fiscal_year
+        serializer.instance.save()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def _get_fiscal_year_details(self, country_iso, current_year):
+        """Returns fiscal year details based on country ISO."""
+        if country_iso == "NP":
+            return self._get_nepal_fiscal_year_details()
+
+        fiscal_year_map = {
+            "IN": {
+                "start_date": f"{current_year}-04-01",
+                "end_date": f"{current_year + 1}-03-31",
+                "label": f"FY {current_year}-{(current_year + 1) % 100}",  # 2021-22
+            },
+            "US": {
+                "start_date": f"{current_year}-01-01",
+                "end_date": f"{current_year}-12-31",
+                "label": f"FY{current_year % 100}",  # FY21
+            },
+        }
+        return fiscal_year_map.get(country_iso, {})
+
+    def _get_nepal_fiscal_year_details(self):
+        """Returns the fiscal year start/end dates for Nepal (BS to AD conversion)."""
+        date = timezone.now().date()
+        bs_date = ad2bs(date.strftime("%Y-%m-%d"))
+
+        start = bs2ad(f"{bs_date[0]}-04-01")
+        end = bs2ad(f"{bs_date[0] + 1}-03-{bs[bs_date[0] + 1][2]}")
+
+        return {
+            "start_date": f"{start[0]}-{start[1]:02d}-{start[2]:02d}",
+            "end_date": f"{end[0]}-{end[1]:02d}-{end[2]:02d}",
+            "label": f"{bs_date[0] % 100}/{(bs_date[0] + 1) % 100}",  # 78/79
+        }
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="upload-logo",
+    )
+    def upload_logo(self, request, *args, **kwargs):
+        """Upload company logo."""
+        company = self.get_object()
+
+        if "logo" not in request.FILES:
+            return Response(
+                {"error": "No logo file provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        company.logo = request.FILES["logo"]
+        company.save()
+
+        return Response(CompanySerializer(company).data, status=status.HTTP_200_OK)
+
+
+class CompanyPermissionViewSet(viewsets.ModelViewSet):
+    model = Permission
+    serializer_class = CompanyPermissionSerializer
+
+    permission_classes = [CompanyAdminPermission]
+
+    def get_queryset(self):
+        return self.model.objects.filter(company__slug=self.kwargs.get("company_slug"))
+
+    def perform_create(self, serializer):
+        serializer.save(company=self.request.company)
+
+    def perform_update(self, serializer):
+        serializer.save(company=self.request.company)
+
+    @action(detail=False, methods=["get"])
+    def defaults(self, request, *args, **kwargs):
+        return Response(get_default_permissions(), status=status.HTTP_200_OK)
+
+
+class CompanyMemberPermissionEndpoint(views.APIView):
+    model = Permission
+    permission_classes = [CompanyMemberPermission]
+
+    def get(self, request, company_slug):
+        company_member = CompanyMember.objects.filter(
+            company__slug=company_slug,
+            member=request.user,
+            is_active=True,
+        ).first()
+
+        if company_member is None:
+            return Response(
+                {"error": "You do not have permission to access this company"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        return Response(
+            {
+                "role": company_member.role,
+                "permissions": company_member.permissions_dict,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class CompanyMemberViewSet(viewsets.ModelViewSet):
+    model = CompanyMember
+    serializer_class = CompanyMemberSerializer
+
+    permission_classes = [CompanyAdminPermission]
+
+    def get_queryset(self):
+        return self.filter_queryset(
+            self.model.objects.filter(
+                company__slug=self.kwargs.get("company_slug")
+            ).select_related("company", "member")
+        )
+
+    def destroy(self, request, company_slug, pk):
+        company_member = CompanyMember.objects.get(pk=pk, company__slug=company_slug)
+        company_member.is_active = False
+        company_member.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CompanyInvitationViewset(viewsets.ModelViewSet):
     model = CompanyMemberInvite
     serializer_class = CompanyMemberInviteSerializer
 
     permission_classes = [CompanyAdminPermission]
 
     def get_queryset(self):
-        return self.filter_queryset(
-            super()
-            .get_queryset()
-            .filter(company__slug=self.kwargs.get("company_slug"))
-            .select_related("company", "company__owner", "created_by")
-        )
+        return self.model.objects.filter(
+            company__slug=self.kwargs.get("company_slug")
+        ).select_related("company", "created_by")
 
     def _validate_emails(self, emails):
         """Validate email format and required fields."""
@@ -94,6 +269,9 @@ class CompanyInvitationsViewset(viewsets.ModelViewSet):
     def _create_invitations(self, emails, company_id):
         """Create invitation objects for each email."""
         invitations = []
+        default_permission = Permission.objects.get(
+            company_id=company_id, name="Default"
+        )
         for email_data in emails:
             email = email_data.get("email").strip().lower()
 
@@ -102,12 +280,18 @@ class CompanyInvitationsViewset(viewsets.ModelViewSet):
                     email=email,
                     company_id=company_id,
                     role=email_data.get("role", "member"),
+                    created_by=self.request.user,
                 )
             )
 
-        return CompanyMemberInvite.objects.bulk_create(
+        invitations = CompanyMemberInvite.objects.bulk_create(
             invitations, batch_size=10, ignore_conflicts=True
         )
+
+        for invitation in invitations:
+            invitation.permissions.set([default_permission])
+
+        return invitations
 
     def create(self, request, company_slug):
         try:
@@ -165,7 +349,6 @@ class CompanyInvitationsViewset(viewsets.ModelViewSet):
 
 class CompanyJoinEndpoint(views.APIView):
     permission_classes = [AllowAny]
-    """Invitation response endpoint the user can respond to the invitation"""
 
     def post(self, request, company_slug, pk):
         company_invite = CompanyMemberInvite.objects.get(
@@ -250,20 +433,19 @@ class CompanyJoinEndpoint(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class UserCompanyInvitationsViewSet(viewsets.ModelViewSet):
+class UserCompanyInvitationsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     model = CompanyMemberInvite
     serializer_class = CompanyMemberInviteSerializer
 
     def get_queryset(self):
-        return self.filter_queryset(
-            super()
-            .get_queryset()
-            .filter(email=self.request.user.email)
-            .select_related("company", "company__owner", "created_by")
+        return (
+            self.model.objects.filter(email=self.request.user.email)
+            .select_related("company", "created_by")
             .annotate(total_members=Count("company__company_member"))
         )
 
-    def create(self, request, *args, **kwargs):
+    @action(detail=False, methods=["post"])
+    def respond(self, request, *args, **kwargs):
         invitations = request.data.get("invitations", [])
         company_invitations = CompanyMemberInvite.objects.filter(
             pk__in=invitations,
@@ -331,142 +513,3 @@ class UserCompanySwitchEndpoint(views.APIView):
         request.user.last_company_id = company.id
         request.user.save()
         return Response(status=status.HTTP_200_OK)
-
-
-class CompanyMemberViewSet(viewsets.ModelViewSet):
-    model = CompanyMember
-    serializer_class = CompanyMemberSerializer
-
-    permission_classes = [CompanyAdminPermission]
-
-    def get_queryset(self):
-        return self.filter_queryset(
-            super()
-            .get_queryset()
-            .filter(company__slug=self.kwargs.get("company_slug"))
-            .select_related("company", "member", "company__owner")
-        )
-
-    def destroy(self, request, company_slug, pk):
-        company_member = CompanyMember.objects.get(pk=pk, company__slug=company_slug)
-        company_member.is_active = False
-        company_member.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class CompanyPermissionEndpoint(views.APIView):
-    model = Permission
-    permission_classes = [CompanyMemberPermission]
-
-    def get(self, request, company_slug):
-        company_member = CompanyMember.objects.filter(
-            company__slug=company_slug,
-            member=request.user,
-            is_active=True,
-        ).first()
-
-        if company_member is None:
-            return Response(
-                {"error": "You do not have permission to access this company"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        return Response(
-            {
-                "role": company_member.role,
-                "permissions": company_member.permissions_dict,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-
-class CompanyViewset(
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
-    model = Company
-    serializer_class = CompanySerializer
-    permission_classes = [CompanyBasePermission]
-
-    lookup_field = "slug"
-    lookup_url_kwarg = "company_slug"
-
-    def get_queryset(self):
-        return self.model.objects.filter(slug=self.kwargs.get("company_slug"))
-
-    def get_serializer_class(self):
-        if self.action == "create":
-            return CompanyCreateSerializer
-        return super().get_serializer_class()
-
-    def get_permissions(self):
-        if self.action == "create":
-            return [AllowAny()]
-        return super().get_permissions()
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-
-        # Create the company member
-        CompanyMember.objects.create(
-            company=serializer.instance,
-            member=request.user,
-            role=CompanyMember.Role.OWNER,
-        )
-
-        country_iso = serializer.instance.country_iso
-        current_year = timezone.now().year
-
-        fiscal_year_details = self._get_fiscal_year_details(country_iso, current_year)
-
-        fiscal_year, _ = FiscalYear.objects.get_or_create(
-            start_date=fiscal_year_details["start_date"],
-            end_date=fiscal_year_details["end_date"],
-            name=fiscal_year_details["label"],
-        )
-
-        serializer.instance.current_fiscal_year = fiscal_year
-        serializer.instance.save()
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
-
-    def _get_fiscal_year_details(self, country_iso, current_year):
-        """Returns fiscal year details based on country ISO."""
-        if country_iso == "NP":
-            return self._get_nepal_fiscal_year_details()
-
-        fiscal_year_map = {
-            "IN": {
-                "start_date": f"{current_year}-04-01",
-                "end_date": f"{current_year+1}-03-31",
-                "label": f"FY {current_year}-{(current_year+1)%100}",  # 2021-22
-            },
-            "US": {
-                "start_date": f"{current_year}-01-01",
-                "end_date": f"{current_year}-12-31",
-                "label": f"FY{current_year%100}",  # FY21
-            },
-        }
-        return fiscal_year_map.get(country_iso, {})
-
-    def _get_nepal_fiscal_year_details(self):
-        """Returns the fiscal year start/end dates for Nepal (BS to AD conversion)."""
-        date = timezone.now().date()
-        bs_date = ad2bs(date.strftime("%Y-%m-%d"))
-
-        start = bs2ad(f"{bs_date[0]}-04-01")
-        end = bs2ad(f"{bs_date[0] + 1}-03-{bs[bs_date[0]+1][2]}")
-
-        return {
-            "start_date": f"{start[0]}-{start[1]:02d}-{start[2]:02d}",
-            "end_date": f"{end[0]}-{end[1]:02d}-{end[2]:02d}",
-            "label": f"{bs_date[0]%100}/{(bs_date[0]+1)%100}",  # 78/79
-        }

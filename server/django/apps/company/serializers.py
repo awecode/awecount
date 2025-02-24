@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from apps.company.constants import RESTRICTED_COMPANY_SLUGS
-from apps.company.models import Company, CompanyMember, CompanyMemberInvite
+from apps.company.models import Company, CompanyMember, CompanyMemberInvite, Permission
 from apps.users.serializers import UserLiteSerializer
 
 
@@ -31,9 +31,10 @@ class CompanySerializer(serializers.ModelSerializer):
     owner = UserLiteSerializer(read_only=True)
     total_members = serializers.IntegerField(read_only=True)
     logo_url = serializers.CharField(read_only=True)
-    current_fiscal_year = serializers.CharField(source="current_fiscal_year.name", read_only=True)
+    current_fiscal_year = serializers.CharField(
+        source="current_fiscal_year.name", read_only=True
+    )
     current_fiscal_year_id = serializers.IntegerField(read_only=True)
-
 
     def validate_slug(self, value):
         # Check if the slug is restricted
@@ -55,9 +56,23 @@ class CompanySerializer(serializers.ModelSerializer):
         ]
 
 
+class CompanyPermissionLiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ["id", "name"]
+        read_only_fields = fields
+
+
+class CompanyPermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = "__all__"
+        read_only_fields = ["id", "company"]
+
+
 class CompanyMemberSerializer(serializers.ModelSerializer):
     member = UserLiteSerializer(read_only=True)
-    company = CompanyLiteSerializer(read_only=True)
+    permissions = CompanyPermissionSerializer(read_only=True, many=True)
 
     class Meta:
         model = CompanyMember
@@ -65,16 +80,14 @@ class CompanyMemberSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "created_at",
-            "updated_at",
-            "company",
             "member",
+            "permissions",
         ]
 
 
 class CompanyMemberInviteSerializer(serializers.ModelSerializer):
-    company = CompanySerializer(read_only=True)
-    total_members = serializers.IntegerField(read_only=True)
-    created_by_detail = UserLiteSerializer(read_only=True, source="created_by")
+    created_by = UserLiteSerializer(read_only=True)
+    permissions = CompanyPermissionLiteSerializer(read_only=True, many=True)
 
     class Meta:
         model = CompanyMemberInvite
@@ -82,9 +95,6 @@ class CompanyMemberInviteSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "email",
-            "token",
-            "company",
-            "message",
             "responded_at",
             "created_at",
             "updated_at",

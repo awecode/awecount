@@ -1,17 +1,37 @@
-from django.urls import re_path
+from django.urls import include, re_path
+from rest_framework.routers import SimpleRouter
 
 from apps.company.views import (
-    CompanyInvitationsViewset,
-    CompanyJoinEndpoint,
-    CompanyPermissionEndpoint,
+    CompanyInvitationViewset,
+    CompanyMemberPermissionEndpoint,
+    CompanyMemberViewSet,
+    CompanyPermissionViewSet,
     CompanyViewset,
     UserCompaniesEndpoint,
     UserCompanyInvitationsViewSet,
     UserCompanySwitchEndpoint,
 )
 
+router = SimpleRouter()
+
+router.register(
+    r"permissions",
+    CompanyPermissionViewSet,
+    basename="company-permissions",
+)
+router.register(
+    r"members",
+    CompanyMemberViewSet,
+    basename="company-members",
+)
+router.register(
+    r"invitations",
+    CompanyInvitationViewset,
+    basename="company-invitations",
+)
+
+
 urlpatterns = [
-    # Company-related URLs
     re_path(
         r"^api/company/$",
         CompanyViewset.as_view(
@@ -27,6 +47,7 @@ urlpatterns = [
             {
                 "get": "retrieve",
                 "put": "update",
+                "patch": "partial_update",
             }
         ),
         name="company-info",
@@ -41,34 +62,68 @@ urlpatterns = [
         name="company-delete",
     ),
     re_path(
-        r"^api/company/(?P<company_slug>[-\w]+)/permissions/$",
-        CompanyPermissionEndpoint.as_view(),
-        name="company-permissions",
-    ),
-    re_path(
-        r"^api/company/(?P<company_slug>[-\w]+)/invitations/$",
-        CompanyInvitationsViewset.as_view(
+        r"^api/company/(?P<company_slug>[-\w]+)/upload-logo/$",
+        CompanyViewset.as_view(
             {
-                "get": "list",
-                "post": "create",
+                "post": "upload_logo",
             }
         ),
-        name="company-invitations",
+        name="company-upload-logo",
     ),
     re_path(
-        r"^api/company/(?P<company_slug>[-\w]+)/invitations/(?P<pk>[0-9a-f-]+)/$",
-        CompanyInvitationsViewset.as_view(
-            {
-                "delete": "destroy",
-            }
-        ),
-        name="company-invitation-detail",
+        r"^api/company/(?P<company_slug>[-\w]+)/permissions/mine/$",
+        CompanyMemberPermissionEndpoint.as_view(),
+        name="company-mine",
     ),
-    re_path(
-        r"^api/company/(?P<company_slug>[-\w]+)/join/(?P<pk>[0-9a-f-]+)/$",
-        CompanyJoinEndpoint.as_view(),
-        name="company-join",
-    ),
+    re_path(r"^api/company/(?P<company_slug>[-\w]+)/", include(router.urls)),
+    # # Company Permissions
+    # re_path(
+    #     r"^api/company/(?P<company_slug>[-\w]+)/permissions/$",
+    #     CompanyMemberPermissionEndpoint.as_view(),
+    #     name="company-permissions",
+    # ),
+    # re_path(
+    #     r"^api/company/(?P<company_slug>[-\w]+)/members/$",
+    #     CompanyMemberViewSet.as_view(
+    #         {
+    #             "get": "list",
+    #         }
+    #     ),
+    #     name="company-members",
+    # ),
+    # re_path(
+    #     r"^api/company/(?P<company_slug>[-\w]+)/members/(?P<pk>[0-9a-f-]+)/$",
+    #     CompanyMemberViewSet.as_view(
+    #         {
+    #             "delete": "destroy",
+    #         }
+    #     ),
+    #     name="company-member-detail",
+    # ),
+    # re_path(
+    #     r"^api/company/(?P<company_slug>[-\w]+)/invitations/$",
+    #     CompanyInvitationViewset.as_view(
+    #         {
+    #             "get": "list",
+    #             "post": "create",
+    #         }
+    #     ),
+    #     name="company-invitations",
+    # ),
+    # re_path(
+    #     r"^api/company/(?P<company_slug>[-\w]+)/invitations/(?P<pk>[0-9a-f-]+)/$",
+    #     CompanyInvitationViewset.as_view(
+    #         {
+    #             "delete": "destroy",
+    #         }
+    #     ),
+    #     name="company-invitation-detail",
+    # ),
+    # re_path(
+    #     r"^api/company/(?P<company_slug>[-\w]+)/join/(?P<pk>[0-9a-f-]+)/$",
+    #     CompanyJoinEndpoint.as_view(),
+    #     name="company-join",
+    # ),
     # User-related URLs
     # TODO: api/me -> api/user/me
     re_path(
