@@ -727,26 +727,26 @@ const companyRoutes: RouteRecordRaw[] = [
           breadcrumbs: ['Tax', 'Payments', 'Edit'],
         },
       },
-      // {
-      //   path: 'schemes',
-      //   name: 'company-tax-schemes',
-      //   component: () => import('pages/tax/scheme/SchemeList.vue'),
-      // },
-      // {
-      //   path: 'schemes/create',
-      //   name: 'company-tax-schemes-create',
-      //   component: () => import('pages/tax/scheme/SchemeForm.vue'),
-      // },
-      // {
-      //   path: 'schemes/:id',
-      //   name: 'company-tax-schemes-id',
-      //   component: () => import('pages/tax/scheme/SchemeDetail.vue'),
-      // },
-      // {
-      //   path: 'schemes/:id/edit',
-      //   name: 'company-tax-schemes-id-edit',
-      //   component: () => import('pages/tax/scheme/SchemeForm.vue'),
-      // },
+      {
+        path: 'schemes',
+        name: 'company-tax-schemes',
+        component: () => import('pages/tax/scheme/TaxAccountList.vue'),
+      },
+      {
+        path: 'schemes/create',
+        name: 'company-tax-schemes-create',
+        component: () => import('pages/tax/scheme/TaxForm.vue'),
+      },
+      {
+        path: 'schemes/:id',
+        name: 'company-tax-schemes-id',
+        component: () => import('pages/tax/scheme/TaxForm.vue'),
+      },
+      {
+        path: 'schemes/:id/edit',
+        name: 'company-tax-schemes-id-edit',
+        component: () => import('pages/tax/scheme/TaxForm.vue'),
+      },
       // {
       //   path: 'periodic-summary',
       //   name: 'company-tax-periodic-summary',
