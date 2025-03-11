@@ -6,14 +6,14 @@ import useForm from 'src/composables/useForm'
 
 const route = useRoute()
 const endpoint = `/api/company/${route.params.company}/units/`
-const metaData = {
-  title: 'Units | Awecount',
-}
-useMeta(metaData)
 
 const { fields, errors, loading, isEdit, submitForm } = useForm(endpoint, {
   getDefaults: false,
   successRoute: `/${route.params.company}/inventory/units`,
+})
+
+useMeta({
+  title: `${isEdit?.value ? 'Update Unit' : 'Add Unit'} | Awecount`,
 })
 </script>
 
