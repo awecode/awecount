@@ -8,7 +8,7 @@ const emit = defineEmits<{
 }>()
 
 const $q = useQuasar()
-const { signup, resendVerificationEmail, checkEmail } = useAuthStore()
+const { signup, requestEmailVerification, checkEmail } = useAuthStore()
 
 const showPasswordStatus = ref(false)
 const loading = ref(false)
@@ -77,7 +77,7 @@ const onSignupSubmit = async () => {
 const handleResendVerification = async () => {
   try {
     if (!state.email) return
-    await resendVerificationEmail(state.email)
+    await requestEmailVerification(state.email)
     $q.notify({
       position: 'top-right',
       message: 'Verification Email Sent',
