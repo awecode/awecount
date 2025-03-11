@@ -160,7 +160,7 @@ onMounted(() => {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('fundtransfer.modify') && isEdit"
+            v-if="checkPermissions('fundtransfer.update') && isEdit"
             color="green"
             label="Update"
             type="submit"

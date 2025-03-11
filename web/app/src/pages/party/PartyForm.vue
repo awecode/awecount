@@ -138,7 +138,7 @@ function onDeletClick() {
               @click.prevent="onDeletClick"
             />
             <q-btn
-              v-if="checkPermissions('party.modify')"
+              v-if="checkPermissions('party.update')"
               class="q-mb-sm"
               color="green"
               label="Update"

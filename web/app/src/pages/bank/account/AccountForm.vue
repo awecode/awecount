@@ -125,7 +125,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('bankaccount.modify') && isEdit"
+            v-if="checkPermissions('bankaccount.update') && isEdit"
             class="q-ml-auto"
             color="green"
             label="Update"

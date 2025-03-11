@@ -267,7 +267,7 @@ export default {
               <div class="col-3">
                 Receipt #
                 <router-link
-                  v-if="checkPermissions('paymentreceipt.view')"
+                  v-if="checkPermissions('paymentreceipt.read')"
                   class="text-blue"
                   style="font-weight: 500; text-decoration: none"
                   :to="`/${$route.params.company}/payment-receipts/${receipt.id}`"
@@ -301,14 +301,14 @@ export default {
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
             <q-btn
-              v-if="checkPermissions('sales.modify') && (fields.can_update_issued || fields?.status === 'Draft')"
+              v-if="checkPermissions('sales.update') && (fields.can_update_issued || fields?.status === 'Draft')"
               color="orange-5"
               icon="edit"
               label="Edit"
               :to="`/${$route.params.company}/sales/vouchers/${fields?.id}/edit`"
             />
             <q-btn
-              v-if="fields?.status === 'Issued' && checkPermissions('sales.modify')"
+              v-if="fields?.status === 'Issued' && checkPermissions('sales.update')"
               color="green-6"
               icon="mdi-check-all"
               label="mark as paid"

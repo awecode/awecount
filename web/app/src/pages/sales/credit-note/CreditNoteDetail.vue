@@ -138,7 +138,7 @@ export default {
     <div v-if="fields" class="q-px-lg q-pb-lg row justify-between q-gutter-x-md q-mt-md">
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-mb-md">
         <q-btn
-          v-if="checkPermissions('creditnote.modify') && (fields.can_update_issued || fields.status === 'Draft')"
+          v-if="checkPermissions('creditnote.update') && (fields.can_update_issued || fields.status === 'Draft')"
           color="orange-5"
           icon="edit"
           label="Edit"

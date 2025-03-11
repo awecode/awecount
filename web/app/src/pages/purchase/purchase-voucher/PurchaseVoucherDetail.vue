@@ -229,14 +229,14 @@ export default {
       <div v-if="fields" class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none">
         <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
           <q-btn
-            v-if="checkPermissions('purchasevoucher.modify')"
+            v-if="checkPermissions('purchasevoucher.update')"
             color="orange-5"
             icon="edit"
             label="Edit"
             :to="`/${$route.params.company}/purchase/vouchers/${fields.id}/edit`"
           />
           <q-btn
-            v-if="fields?.status === 'Issued' && checkPermissions('purchasevoucher.modify')"
+            v-if="fields?.status === 'Issued' && checkPermissions('purchasevoucher.update')"
             color="green-6"
             icon="mdi-check-all"
             label="mark as paid"
@@ -244,7 +244,7 @@ export default {
             @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
           />
           <q-btn
-            v-if="checkPermissions('purchasevoucher.modify')"
+            v-if="checkPermissions('purchasevoucher.update')"
             color="red-5"
             icon="cancel"
             label="Cancel"

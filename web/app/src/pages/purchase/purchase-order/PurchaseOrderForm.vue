@@ -188,7 +188,7 @@ export default {
           @click.prevent="isDeleteOpen = true"
         />
         <q-btn
-          v-if="checkPermissions('purchaseorder.modify') && isEdit && fields.status === 'Issued'"
+          v-if="checkPermissions('purchaseorder.update') && isEdit && fields.status === 'Issued'"
           color="green"
           label="Update"
           :loading="loading"

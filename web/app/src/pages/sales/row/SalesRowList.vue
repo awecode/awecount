@@ -216,7 +216,7 @@ export default {
         <q-td style="padding: 0" :props="props">
           <div class="row align-center" style="height: 100%">
             <router-link
-              v-if="checkPermissions('sales.view')"
+              v-if="checkPermissions('sales.read')"
               class="text-blue l-view-btn"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; padding: 8px 8px 8px 16px"
               :to="`/${$route.params.company}/sales/vouchers/${props.row.voucher_id}`"

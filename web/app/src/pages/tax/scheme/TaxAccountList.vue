@@ -82,7 +82,7 @@ export default {
       <template #body-cell-name="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('taxscheme.modify')"
+            v-if="checkPermissions('taxscheme.update')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
             :to="`/${$route.params.company}/tax/schemes/${props.row.id}`"

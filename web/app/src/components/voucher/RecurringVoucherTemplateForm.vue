@@ -184,7 +184,7 @@ const timeUnits = ['Day(s)', 'Week(s)', 'Month(s)', 'Year(s)']
           @click.prevent="submitForm()"
         />
         <q-btn
-          v-if="isEdit && checkPermissions('recurringvouchertemplate.modify')"
+          v-if="isEdit && checkPermissions('recurringvouchertemplate.update')"
           color="orange-8"
           data-testid="update-btn"
           label="Update"

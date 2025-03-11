@@ -174,7 +174,7 @@ export default {
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="blue" dense flat to="" /> -->
           <q-btn
-            v-if="checkPermissions('account.view')"
+            v-if="checkPermissions('account.read')"
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             color="blue"
             label="View"
@@ -182,7 +182,7 @@ export default {
             :to="`/${$route.params.company}/account/ledgers/${props.row.id}`"
           />
           <q-btn
-            v-if="checkPermissions('account.modify')"
+            v-if="checkPermissions('account.update')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="orange-6"
             label="Edit"
@@ -194,7 +194,7 @@ export default {
       <template #body-cell-category="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('category.modify')"
+            v-if="checkPermissions('category.update')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
             :to="`/${$route.params.company}/account/categories/${props.row.category.id}/edit`"
@@ -224,7 +224,7 @@ export default {
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('account.view')"
+            v-if="checkPermissions('account.read')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
             :to="`/${$route.params.company}/account/ledgers/${props.row.id}`"

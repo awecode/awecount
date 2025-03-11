@@ -178,7 +178,7 @@ const addAccount = (id: number) => {
       'bg-gray-100': canBeDropped,
       'bg-gray-200': currentTarget && currentTarget.id === row.id && canBeDropped,
     }"
-    :draggable="checkPermissions('category.modify') && row.id ? true : false"
+    :draggable="checkPermissions('category.update') && row.id ? true : false"
     @dragend="handleDragEnd"
     @dragenter="handleDragEnter(row)"
     @dragover.prevent
@@ -239,7 +239,7 @@ const addAccount = (id: number) => {
       >
         <q-list>
           <q-item
-            v-if="checkPermissions('category.modify')"
+            v-if="checkPermissions('category.update')"
             v-close-popup
             clickable
             @click="editRow('category', row.id)"
@@ -286,7 +286,7 @@ const addAccount = (id: number) => {
         <q-tr
           v-if="!(config.hide_zero_transactions && account.total_transactions === 0)"
           class="q-virtual-scroll--with-prev"
-          :draggable="checkPermissions('account.modify') && !config.hide_categories ? true : false"
+          :draggable="checkPermissions('account.update') && !config.hide_categories ? true : false"
           @dragover.prevent
           @dragstart="handleDragStart({ type: 'account', row: account })"
         >
@@ -305,7 +305,7 @@ const addAccount = (id: number) => {
           <q-td>{{ account.total_transactions }}</q-td>
           <q-td class="text-center">
             <q-btn
-              v-if="checkPermissions('account.modify')"
+              v-if="checkPermissions('account.update')"
               dense
               flat
               round

@@ -228,7 +228,7 @@ export default {
         <q-td :props="props">
           <div class="row q-gutter-x-md justify-start">
             <q-btn
-              v-if="checkPermissions('sales.view')"
+              v-if="checkPermissions('sales.read')"
               class="q-py-none q-px-md font-size-sm l-view-btn"
               color="blue"
               data-testid="view-btn"
@@ -243,7 +243,7 @@ export default {
         <q-td :props="props">
           <span v-for="id in props.row.payment_receipts.map((item) => item.id)" :key="id">
             <router-link
-              v-if="checkPermissions('paymentreceipt.view')"
+              v-if="checkPermissions('paymentreceipt.read')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none"
               :to="`/${$route.params.company}/payment-receipts/${id}`"
@@ -256,9 +256,9 @@ export default {
       </template>
       <template #body-cell-voucher_no="props">
         <q-td style="padding: 0" :props="props">
-          <span v-if="checkPermissions('sales.view')" data-testid="voucher-no">
+          <span v-if="checkPermissions('sales.read')" data-testid="voucher-no">
             <router-link
-              v-if="checkPermissions('sales.view') && props.row.voucher_no"
+              v-if="checkPermissions('sales.read') && props.row.voucher_no"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
               :to="`/${$route.params.company}/sales/vouchers/${props.row.id}`"

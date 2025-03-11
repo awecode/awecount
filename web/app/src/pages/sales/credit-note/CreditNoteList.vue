@@ -112,7 +112,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td class="row justify center" :props="props">
           <q-btn
-            v-if="checkPermissions('creditnote.view')"
+            v-if="checkPermissions('creditnote.read')"
             class="q-py-none q-px-md font-size-sm l-view-btn"
             color="blue"
             label="View"
@@ -151,7 +151,7 @@ export default {
         <q-td style="padding: 0" :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('creditnote.view')"
+              v-if="checkPermissions('creditnote.read')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
               :to="`/${$route.params.company}/sales/credit-notes/${props.row.id}`"

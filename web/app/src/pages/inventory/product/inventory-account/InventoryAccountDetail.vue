@@ -150,22 +150,22 @@ function getVoucherUrl(row) {
 }
 
 const getPermissionsWithSourceType = {
-  'Account Opening Balance': 'accountopeningbalance.modify',
-  'Bank Cash Deposit': 'bankcashdeposit.modify',
-  'Challan': 'challan.modify',
-  'Cheque Deposit': 'chequedeposit.view',
-  'Cheque Issue': 'chequeissue.modify',
-  'Credit Note': 'creditnote.view',
-  'Debit Note': 'debitnote.view',
-  'Fund Transfer': 'fundtransfer.modify',
-  'Inventory Adjustment Voucher': 'inventoryadjustmentvoucher.view',
-  'Inventory Conversion Voucher': 'inventoryconversionvoucher.view',
-  'Item': 'item.view',
-  'Journal Voucher': 'journalvoucher.view',
-  'Payment Receipt': 'paymentreceipt.view',
-  'Purchase Voucher': 'purchasevoucher.view',
-  'Sales Voucher': 'sales.view',
-  'Tax Payment': 'taxpayment.modify',
+  'Account Opening Balance': 'accountopeningbalance.update',
+  'Bank Cash Deposit': 'bankcashdeposit.update',
+  'Challan': 'challan.update',
+  'Cheque Deposit': 'chequedeposit.read',
+  'Cheque Issue': 'chequeissue.update',
+  'Credit Note': 'creditnote.read',
+  'Debit Note': 'debitnote.read',
+  'Fund Transfer': 'fundtransfer.update',
+  'Inventory Adjustment Voucher': 'inventoryadjustmentvoucher.read',
+  'Inventory Conversion Voucher': 'inventoryconversionvoucher.read',
+  'Item': 'item.read',
+  'Journal Voucher': 'journalvoucher.read',
+  'Payment Receipt': 'paymentreceipt.read',
+  'Purchase Voucher': 'purchasevoucher.read',
+  'Sales Voucher': 'sales.read',
+  'Tax Payment': 'taxpayment.update',
 }
 </script>
 
@@ -174,7 +174,7 @@ const getPermissionsWithSourceType = {
     <div class="flex justify-between">
       <div class="text-h5">
         <router-link
-          v-if="checkPermissions('inventoryaccount.view')"
+          v-if="checkPermissions('inventoryaccount.read')"
           class="text-blue"
           style="font-weight: 500; text-decoration: none"
           :to="`/${$route.params.company}/inventory/items/${fields?.item}`"

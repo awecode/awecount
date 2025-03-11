@@ -157,7 +157,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('taxpayment.modify')"
+            v-if="checkPermissions('taxpayment.update')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
             label="edit"

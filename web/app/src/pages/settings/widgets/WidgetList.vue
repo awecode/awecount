@@ -56,7 +56,7 @@ export default {
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('widget.modify')"
+            v-if="checkPermissions('widget.update')"
             class="text-blue l-edit-btn"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
             :to="`/${$route.params.company}/settings/dashboard-widgets/${props.row.id}/edit`"

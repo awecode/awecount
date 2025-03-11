@@ -189,7 +189,7 @@ export default {
           <div class="row align-center text-subtitle2 text-grey-8" style="padding: 8px 8px 8px 16px">
             <span v-for="invoice in props.row.invoices" :key="invoice.id" style="margin-right: 8px">
               <router-link
-                v-if="checkPermissions('sales.view')"
+                v-if="checkPermissions('sales.read')"
                 class="text-blue"
                 style="text-decoration: none; display: flex; align-items: center"
                 :to="`/${$route.params.company}/sales/vouchers/${invoice.id}`"
@@ -216,7 +216,7 @@ export default {
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md">
             <q-btn
-              v-if="checkPermissions('paymentreceipt.view')"
+              v-if="checkPermissions('paymentreceipt.read')"
               class="q-py-none q-px-md font-size-sm l-view-btn"
               color="blue"
               label="View"

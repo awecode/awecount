@@ -190,7 +190,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <div v-if="checkPermissions('purchasevoucher.view')" class="row q-gutter-x-md items-center">
+          <div v-if="checkPermissions('purchasevoucher.read')" class="row q-gutter-x-md items-center">
             <q-btn
               class="q-py-none q-px-md font-size-sm l-view-btn"
               color="blue"
@@ -207,7 +207,7 @@ export default {
         <q-td style="padding: 0" :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('purchasevoucher.view')"
+              v-if="checkPermissions('purchasevoucher.read')"
               class="text-blue"
               data-testid="voucher-no"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"

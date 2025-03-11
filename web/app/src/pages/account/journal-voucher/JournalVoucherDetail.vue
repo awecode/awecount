@@ -195,7 +195,7 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
       <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
         <div>
           <q-btn
-            v-if="checkPermissions('journalvoucher.modify') && fields?.status !== 'Cancelled'"
+            v-if="checkPermissions('journalvoucher.update') && fields?.status !== 'Cancelled'"
             class="text-h7 q-py-sm"
             color="orange"
             icon="edit"

@@ -72,7 +72,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('accountopeningbalance.modify')"
+            v-if="checkPermissions('accountopeningbalance.update')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="orange-6"
             label="EDIT"
@@ -84,7 +84,7 @@ export default {
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('item.modify')"
+            v-if="checkPermissions('item.update')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
             :to="`/${$route.params.company}/inventory/items/${props.row.item_id}`"

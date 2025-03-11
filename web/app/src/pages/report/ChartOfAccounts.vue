@@ -303,7 +303,7 @@ const droppableCategories = computed(() => {
 
   const { type: draggingType, row: draggingRow } = draggingItem.value
 
-  if ((draggingType === 'category' && !checkPermissions('category.modify')) || (draggingType === 'account' && !checkPermissions('account.modify'))) {
+  if ((draggingType === 'category' && !checkPermissions('category.update')) || (draggingType === 'account' && !checkPermissions('account.update'))) {
     return []
   }
 

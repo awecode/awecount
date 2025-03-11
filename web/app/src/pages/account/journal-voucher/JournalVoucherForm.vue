@@ -220,7 +220,7 @@ export default {
           @click.prevent="onSubmitClick('Unapproved')"
         />
         <q-btn
-          v-if="checkPermissions('journalvoucher.modify') && isEdit && fields.status === 'Draft'"
+          v-if="checkPermissions('journalvoucher.update') && isEdit && fields.status === 'Draft'"
           class="q-mr-md q-py-sm"
           color="orange-7"
           icon="fa-solid fa-pen-to-square"
@@ -236,7 +236,7 @@ export default {
           @click.prevent="onSubmitClick('Approved')"
         />
         <q-btn
-          v-if="checkPermissions('journalvoucher.modify') && isEdit"
+          v-if="checkPermissions('journalvoucher.update') && isEdit"
           color="green-8"
           icon="fa-solid fa-floppy-disk"
           label="Update"

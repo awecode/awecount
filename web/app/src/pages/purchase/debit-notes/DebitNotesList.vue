@@ -146,7 +146,7 @@ export default {
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <div v-if="checkPermissions('debitnote.view')" class="row q-gutter-x-md items-center">
+          <div v-if="checkPermissions('debitnote.read')" class="row q-gutter-x-md items-center">
             <q-btn
               class="q-py-none q-px-md font-size-sm l-view-btn"
               color="blue"
@@ -161,7 +161,7 @@ export default {
         <q-td style="padding: 0" :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('debitnote.view')"
+              v-if="checkPermissions('debitnote.read')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
               :to="`/${$route.params.company}/purchase/debit-notes/${props.row.id}`"

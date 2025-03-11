@@ -565,7 +565,7 @@ watch(
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('item.modify') && isEdit"
+            v-if="checkPermissions('item.update') && isEdit"
             class="q-ml-auto q-px-xl"
             color="green"
             label="Update"

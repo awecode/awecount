@@ -100,7 +100,7 @@ const { rows, resetFilters, filters, loading, searchQuery, pagination, onRequest
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('category.modify')"
+            v-if="checkPermissions('category.update')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="orange-7"
             label="Edit"

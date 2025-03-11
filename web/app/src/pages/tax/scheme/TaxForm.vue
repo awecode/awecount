@@ -91,7 +91,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('taxscheme.modify') && isEdit"
+            v-if="checkPermissions('taxscheme.update') && isEdit"
             class="q-ml-auto q-px-lg"
             color="green"
             label="Update"

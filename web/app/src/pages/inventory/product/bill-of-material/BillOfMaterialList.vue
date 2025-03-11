@@ -64,7 +64,7 @@ const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('billofmaterial.modify')"
+            v-if="checkPermissions('billofmaterial.update')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
             label="edit"

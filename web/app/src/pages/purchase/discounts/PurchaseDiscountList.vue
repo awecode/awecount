@@ -114,7 +114,7 @@ export default {
         <q-td :props="props">
           <div class="row q-gutter-x-md items-center">
             <q-btn
-              v-if="checkPermissions('purchasediscount.modify')"
+              v-if="checkPermissions('purchasediscount.update')"
               class="q-py-none q-px-md font-size-sm l-edit-btn"
               color="orange-7"
               label="Edit"

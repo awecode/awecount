@@ -123,7 +123,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('bankcashdeposit.modify') && isEdit"
+            v-if="checkPermissions('bankcashdeposit.update') && isEdit"
             color="green"
             label="Update"
             type="submit"
@@ -139,7 +139,7 @@ export default {
             @click.prevent="isDeleteOpen = true"
           />
           <q-btn
-            v-if="fields?.status && fields?.status != 'Cancelled' && checkPermissions('bankcashdeposit.modify')"
+            v-if="fields?.status && fields?.status != 'Cancelled' && checkPermissions('bankcashdeposit.update')"
             class="text-h7 q-py-sm"
             color="blue"
             icon="library_books"

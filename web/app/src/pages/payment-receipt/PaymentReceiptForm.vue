@@ -250,7 +250,7 @@ export default {
               @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
             />
             <q-btn
-              v-if="checkPermissions('paymentreceipt.modify') && isEdit"
+              v-if="checkPermissions('paymentreceipt.update') && isEdit"
               color="green"
               label="Update"
               type="submit"

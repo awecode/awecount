@@ -232,7 +232,7 @@ export default {
             @click.prevent="isDeleteOpen = true"
           />
           <q-btn
-            v-if="checkPermissions('inventoryadjustmentvoucher.modify') && isEdit && fields.status !== 'Cancelled'"
+            v-if="checkPermissions('inventoryadjustmentvoucher.update') && isEdit && fields.status !== 'Cancelled'"
             color="green"
             label="Update"
             type="submit"

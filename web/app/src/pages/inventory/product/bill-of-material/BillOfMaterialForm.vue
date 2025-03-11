@@ -129,7 +129,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn
-            v-if="checkPermissions('billofmaterial.modify') && isEdit && fields.status !== 'Cancelled'"
+            v-if="checkPermissions('billofmaterial.update') && isEdit && fields.status !== 'Cancelled'"
             color="green"
             label="Update"
             type="submit"

@@ -169,7 +169,7 @@ export default {
         @click.prevent="onSubmitClick('Issued')"
       />
       <q-btn
-        v-if="checkPermissions('chequedeposit.modify') && isEdit"
+        v-if="checkPermissions('chequedeposit.update') && isEdit"
         color="green-6"
         icon="fa-solid fa-floppy-disk"
         type="submit"

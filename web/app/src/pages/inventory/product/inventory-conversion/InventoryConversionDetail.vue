@@ -283,14 +283,14 @@ export default {
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
             <q-btn
-              v-if="checkPermissions('inventoryconversionvoucher.view') && fields?.status !== 'Cancelled'"
+              v-if="checkPermissions('inventoryconversionvoucher.read') && fields?.status !== 'Cancelled'"
               color="orange-5"
               icon="edit"
               label="Edit"
               :to="`/${$route.params.company}/inventory/conversions/${fields?.id}`"
             />
             <q-btn
-              v-if="checkPermissions('inventoryconversionvoucher.modify') && fields?.status !== 'Cancelled'"
+              v-if="checkPermissions('inventoryconversionvoucher.update') && fields?.status !== 'Cancelled'"
               color="red-5"
               icon="cancel"
               label="Cancel"

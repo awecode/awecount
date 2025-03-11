@@ -256,7 +256,7 @@ export default {
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
         <q-btn
-          v-if="checkPermissions('challan.modify') && isEdit && fields.status === 'Issued'"
+          v-if="checkPermissions('challan.update') && isEdit && fields.status === 'Issued'"
           color="green"
           icon="done_all"
           label="Mark As Resolved"
@@ -264,7 +264,7 @@ export default {
           @click.prevent="onResolvedClick"
         />
         <q-btn
-          v-if="checkPermissions('challan.modify') && (fields.status === 'Issued' || fields.status === 'Resolved')"
+          v-if="checkPermissions('challan.update') && (fields.status === 'Issued' || fields.status === 'Resolved')"
           color="red"
           icon="cancel"
           label="Cancel"
@@ -287,7 +287,7 @@ export default {
           @click.prevent="() => onSubmitClick('Issued')"
         />
         <q-btn
-          v-if="checkPermissions('challan.modify') && isEdit && fields.status !== 'Cancelled'"
+          v-if="checkPermissions('challan.update') && isEdit && fields.status !== 'Cancelled'"
           color="green"
           :label="fields.status === 'Draft' ? 'Issue From Draft' : 'Update'"
           :loading="loading"

@@ -137,7 +137,7 @@ export default {
           @click.prevent="onCancelClick"
         />
         <q-btn
-          v-if="checkPermissions('widget.modify') && isEdit"
+          v-if="checkPermissions('widget.update') && isEdit"
           color="green-8"
           label="Update"
           type="submit"

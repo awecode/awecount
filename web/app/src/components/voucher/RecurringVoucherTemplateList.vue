@@ -152,7 +152,7 @@ const newColumn = [
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('recurringvouchertemplate.modify')"
+            v-if="checkPermissions('recurringvouchertemplate.update')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
             label="edit"

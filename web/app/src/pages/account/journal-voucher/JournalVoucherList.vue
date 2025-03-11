@@ -112,7 +112,7 @@ export default {
         <q-td :props="props">
           <div class="flex gap-4 no-wrap">
             <q-btn
-              v-if="checkPermissions('journalvoucher.view')"
+              v-if="checkPermissions('journalvoucher.read')"
               class="q-py-none q-px-md font-size-sm l-view-btn"
               color="blue"
               label="View"
@@ -120,7 +120,7 @@ export default {
               :to="`/${$route.params.company}/journal-voucher/${props.row.id}/view`"
             />
             <q-btn
-              v-if="props.row.status !== 'Cancelled' && checkPermissions('journalvoucher.modify')"
+              v-if="props.row.status !== 'Cancelled' && checkPermissions('journalvoucher.update')"
               class="q-py-none q-px-md font-size-sm l-edit-btn"
               color="orange-7"
               label="Edit"
@@ -151,7 +151,7 @@ export default {
         <q-td style="padding: 0" :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('journalvoucher.view')"
+              v-if="checkPermissions('journalvoucher.read')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
               :to="`/${$route.params.company}/journal-voucher/${props.row.id}/view`"

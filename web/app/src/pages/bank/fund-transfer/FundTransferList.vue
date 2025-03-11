@@ -167,7 +167,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('fundtransfer.modify')"
+            v-if="checkPermissions('fundtransfer.update')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="orange-6"
             label="Edit"
@@ -179,7 +179,7 @@ export default {
       <template #body-cell-voucher_no="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('fundtransfer.modify')"
+            v-if="checkPermissions('fundtransfer.update')"
             class="text-blue text-weight-medium"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
             :to="`/${$route.params.company}/fund-transfer/${props.row.id}`"

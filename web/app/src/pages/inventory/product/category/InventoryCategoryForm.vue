@@ -317,7 +317,7 @@ const onSubmitClick = () => {
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('inventorycategory.modify') && isEdit"
+            v-if="checkPermissions('inventorycategory.update') && isEdit"
             class="q-ml-auto q-px-xl"
             color="green"
             label="Update"

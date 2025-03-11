@@ -157,7 +157,7 @@ export default {
       <template #body-cell-party="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('category.modify')"
+            v-if="checkPermissions('category.update')"
             class="text-blue l-view-btn"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
             :to="`/${$route.params.company}/crm/parties/${props.row.party_id}/account`"

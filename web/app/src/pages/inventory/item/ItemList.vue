@@ -117,7 +117,7 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('item.view')"
+            v-if="checkPermissions('item.read')"
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             color="blue"
             label="View"
@@ -125,7 +125,7 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
             :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }"
           />
           <q-btn
-            v-if="checkPermissions('item.modify')"
+            v-if="checkPermissions('item.update')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
             label="edit"
@@ -137,7 +137,7 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('item.view')"
+            v-if="checkPermissions('item.read')"
             class="text-blue block"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
             :to="`/${$route.params.company}/inventory/items/${props.row.id}`"
@@ -152,7 +152,7 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
       <template #body-cell-category="props">
         <q-td :props="props">
           <router-link
-            v-if="props.row.category && checkPermissions('inventorycategory.modify')"
+            v-if="props.row.category && checkPermissions('inventorycategory.update')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
             :to="{ name: 'company-inventory-categories-id', params: { company: $route.params.company, id: props.row.category.id } }"

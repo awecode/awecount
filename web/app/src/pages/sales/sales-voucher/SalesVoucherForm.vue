@@ -56,7 +56,7 @@ const onSubmitClick = async (status) => {
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
         />
         <q-btn
-          v-if="isEdit && fields.status === 'Draft' && checkPermissions('sales.modify')"
+          v-if="isEdit && fields.status === 'Draft' && checkPermissions('sales.update')"
           color="orange-8"
           data-testid="draft-btn"
           type="submit"

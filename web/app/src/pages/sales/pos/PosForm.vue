@@ -184,7 +184,7 @@ const getPartyObj = () => {
 }
 
 const hasItemModifyAccess = computed(() => {
-  return checkPermissions('item.modify')
+  return checkPermissions('item.update')
 })
 watch(
   () => formDefaults.value,

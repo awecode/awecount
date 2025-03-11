@@ -201,7 +201,7 @@ const onCancelClick = () => {
       </q-card-section>
     </q-card>
     <div v-if="fields" class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
-      <div v-if="checkPermissions('chequedeposit.modify')">
+      <div v-if="checkPermissions('chequedeposit.update')">
         <q-btn
           class="text-h7 q-py-sm"
           color="orange"
@@ -210,7 +210,7 @@ const onCancelClick = () => {
           :to="`/${$route.params.company}/banking/cheque-deposits/${props.id}/edit`"
         />
       </div>
-      <div v-if="fields?.status === 'Issued' && checkPermissions('chequedeposit.modify')">
+      <div v-if="fields?.status === 'Issued' && checkPermissions('chequedeposit.update')">
         <q-btn
           class="text-h7 q-py-sm"
           color="green"

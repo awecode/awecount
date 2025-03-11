@@ -588,7 +588,7 @@ async function parseExcelFile(file: File): Promise<void> {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('reconciliationstatement.view')"
+            v-if="checkPermissions('reconciliationstatement.read')"
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             color="blue"
             label="View"
@@ -596,7 +596,7 @@ async function parseExcelFile(file: File): Promise<void> {
             :to="`/${$route.params.company}/banking/reconciliation/${props.row.id}`"
           />
           <q-btn
-            v-if="checkPermissions('reconciliationstatement.view') && props.row.reconciled_rows < props.row.total_rows"
+            v-if="checkPermissions('reconciliationstatement.read') && props.row.reconciled_rows < props.row.total_rows"
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             color="green"
             label="Reconcile"
@@ -604,7 +604,7 @@ async function parseExcelFile(file: File): Promise<void> {
             :to="`/${$route.params.company}/banking/reconciliation/reconcile?account_id=${props.row.account.id}&start_date=${props.row.start_date}&end_date=${props.row.end_date}`"
           />
           <q-btn
-            v-else-if="checkPermissions('reconciliationstatement.view')"
+            v-else-if="checkPermissions('reconciliationstatement.read')"
             disable
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             color="blue"
@@ -624,7 +624,7 @@ async function parseExcelFile(file: File): Promise<void> {
       <template #body-cell-category="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('category.modify')"
+            v-if="checkPermissions('category.update')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
             :to="`/account-category/${props.row.category.id}`"
@@ -637,7 +637,7 @@ async function parseExcelFile(file: File): Promise<void> {
       <template #body-cell-account="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('account.view')"
+            v-if="checkPermissions('account.read')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
             :to="`/account/ledgers/${props.row.account.id}/?start_date=${props.row.start_date}&end_date=${props.row.end_date}`"

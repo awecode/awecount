@@ -530,7 +530,7 @@ const loadSalesInvoice = async (index: number, done: any) => {
                       <div class="flex justify-between items-center mb-1">
                         <span class="text-sm text-gray-500">{{ data.date }}</span>
                         <router-link
-                          v-if="checkPermissions('sales.view')"
+                          v-if="checkPermissions('sales.read')"
                           class="text-blue-600 text-xs hover:underline"
                           target="_blank"
                           :to="`/${$route.params.company}/sales/vouchers/${data.id}`"

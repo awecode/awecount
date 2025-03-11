@@ -66,7 +66,7 @@ export default {
           @click.prevent="submitForm"
         />
         <q-btn
-          v-if="checkPermissions('salesagent.modify') && isEdit"
+          v-if="checkPermissions('salesagent.update') && isEdit"
           color="green"
           label="Update"
           type="submit"

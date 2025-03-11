@@ -224,7 +224,7 @@ export default {
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
             <q-btn
-              v-if="checkPermissions('inventoryadjustmentvoucher.modify') && fields?.status !== 'Cancelled'"
+              v-if="checkPermissions('inventoryadjustmentvoucher.update') && fields?.status !== 'Cancelled'"
               color="orange-5"
               icon="edit"
               label="Edit"

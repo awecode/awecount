@@ -55,7 +55,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('brand.modify') && isEdit"
+            v-if="checkPermissions('brand.update') && isEdit"
             class="q-ml-auto"
             color="green"
             label="Update"

@@ -42,7 +42,7 @@ export default {
       <template #body-cell-name="props">
         <q-td style="padding: 0" :props="props">
           <router-link
-            v-if="checkPermissions('unit.modify')"
+            v-if="checkPermissions('unit.update')"
             class="text-blue text-weight-medium"
             style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px; text-decoration: none"
             :to="`/${$route.params.company}/inventory/units/${props.row.id}/edit`"

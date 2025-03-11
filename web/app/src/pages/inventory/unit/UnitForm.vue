@@ -1,8 +1,8 @@
 <script setup>
-import { useRoute } from 'vue-router'
-
 import checkPermissions from 'src/composables/checkPermissions'
+
 import useForm from 'src/composables/useForm'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const endpoint = `/api/company/${route.params.company}/units/`
@@ -50,7 +50,7 @@ useMeta({
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('unit.modify') && isEdit"
+            v-if="checkPermissions('unit.update') && isEdit"
             class="q-ml-auto"
             color="green"
             label="Update"

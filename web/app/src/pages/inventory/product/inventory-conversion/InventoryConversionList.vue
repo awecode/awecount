@@ -111,7 +111,7 @@ const newColumn = [
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('inventoryconversionvoucher.view')"
+            v-if="checkPermissions('inventoryconversionvoucher.read')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="blue-6"
             label="View"
@@ -119,7 +119,7 @@ const newColumn = [
             :to="`/${$route.params.company}/inventory/conversions/${props.row.id}`"
           />
           <q-btn
-            v-if="checkPermissions('inventoryconversionvoucher.modify')"
+            v-if="checkPermissions('inventoryconversionvoucher.update')"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             color="orange-6"
             label="Edit"
@@ -132,7 +132,7 @@ const newColumn = [
       <template #body-cell-voucher_no="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('inventoryconversionvoucher.modify')"
+            v-if="checkPermissions('inventoryconversionvoucher.update')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
             :to="`/${$route.params.company}/inventory/conversions/${props.row.id}/edit`"

@@ -154,7 +154,7 @@ export default {
       <template #body-cell-issued_to="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('chequeissue.modify')"
+            v-if="checkPermissions('chequeissue.update')"
             class="text-blue"
             style="font-weight: 500; text-decoration: none"
             :to="`/${$route.params.company}/banking/cheque-issues/${props.row.id}/edit`"
@@ -184,7 +184,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('chequeissue.modify')"
+            v-if="checkPermissions('chequeissue.update')"
             class="q-py-none q-px-md font-size-sm l-view-btn"
             color="orange-6"
             label="Edit"

@@ -74,7 +74,7 @@ export default {
             :to="`/${$route.params.company}/account/ledgers/${props.row.ledger}`"
           />
           <q-btn
-            v-if="checkPermissions('bankaccount.modify')"
+            v-if="checkPermissions('bankaccount.update')"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             color="orange-6"
             label="Edit"

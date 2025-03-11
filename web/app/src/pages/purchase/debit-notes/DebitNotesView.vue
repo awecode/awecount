@@ -243,14 +243,14 @@ export default {
       <div class="row">
         <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
           <q-btn
-            v-if="checkPermissions('debitnote.modify') && (fields.can_update_issued || fields.status === 'Draft')"
+            v-if="checkPermissions('debitnote.update') && (fields.can_update_issued || fields.status === 'Draft')"
             color="orange-6"
             icon="edit"
             label="Edit"
             :to="`/${$route.params.company}/purchase/debit-notes/${fields.id}/edit`"
           />
           <q-btn
-            v-if="fields?.status === 'Issued' && checkPermissions('debitnote.modify')"
+            v-if="fields?.status === 'Issued' && checkPermissions('debitnote.update')"
             color="green-6"
             icon="mdi-check-all"
             label="mark as resolved"
