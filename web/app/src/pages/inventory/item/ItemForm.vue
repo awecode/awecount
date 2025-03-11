@@ -8,9 +8,7 @@ import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
 
 const route = useRoute()
 const $q = useQuasar()
-const toggleExpenses = (type) => {
-  fields.value[type] = false
-}
+
 const images = ref({
   front_image: null,
   back_image: null,
@@ -37,6 +35,11 @@ useMeta(() => {
     title: `${isEdit?.value ? 'Items Update' : 'Items Add'} | Awecount`,
   }
 })
+
+const toggleExpenses = (type) => {
+  fields.value[type] = false
+}
+
 const isExpenses = computed(() => fields.value.direct_expense || fields.value.indirect_expense)
 
 watch(isExpenses, () => {
