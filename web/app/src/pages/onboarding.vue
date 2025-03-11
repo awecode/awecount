@@ -205,7 +205,7 @@ const createCompany = async () => {
       country: countries.find(c => c.value === state.country)?.label,
       country_iso: state.country,
       currency_code: state.currency,
-      tax_registration_number: state.taxRegistrationNumber,
+      tax_identification_number: state.taxRegistrationNumber,
     }
 
     const res = await $api('/api/company/', { method: 'POST', body: companyData })

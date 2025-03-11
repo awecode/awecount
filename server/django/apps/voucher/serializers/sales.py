@@ -1,7 +1,6 @@
 import datetime
 
 from django.conf import settings
-from django.core.exceptions import SuspiciousOperation
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import F
 from django.utils import timezone
@@ -710,8 +709,8 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     sales_agent = SalesAgentSerializer()
 
     rows = SalesVoucherRowDetailSerializer(many=True)
-    tax_registration_number = serializers.ReadOnlyField(
-        source="party.tax_registration_number"
+    tax_identification_number = serializers.ReadOnlyField(
+        source="party.tax_identification_number"
     )
     enable_row_description = serializers.ReadOnlyField(
         source="company.sales_setting.enable_row_description"
@@ -765,11 +764,11 @@ class SalesVoucherChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesVoucher
         fields = ("id", "voucher_no", "date", "status", "customer_name", "total_amount")
-        
-        
+
+
 class SalesVoucherMinListSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
-    
+
     class Meta:
         model = SalesVoucher
         fields = (
@@ -841,7 +840,7 @@ class InvoiceDesignSerializer(serializers.ModelSerializer):
 
 class SalesBookSerializer(serializers.ModelSerializer):
     buyers_name = serializers.ReadOnlyField(source="buyer_name")
-    buyers_pan = serializers.ReadOnlyField(source="party.tax_registration_number")
+    buyers_pan = serializers.ReadOnlyField(source="party.tax_identification_number")
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
 
     class Meta:
@@ -862,7 +861,7 @@ class SalesBookSerializer(serializers.ModelSerializer):
 
 class SalesBookExportSerializer(serializers.ModelSerializer):
     buyers_name = serializers.ReadOnlyField(source="buyer_name")
-    buyers_pan = serializers.ReadOnlyField(source="party.tax_registration_number")
+    buyers_pan = serializers.ReadOnlyField(source="party.tax_identification_number")
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
 
     class Meta:
@@ -880,7 +879,7 @@ class SalesBookExportSerializer(serializers.ModelSerializer):
 
 class PurchaseBookSerializer(serializers.ModelSerializer):
     sellers_name = serializers.ReadOnlyField(source="party.name")
-    sellers_pan = serializers.ReadOnlyField(source="party.tax_registration_number")
+    sellers_pan = serializers.ReadOnlyField(source="party.tax_identification_number")
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
 
     class Meta:
@@ -900,7 +899,7 @@ class SalesRowSerializer(serializers.ModelSerializer):
     item = serializers.CharField(source="item.name")
     buyers_name = serializers.ReadOnlyField(source="voucher.buyer_name")
     buyers_pan = serializers.ReadOnlyField(
-        source="voucher.party.tax_registration_number"
+        source="voucher.party.tax_identification_number"
     )
     voucher__voucher_no = serializers.CharField(source="voucher.voucher_no")
     voucher__date = serializers.CharField(source="voucher.date")

@@ -482,7 +482,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         "party__name",
         "remarks",
         "total_amount",
-        "party__tax_registration_number",
+        "party__tax_identification_number",
         "customer_name",
         "date",
         "address",
@@ -1016,7 +1016,7 @@ class PurchaseVoucherViewSet(
         "party__name",
         "remarks",
         "total_amount",
-        "party__tax_registration_number",
+        "party__tax_identification_number",
         "rows__item__name",
     ]
     filterset_class = PurchaseVoucherFilterSet
@@ -1261,7 +1261,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
         "party__name",
         "remarks",
         "total_amount",
-        "party__tax_registration_number",
+        "party__tax_identification_number",
         "rows__item__name",
     ]
     filterset_class = CreditNoteFilterSet
@@ -1426,7 +1426,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
         "party__name",
         "remarks",
         "total_amount",
-        "party__tax_registration_number",
+        "party__tax_identification_number",
         "rows__item__name",
     ]
     filterset_class = DebitNoteFilterSet
@@ -1824,7 +1824,7 @@ class SalesBookViewSet(
                 column=1,
                 row=4,
                 value="करदाता दर्ता नं (PAN) : {}        करदाताको नाम: {}         साल    {}      कर अवधि: {} -{}".format(
-                    self.request.company.tax_registration_number,
+                    self.request.company.tax_identification_number,
                     self.request.company.name,
                     year_str,
                     ad2bs_str(self.request.query_params.get("start_date")).replace(
@@ -1859,7 +1859,7 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
         "voucher__sales_agent__name",
         "voucher__party__name",
         "voucher__party__name",
-        "voucher__party__tax_registration_number",
+        "voucher__party__tax_identification_number",
         "item__name",
     ]
 
@@ -1928,7 +1928,7 @@ class PurchaseVoucherRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
 
     search_fields = [
         "voucher__party__name",
-        "voucher__party__tax_registration_number",
+        "voucher__party__tax_identification_number",
         "item__name",
     ]
 
@@ -2075,7 +2075,9 @@ class PurchaseBookViewSet(
                 )
                 ws.cell(column=2, row=idx + 7, value=row.get("voucher_no"))
                 ws.cell(column=4, row=idx + 7, value=row.get("party_name"))
-                ws.cell(column=5, row=idx + 7, value=row.get("tax_registration_number"))
+                ws.cell(
+                    column=5, row=idx + 7, value=row.get("tax_identification_number")
+                )
                 ws.cell(column=6, row=idx + 7, value=taxable + non_taxable)
                 ws.cell(column=7, row=idx + 7, value=non_taxable)
                 ws.cell(column=8, row=idx + 7, value=taxable)
@@ -2092,7 +2094,7 @@ class PurchaseBookViewSet(
                 column=1,
                 row=4,
                 value="करदाता दर्ता नं (PAN) : {}        करदाताको नाम: {}         साल    {}      कर अवधि: {} -{}".format(
-                    self.request.company.tax_registration_number,
+                    self.request.company.tax_identification_number,
                     self.request.company.name,
                     year_str,
                     ad2bs_str(self.request.query_params.get("start_date")).replace(
@@ -2361,7 +2363,7 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         "voucher_no",
         "party__name",
         "remarks",
-        "party__tax_registration_number",
+        "party__tax_identification_number",
         "customer_name",
         "rows__item__name",
     ]
@@ -2550,7 +2552,7 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         "voucher_no",
         "party__name",
         "remarks",
-        "party__tax_registration_number",
+        "party__tax_identification_number",
         "rows__item__name",
     ]
 

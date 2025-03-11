@@ -56,7 +56,7 @@ class DisableCancelEditMixin(object):
 
 
 class RoyaltyLedgerInfoPartySerializer(serializers.Serializer):
-    tax_registration_number = serializers.CharField(required=True)
+    tax_identification_number = serializers.CharField(required=True)
     name = serializers.CharField(required=True)
 
     royalty_amount = serializers.FloatField(required=True)
@@ -92,13 +92,17 @@ class RoyaltyLedgerInfoSerializer(serializers.Serializer):
         for royalty_party in royalty_ledger_info["parties"]:
             try:
                 party = Party.objects.get(
-                    tax_registration_number=royalty_party["tax_registration_number"],
+                    tax_identification_number=royalty_party[
+                        "tax_identification_number"
+                    ],
                     company_id=self.context["request"].company_id,
                 )
             except Party.DoesNotExist:
                 party = Party(
                     name=royalty_party["name"],
-                    tax_registration_number=royalty_party["tax_registration_number"],
+                    tax_identification_number=royalty_party[
+                        "tax_identification_number"
+                    ],
                     company_id=self.context["request"].company_id,
                 )
                 party.save()

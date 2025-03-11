@@ -100,12 +100,12 @@ function onDeletClick() {
           </div>
           <div class="row q-col-gutter-md">
             <q-input
-              v-model="fields.tax_registration_number"
+              v-model="fields.tax_identification_number"
               class="col-12 col-md-6"
               label="Tax Registration Number"
               type="number"
-              :error="!!errors.tax_registration_number"
-              :error-message="errors.tax_registration_number"
+              :error="!!errors.tax_identification_number"
+              :error-message="errors.tax_identification_number"
             />
           </div>
           <PartyRepresentative v-model="fields.representative" index="1" :errors="errors?.representative" />

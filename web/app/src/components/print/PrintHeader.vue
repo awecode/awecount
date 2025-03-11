@@ -40,7 +40,7 @@ const store = useLoginStore()
         <div style="display: flex; flex-direction: column; gap: 3px; align-items: flex-end">
           <div style="font-size: 14px">
             VAT No.
-            <strong>{{ store.companyInfo.tax_registration_number }}</strong>
+            <strong>{{ store.companyInfo.tax_identification_number }}</strong>
           </div>
           <div v-if="store.companyInfo.website" class="flex items-center">
             <img alt="Website" src="/icons/web-fill.svg" style="margin-right: 10px; width: 14px" />
@@ -64,7 +64,7 @@ const store = useLoginStore()
           <div>
             Tax Reg. No.
             <strong>
-              {{ store.companyInfo.tax_registration_number }}
+              {{ store.companyInfo.tax_identification_number }}
             </strong>
           </div>
         </div>

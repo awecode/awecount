@@ -206,8 +206,8 @@ class InvoiceModel(models.Model):
             raise ValueError("This voucher cannot be mark as resolved!")
 
     def party_tax_reg_no(self):
-        if self.party_id and self.party.tax_registration_number:
-            return self.party.tax_registration_number
+        if self.party_id and self.party.tax_identification_number:
+            return self.party.tax_identification_number
         return ""
 
     def party_name(self):

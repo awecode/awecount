@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from decimal import ROUND_HALF_UP, localcontext
+
 from dateutil.utils import today
 from django.apps import apps
 from django.conf import settings
@@ -264,7 +265,7 @@ class Party(CompanyBaseModel):
     logo = models.ImageField(blank=True, null=True)
     contact_no = models.CharField(max_length=25, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    tax_registration_number = models.IntegerField(blank=True, null=True)
+    tax_identification_number = models.CharField(max_length=255, blank=True, null=True)
     supplier_account = models.OneToOneField(
         Account, null=True, related_name="supplier_detail", on_delete=models.SET_NULL
     )
@@ -308,7 +309,7 @@ class Party(CompanyBaseModel):
 
     class Meta:
         verbose_name_plural = "Parties"
-        unique_together = ("company", "tax_registration_number")
+        unique_together = ("company", "tax_identification_number")
 
     def save(self, *args, **kwargs):
         self.validate_unique()

@@ -53,7 +53,7 @@ class PartnerPurchaseVoucherViewSet(
                 Q(voucher_no__icontains=search_params)
                 | Q(party__name__icontains=search_params)
                 | Q(remarks__icontains=search_params)
-                | Q(party__tax_registration_number__icontains=search_params)
+                | Q(party__tax_identification_number__icontains=search_params)
                 | Q(rows__item__name__icontains=search_params)
             )
 

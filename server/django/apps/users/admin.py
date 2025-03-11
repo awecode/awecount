@@ -215,14 +215,14 @@ class CompanyAdmin(admin.ModelAdmin):
         "phone",
         "email",
         "alternate_email",
-        "tax_registration_number",
+        "tax_identification_number",
     )
     list_display = (
         "name",
         "address",
         "phone",
         "email",
-        "tax_registration_number",
+        "tax_identification_number",
     )
     list_filter = ("organization_type",)
     actions = [

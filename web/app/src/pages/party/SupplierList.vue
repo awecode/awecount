@@ -35,10 +35,10 @@ export default {
         field: 'email',
       },
       {
-        name: 'tax_registration_number',
+        name: 'tax_identification_number',
         label: 'Pan No.',
         align: 'left',
-        field: 'tax_registration_number',
+        field: 'tax_identification_number',
         sortable: true,
       },
       {

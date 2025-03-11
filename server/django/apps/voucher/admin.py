@@ -52,13 +52,13 @@ class SalesVoucherAdmin(admin.ModelAdmin):
     search_fields = (
         "voucher_no",
         "party__name",
-        "party__tax_registration_number",
+        "party__tax_identification_number",
         "customer_name",
         "address",
         "user__full_name",
         "user__email",
         "company__name",
-        "company__tax_registration_number",
+        "company__tax_identification_number",
         "remarks",
     )
     list_filter = ("company", "status", "mode", "fiscal_year")
@@ -111,9 +111,9 @@ class CreditNoteAdmin(admin.ModelAdmin):
     search_fields = (
         "voucher_no",
         "party__name",
-        "party__tax_registration_number",
+        "party__tax_identification_number",
         "company__name",
-        "company__tax_registration_number",
+        "company__tax_identification_number",
     )
     list_filter = (
         "company",
@@ -135,9 +135,9 @@ class DebitNoteAdmin(admin.ModelAdmin):
     search_fields = (
         "voucher_no",
         "party__name",
-        "party__tax_registration_number",
+        "party__tax_identification_number",
         "company__name",
-        "company__tax_registration_number",
+        "company__tax_identification_number",
     )
     list_filter = (
         "company",
@@ -176,9 +176,9 @@ class PurchaseVoucherAdmin(admin.ModelAdmin):
     search_fields = (
         "voucher_no",
         "party__name",
-        "party__tax_registration_number",
+        "party__tax_identification_number",
         "company__name",
-        "company__tax_registration_number",
+        "company__tax_identification_number",
     )
     list_filter = ("company",)
     list_display = ("company", "voucher_no", "party", "total_amount")
@@ -240,9 +240,9 @@ class ChallanAdmin(admin.ModelAdmin):
     search_fields = (
         "voucher_no",
         "party__name",
-        "party__tax_registration_number",
+        "party__tax_identification_number",
         "company__name",
-        "company__tax_registration_number",
+        "company__tax_identification_number",
     )
     list_filter = ("company",)
     list_display = (

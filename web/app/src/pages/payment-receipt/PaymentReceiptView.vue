@@ -107,7 +107,7 @@ export default {
           <div>{{ loginStore.companyInfo.address }}</div>
           <div>
             Tax Reg. No.
-            <strong>{{ loginStore.companyInfo.tax_registration_number }}</strong>
+            <strong>{{ loginStore.companyInfo.tax_identification_number }}</strong>
           </div>
         </div>
 

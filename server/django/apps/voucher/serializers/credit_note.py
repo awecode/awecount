@@ -169,8 +169,8 @@ class CreditNoteDetailSerializer(serializers.ModelSerializer):
     address = serializers.ReadOnlyField(source="party.address")
 
     rows = CreditNoteRowDetailSerializer(many=True)
-    tax_registration_number = serializers.ReadOnlyField(
-        source="party.tax_registration_number"
+    tax_identification_number = serializers.ReadOnlyField(
+        source="party.tax_identification_number"
     )
 
     invoice_data = serializers.SerializerMethodField()

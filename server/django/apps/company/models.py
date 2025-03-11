@@ -225,7 +225,7 @@ class Company(BaseModel):
         choices=COMPANY_TYPE_CHOICES,
         default=COMPANY_TYPE_CHOICES[0][0],
     )
-    tax_registration_number = models.CharField(max_length=255)
+    tax_identification_number = models.CharField(max_length=255, blank=True, null=True)
 
     # contact information
     address = models.TextField(blank=True, null=True)

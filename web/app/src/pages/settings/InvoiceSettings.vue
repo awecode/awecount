@@ -76,7 +76,7 @@ const data = {
       net_amount: 500.0,
     },
   ],
-  tax_registration_number: null,
+  tax_identification_number: null,
   enable_row_description: true,
   payment_receipts: [],
   options: {

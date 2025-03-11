@@ -90,7 +90,7 @@ export default function useGeneratePosPdf(
         align-items: flex-end;
       "
     >
-      <div style="font-size: 14px;" >VAT No. <strong>${companyInfo.tax_registration_number}</strong></div>
+      <div style="font-size: 14px;" >VAT No. <strong>${companyInfo.tax_identification_number}</strong></div>
       <div style="display: ${companyInfo.website ? 'flex' : 'none'}; align-items: center">
         <img
           src="/icons/web-fill.svg"
@@ -114,7 +114,7 @@ export default function useGeneratePosPdf(
               : ''
       }</h1>
       <div>${companyInfo.address}</div>
-      <div>Tax Reg. No. <strong>${companyInfo.tax_registration_number}</strong></div>
+      <div>Tax Reg. No. <strong>${companyInfo.tax_identification_number}</strong></div>
     </div>
 
     <div
@@ -214,7 +214,7 @@ export default function useGeneratePosPdf(
       <div style="font-weight: 600; color: grey;">Billed To:</div>
       <div>${partyObj ? partyObj.name : invoiceInfo.customer_name || ''}</div>
       <div>${partyObj && partyObj.address ? partyObj.address : ''}</div>
-  ${invoiceInfo.tax_registration_number ? `<div style="font-weight: 600; color: grey;">Tax reg. No. ${invoiceInfo.tax_registration_number}</div>` : ''}
+  ${invoiceInfo.tax_identification_number ? `<div style="font-weight: 600; color: grey;">Tax reg. No. ${invoiceInfo.tax_identification_number}</div>` : ''}
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
       <div>

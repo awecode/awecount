@@ -20,7 +20,7 @@ class PartyAdmin(admin.ModelAdmin):
         "address",
         "contact_no",
         "email",
-        "tax_registration_number",
+        "tax_identification_number",
         "company__name",
     )
     list_display = (
@@ -28,7 +28,7 @@ class PartyAdmin(admin.ModelAdmin):
         "address",
         "contact_no",
         "email",
-        "tax_registration_number",
+        "tax_identification_number",
         "company",
     )
     list_filter = ("company",)

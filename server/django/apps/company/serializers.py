@@ -18,7 +18,7 @@ class CompanyCreateSerializer(serializers.ModelSerializer):
         fields = [
             "name",
             "organization_type",
-            "tax_registration_number",
+            "tax_identification_number",
             "country",
             "country_iso",
             "currency_code",

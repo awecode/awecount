@@ -91,7 +91,7 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
         align-items: flex-end;
       "
     >
-      <div style="font-size: 14px;" >VAT No. <strong>${companyInfo.tax_registration_number}</strong></div>
+      <div style="font-size: 14px;" >VAT No. <strong>${companyInfo.tax_identification_number}</strong></div>
       <div style="display: ${companyInfo.website ? 'flex' : 'none'}; align-items: center">
         <img
           src="/icons/web-fill.svg"
@@ -115,7 +115,7 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
               : ''
       }</h1>
       <div>${companyInfo.address}</div>
-      <div>Tax Reg. No. <strong>${companyInfo.tax_registration_number}</strong></div>
+      <div>Tax Reg. No. <strong>${companyInfo.tax_identification_number}</strong></div>
     </div>
 
     <div
@@ -230,7 +230,7 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
       <div>${invoiceInfo.party ? invoiceInfo.customer_name || invoiceInfo.party_name : invoiceInfo.customer_name || ''}</div>
       <div style="${invoiceInfo.address ? '' : 'display: none;'}">${invoiceInfo.address}</div>
     <div style="${[2, 3].includes(invoice_template) && invoiceInfo.party_contact_no ? '' : 'display: none;'}">${invoiceInfo.party_contact_no}</div>
-      ${invoiceInfo.tax_registration_number ? `<div style="font-weight: 600; color: grey;">Tax reg. No. ${invoiceInfo.tax_registration_number}</div>` : ''}
+      ${invoiceInfo.tax_identification_number ? `<div style="font-weight: 600; color: grey;">Tax reg. No. ${invoiceInfo.tax_identification_number}</div>` : ''}
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
       <div style="${invoiceInfo.voucher_no ? '' : 'display: none;'}">
@@ -304,7 +304,7 @@ ${table}
         <div style="${invoiceInfo.address ? '' : 'display: none;'}"><span style="font-weight: 600; color: dimgray;">Address:</span> ${invoiceInfo.address}
         </div>
             <div style="${invoiceInfo.customer_name ? '' : 'display: none;'}"><span style="font-weight: 600; color: dimgray;">Customer:</span> ${invoiceInfo.customer_name}</div>
-        <div style="${invoiceInfo?.tax_registration_number ? '' : 'display: none;'}"><span style="font-weight: 600; color: dimgray;">Tax Reg.:</span> ${invoiceInfo.tax_registration_number || '-'}</div>
+        <div style="${invoiceInfo?.tax_identification_number ? '' : 'display: none;'}"><span style="font-weight: 600; color: dimgray;">Tax Reg.:</span> ${invoiceInfo.tax_identification_number || '-'}</div>
         <div style="font-weight: 600">Ref. Invoice No.: # ${invoiceInfo?.invoice_data?.length > 0 ? invoiceInfo.invoice_data[0]?.voucher_no : '-'}</div>
     </div>
       <div>

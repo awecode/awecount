@@ -67,7 +67,7 @@ class PartyViewSet(
     )
     search_fields = (
         "name",
-        "tax_registration_number",
+        "tax_identification_number",
         "contact_no",
         "address",
     )
@@ -429,7 +429,7 @@ class CustomerClosingView(APIView):
         balances = customers.annotate(
             dr=Sum("transactions__dr_amount"),
             cr=Sum("transactions__cr_amount"),
-        ).values("dr", "cr", "customer_detail__tax_registration_number", "id")
+        ).values("dr", "cr", "customer_detail__tax_identification_number", "id")
 
         last_invoice_dates = customers.annotate(
             last_invoice_date=Max(
@@ -444,7 +444,9 @@ class CustomerClosingView(APIView):
                     )
                 )
             )
-        ).values("customer_detail__tax_registration_number", "id", "last_invoice_date")
+        ).values(
+            "customer_detail__tax_identification_number", "id", "last_invoice_date"
+        )
         return Response(
             {"balances": balances, "last_invoice_dates": last_invoice_dates}
         )

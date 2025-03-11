@@ -705,7 +705,7 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     def cbms_nepal_data(self, conf):
         meta = self.get_voucher_meta()
         data = {
-            "seller_pan": self.company.tax_registration_number,
+            "seller_pan": self.company.tax_identification_number,
             "buyer_pan": self.party_tax_reg_no(),
             "buyer_name": self.party_name(),
             "total_sales": meta["grand_total"],
@@ -742,7 +742,7 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                             "address": self.company.address,
                             "contact": self.company.contact_no,
                             "email": ", ".join(self.company.emails),
-                            "tax_registration_number": self.company.tax_registration_number,
+                            "tax_identification_number": self.company.tax_identification_number,
                             "currency_code": self.company.currency_code,
                         },
                         "billed_to": self.party_name(),
@@ -1537,7 +1537,7 @@ class CreditNote(TransactionModel, InvoiceModel, CompanyBaseModel):
         if invoice:
             meta = invoice.get_voucher_meta()
             data = {
-                "seller_pan": self.company.tax_registration_number,
+                "seller_pan": self.company.tax_identification_number,
                 "buyer_pan": self.party_tax_reg_no(),
                 "buyer_name": self.party_name(),
                 "total_sales": meta["grand_total"],

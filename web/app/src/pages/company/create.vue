@@ -96,7 +96,7 @@ const createCompany = async () => {
       country: countries.find(c => c.value === state.country)?.label || null,
       country_iso: state.country,
       currency_code: state.currency,
-      tax_registration_number: state.taxRegistrationNumber,
+      tax_identification_number: state.taxRegistrationNumber,
     }
 
     const data = await $api('/api/company/', {
@@ -118,7 +118,7 @@ const createCompany = async () => {
         industry: apiErrors.company_type?.[0] || null,
         country: apiErrors.country?.[0] || null,
         currency: apiErrors.currency?.[0] || null,
-        taxRegistrationNumber: apiErrors.tax_registration_number?.[0] || null,
+        taxRegistrationNumber: apiErrors.tax_identification_number?.[0] || null,
       }
     } else {
       $q.notify({

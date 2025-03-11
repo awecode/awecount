@@ -88,7 +88,7 @@ const loadCompanyData = async () => {
   try {
     const data = await $api(`/api/company/${router.currentRoute.value.params.company}/`)
     state.name = data.name
-    state.taxRegistrationNumber = data.tax_registration_number
+    state.taxRegistrationNumber = data.tax_identification_number
     state.organization_type = data.organization_type
     state.country = data.country_iso
     state.currency = data.currency_code
@@ -146,7 +146,7 @@ const updateCompany = async () => {
       method: 'PATCH',
       body: {
         name: state.name,
-        tax_registration_number: state.taxRegistrationNumber,
+        tax_identification_number: state.taxRegistrationNumber,
         organization_type: state.organization_type,
         country_iso: state.country,
         currency_code: state.currency,

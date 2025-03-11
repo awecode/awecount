@@ -86,7 +86,7 @@
         </td>
         <td>: {{ object.date }}</td>
         <td align="right">
-            <p class="alignright f-bold">VAT Reg No.: {{ request.company.tax_registration_number }}</p>
+            <p class="alignright f-bold">VAT Reg No.: {{ request.company.tax_identification_number }}</p>
         </td>
     </tr>
     {% if object.bs_date %}
@@ -120,8 +120,8 @@
     </tr>
     <tr>
         <td>
-            {% if object.party and object.party.tax_registration_number %}
-                <p class="alignleft">VAT Reg No.: {{ object.party.tax_registration_number }}</p>
+            {% if object.party and object.party.tax_identification_number %}
+                <p class="alignleft">VAT Reg No.: {{ object.party.tax_identification_number }}</p>
             {% endif %}
         </td>
         <td align="right">

@@ -35,11 +35,15 @@ class PartnerAccountSerializer(serializers.Serializer):
     supplier_detail__name = serializers.CharField(required=False)
     supplier_detail__email = serializers.EmailField(required=False)
     supplier_detail__contact_no = serializers.CharField(required=False)
-    supplier_detail__tax_registration_number = serializers.IntegerField(required=False)
+    supplier_detail__tax_identification_number = serializers.IntegerField(
+        required=False
+    )
     customer_detail__name = serializers.CharField(required=False)
     customer_detail__email = serializers.EmailField(required=False)
     customer_detail__contact_no = serializers.CharField(required=False)
-    customer_detail__tax_registration_number = serializers.IntegerField(required=False)
+    customer_detail__tax_identification_number = serializers.IntegerField(
+        required=False
+    )
 
 
 class PartnerJournalVoucherRowSerializer(serializers.ModelSerializer):

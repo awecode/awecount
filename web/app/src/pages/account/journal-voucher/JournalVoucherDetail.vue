@@ -223,7 +223,7 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
           <div>{{ store?.companyInfo.address }}</div>
           <div>
             Tax Reg. No.
-            <strong>{{ store.companyInfo.tax_registration_number }}</strong>
+            <strong>{{ store.companyInfo.tax_identification_number }}</strong>
           </div>
         </div>
 

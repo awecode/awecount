@@ -1,4 +1,3 @@
-from django.core.exceptions import SuspiciousOperation
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -263,8 +262,8 @@ class PurchaseVoucherDetailSerializer(serializers.ModelSerializer):
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
 
     rows = PurchaseVoucherRowDetailSerializer(many=True)
-    tax_registration_number = serializers.ReadOnlyField(
-        source="party.tax_registration_number"
+    tax_identification_number = serializers.ReadOnlyField(
+        source="party.tax_identification_number"
     )
     enable_row_description = serializers.ReadOnlyField(
         source="company.purchase_setting.enable_row_description"
@@ -282,8 +281,8 @@ class PurchaseVoucherDetailSerializer(serializers.ModelSerializer):
 
 class PurchaseBookExportSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
-    tax_registration_number = serializers.ReadOnlyField(
-        source="party.tax_registration_number"
+    tax_identification_number = serializers.ReadOnlyField(
+        source="party.tax_identification_number"
     )
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
 
@@ -292,7 +291,7 @@ class PurchaseBookExportSerializer(serializers.ModelSerializer):
         fields = (
             "date",
             "party_name",
-            "tax_registration_number",
+            "tax_identification_number",
             "voucher_no",
             "voucher_meta",
         )

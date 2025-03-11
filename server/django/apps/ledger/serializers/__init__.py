@@ -29,7 +29,7 @@ class PartyRepresentativeSerializer(serializers.ModelSerializer):
 class PartyMinSerializer(serializers.ModelSerializer):
     class Meta:
         model = Party
-        fields = ("id", "name", "address", "tax_registration_number", "aliases")
+        fields = ("id", "name", "address", "tax_identification_number", "aliases")
 
 
 class CategoryMinSerializer(serializers.ModelSerializer):
@@ -82,22 +82,22 @@ class PartyAccountSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            "tax_registration_number",
+            "tax_identification_number",
             "supplier_account",
             "customer_account",
         )
 
 
 class PartySerializer(serializers.ModelSerializer):
-    tax_registration_number = serializers.CharField(
+    tax_identification_number = serializers.CharField(
         max_length=255, required=False, allow_null=True, allow_blank=True
     )
     representative = PartyRepresentativeSerializer(many=True, required=False)
 
     def create(self, validated_data):
         representatives = validated_data.pop("representative", None)
-        if validated_data.get("tax_registration_number") == "":
-            validated_data["tax_registration_number"] = None
+        if validated_data.get("tax_identification_number") == "":
+            validated_data["tax_identification_number"] = None
         # else:
         #     validated_data["part"]
         instance = super().create(validated_data)
@@ -115,8 +115,8 @@ class PartySerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         representatives = validated_data.pop("representative", None)
-        if validated_data.get("tax_registration_number") == "":
-            validated_data["tax_registration_number"] = None
+        if validated_data.get("tax_identification_number") == "":
+            validated_data["tax_identification_number"] = None
         instance = super().update(instance, validated_data)
         # Party.objects.filter(pk=instance.id).update(**validated_data)
         for index, representative in enumerate(representatives):
@@ -155,7 +155,7 @@ class PartyListSerializer(serializers.ModelSerializer):
             "address",
             "contact_no",
             "email",
-            "tax_registration_number",
+            "tax_identification_number",
             "dr",
             "cr",
             "balance",
