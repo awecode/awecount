@@ -251,6 +251,10 @@ export const useAuthStore = defineStore(
       return await _request(URLs.EMAIL, { method: 'PUT', body: { email } })
     }
 
+    const requestEmailVerification = async (email: string) => {
+      return await _request(URLs.VERIFY_EMAIL, { method: 'PATCH', body: { email } })
+    }
+
     const redirectToProvider = async ({ provider, redirect, process = 'login' }: { provider: string, redirect?: string, process?: AuthProcessType }) => {
       _postForm(`${config.api.baseURL}/${URLs.REDIRECT_TO_PROVIDER}`, {
         provider,
@@ -398,6 +402,7 @@ export const useAuthStore = defineStore(
       providerSignup,
       redirectToProvider,
       refreshUser,
+      requestEmailVerification,
       resendVerificationEmail,
       getProviderAccounts,
       disconnectProviderAccount,

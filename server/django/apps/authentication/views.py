@@ -1,6 +1,9 @@
+from allauth.account.utils import send_email_confirmation
 from allauth.core.exceptions import (
     SignupClosedException,
 )
+from allauth.decorators import rate_limit
+from allauth.headless.account import response
 from allauth.headless.base.response import (
     AuthenticationResponse,
     ForbiddenResponse,
@@ -20,12 +23,14 @@ from allauth.socialaccount.providers.oauth2.views import (
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.utils.decorators import method_decorator
 from requests import RequestException
 
 from .adapters import GoogleOAuth2Adapter
 from .inputs import EmailCheckInput
 
 
+@method_decorator(rate_limit(action="login"), name="handle")
 class EmailCheckView(AllauthAPIView):
     input_class = EmailCheckInput
 
@@ -47,6 +52,27 @@ class EmailCheckView(AllauthAPIView):
                 "status": status,
                 "signup_allowed": settings.SIGNUP_ALLOWED and not existing,
             },
+        )
+
+
+@method_decorator(rate_limit(action="login"), name="handle")
+class RequestEmailVerificationView(AllauthAPIView):
+    input_class = EmailCheckInput
+
+    def patch(self, request, *args, **kwargs):
+        email = self.input.cleaned_data["email"]
+
+        try:
+            user = get_user_model().objects.get(email=email)
+        except get_user_model().DoesNotExist:
+            return ErrorResponse(
+                request,
+                exception=AuthError.UNKNOWN,
+            )
+
+        sent = send_email_confirmation(request, user, email=email)
+        return response.RequestEmailVerificationResponse(
+            request, verification_sent=sent
         )
 
 
