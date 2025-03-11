@@ -1,24 +1,20 @@
-<script>
+<script setup>
+import { useRoute } from 'vue-router'
+
 import checkPermissions from 'src/composables/checkPermissions'
 import useForm from 'src/composables/useForm'
 
-export default {
-  setup() {
-    const route = useRoute()
-    const endpoint = `/api/company/${route.params.company}/units/`
-    const metaData = {
-      title: 'Units | Awecount',
-    }
-    useMeta(metaData)
-    return {
-      ...useForm(endpoint, {
-        getDefaults: false,
-        successRoute: `/${route.params.company}/inventory/units`,
-      }),
-      checkPermissions,
-    }
-  },
+const route = useRoute()
+const endpoint = `/api/company/${route.params.company}/units/`
+const metaData = {
+  title: 'Units | Awecount',
 }
+useMeta(metaData)
+
+const { fields, errors, loading, isEdit, submitForm } = useForm(endpoint, {
+  getDefaults: false,
+  successRoute: `/${route.params.company}/inventory/units`,
+})
 </script>
 
 <template>
