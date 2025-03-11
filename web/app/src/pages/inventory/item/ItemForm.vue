@@ -352,9 +352,10 @@ watch(
                 />
               </div>
               <div class="col-12 col-md-6">
-                <NAutoComplete
+                <n-auto-complete-v2
                   v-model="fields.tax_scheme_id"
                   label="Tax Scheme"
+                  :endpoint="`/api/company/${$route.params.company}/items/create-defaults/tax_schemes`"
                   :error="errors.tax_scheme_id"
                   :modal-component="checkPermissions('taxscheme.create') ? TaxForm : null"
                   :options="formDefaults.collections?.tax_scheme"
