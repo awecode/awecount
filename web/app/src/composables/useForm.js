@@ -2,7 +2,7 @@ import { useLoginStore } from 'src/stores/login-info'
 import { useModalFormLoading } from 'src/stores/ModalFormLoading'
 import { parseErrors } from 'src/utils/helpers'
 import { joinURL, withoutTrailingSlash, withTrailingSlash } from 'ufo'
-import { getCurrentInstance } from 'vue'
+import { getCurrentInstance, useId } from 'vue'
 import useApi from './useApi'
 
 export default (endpoint, config) => {
@@ -29,7 +29,9 @@ export default (endpoint, config) => {
   const today = new Date().toISOString().substring(0, 10)
   const isGetDefaultLoading = ref(false)
   const isGetEditLoading = ref(false)
-  const modalId = Math.floor(Math.random() * 999999999)
+
+  const modalId = useId()
+
   // seta a unique key for modal in ModalFormLoading store
   if (isModal) {
     modalFormLoading[modalId] = true
@@ -37,80 +39,7 @@ export default (endpoint, config) => {
   } else {
     store.isLoading = true
   }
-  onMounted(() => {
-    if (!editId && !isModal) {
-      editId = route.params.id
-    }
-    isEdit.value = !!editId
-    if (!config.getDefaults && !isEdit.value) {
-      store.isLoading = false
-    } else {
-      setModalLoadingFalse()
-    }
-    id.value = editId
-    if (isEdit.value) {
-      isGetEditLoading.value = true
-      let fetchUrl = withTrailingSlash(joinURL(endpoint, id.value))
-      if (config.queryParams) {
-        const queryParams = new URLSearchParams(config.queryParams).toString()
-        fetchUrl += `?${queryParams}`
-      }
-      useApi(fetchUrl)
-        .then((data) => {
-          fields.value = data
-          isGetEditLoading.value = false
-          if (!isGetDefaultLoading.value) {
-            store.isLoading = false
-          }
-          setModalLoadingFalse()
-        })
-        .catch((error) => {
-          isGetEditLoading.value = false
-          if (!isGetEditLoading.value) {
-            store.isLoading = false
-            setModalLoadingFalse()
-          }
-          if (error.status === 404) {
-            // router.push('/')
-            $q.notify({
-              color: 'negative',
-              message: 'Not Found!',
-              icon: 'report_problem',
-            })
-          }
-        })
-    }
-    if (config.getDefaults) {
-      isGetDefaultLoading.value = true
-      useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then((data) => {
-        if (data.fields) {
-          if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
-        }
 
-        if (defaultFieldsData) {
-          for (const key in defaultFieldsData) {
-            fields.value[key] = defaultFieldsData[key]
-          }
-        }
-
-        // From drop down branch
-        // TODO: resolve and remove this
-        // delete data.collections
-        // Object.assign(formDefaults.value, data)
-        // Object.assign(fields.value, data.fields)
-        // From drop down branch
-
-        // From main
-        formDefaults.value = data
-        isGetDefaultLoading.value = false
-        if (!isGetEditLoading.value) {
-          store.isLoading = false
-          setModalLoadingFalse()
-        }
-        // From main
-      })
-    }
-  })
   const getDefaultsFetchUrl = () => {
     return config.createDefaultsEndpoint || joinURL(endpoint, 'create-defaults/')
   }
@@ -162,7 +91,7 @@ export default (endpoint, config) => {
       })
       .catch((data) => {
         let message
-        if (data.status == 400) {
+        if (data.status === 400) {
           message = 'Please fill out the form correctly.'
           if (data.data?.detail) {
             message = `${data.data.detail}`
@@ -170,14 +99,14 @@ export default (endpoint, config) => {
           loading.value = false
           processErrors(data.response._data)
         }
-        if (data.status == 404) {
+        if (data.status === 404) {
           if (data.data?.detail) {
             message = `Not found - ${data.data.detail}`
           } else {
             message = 'Not found!'
           }
           loading.value = false
-        } else if (data.status == 500) {
+        } else if (data.status === 500) {
           message = 'Server Error! Please contact us with the problem.'
           loading.value = false
         } else if (data.status === 422) {
@@ -272,14 +201,96 @@ export default (endpoint, config) => {
         })
     }
   }
+
   const setModalLoadingFalse = () => {
-    if (isModal && modalFormLoading.hasOwnProperty(`${modalId}`)) {
+    if (isModal && Object.hasOwn(modalFormLoading, `${modalId}`)) {
       modalFormLoading[modalId] = false
     }
   }
+
+  onMounted(() => {
+    if (!editId && !isModal) {
+      editId = route.params.id
+    }
+
+    isEdit.value = !!editId
+
+    if (!config.getDefaults && !isEdit.value) {
+      store.isLoading = false
+    } else {
+      setModalLoadingFalse()
+    }
+
+    id.value = editId
+
+    if (isEdit.value) {
+      isGetEditLoading.value = true
+      let fetchUrl = withTrailingSlash(joinURL(endpoint, id.value))
+      if (config.queryParams) {
+        const queryParams = new URLSearchParams(config.queryParams).toString()
+        fetchUrl += `?${queryParams}`
+      }
+      useApi(fetchUrl)
+        .then((data) => {
+          fields.value = data
+          isGetEditLoading.value = false
+          if (!isGetDefaultLoading.value) {
+            store.isLoading = false
+          }
+          setModalLoadingFalse()
+        })
+        .catch((error) => {
+          isGetEditLoading.value = false
+          if (!isGetEditLoading.value) {
+            store.isLoading = false
+            setModalLoadingFalse()
+          }
+          if (error.status === 404) {
+            // router.push('/')
+            $q.notify({
+              color: 'negative',
+              message: 'Not Found!',
+              icon: 'report_problem',
+            })
+          }
+        })
+    }
+
+    if (config.getDefaults) {
+      isGetDefaultLoading.value = true
+      useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then((data) => {
+        if (data.fields) {
+          if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
+        }
+
+        if (defaultFieldsData) {
+          for (const key in defaultFieldsData) {
+            fields.value[key] = defaultFieldsData[key]
+          }
+        }
+
+        // From drop down branch
+        // TODO: resolve and remove this
+        // delete data.collections
+        // Object.assign(formDefaults.value, data)
+        // Object.assign(fields.value, data.fields)
+        // From drop down branch
+
+        // From main
+        formDefaults.value = data
+        isGetDefaultLoading.value = false
+        if (!isGetEditLoading.value) {
+          store.isLoading = false
+          setModalLoadingFalse()
+        }
+        // From main
+      })
+    }
+  })
+
   onUnmounted(() => {
     if (isModal) {
-      if (modalFormLoading.hasOwnProperty(`${modalId}`)) delete modalFormLoading[modalId]
+      if (Object.hasOwn(modalFormLoading, `${modalId}`)) delete modalFormLoading[modalId]
     } else {
       store.isLoading = false
     }
