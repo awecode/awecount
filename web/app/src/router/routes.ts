@@ -697,6 +697,83 @@ const companyRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    path:'settings',
+    children: [
+      {
+        path: 'item-merge',
+        name: 'company-settings-item-merge',
+        component: () => import('pages/settings/ItemMerge.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Item Merge'],
+        },
+      },
+      {
+        path: 'audit-logs',
+        name: 'company-settings-audit-logs',
+        component: () => import('pages/settings/auditlog/AuditLogList.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Audit Logs'],
+        },
+      },
+      {
+        path: 'audit-logs/:id',
+        name: 'company-settings-audit-logs-id',
+        component: () => import('pages/settings/auditlog/AuditLogDetail.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Audit Logs', 'Detail'],
+        },
+      },
+      {
+        path: 'dashboard-widgets',
+        name: 'company-settings-dashboard-widgets',
+        component: () => import('pages/settings/widgets/WidgetList.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Dashboard Widgets'],
+        },
+      },
+      {
+        path: 'dashboard-widgets/create',
+        name: 'company-settings-dashboard-widgets-create',
+        component: () => import('pages/settings/widgets/WidgetForm.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Dashboard Widgets', 'Create'],
+        },
+      },
+      {
+        path: 'dashboard-widgets/:id',
+        name: 'company-settings-dashboard-widgets-id',
+        component: () => import('pages/settings/widgets/WidgetForm.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Dashboard Widgets', 'Edit'],
+        },
+      },
+      {
+        path: 'payment-modes',
+        name: 'company-settings-payment-modes',
+        component: () => import('pages/settings/PaymentModeList.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Payment Modes'],
+        },
+      },
+      {
+        path: 'payment-modes/create',
+        name: 'company-settings-payment-modes-create',
+        component: () => import('pages/settings/PaymentModeForm.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Payment Modes', 'Create'],
+        },
+      },
+      {
+        path: 'payment-modes/:id',
+        name: 'company-settings-payment-modes-id',
+        component: () => import('pages/settings/PaymentModeForm.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Payment Modes', 'Edit'],
+        },
+      },
+    ],
+  },
+  {
     path: 'tax',
     name: 'company-tax',
     meta: {
