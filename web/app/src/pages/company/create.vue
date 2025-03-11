@@ -12,10 +12,8 @@ const { switchCompany } = useAuthStore()
 // Company creation state
 const state = reactive({
   companyName: '',
-  industry: null,
   country: null,
   currency: null,
-  taxRegistrationNumber: '',
 })
 
 const loading = ref(false)
@@ -25,22 +23,11 @@ const isSettingUp = ref(false)
 
 const errors = ref({
   companyName: null,
-  industry: null,
   country: null,
   currency: null,
-  taxRegistrationNumber: null,
 })
 
 // Options for dropdowns (same as onboarding)
-const companyTypes = [
-  { label: 'Private Limited', value: 'private_limited' },
-  { label: 'Public Limited', value: 'public_limited' },
-  { label: 'Sole Proprietorship', value: 'sole_proprietorship' },
-  { label: 'Partnership', value: 'partnership' },
-  { label: 'Corporation', value: 'corporation' },
-  { label: 'Non-profit', value: 'non_profit' },
-]
-
 const countries = [
   {
     label: 'Nepal',
@@ -80,10 +67,8 @@ const createCompany = async () => {
   // Validate
   errors.value = {
     companyName: !state.companyName ? 'Company name is required' : null,
-    industry: !state.industry ? 'Company type is required' : null,
     country: !state.country ? 'Country is required' : null,
     currency: !state.currency ? 'Currency is required' : null,
-    taxRegistrationNumber: !state.taxRegistrationNumber ? 'Tax registration number is required' : null,
   }
 
   if (Object.values(errors.value).some(error => error !== null)) return
@@ -92,11 +77,9 @@ const createCompany = async () => {
   try {
     const companyData = {
       name: state.companyName,
-      company_type: state.industry,
       country: countries.find(c => c.value === state.country)?.label || null,
       country_iso: state.country,
       currency_code: state.currency,
-      tax_identification_number: state.taxRegistrationNumber,
     }
 
     const data = await $api('/api/company/', {
@@ -115,10 +98,8 @@ const createCompany = async () => {
       const apiErrors = err.response.data.errors
       errors.value = {
         companyName: apiErrors.name?.[0] || null,
-        industry: apiErrors.company_type?.[0] || null,
         country: apiErrors.country?.[0] || null,
         currency: apiErrors.currency?.[0] || null,
-        taxRegistrationNumber: apiErrors.tax_identification_number?.[0] || null,
       }
     } else {
       $q.notify({
@@ -160,27 +141,6 @@ const createCompany = async () => {
               label="Company Name *"
               :error="!!errors.companyName"
               :error-message="errors.companyName"
-            />
-          </div>
-
-          <div class="col-12">
-            <q-input
-              v-model="state.taxRegistrationNumber"
-              label="Tax Registration Number *"
-              :error="!!errors.taxRegistrationNumber"
-              :error-message="errors.taxRegistrationNumber"
-            />
-          </div>
-
-          <div class="col-12">
-            <q-select
-              v-model="state.industry"
-              emit-value
-              map-options
-              label="Company Type *"
-              :error="!!errors.industry"
-              :error-message="errors.industry"
-              :options="companyTypes"
             />
           </div>
 

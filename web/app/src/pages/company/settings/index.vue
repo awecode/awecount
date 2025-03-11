@@ -58,7 +58,7 @@ const currencies = [
 // Company settings state
 const state = reactive({
   name: '',
-  taxRegistrationNumber: '',
+  taxIdentificationNumber: '', // Renamed here
   organization_type: null,
   country: null,
   currency: null,
@@ -67,7 +67,7 @@ const state = reactive({
 const loading = ref(false)
 const errors = ref({
   name: null,
-  taxRegistrationNumber: null,
+  taxIdentificationNumber: null, // Renamed here
   organization_type: null,
   country: null,
   currency: null,
@@ -88,7 +88,7 @@ const loadCompanyData = async () => {
   try {
     const data = await $api(`/api/company/${router.currentRoute.value.params.company}/`)
     state.name = data.name
-    state.taxRegistrationNumber = data.tax_identification_number
+    state.taxIdentificationNumber = data.tax_identification_number // Renamed here
     state.organization_type = data.organization_type
     state.country = data.country_iso
     state.currency = data.currency_code
@@ -146,7 +146,7 @@ const updateCompany = async () => {
       method: 'PATCH',
       body: {
         name: state.name,
-        tax_identification_number: state.taxRegistrationNumber,
+        tax_identification_number: state.taxIdentificationNumber, // Renamed here
         organization_type: state.organization_type,
         country_iso: state.country,
         currency_code: state.currency,
@@ -283,12 +283,12 @@ onMounted(() => {
       </div>
       <div class="col-12">
         <q-input
-          v-model="state.taxRegistrationNumber"
+          v-model="state.taxIdentificationNumber"
           dense
           outlined
-          label="Tax Registration Number"
-          :error="!!errors.taxRegistrationNumber"
-          :error-message="errors.taxRegistrationNumber"
+          label="Tax Identification Number"
+          :error="!!errors.taxIdentificationNumber"
+          :error-message="errors.taxIdentificationNumber"
         />
       </div>
       <div class="col-12">

@@ -20,10 +20,8 @@ const state = reactive(
     : {
       // Basic Details
         companyName: '',
-        industry: null,
         country: null,
         currency: null,
-        taxRegistrationNumber: '',
 
         // Team Members
         teamMembers: [],
@@ -41,21 +39,9 @@ watch(
 const loading = ref(false)
 const errors = ref({
   companyName: null,
-  industry: null,
   country: null,
   currency: null,
-  taxRegistrationNumber: null,
 })
-
-// Options for dropdowns
-const companyTypes = [
-  { label: 'Private Limited', value: 'private_limited' },
-  { label: 'Public Limited', value: 'public_limited' },
-  { label: 'Sole Proprietorship', value: 'sole_proprietorship' },
-  { label: 'Partnership', value: 'partnership' },
-  { label: 'Corporation', value: 'corporation' },
-  { label: 'Non-profit', value: 'non_profit' },
-]
 
 // Update the countries array to include more metadata
 const countries = [
@@ -146,18 +132,14 @@ const removeTeamMember = (index: number) => {
 const validateStep = () => {
   errors.value = {
     companyName: null,
-    industry: null,
     country: null,
     currency: null,
-    taxRegistrationNumber: null,
   }
 
   if (step.value === 1) {
     if (!state.companyName) errors.value.companyName = 'Company name is required'
-    if (!state.industry) errors.value.industry = 'Industry is required'
     if (!state.country) errors.value.country = 'Country is required'
     if (!state.currency) errors.value.currency = 'Currency is required'
-    if (!state.taxRegistrationNumber) errors.value.taxRegistrationNumber = 'Tax registration number is required'
 
     return !Object.values(errors.value).some(error => error !== null)
   }
@@ -201,11 +183,9 @@ const createCompany = async () => {
   try {
     const companyData = {
       name: state.companyName,
-      company_type: state.industry,
       country: countries.find(c => c.value === state.country)?.label,
       country_iso: state.country,
       currency_code: state.currency,
-      tax_identification_number: state.taxRegistrationNumber,
     }
 
     const res = await $api('/api/company/', { method: 'POST', body: companyData })
@@ -318,27 +298,6 @@ const showInviteForm = ref(false)
                   label="Company Name *"
                   :error="!!errors.companyName"
                   :error-message="errors.companyName"
-                />
-              </div>
-
-              <div class="col-12">
-                <q-input
-                  v-model="state.taxRegistrationNumber"
-                  label="Tax Registration Number *"
-                  :error="!!errors.taxRegistrationNumber"
-                  :error-message="errors.taxRegistrationNumber"
-                />
-              </div>
-
-              <div class="col-12">
-                <q-select
-                  v-model="state.industry"
-                  emit-value
-                  map-options
-                  label="Company Type *"
-                  :error="!!errors.industry"
-                  :error-message="errors.industry"
-                  :options="companyTypes"
                 />
               </div>
 
