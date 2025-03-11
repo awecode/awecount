@@ -75,7 +75,7 @@ fields.value.extra_data = null
 const setCategory = (selected) => {
   activeInventoryCategory.value = selected
   if (!selected) return
-  if (selected.hasOwnProperty('extra_fields')) {
+  if (Object.hasOwn(selected, 'extra_fields')) {
     if (fields.value.extra_data === null) {
       fields.value.extra_data = {}
     }
@@ -93,7 +93,7 @@ const setCategory = (selected) => {
       fields.value.extra_fields = null
     }
   }
-  if (selected.hasOwnProperty('default_unit_id')) {
+  if (Object.hasOwn(selected, 'default_unit_id')) {
     if (selected.default_unit_id) {
       fields.value.unit_id = selected.default_unit_id
       injectUnitObj.value = selected.selected_unit_obj
@@ -102,14 +102,14 @@ const setCategory = (selected) => {
       injectUnitObj.value = null
     }
   }
-  if (selected.hasOwnProperty('default_tax_scheme_id')) {
+  if (Object.hasOwn(selected, 'default_tax_scheme_id')) {
     if (selected.default_tax_scheme_id) {
       fields.value.tax_scheme_id = selected.default_tax_scheme_id
     } else {
       fields.value.tax_scheme_id = ''
     }
   }
-  if (!fields.value.sales_account && !fields.value.items_sales_account_type && selected.hasOwnProperty('items_sales_account_type')) {
+  if (!fields.value.sales_account && !fields.value.items_sales_account_type && Object.hasOwn(selected, 'items_sales_account_type')) {
     if (selected.items_sales_account_type === 'category') {
       fields.value.sales_account = selected.dedicated_sales_account
       staticOptions.value.sales = selected.sales_account_obj
@@ -123,7 +123,7 @@ const setCategory = (selected) => {
       fields.value.sales_account_type = selected.items_sales_account_type
     }
   }
-  if (!fields.value.purchase_account && !fields.value.items_purchase_account_type && selected.hasOwnProperty('items_purchase_account_type')) {
+  if (!fields.value.purchase_account && !fields.value.items_purchase_account_type && Object.hasOwn(selected, 'items_purchase_account_type')) {
     if (selected.items_purchase_account_type === 'category') {
       fields.value.purchase_account = selected.dedicated_purchase_account
       staticOptions.value.purchase = selected.purchase_account_obj
@@ -137,7 +137,7 @@ const setCategory = (selected) => {
       fields.value.purchase_account_type = selected.items_purchase_account_type
     }
   }
-  if (!fields.value.discount_allowed_account && !fields.value.items_discount_allowed_account_type && selected.hasOwnProperty('items_discount_allowed_account_type')) {
+  if (!fields.value.discount_allowed_account && !fields.value.items_discount_allowed_account_type && Object.hasOwn(selected, 'items_discount_allowed_account_type')) {
     if (selected.items_discount_allowed_account_type === 'category') {
       fields.value.discount_allowed_account = selected.dedicated_discount_allowed_account
       staticOptions.value.discount_allowed = selected.discount_allowed_account_obj
@@ -151,7 +151,7 @@ const setCategory = (selected) => {
       fields.value.discount_allowed_account_type = selected.items_discount_allowed_account_type
     }
   }
-  if (!fields.value.discount_received_account && !fields.value.items_discount_received_account_type && selected.hasOwnProperty('items_discount_received_account_type')) {
+  if (!fields.value.discount_received_account && !fields.value.items_discount_received_account_type && Object.hasOwn(selected, 'items_discount_received_account_type')) {
     if (selected.items_discount_received_account_type === 'category') {
       fields.value.discount_received_account = selected.dedicated_discount_received_account
       staticOptions.value.discount_received = selected.discount_received_account_obj
@@ -166,28 +166,28 @@ const setCategory = (selected) => {
     }
   }
 
-  if (selected.hasOwnProperty('track_inventory')) {
+  if (Object.hasOwn(selected, 'track_inventory')) {
     fields.value.track_inventory = selected.track_inventory
   }
-  if (selected.hasOwnProperty('can_be_sold')) {
+  if (Object.hasOwn(selected, 'can_be_sold')) {
     fields.value.can_be_sold = selected.can_be_sold
   }
-  if (selected.hasOwnProperty('can_be_purchased')) {
+  if (Object.hasOwn(selected, 'can_be_purchased')) {
     fields.value.can_be_purchased = selected.can_be_purchased
   }
-  if (selected.hasOwnProperty('fixed_asset')) {
+  if (Object.hasOwn(selected, 'fixed_asset')) {
     fields.value.fixed_asset = selected.fixed_asset
   }
-  if (selected.hasOwnProperty('direct_expense')) {
+  if (Object.hasOwn(selected, 'direct_expense')) {
     fields.value.direct_expense = selected.direct_expense
   }
-  if (selected.hasOwnProperty('indirect_expense')) {
+  if (Object.hasOwn(selected, 'indirect_expense')) {
     fields.value.indirect_expense = selected.indirect_expense
   }
 }
 
 const onTypeUpdate = (key, selectedType) => {
-  if (errors.value && errors.value.hasOwnProperty(key)) {
+  if (errors.value && Object.hasOwn(errors.value, key)) {
     delete errors.value[key]
   }
   if (selectedType === 'category' && !fields.value.category) {
