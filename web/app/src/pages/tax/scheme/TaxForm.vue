@@ -1,27 +1,21 @@
-<script>
+<script setup>
 import checkPermissions from 'src/composables/checkPermissions'
 import useForm from 'src/composables/useForm'
+import { useRoute } from 'vue-router'
 
-export default {
-  setup() {
-    const route = useRoute()
-    const endpoint = `/api/company/${route.params.company}/tax_scheme/`
-    const formData = useForm(endpoint, {
-      getDefaults: false,
-      successRoute: '/tax/schemes/',
-    })
-    useMeta(() => {
-      return {
-        title: `${formData.isEdit?.value ? 'Update Tax Scheme' : 'Add Tax Scheme'} | Awecount`,
-      }
-    })
-    formData.fields.value.recoverable = false
-    return {
-      ...formData,
-      checkPermissions,
-    }
-  },
-}
+const route = useRoute()
+const endpoint = `/api/company/${route.params.company}/tax_scheme/`
+
+const { fields, errors, loading, isEdit, submitForm } = useForm(endpoint, {
+  getDefaults: false,
+  successRoute: `/${route.params.company}/tax/schemes/`,
+})
+
+fields.value.recoverable = false
+
+useMeta(() => ({
+  title: `${isEdit?.value ? 'Update Tax Scheme' : 'Add Tax Scheme'} | Awecount`,
+}))
 </script>
 
 <template>
