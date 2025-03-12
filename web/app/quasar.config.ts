@@ -1,8 +1,16 @@
+import path from 'node:path'
+import process from 'node:process'
+import { fileURLToPath } from 'node:url'
+
 import { defineConfig } from '#q-app/wrappers'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
+
+import dotenv from 'dotenv'
 import { presetWind } from 'unocss'
 
 export default defineConfig((/* ctx */) => {
+  dotenv.config({ path: path.resolve(fileURLToPath(import.meta.url), '..', '..', '..', '.env') })
+
   return {
     devServer: { open: true },
 
@@ -45,6 +53,10 @@ export default defineConfig((/* ctx */) => {
           }),
         ],
       ],
+      extendViteConf: (viteConf) => {
+        viteConf.define ||= {}
+        viteConf.define['import.meta.env.API_BASE_URL'] = JSON.stringify(process.env.API_URL)
+      },
     },
   }
 })
