@@ -5,16 +5,18 @@ import dj_database_url
 from corsheaders.defaults import default_headers
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
+from pathlib import Path
+
 
 ######################################################################
 # Load environment variables from .env file
 ######################################################################
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = BASE_DIR.parent
 
-load_dotenv(dotenv_path=os.path.normpath(os.path.join(ROOT_DIR, ".env")))
+load_dotenv(dotenv_path=ROOT_DIR / ".env")
 
 
 ######################################################################
