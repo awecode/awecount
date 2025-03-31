@@ -65,7 +65,7 @@ def get_origin():
 def serialize_request(request):
     """Convert a Request object into a dictionary."""
     return {
-        "company_id": request.company_id,
+        "company_id": request.company.id,
         "user": request.user,
         "data": request.data,
         "company": request.company,

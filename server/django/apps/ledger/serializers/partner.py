@@ -91,7 +91,7 @@ class PartnerJournalVoucherCreateSerializer(
 
             try:
                 account = Account.objects.get(
-                    **row.get("account"), company_id=self.context["request"].company_id
+                    **row.get("account"), company_id=self.context["request"].company.id
                 )
                 row["account_id"] = account.id
             except Account.DoesNotExist:
@@ -115,9 +115,9 @@ class PartnerJournalVoucherCreateSerializer(
 
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
-        validated_data["company_id"] = self.context["request"].company_id
+        validated_data["company_id"] = self.context["request"].company.id
         validated_data["voucher_no"] = get_next_voucher_no(
-            JournalVoucher, self.context["request"].company_id
+            JournalVoucher, self.context["request"].company.id
         )
         journal_voucher = JournalVoucher.objects.create(**validated_data)
         for _, row in enumerate(rows_data):
@@ -175,14 +175,14 @@ class PartnerSalesVoucherCreateSerializer(SalesVoucherCreateSerializer):
             try:
                 party = Party.objects.get(
                     **party_obj,
-                    company_id=self.context["request"].company_id,
+                    company_id=self.context["request"].company.id,
                 )
             except Party.MultipleObjectsReturned:
                 raise ValidationError("Multiple parties found for the given details.")
             except Party.DoesNotExist:
                 party = Party.objects.create(
                     **party_obj,
-                    company_id=self.context["request"].company_id,
+                    company_id=self.context["request"].company.id,
                 )
 
             attrs["party"] = party

@@ -183,7 +183,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
         #     instance.invoices.update(status='Partially Paid')
         if self.validated_data["mode"] == "Cheque":
             cheque_deposit = instance.cheque_deposit or ChequeDeposit(
-                company_id=self.context["request"].company_id, status="Issued"
+                company_id=self.context["request"].company.id, status="Issued"
             )
             cheque_deposit.date = instance.date
             cheque_deposit.bank_account = instance.bank_account
@@ -277,7 +277,7 @@ class SalesVoucherCreateSerializer(
         if validated_data.get("status") in ["Draft", "Cancelled"]:
             return
         next_voucher_no = get_next_voucher_no(
-            SalesVoucher, self.context["request"].company_id
+            SalesVoucher, self.context["request"].company.id
         )
         validated_data["voucher_no"] = next_voucher_no
 
@@ -479,7 +479,7 @@ class SalesVoucherCreateSerializer(
         self.assign_voucher_number(validated_data, instance)
         self.assign_discount_obj(validated_data)
         # Check if there are invoices in later date
-        validated_data["company_id"] = self.context["request"].company_id
+        validated_data["company_id"] = self.context["request"].company.id
         validated_data["fiscal_year_id"] = instance.fiscal_year_id
         self.validate_invoice_date(validated_data, voucher_no=instance.voucher_no)
         # self.validate_due_date(validated_data['due_date'], instance=instance)
@@ -957,7 +957,7 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
         if validated_data.get("status") in ["Draft", "Cancelled"]:
             return
         next_voucher_no = get_next_voucher_no(
-            Challan, self.context["request"].company_id
+            Challan, self.context["request"].company.id
         )
         validated_data["voucher_no"] = next_voucher_no
 

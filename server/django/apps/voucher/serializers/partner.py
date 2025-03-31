@@ -121,7 +121,7 @@ class PartnerItemSelectSerializer(serializers.Serializer):
 
         try:
             item = Item.objects.get(
-                **item_obj, company_id=self.context["request"].company_id
+                **item_obj, company_id=self.context["request"].company.id
             )
             if row_item:
                 if row_item.get("name"):
@@ -136,7 +136,7 @@ class PartnerItemSelectSerializer(serializers.Serializer):
                     "No item found for the given details. " + str(item_obj)
                 )
             item = Item(
-                company_id=self.context["request"].company_id,
+                company_id=self.context["request"].company.id,
                 **row_item,
             )
             category = row_item.get("category")

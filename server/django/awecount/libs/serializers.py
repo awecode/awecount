@@ -84,7 +84,7 @@ class RoyaltyLedgerInfoSerializer(serializers.Serializer):
         try:
             royalty_ledger_info["royalty_expense_account"] = Account.objects.get(
                 id=royalty_ledger_info["royalty_expense_account_id"],
-                company_id=self.context["request"].company_id,
+                company_id=self.context["request"].company.id,
             )
         except Account.DoesNotExist:
             raise ValidationError("Royalty expense account not found.")
@@ -95,7 +95,7 @@ class RoyaltyLedgerInfoSerializer(serializers.Serializer):
                     tax_identification_number=royalty_party[
                         "tax_identification_number"
                     ],
-                    company_id=self.context["request"].company_id,
+                    company_id=self.context["request"].company.id,
                 )
             except Party.DoesNotExist:
                 party = Party(
@@ -103,7 +103,7 @@ class RoyaltyLedgerInfoSerializer(serializers.Serializer):
                     tax_identification_number=royalty_party[
                         "tax_identification_number"
                     ],
-                    company_id=self.context["request"].company_id,
+                    company_id=self.context["request"].company.id,
                 )
                 party.save()
             except Party.MultipleObjectsReturned:
@@ -115,14 +115,14 @@ class RoyaltyLedgerInfoSerializer(serializers.Serializer):
                 party_royalty_tds_account = Account.objects.get(
                     source=party.supplier_account,
                     category_id=royalty_ledger_info["tds_category_id"],
-                    company_id=self.context["request"].company_id,
+                    company_id=self.context["request"].company.id,
                 )
             except Account.DoesNotExist:
                 party_royalty_tds_account = Account(
                     name="Royalty TDS - " + party.name,
                     source=party.supplier_account,
                     category_id=royalty_ledger_info["tds_category_id"],
-                    company_id=self.context["request"].company_id,
+                    company_id=self.context["request"].company.id,
                 )
                 party_royalty_tds_account.save()
             except Account.MultipleObjectsReturned:

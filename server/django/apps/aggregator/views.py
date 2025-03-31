@@ -77,7 +77,7 @@ def export_auditlog(request):
         raise PermissionDenied
     resource = LogEntryResource()
     qs = LogEntry.objects.filter(
-        actor__company_id=request.user.company_id
+        actor__company_id=request.company.id
     ).select_related("content_type", "actor")
     dataset = resource.export(queryset=qs)
     dataset.title = "Audit Logs"

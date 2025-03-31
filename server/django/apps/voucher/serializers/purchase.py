@@ -341,7 +341,7 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
         if instance and instance.voucher_no:
             return
         next_voucher_no = get_next_voucher_no(
-            PurchaseOrder, self.context["request"].company_id
+            PurchaseOrder, self.context["request"].company.id
         )
         validated_data["voucher_no"] = next_voucher_no
 

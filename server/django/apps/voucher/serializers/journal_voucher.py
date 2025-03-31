@@ -53,7 +53,7 @@ class JournalVoucherCreateSerializer(
 
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
-        validated_data["company_id"] = self.context["request"].company_id
+        validated_data["company_id"] = self.context["request"].company.id
         journal_voucher = JournalVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             account = row.pop("account")
@@ -64,7 +64,7 @@ class JournalVoucherCreateSerializer(
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop("rows")
-        validated_data["company_id"] = self.context["request"].company_id
+        validated_data["company_id"] = self.context["request"].company.id
         self.disable_cancel_edit(validated_data, instance)
         JournalVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
@@ -97,7 +97,7 @@ class JournalVoucherListSerializer(serializers.ModelSerializer):
 class JournalVoucherRowDetailSerializer(serializers.ModelSerializer):
     account_name = serializers.ReadOnlyField(source="account.name")
     selected_account_obj = GenericSerializer(read_only=True, source="account")
-    
+
     class Meta:
         model = JournalVoucherRow
         fields = ("id", "account_id", "account_name", "type", "dr_amount", "cr_amount", "selected_account_obj")

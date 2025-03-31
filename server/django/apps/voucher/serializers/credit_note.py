@@ -52,7 +52,7 @@ class CreditNoteCreateSerializer(
         if validated_data.get("status") in ["Draft", "Cancelled"]:
             return
         next_voucher_no = get_next_voucher_no(
-            CreditNote, self.context["request"].company_id
+            CreditNote, self.context["request"].company.id
         )
         validated_data["voucher_no"] = next_voucher_no
 

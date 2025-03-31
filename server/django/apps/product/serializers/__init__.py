@@ -531,7 +531,7 @@ class InventoryAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         if validated_data.get("status") in ["Cancelled"]:
             return
         next_voucher_no = get_next_voucher_no(
-            InventoryAdjustmentVoucher, self.context["request"].company_id
+            InventoryAdjustmentVoucher, self.context["request"].company.id
         )
         validated_data["voucher_no"] = next_voucher_no
 
@@ -679,7 +679,7 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
         if validated_data.get("status") in ["Cancelled"]:
             return
         next_voucher_no = get_next_voucher_no(
-            InventoryConversionVoucher, self.context["request"].company_id
+            InventoryConversionVoucher, self.context["request"].company.id
         )
         validated_data["voucher_no"] = next_voucher_no
 
