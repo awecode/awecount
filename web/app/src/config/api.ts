@@ -1,7 +1,7 @@
 import type { APIConfig } from './types'
 
 export default <APIConfig>{
-  baseURL: import.meta.env.VITE_API_BASE_URL as string,
+  baseURL: import.meta.env.API_BASE_URL as string,
   trailingSlash: true,
   protected: true,
   unauthorized: {
