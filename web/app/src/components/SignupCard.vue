@@ -13,6 +13,7 @@ const { signup, requestEmailVerification, checkEmail } = useAuthStore()
 const showPasswordStatus = ref(false)
 const loading = ref(false)
 const showVerificationModal = ref(false)
+const resendCooldown = ref(0)
 
 const state = reactive({
   email: null,
@@ -24,6 +25,17 @@ const errors = ref({
   password: null,
 })
 
+const startResendCooldown = () => {
+  resendCooldown.value = 180
+  const timer = setInterval(() => {
+    if (resendCooldown.value > 0) {
+      resendCooldown.value--
+    } else {
+      clearInterval(timer)
+    }
+  }, 1000)
+}
+
 const handleSignupError = (error: any) => {
   const errorResponse: any = error.data || error.response?._data
 
@@ -33,6 +45,7 @@ const handleSignupError = (error: any) => {
 
     if (verifyEmailFlow && verifyEmailFlow.is_pending) {
       showVerificationModal.value = true
+      startResendCooldown()
       return
     }
   }
@@ -76,8 +89,9 @@ const onSignupSubmit = async () => {
 
 const handleResendVerification = async () => {
   try {
-    if (!state.email) return
+    if (!state.email || resendCooldown.value > 0) return
     await requestEmailVerification(state.email)
+    startResendCooldown()
     $q.notify({
       position: 'top-right',
       message: 'Verification Email Sent',
@@ -175,7 +189,12 @@ const handleResendVerification = async () => {
         </q-card-section>
 
         <q-card-actions align="right" class="text-primary">
-          <q-btn flat label="Resend Email" @click="handleResendVerification" />
+          <q-btn
+            flat
+            :disable="resendCooldown > 0"
+            :label="resendCooldown > 0 ? `Resend Email (${resendCooldown}s)` : 'Resend Email'"
+            @click="handleResendVerification"
+          />
           <q-btn
             v-close-popup
             flat
