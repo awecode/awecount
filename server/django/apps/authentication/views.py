@@ -55,11 +55,10 @@ class EmailCheckView(AllauthAPIView):
         )
 
 
-@method_decorator(rate_limit(action="login"), name="handle")
 class RequestEmailVerificationView(AllauthAPIView):
     input_class = EmailCheckInput
 
-    def patch(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         email = self.input.cleaned_data["email"]
 
         try:

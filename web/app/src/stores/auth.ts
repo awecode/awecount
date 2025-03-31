@@ -33,6 +33,7 @@ export const URLs = {
   REQUEST_PASSWORD_RESET: `${BASE_PREFIX}/auth/password/request`,
   RESET_PASSWORD: `${BASE_PREFIX}/auth/password/reset`,
   VERIFY_EMAIL: `${BASE_PREFIX}/auth/email/verify`,
+  REQUEST_VERIFICATION_EMAIL: `${BASE_PREFIX}/auth/email/request-verification`,
   PROVIDERS: `${BASE_PREFIX}/account/providers`,
   EMAIL: `${BASE_PREFIX}/account/email`,
   CHECK_EMAIL: `${BASE_PREFIX}/auth/email/check`,
@@ -252,7 +253,7 @@ export const useAuthStore = defineStore(
     }
 
     const requestEmailVerification = async (email: string) => {
-      return await _request(URLs.VERIFY_EMAIL, { method: 'PATCH', body: { email } })
+      return await _request(URLs.REQUEST_VERIFICATION_EMAIL, { method: 'POST', body: { email } })
     }
 
     const redirectToProvider = async ({ provider, redirect, process = 'login' }: { provider: string, redirect?: string, process?: AuthProcessType }) => {

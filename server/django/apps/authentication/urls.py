@@ -20,12 +20,12 @@ urlpatterns = [
         name="email-check",
     ),
     re_path(
-        r"^_allauth/app/v1/auth/email/verify$",
+        r"^_allauth/app/v1/auth/email/request-verification$",
         RequestEmailVerificationView.as_api_view(client=Client.APP),
         name="request-email-verification",
     ),
     re_path(
-        r"^_allauth/browser/v1/auth/email/verify$",
+        r"^_allauth/browser/v1/auth/email/request-verification$",
         RequestEmailVerificationView.as_api_view(client=Client.BROWSER),
         name="request-email-verification",
     ),
