@@ -1412,7 +1412,7 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         ("accounts", Account, AccountMinSerializer, True, ["name"]),
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
-        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, False),
+        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, True, ["name"]),
         (
             "discount_allowed_accounts",
             Account.objects.filter(
