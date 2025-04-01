@@ -20,9 +20,10 @@ const logoutDialogOpen = ref(false)
 const store = useLoginStore()
 
 const companies = ref([])
-const activeCompany = computed(() => route.params.company as string)
 
 const { hasPermission, logout, hasAnyRole, switchCompany, user } = useAuthStore()
+
+const activeCompany = computed(() => route.params.company as string || user?.redirect)
 
 const fetchCompanies = async () => {
   try {
@@ -567,7 +568,7 @@ const breadcrumbs = useBreadcrumbItems()
                 v-close-popup
                 clickable
                 :active="company.slug === activeCompany"
-                @click="switchCompany(company.slug)"
+                @click="switchCompany(company.slug, { router, route })"
               >
                 <q-item-section avatar>
                   <div class="text-h6 text-white flex items-center justify-center bg-primary" style="width: 28px; height: 28px; border-radius: 4px; line-height: 0;">
@@ -708,7 +709,7 @@ const breadcrumbs = useBreadcrumbItems()
         </div>
       </div>
       <Suspense>
-        <RouterView class="transition-all" :class="store.isLoading ? 'opacity-0' : ''" />
+        <RouterView :key="$route.fullPath" class="transition-all" :class="store.isLoading ? 'opacity-0' : ''" />
       </Suspense>
     </q-page-container>
   </q-layout>

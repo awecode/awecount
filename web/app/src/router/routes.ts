@@ -1482,6 +1482,22 @@ const routes: RouteRecordRaw[] = [
       },
     },
   },
+
+  {
+    path: '/:catchAll(.*)*',
+    name: 'catch-all',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/404.vue'),
+        name: '404',
+        meta: {
+          breadcrumbs: ['404'],
+        },
+      },
+    ],
+  },
 ]
 
 export default routes

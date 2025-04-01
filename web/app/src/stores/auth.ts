@@ -1,3 +1,4 @@
+import type { RouteLocationNormalized, Router } from 'vue-router'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import * as config from 'src/config'
 
@@ -316,12 +317,28 @@ export const useAuthStore = defineStore(
     }
 
     // TODO: move this to a separate store/composable
-    const switchCompany = async (companySlug: string) => {
-      const res = await $api(URLs.SWITCH_COMPANY, { method: 'PATCH', body: { company_slug: companySlug } })
-      await _fetchCompany(companySlug)
-      await _fetchPermissions(companySlug)
-      window.location.href = `${url.origin}/${companySlug}/dashboard` // TODO: Use router and preserve path
-      return res
+    const switchCompany = async (companySlug: string, { router, route }: { router?: Router, route?: RouteLocationNormalized } = {}) => {
+      if (companySlug === user.value?.redirect) {
+        return
+      }
+
+      try {
+        const res = await $api(URLs.SWITCH_COMPANY, { method: 'PATCH', body: { company_slug: companySlug } })
+        user.value.redirect = companySlug
+        await _fetchCompany(companySlug)
+        await _fetchPermissions(companySlug)
+        if (router && route) {
+          router.push({ name: route.name, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
+        } else {
+          window.location.href = `${url.origin}/${companySlug}/dashboard`
+        }
+        return res
+      } catch (error) {
+        if (error.response?.status === 404 && !['onboarding', 'invitations', 'create-company'].includes(companySlug)) {
+          switchCompany(user.value?.redirect, { router, route })
+        }
+        throw error
+      }
     }
 
     const hasRole = (role: string) => {

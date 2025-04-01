@@ -5,6 +5,7 @@ import { auth as authConfig } from 'src/config'
 import { useAuthStore } from 'stores/auth'
 
 import { createMemoryHistory, createRouter, createWebHistory } from 'vue-router'
+import { switchCompanyGuard } from './guards/company'
 import routes from './routes'
 
 export default defineRouter(({ store }) => {
@@ -17,6 +18,8 @@ export default defineRouter(({ store }) => {
     scrollBehavior: () => ({ left: 0, top: 0 }),
     history: createHistory(import.meta.env.VUE_ROUTER_BASE),
   })
+
+  Router.beforeEach(switchCompanyGuard)
 
   Router.beforeEach((to, from) => {
     if (to.name === undefined) return
