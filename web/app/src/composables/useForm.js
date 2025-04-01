@@ -18,8 +18,7 @@ export default (endpoint, config) => {
   const route = useRoute()
   const router = useRouter()
 
-  const root = getCurrentInstance()
-  const context = root?.setupContext
+  const { emit, ...root } = getCurrentInstance()
 
   const isModal = !!root?.attrs['is-modal']
   let editId = root?.attrs['edit-id']?.toString()
@@ -35,7 +34,7 @@ export default (endpoint, config) => {
   // seta a unique key for modal in ModalFormLoading store
   if (isModal) {
     modalFormLoading[modalId] = true
-    context.emit('getModalId', modalId)
+    emit('getModalId', modalId)
   } else {
     store.isLoading = true
   }
@@ -75,7 +74,7 @@ export default (endpoint, config) => {
         })
         loading.value = false
         if (isModal) {
-          context.emit('modalSignal', data)
+          emit('modalSignal', data)
         } else {
           if (config.successRoute) {
             const lastRoute = router.getRoutes()[0]
@@ -128,7 +127,7 @@ export default (endpoint, config) => {
                     icon: 'check_circle',
                   })
                   if (isModal) {
-                    context.emit('modalSignal', data)
+                    emit('modalSignal', data)
                   } else {
                     if (config.successRoute) {
                       router.push(config.successRoute)
@@ -168,7 +167,7 @@ export default (endpoint, config) => {
 
   const cancel = () => {
     if (isModal) {
-      context.emit('closeModal')
+      emit('closeModal')
     } else if (window.history.length > 2) {
       router.go(-1)
     } else {
