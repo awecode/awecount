@@ -138,7 +138,7 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
         <q-td style="padding: 0" :props="props">
           <router-link
             v-if="checkPermissions('item.read')"
-            class="text-blue block"
+            class="text-blue"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
             :to="`/${$route.params.company}/inventory/items/${props.row.id}`"
           >
