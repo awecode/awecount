@@ -10,7 +10,7 @@ import routes from './routes'
 export default defineRouter(({ store }) => {
   const createHistory = import.meta.env.SSR ? createMemoryHistory : createWebHistory
 
-  const { isAuthenticated, onboarded, hasAnyRole, hasAnyPermission, user, switchCompany } = useAuthStore(store)
+  const { isAuthenticated, onboarded, hasAnyRole, hasAnyPermission, user } = useAuthStore(store)
 
   const Router = createRouter({
     routes,
@@ -40,7 +40,6 @@ export default defineRouter(({ store }) => {
     }
 
     if (!isAuthenticated) {
-      console.log('redirecting to login', loginRoute, to.fullPath)
       return { path: loginRoute, query: { next: to.fullPath } }
     }
 
