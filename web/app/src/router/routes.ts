@@ -697,7 +697,7 @@ const companyRoutes: RouteRecordRaw[] = [
     ],
   },
   {
-    path:'settings',
+    path: 'settings',
     children: [
       {
         path: 'item-merge',
@@ -742,6 +742,14 @@ const companyRoutes: RouteRecordRaw[] = [
       {
         path: 'dashboard-widgets/:id',
         name: 'company-settings-dashboard-widgets-id',
+        component: () => import('pages/settings/widgets/WidgetForm.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Dashboard Widgets', 'Edit'],
+        },
+      },
+      {
+        path: 'dashboard-widgets/:id/edit',
+        name: 'company-settings-dashboard-widgets-id-edit',
         component: () => import('pages/settings/widgets/WidgetForm.vue'),
         meta: {
           breadcrumbs: ['Settings', 'Dashboard Widgets', 'Edit'],
@@ -1231,11 +1239,11 @@ const companyRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: 'account-ledger',
-        name: 'company-reports-account-ledger',
+        path: 'account-ageing',
+        name: 'company-reports-account-ageing',
         component: () => import('pages/report/AgeingReport.vue'),
         meta: {
-          breadcrumbs: ['Reports', 'Account Ledger'],
+          breadcrumbs: ['Reports', 'Ageing Report'],
         },
       },
       {
