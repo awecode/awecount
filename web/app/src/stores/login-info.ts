@@ -54,6 +54,7 @@ export const useLoginStore = defineStore(
       posData,
       isFormLoading,
       isLoggedIn,
+      dateRange,
       reset,
       updateDateRange,
     }
