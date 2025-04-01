@@ -1,4 +1,8 @@
 <script setup>
+import { useAuthStore } from 'src/stores/auth'
+
+const { isAuthenticated, user } = useAuthStore()
+
 const items = [
   {
     text: 'IRD Approved Billing and POS System',
@@ -62,7 +66,16 @@ useMeta({
       </div>
       <div class="row q-gutter-md btns-con">
         <a href="https://docs.awecount.com/" style="color: inherit"><q-btn style="letter-spacing: 1px">Documentation</q-btn></a>
-        <span><q-btn style="letter-spacing: 1px" to="/login">Sign in</q-btn></span>
+        <template v-if="isAuthenticated">
+          <q-btn color="primary" style="letter-spacing: 1px" :to="`/${user.redirect}/dashboard`">
+            Go to Dashboard
+          </q-btn>
+        </template>
+        <template v-else>
+          <q-btn style="letter-spacing: 1px" to="/login">
+            Sign in
+          </q-btn>
+        </template>
       </div>
     </header>
     <main class="q-py-xl q-mx-lg text-grey-9">
@@ -78,34 +91,53 @@ useMeta({
             <div class="text-body1 q-mt-xl">
               Automatic book-keeping for your business transactions.
             </div>
-            <form action="https://formspree.io/mjvwepkb" method="POST">
-              <q-input
-                v-model="fields.email"
-                filled
-                required
-                class="q-mt-md"
-                label="Your Email Address?"
-                name="email"
-                style="flex-grow: 1; max-width: 450px"
-                type="email"
-                value=""
-              />
-              <div class="q-mt-md" style="max-width: 450px; display: flex">
+            <template v-if="!isAuthenticated">
+              <form action="https://formspree.io/mjvwepkb" method="POST">
                 <q-input
-                  v-model="fields.phone_no"
+                  v-model="fields.email"
                   filled
                   required
-                  label="Your Phone Number?"
-                  name="phone_no"
-                  style="flex-grow: 1"
-                  type="number"
+                  class="q-mt-md"
+                  label="Your Email Address?"
+                  name="email"
+                  style="flex-grow: 1; max-width: 450px"
+                  type="email"
                   value=""
                 />
-                <q-btn color="blue-6" style="flex-grow: 0; flex-shrink: 0" type="submit">
-                  Get Started!
+                <div class="q-mt-md" style="max-width: 450px; display: flex">
+                  <q-input
+                    v-model="fields.phone_no"
+                    filled
+                    required
+                    label="Your Phone Number?"
+                    name="phone_no"
+                    style="flex-grow: 1"
+                    type="number"
+                    value=""
+                  />
+                  <q-btn color="blue-6" style="flex-grow: 0; flex-shrink: 0" type="submit">
+                    Get Started!
+                  </q-btn>
+                </div>
+              </form>
+            </template>
+            <template v-else>
+              <div class="q-mt-xl">
+                <div class="text-h6 text-weight-medium">
+                  Welcome back!
+                </div>
+                <div class="text-body1 q-mt-sm">
+                  You're logged in as {{ user.email }}
+                </div>
+                <q-btn
+                  class="q-mt-md"
+                  color="primary"
+                  :to="`/${user.redirect}/dashboard`"
+                >
+                  Go to Dashboard
                 </q-btn>
               </div>
-            </form>
+            </template>
           </div>
           <div>
             <img alt="" src="/img/login_bg.jpg" style="max-height: 350px; max-width: 100%" />
@@ -135,7 +167,7 @@ useMeta({
               </div>
             </div>
           </div>
-          <div class="bg-white q-pa-lg">
+          <div v-if="!isAuthenticated" class="bg-white q-pa-lg">
             <div class="q-my-lg">
               <div class="text-center text-h6 font-weight-medium text-grey-8">
                 Already have an account?
@@ -145,6 +177,45 @@ useMeta({
               </div>
             </div>
             <LoginCard />
+          </div>
+          <div v-else class="bg-white q-pa-lg">
+            <div class="text-body1 text-weight-medium">
+              QUICK ACTIONS
+            </div>
+            <div class="q-mt-lg">
+              <q-list>
+                <q-item v-ripple clickable :to="`/${user.redirect}/dashboard`">
+                  <q-item-section avatar>
+                    <q-icon name="dashboard" />
+                  </q-item-section>
+                  <q-item-section>Dashboard</q-item-section>
+                </q-item>
+                <q-item v-ripple clickable :to="`/${user.redirect}/sales/vouchers`">
+                  <q-item-section avatar>
+                    <q-icon name="receipt" />
+                  </q-item-section>
+                  <q-item-section>Sales Vouchers</q-item-section>
+                </q-item>
+                <q-item v-ripple clickable :to="`/${user.redirect}/purchase/vouchers`">
+                  <q-item-section avatar>
+                    <q-icon name="shopping_cart" />
+                  </q-item-section>
+                  <q-item-section>Purchase Vouchers</q-item-section>
+                </q-item>
+                <q-item v-ripple clickable :to="`/${user.redirect}/reports/day-book`">
+                  <q-item-section avatar>
+                    <q-icon name="book" />
+                  </q-item-section>
+                  <q-item-section>Day Book</q-item-section>
+                </q-item>
+                <q-item v-ripple clickable :to="`/${user.redirect}/settings`">
+                  <q-item-section avatar>
+                    <q-icon name="settings" />
+                  </q-item-section>
+                  <q-item-section>Settings</q-item-section>
+                </q-item>
+              </q-list>
+            </div>
           </div>
         </div>
         <div class="cards-con">
