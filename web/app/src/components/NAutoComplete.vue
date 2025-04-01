@@ -161,6 +161,8 @@ export default {
         text-color="white"
         @click="closeModal"
       />
+      <!-- {{ modalId }}
+      {{ modalFormLoading }}
       <div
         :class="
           modalFormLoading.hasOwnProperty(`${modalId}`)
@@ -171,21 +173,15 @@ export default {
         "
       >
         <component :is="FormSkeleton" />
-      </div>
-      <div
-        :class="
-          modalFormLoading.hasOwnProperty(`${modalId}`)
-            ? modalFormLoading[modalId]
-              ? 'hidden'
-              : ''
-            : 'hidden'
-        "
-      >
+      </div> -->
+      <div>
         <component
           :is="modalComponent"
           :is-modal="true"
           @close-modal="closeModal"
-          @get-modal-id="(id) => (modalId = id)"
+          @get-modal-id="(id) => {
+            modalId = id
+          }"
           @modal-signal="handleModalSignal"
         />
       </div>
