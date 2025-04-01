@@ -457,7 +457,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             True,
             ["name"],
         ),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, True, ["name"]),
         (
             "items",
             Item.objects.filter(
@@ -1032,7 +1032,7 @@ class PurchaseVoucherViewSet(
             True,
             ["short_name", "account_number", "bank_name"],
         ),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, True, ["name"]),
         (
             "bank_accounts",
             BankAccount,
@@ -1283,7 +1283,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
             True,
             ["name"],
         ),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, True, ["name"]),
         (
             "bank_accounts",
             BankAccount,

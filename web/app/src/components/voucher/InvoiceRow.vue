@@ -187,6 +187,7 @@ export default {
         modalValue.value.unit_id = itemObject.unit_id
         modalValue.value.tax_scheme_id = itemObject.tax_scheme_id
         modalValue.value.selected_unit_obj = itemObject.default_unit_obj
+        modalValue.value.selected_tax_scheme_obj = itemObject.default_tax_scheme_obj
       }
     }
     const choiceEndpointBaseComputed = computed(() => {
@@ -409,12 +410,16 @@ export default {
           </div>
         </div>
         <div class="col-3" data-testid="row-tax-select">
-          <n-auto-complete
+          <n-auto-complete-v2
             v-model="modalValue.tax_scheme_id"
             label="Tax"
+            :emit-obj="true"
+            :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/tax_schemes`"
             :error="errors?.tax_scheme_id ? true : null"
             :error-message="errors?.tax_scheme_id ? 'This field is required' : null"
             :options="taxOptions"
+            :static-option="modalValue.selected_tax_scheme_obj"
+            @update-obj="(val) => (modalValue.selected_tax_scheme_obj = val)"
           />
         </div>
       </div>

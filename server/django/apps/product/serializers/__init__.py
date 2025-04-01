@@ -38,6 +38,8 @@ from ..models import (
 class ItemSerializer(serializers.ModelSerializer):
     tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
     unit_id = serializers.IntegerField(required=False, allow_null=True)
+    default_unit_obj = GenericSerializer(read_only=True, source="unit")
+    default_tax_scheme_obj = GenericSerializer(read_only=True, source="tax_scheme")
     extra_fields = serializers.ReadOnlyField(source="category.extra_fields")
     front_image = Base64FileField(required=False, allow_null=True)
     back_image = Base64FileField(required=False, allow_null=True)
@@ -212,6 +214,8 @@ class UnitSerializer(serializers.ModelSerializer):
 class InventoryCategorySerializer(serializers.ModelSerializer):
     default_unit_id = serializers.IntegerField(required=False, allow_null=True)
     default_tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
+    selected_default_unit_obj = UnitSerializer(read_only=True, source="default_unit")
+    selected_default_tax_scheme_obj = GenericSerializer(read_only=True, source="default_tax_scheme")
 
     def validate(self, attrs):
         type_account_tuples = [
@@ -247,7 +251,8 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
 
 
 class InventoryCategoryFormSerializer(InventoryCategorySerializer):
-    selected_unit_obj = UnitSerializer(read_only=True, source="default_unit")
+    selected_default_unit_obj = UnitSerializer(read_only=True, source="default_unit")
+    selected_default_tax_scheme_obj = GenericSerializer(read_only=True, source="default_tax_scheme")
     sales_account_obj = AccountMinSerializer(read_only=True, source="sales_account")
     purchase_account_obj = AccountMinSerializer(
         read_only=True, source="purchase_account"

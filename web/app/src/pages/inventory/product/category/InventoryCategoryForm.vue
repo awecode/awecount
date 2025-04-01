@@ -117,21 +117,24 @@ const onSubmitClick = () => {
               <n-auto-complete-v2
                 v-model="fields.default_unit_id"
                 label="Unit"
+                :emit-obj="true"
                 :endpoint="`/api/company/${$route.params.company}/inventory-categories/create-defaults/units`"
                 :error="errors.default_unit_id"
                 :modal-component="checkPermissions('unit.create') ? UnitForm : null"
                 :options="formDefaults.collections?.units"
-                :static-option="fields.selected_unit_obj"
+                :static-option="fields.selected_default_unit_obj"
               />
             </div>
             <div class="col-12 col-md-6">
               <n-auto-complete-v2
                 v-model="fields.default_tax_scheme_id"
                 label="Tax Scheme"
+                :emit-obj="true"
                 :endpoint="`/api/company/${$route.params.company}/inventory-categories/create-defaults/tax_schemes`"
                 :error="errors.default_tax_scheme_id"
                 :modal-component="checkPermissions('taxscheme.create') ? TaxForm : null"
                 :options="formDefaults.collections?.tax_scheme"
+                :static-option="fields.selected_default_tax_scheme_obj"
               />
             </div>
           </div>

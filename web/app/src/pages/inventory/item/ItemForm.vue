@@ -15,6 +15,7 @@ const images = ref({
 })
 const endpoint = `/api/company/${route.params.company}/items/`
 const injectUnitObj = ref(null)
+const injectTaxSchemeObj = ref(null)
 const staticOptions = ref({
   sales: null,
   purchase: null,
@@ -99,7 +100,7 @@ const setCategory = (selected) => {
   if (Object.hasOwn(selected, 'default_unit_id')) {
     if (selected.default_unit_id) {
       fields.value.unit_id = selected.default_unit_id
-      injectUnitObj.value = selected.selected_unit_obj
+      injectUnitObj.value = selected.selected_default_unit_obj
     } else {
       fields.value.unit_id = ''
       injectUnitObj.value = null
@@ -108,8 +109,10 @@ const setCategory = (selected) => {
   if (Object.hasOwn(selected, 'default_tax_scheme_id')) {
     if (selected.default_tax_scheme_id) {
       fields.value.tax_scheme_id = selected.default_tax_scheme_id
+      injectTaxSchemeObj.value = selected.selected_default_tax_scheme_obj
     } else {
       fields.value.tax_scheme_id = ''
+      injectTaxSchemeObj.value = null
     }
   }
   if (!fields.value.sales_account && !fields.value.items_sales_account_type && Object.hasOwn(selected, 'items_sales_account_type')) {
@@ -359,6 +362,7 @@ watch(
                   :error="errors.tax_scheme_id"
                   :modal-component="checkPermissions('taxscheme.create') ? TaxForm : null"
                   :options="formDefaults.collections?.tax_scheme"
+                  :static-option="injectTaxSchemeObj"
                 />
               </div>
             </div>
