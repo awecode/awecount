@@ -1,4 +1,7 @@
+from decimal import Decimal
+
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from apps.company.models import Company, CompanyBaseModel
@@ -93,10 +96,24 @@ class JournalVoucherRow(CompanyBaseModel):
         Account, related_name="journal_voucher_rows", on_delete=models.CASCADE
     )
     description = models.TextField(null=True, blank=True)
-    dr_amount = models.FloatField(null=True, blank=True)
-    cr_amount = models.FloatField(null=True, blank=True)
+    dr_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    cr_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     journal_voucher = models.ForeignKey(
-        JournalVoucher, related_name="rows", on_delete=models.CASCADE
+        JournalVoucher,
+        related_name="rows",
+        on_delete=models.CASCADE,
     )
 
     company_id_accessor = "journal_voucher__company_id"

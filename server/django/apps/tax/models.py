@@ -1,4 +1,7 @@
+from decimal import Decimal
+
 from django.conf import settings
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from apps.company.models import Company, CompanyBaseModel
@@ -9,7 +12,11 @@ class TaxScheme(CompanyBaseModel):
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=10, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    rate = models.FloatField()
+    rate = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     recoverable = models.BooleanField(default=False)
     default = models.BooleanField(default=False)
 
@@ -130,7 +137,11 @@ class TaxPayment(CompanyBaseModel):
     tax_scheme = models.ForeignKey(
         TaxScheme, related_name="payments", on_delete=models.CASCADE
     )
-    amount = models.FloatField()
+    amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     remarks = models.TextField(blank=True, null=True)
     cr_account = models.ForeignKey(
         Account, related_name="tax_payments", on_delete=models.CASCADE

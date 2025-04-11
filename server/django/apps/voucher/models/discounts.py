@@ -1,3 +1,6 @@
+from decimal import Decimal
+
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from apps.company.models import Company
@@ -11,7 +14,12 @@ DISCOUNT_TYPES = (
 class Discount(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     type = models.CharField(max_length=25, choices=DISCOUNT_TYPES)
-    value = models.FloatField()
+    value = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     trade_discount = models.BooleanField(default=True)
 
     def __str__(self):

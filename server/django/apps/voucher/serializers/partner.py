@@ -1,4 +1,3 @@
-from django.core.exceptions import SuspiciousOperation
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -34,8 +33,16 @@ class PartnerItemSerializer(serializers.Serializer):
     name = serializers.CharField(required=False)
     code = serializers.CharField(required=False)
     voucher_no = serializers.CharField(required=False)
-    selling_price = serializers.FloatField(required=False)
-    cost_price = serializers.FloatField(required=False)
+    selling_price = serializers.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        required=False,
+    )
+    cost_price = serializers.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        required=False,
+    )
     sales_account_type = serializers.CharField(required=False)
     purchase_account_type = serializers.CharField(required=False)
     discount_allowed_account_type = serializers.CharField(required=False)

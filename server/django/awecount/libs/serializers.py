@@ -59,8 +59,17 @@ class RoyaltyLedgerInfoPartySerializer(serializers.Serializer):
     tax_identification_number = serializers.CharField(required=True)
     name = serializers.CharField(required=True)
 
-    royalty_amount = serializers.FloatField(required=True)
-    tds_amount = serializers.FloatField(required=True)
+    royalty_amount = serializers.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        required=True,
+    )
+
+    tds_amount = serializers.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        required=True,
+    )
 
     payable_account = None
     royalty_tds_account = None

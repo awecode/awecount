@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from decimal import Decimal
 
 from auditlog.registry import auditlog
 from django.conf import settings
@@ -6,7 +7,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator
 from django.db import IntegrityError, models, transaction
-from django.db.models import F, Func, JSONField, Q, Sum, Window
+from django.db.models import F, Func, JSONField, Q, Sum, Value, Window
 from django.db.models.functions import Cast, Coalesce
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -24,7 +25,7 @@ from apps.ledger.models import Transaction as LedgerTransaction
 from apps.ledger.models import set_transactions as set_ledger_transactions
 from apps.tax.models import TaxScheme
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
-from awecount.libs import none_for_zero, zero_for_none
+from awecount.libs import zero_for_none
 
 
 class Unit(models.Model):
@@ -882,11 +883,29 @@ class InventoryAccount(models.Model):
     code = models.CharField(max_length=50, blank=True, null=True)
     name = models.CharField(max_length=255)
     account_no = models.PositiveIntegerField(blank=True, null=True)
-    current_balance = models.FloatField(default=0)
-    opening_balance = models.FloatField(default=0)
-    opening_balance_rate = models.FloatField(blank=True, null=True)
+    current_balance = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    opening_balance = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    opening_balance_rate = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name="inventory"
+        Company,
+        on_delete=models.CASCADE,
+        related_name="inventory",
     )
 
     def __str__(self):
@@ -966,20 +985,56 @@ class JournalEntry(models.Model):
 
 class Transaction(models.Model):
     account = models.ForeignKey(
-        InventoryAccount, on_delete=models.CASCADE, related_name="transactions"
+        InventoryAccount,
+        on_delete=models.CASCADE,
+        related_name="transactions",
     )
-    dr_amount = models.FloatField(null=True, blank=True)
-    cr_amount = models.FloatField(null=True, blank=True)
-    current_balance = models.FloatField(null=True, blank=True)
+    dr_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    cr_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    current_balance = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     journal_entry = models.ForeignKey(
         JournalEntry, related_name="transactions", on_delete=models.CASCADE
     )
-    rate = models.FloatField(null=True, blank=True)
-    remaining_quantity = models.PositiveIntegerField(null=True, blank=True)
-    consumption_data = models.JSONField(blank=True, default=dict)
-    fifo_inconsistency_quantity = models.FloatField(
-        null=True, blank=True
+    rate = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    remaining_quantity = models.DecimalField(
+        max_digits=18,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    fifo_inconsistency_quantity = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
     )  # This is the quantity that is not accounted for in the fifo, or say which is not consumed
+    consumption_data = models.JSONField(blank=True, default=dict)
 
     def __str__(self):
         return (
@@ -1017,8 +1072,9 @@ class Transaction(models.Model):
 
 def alter(account, date, diff):
     Transaction.objects.filter(journal_entry__date__gt=date, account=account).update(
-        current_balance=none_for_zero(
-            zero_for_none(F("current_balance")) + zero_for_none(diff)
+        current_balance=(
+            Coalesce(F("current_balance"), Value(Decimal("0.000000")))
+            + Value(zero_for_none(diff))
         )
     )
 
@@ -1032,9 +1088,7 @@ def _transaction_delete(sender, instance, **kwargs):
     if transaction.cr_amount:
         transaction.account.current_balance += transaction.cr_amount
 
-    diff = float(zero_for_none(transaction.dr_amount)) - float(
-        zero_for_none(transaction.cr_amount)
-    )
+    diff = zero_for_none(transaction.dr_amount) - zero_for_none(transaction.cr_amount)
     alter(transaction.account, transaction.journal_entry.date, diff)
 
     transaction.account.save()
@@ -1139,9 +1193,9 @@ def set_inventory_transactions(model, date, *args, clear=True):
             diff -= zero_for_none(transaction.dr_amount)
         if arg[0] in ["dr", "ob"]:
             transaction.cr_amount = None
-            transaction.dr_amount = float(arg[2])
-            transaction.remaining_quantity = float(arg[2])
-            diff += float(arg[2])
+            transaction.dr_amount = arg[2]
+            transaction.remaining_quantity = arg[2]
+            diff += arg[2]
 
             # check if a transaction with later date has been created
             # if yes, then we'll recalculate the fifo for all transactions referencing transaction after this date
@@ -1195,13 +1249,13 @@ def set_inventory_transactions(model, date, *args, clear=True):
                     journal_entry__object_id=model.sales_row_data["id"],
                     journal_entry__content_type__model="salesvoucherrow",
                 )
-                arg[3] = fifo_avg(t.consumption_data, float(arg[2]))
+                arg[3] = fifo_avg(t.consumption_data, arg[2])
 
         elif arg[0] == "cr":
             transaction.consumption_data = transaction.consumption_data or {}
-            transaction.cr_amount = float(arg[2])
+            transaction.cr_amount = arg[2]
             transaction.dr_amount = None
-            diff -= float(arg[2])
+            diff -= arg[2]
 
             # check first if the transaction is for Debit Note, as it requires different handling
             if content_type.model == "debitnoterow":
@@ -1211,7 +1265,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                     journal_entry__object_id=model.purchase_row_data["id"],
                     journal_entry__content_type__model="purchasevoucherrow",
                 )
-                t.remaining_quantity = t.dr_amount - float(arg[2])
+                t.remaining_quantity = t.dr_amount - arg[2]
                 t.save()
 
                 # here we assume that all transaction referencing this transaction has been affetcted and
@@ -1223,7 +1277,8 @@ def set_inventory_transactions(model, date, *args, clear=True):
                         fifo_inconsistency_quantity=(
                             Coalesce(F("fifo_inconsistency_quantity"), 0)
                             + Cast(
-                                F(f"consumption_data__{t.id}__0"), models.FloatField()
+                                F(f"consumption_data__{t.id}__0"),
+                                models.DecimalField(max_digits=24, decimal_places=6),
                             )
                         ),
                         consumption_data=F("consumption_data") - str(t.id),
@@ -1231,7 +1286,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 )
 
                 transaction.consumption_data[t.id] = [
-                    float(arg[2]),
+                    arg[2],
                     t.rate,
                 ]
 
@@ -1239,7 +1294,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 if Transaction.objects.filter(
                     account=arg[1], cr_amount__gt=0, fifo_inconsistency_quantity__gt=0
                 ).exists():
-                    transaction.fifo_inconsistency_quantity = float(arg[2])
+                    transaction.fifo_inconsistency_quantity = arg[2]
                 else:
                     # check if transaction is for back date; if so, then will have to declare all credit transactions as fifo_inconsistency_quantity, and put the used quantity back to the respective dr transactions
                     future_transactions = Transaction.objects.filter(
@@ -1292,7 +1347,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                     )
 
                     # Consumption data
-                    req_qty = float(arg[2])
+                    req_qty = arg[2]
 
                     base_txn_qs = (
                         Transaction.objects.filter(
@@ -1362,7 +1417,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
             raise Exception('Transactions can only be either "dr" or "cr".')
         transaction.account = arg[1]
         if isinstance(transaction.account.current_balance, str):
-            transaction.account.current_balance = float(
+            transaction.account.current_balance = Decimal(
                 transaction.account.current_balance
             )
         transaction.account.current_balance += diff
@@ -1405,7 +1460,10 @@ def _transaction_delete(sender, instance, **kwargs):
         Transaction.objects.filter(consumption_data__has_key=str(instance.id)).update(
             fifo_inconsistency_quantity=(
                 Coalesce(F("fifo_inconsistency_quantity"), 0)
-                + Cast(F(f"consumption_data__{instance.id}__0"), models.FloatField())
+                + Cast(
+                    F(f"consumption_data__{instance.id}__0"),
+                    models.DecimalField(max_digits=24, decimal_places=6),
+                )
             ),
             consumption_data=F("consumption_data") - str(instance.id),
         )
@@ -1471,11 +1529,27 @@ class Item(CompanyBaseModel):
     voucher_no = models.PositiveBigIntegerField(null=True, blank=True)
     unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
     category = models.ForeignKey(
-        Category, blank=True, null=True, on_delete=models.SET_NULL, related_name="items"
+        Category,
+        blank=True,
+        null=True,
+        related_name="items",
+        on_delete=models.SET_NULL,
     )
     description = models.TextField(blank=True, null=True)
-    selling_price = models.FloatField(blank=True, null=True)
-    cost_price = models.FloatField(blank=True, null=True)
+    selling_price = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    cost_price = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
 
     front_image = models.ImageField(
         blank=True, null=True, upload_to="item_front_images/"
@@ -1952,9 +2026,17 @@ class BillOfMaterial(CompanyBaseModel):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="bill_of_material"
     )
-    quantity = models.FloatField()
+    quantity = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
-    rate = models.FloatField()
+    rate = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     finished_product = models.ForeignKey(
         Item, on_delete=models.CASCADE, related_name="bill_of_material"
     )
@@ -1970,7 +2052,11 @@ class BillOfMaterialRow(CompanyBaseModel):
         BillOfMaterial, on_delete=models.CASCADE, related_name="rows"
     )
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    quantity = models.FloatField()
+    quantity = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
@@ -2001,7 +2087,13 @@ class InventoryAdjustmentVoucher(TransactionModel, InvoiceModel):
     )
     purpose = models.CharField(max_length=225, choices=PURPOSE_CHOICES)
     remarks = models.TextField()
-    total_amount = models.FloatField(null=True, blank=True)
+    total_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+        null=True,
+        blank=True,
+    )
 
     def apply_inventory_transactions(self):
         for row in self.rows.filter(
@@ -2058,7 +2150,9 @@ class InventoryAdjustmentVoucher(TransactionModel, InvoiceModel):
 
 
 class InventoryAdjustmentVoucherRow(
-    TransactionModel, InvoiceRowModel, CompanyBaseModel
+    TransactionModel,
+    InvoiceRowModel,
+    CompanyBaseModel,
 ):
     voucher = models.ForeignKey(
         InventoryAdjustmentVoucher, on_delete=models.CASCADE, related_name="rows"
@@ -2066,27 +2160,48 @@ class InventoryAdjustmentVoucherRow(
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, related_name="inventory_adjustment_rows"
     )
-    rate = models.FloatField()
+    rate = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     quantity = models.PositiveSmallIntegerField(default=1)
-    amount = models.FloatField(blank=True, null=True)
-    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
+    amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    unit = models.ForeignKey(
+        Unit,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     description = models.TextField(blank=True, null=True)
 
 
-class InventoryConversionVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
+class InventoryConversionVoucher(
+    TransactionModel,
+    InvoiceModel,
+    CompanyBaseModel,
+):
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
     date = models.DateField()
     finished_product = models.ForeignKey(
         BillOfMaterial,
-        on_delete=models.SET_NULL,
-        related_name="inventory_conversion_voucher",
         null=True,
         blank=True,
+        related_name="inventory_conversion_voucher",
+        on_delete=models.SET_NULL,
     )
     issue_datetime = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=225, choices=CONVERSION_CHOICES)
     company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name="inventory_conversion_voucher"
+        Company,
+        related_name="inventory_conversion_voucher",
+        on_delete=models.CASCADE,
     )
     remarks = models.TextField()
 
@@ -2101,19 +2216,39 @@ class InventoryConversionVoucher(TransactionModel, InvoiceModel, CompanyBaseMode
 
 
 class InventoryConversionVoucherRow(
-    TransactionModel, InvoiceRowModel, CompanyBaseModel
+    TransactionModel,
+    InvoiceRowModel,
+    CompanyBaseModel,
 ):
     voucher = models.ForeignKey(
-        InventoryConversionVoucher, on_delete=models.CASCADE, related_name="rows"
+        InventoryConversionVoucher,
+        related_name="rows",
+        on_delete=models.CASCADE,
     )
     item = models.ForeignKey(
-        Item, on_delete=models.CASCADE, related_name="inventory_conversion_voucher_rows"
+        Item,
+        related_name="inventory_conversion_voucher_rows",
+        on_delete=models.CASCADE,
     )
-    rate = models.FloatField(blank=True, null=True)
+    rate = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     quantity = models.PositiveSmallIntegerField(default=1)
-    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
+    unit = models.ForeignKey(
+        Unit,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     transaction_type = models.CharField(
-        max_length=16, null=True, blank=True, choices=TRANSACTION_TYPE_CHOICES
+        max_length=16,
+        null=True,
+        blank=True,
+        choices=TRANSACTION_TYPE_CHOICES,
     )
 
 

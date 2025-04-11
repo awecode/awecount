@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from decimal import ROUND_HALF_UP, localcontext
+from decimal import Decimal
 
 from dateutil.utils import today
 from django.apps import apps
@@ -8,8 +8,9 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import F, ProtectedError, Q, Sum
+from django.db.models import Case, F, ProtectedError, Q, Sum, Value, When
 from django.dispatch import receiver
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
@@ -102,8 +103,20 @@ class Account(CompanyBaseModel):
     system_code = models.CharField(max_length=20, null=True, blank=True)
     name = models.CharField(max_length=255)
     # current_dr and current_cr may not always be exact
-    current_dr = models.FloatField(null=True, blank=True)
-    current_cr = models.FloatField(null=True, blank=True)
+    current_dr = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    current_cr = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     parent = models.ForeignKey(
         "self",
         blank=True,
@@ -114,10 +127,25 @@ class Account(CompanyBaseModel):
     category = models.ForeignKey(
         Category, related_name="accounts", on_delete=models.PROTECT
     )
-    tax_rate = models.FloatField(blank=True, null=True)
-    opening_dr = models.FloatField(default=0)
-    opening_cr = models.FloatField(default=0)
-    # fy = models.ForeignKey(FiscalYear, null=True, blank=True)
+    tax_rate = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    opening_dr = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    opening_cr = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     order = models.PositiveIntegerField(default=0)
     default = models.BooleanField(default=False)
     company = models.ForeignKey(
@@ -140,10 +168,7 @@ class Account(CompanyBaseModel):
         return self.get_balance()
 
     def get_balance(self):
-        with localcontext() as ctx:
-            ctx.rounding = ROUND_HALF_UP
-            val = zero_for_none(self.current_dr) - zero_for_none(self.current_cr)
-            return float(round(decimalize(val), 2))
+        return zero_for_none(self.current_dr) - zero_for_none(self.current_cr)
 
     def get_day_opening(self, before_date=None):
         if not before_date:
@@ -443,10 +468,34 @@ class Transaction(CompanyBaseModel):
     account = models.ForeignKey(
         Account, on_delete=models.PROTECT, related_name="transactions"
     )
-    dr_amount = models.FloatField(null=True, blank=True)
-    cr_amount = models.FloatField(null=True, blank=True)
-    current_dr = models.FloatField(null=True, blank=True)
-    current_cr = models.FloatField(null=True, blank=True)
+    dr_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    cr_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    current_dr = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    current_cr = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     journal_entry = models.ForeignKey(
         JournalEntry, related_name="transactions", on_delete=models.CASCADE
     )
@@ -477,11 +526,13 @@ class Transaction(CompanyBaseModel):
 
 def alter(account, date, dr_difference, cr_difference):
     Transaction.objects.filter(journal_entry__date__gt=date, account=account).update(
-        current_dr=none_for_zero(
-            zero_for_none(F("current_dr")) + zero_for_none(dr_difference)
+        current_dr=Case(
+            When(current_dr__isnull=True, then=Value(zero_for_none(dr_difference))),
+            default=F("current_dr") + Value(zero_for_none(dr_difference)),
         ),
-        current_cr=none_for_zero(
-            zero_for_none(F("current_cr")) + zero_for_none(cr_difference)
+        current_cr=Case(
+            When(current_cr__isnull=True, then=Value(zero_for_none(cr_difference))),
+            default=F("current_cr") + Value(zero_for_none(cr_difference)),
         ),
     )
 
@@ -1318,15 +1369,31 @@ class TransactionCharge(CompanyBaseModel):
 
 class AccountOpeningBalance(CompanyBaseModel):
     account = models.ForeignKey(
-        Account, related_name="account_opening_balances", on_delete=models.CASCADE
+        Account,
+        related_name="account_opening_balances",
+        on_delete=models.CASCADE,
     )
-    opening_dr = models.FloatField(default=0)
-    opening_cr = models.FloatField(default=0)
+    opening_dr = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    opening_cr = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     fiscal_year = models.ForeignKey(
-        FiscalYear, related_name="account_opening_balances", on_delete=models.CASCADE
+        FiscalYear,
+        related_name="account_opening_balances",
+        on_delete=models.CASCADE,
     )
     company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name="account_opening_balances"
+        Company,
+        related_name="account_opening_balances",
+        on_delete=models.CASCADE,
     )
 
     def save(self, *args, **kwargs):

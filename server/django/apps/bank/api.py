@@ -1,19 +1,20 @@
+import json
 from collections import defaultdict
 from datetime import datetime, timedelta
+from decimal import Decimal
 from itertools import combinations
-from django.db import connection
-import json
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.mail import send_mail
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import Case, Count, F, OuterRef, Q, Subquery, When
 from django.forms import ValidationError
 from django_filters import rest_framework as filters
 from django_q.tasks import async_task
-from rest_framework import filters as rf_filters, mixins
+from rest_framework import filters as rf_filters
+from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
@@ -405,8 +406,8 @@ def reconcile(
 
         def parse_amount(amount):
             if amount and isinstance(amount, str):
-                return float(amount.replace(",", ""))
-            return amount or 0
+                return Decimal(amount.replace(",", ""))
+            return amount or Decimal("0")
 
         # Prase statement transactions dr_amount and cr_amount
         for statement_transaction in statement_transactions:

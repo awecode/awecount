@@ -1,7 +1,9 @@
 import datetime
+from decimal import Decimal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 from rest_framework.exceptions import ValidationError as RestValidationError
 
@@ -25,15 +27,28 @@ class BankAccount(CompanyBaseModel):
     short_name = models.CharField(max_length=250, blank=True, null=True)
     branch_name = models.CharField(max_length=250, blank=True, null=True)
     next_cheque_no = models.CharField(blank=True, null=True, max_length=255)
-    transaction_commission_percent = models.FloatField(blank=True, null=True, default=0)
+    transaction_commission_percent = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name="bank_accounts"
+        Company,
+        on_delete=models.CASCADE,
+        related_name="bank_accounts",
     )
     ledger = models.ForeignKey(
-        Account, null=True, on_delete=models.SET_NULL, related_name="bank_accounts"
+        Account,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="bank_accounts",
     )
     commission_account = models.ForeignKey(
-        Account, null=True, on_delete=models.SET_NULL, related_name="wallet_accounts"
+        Account,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="wallet_accounts",
     )
 
     def save(self, *args, **kwargs):
@@ -123,7 +138,11 @@ class ChequeDeposit(TransactionModel, CompanyBaseModel):
     cheque_number = models.CharField(max_length=50, blank=True, null=True)
     cheque_date = models.DateField(blank=True, null=True)
     drawee_bank = models.CharField(max_length=255, blank=True, null=True)
-    amount = models.FloatField()
+    amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
     deposited_by = models.CharField(max_length=255, blank=True, null=True)
     narration = models.TextField(null=True, blank=True)
@@ -179,7 +198,7 @@ class ChequeDeposit(TransactionModel, CompanyBaseModel):
 #     cheque_date = models.DateField(default=timezone.now)
 #     drawee_bank = models.CharField(max_length=255)
 #     drawee_bank_address = models.CharField(max_length=255)
-#     amount = models.FloatField()
+#     amount = models.DecimalField(max_digits=24, decimal_places=6, validators=[MinValueValidator(Decimal("0.000000"))])
 #     cheque_deposit = models.ForeignKey(ChequeDeposit, related_name='rows', on_delete=models.CASCADE)
 #
 #     company_id_accessor = 'cheque_deposit__company_id'
@@ -205,7 +224,11 @@ class ChequeIssue(CompanyBaseModel):
         related_name="cheque_issues",
         on_delete=models.SET_NULL,
     )
-    amount = models.FloatField()
+    amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
@@ -261,20 +284,21 @@ class ChequeIssue(CompanyBaseModel):
         self.save()
         self.cancel_transactions()
 
-        # class CashDeposit(models.Model):
-        #     STATUSES = (
-        #         ('Draft', 'Draft'),
-        #         ('Deposited', 'Deposited'),
-        #         ('Cancelled', 'Cancelled'),
-        #     )
-        #     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.PROTECT)
-        #     amount = models.FloatField()
-        #     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
-        #     deposited_by = models.CharField(max_length=255, blank=True, null=True)
-        #     narration = models.TextField(null=True, blank=True)
-        #     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-        #     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
-        #     date = models.DateField()
+
+# class CashDeposit(models.Model):
+#     STATUSES = (
+#         ('Draft', 'Draft'),
+#         ('Deposited', 'Deposited'),
+#         ('Cancelled', 'Cancelled'),
+#     )
+#     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.PROTECT)
+#     amount = models.FloatField()
+#     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
+#     deposited_by = models.CharField(max_length=255, blank=True, null=True)
+#     narration = models.TextField(null=True, blank=True)
+#     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+#     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
+#     date = models.DateField()
 
 
 class FundTransfer(TransactionModel, CompanyBaseModel):
@@ -290,7 +314,11 @@ class FundTransfer(TransactionModel, CompanyBaseModel):
     to_account = models.ForeignKey(
         Account, on_delete=models.PROTECT, related_name="fund_transfers_to"
     )
-    amount = models.FloatField()
+    amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     transaction_fee_account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
@@ -298,7 +326,13 @@ class FundTransfer(TransactionModel, CompanyBaseModel):
         null=True,
         related_name="charged_fund_transfers",
     )
-    transaction_fee = models.FloatField(blank=True, null=True)
+    transaction_fee = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
     narration = models.TextField(null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
@@ -381,7 +415,13 @@ class FundTransferTemplate(CompanyBaseModel):
         null=True,
         related_name="charged_fund_transfers_template",
     )
-    transaction_fee = models.FloatField(blank=True, null=True)
+    transaction_fee = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -400,7 +440,11 @@ class BankCashDeposit(TransactionModel, CompanyBaseModel):
     bank_account = models.ForeignKey(
         BankAccount, related_name="bank_cash_deposits", on_delete=models.CASCADE
     )
-    amount = models.FloatField()
+    amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
     deposited_by = models.CharField(max_length=255, blank=True, null=True)
     narration = models.TextField(null=True, blank=True)
@@ -470,16 +514,40 @@ class ReconciliationRow(models.Model):
         max_length=20,
     )
     date = models.DateField()
-    dr_amount = models.FloatField(null=True, blank=True)
-    cr_amount = models.FloatField(null=True, blank=True)
-    balance = models.FloatField(null=True, blank=True)
+    dr_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    cr_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    balance = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     description = models.TextField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     statement = models.ForeignKey(
         ReconciliationStatement, on_delete=models.CASCADE, related_name="rows"
     )
     # - if the amount is positive, it means the bank statement has more money than the ledger
-    adjustment_amount = models.FloatField(null=True, blank=True)
+    adjustment_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
 
     def __str__(self):
         return str(self.date)
@@ -505,11 +573,17 @@ class ReconciliationRow(models.Model):
         set_ledger_transactions(self, date, *entries, clear=True)
 
 
-
 class ReconciliationRowTransaction(models.Model):
-    transaction = models.ForeignKey(Transaction, null=True, on_delete=models.SET_NULL, related_name="reconciliation_rows_transactions")
+    transaction = models.ForeignKey(
+        Transaction,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="reconciliation_rows_transactions",
+    )
     reconciliation_row = models.ForeignKey(
-        ReconciliationRow, on_delete=models.CASCADE, related_name="transactions"
+        ReconciliationRow,
+        on_delete=models.CASCADE,
+        related_name="transactions",
     )
     # To keep track of the last updated transaction
     transaction_last_updated_at = models.DateTimeField()

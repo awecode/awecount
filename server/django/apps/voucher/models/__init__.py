@@ -13,6 +13,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
+from django.core.validators import MinValueValidator
 from django.db import models, transaction
 from django.db.models import Prefetch, Q
 from django.template.loader import render_to_string
@@ -430,7 +431,12 @@ class ChallanRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         Item, on_delete=models.CASCADE, related_name="challan_rows"
     )
     description = models.TextField(blank=True, null=True)
-    quantity = models.PositiveSmallIntegerField(default=1)
+    quantity = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("1.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
 
     # Model key for module based permission
@@ -457,7 +463,13 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
 
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
 
-    discount = models.FloatField(default=0)
+    discount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+
     discount_type = models.CharField(
         choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
     )
@@ -489,7 +501,12 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     remarks = models.TextField(blank=True, null=True)
     is_export = models.BooleanField(default=False)
 
-    total_amount = models.FloatField(blank=True, null=True)
+    total_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
 
     print_count = models.PositiveSmallIntegerField(default=0)
     user = models.ForeignKey(
@@ -569,9 +586,7 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
         if bank_account.transaction_commission_percent:
             kwargs["transaction_fee_config"] = {
                 "type": "percentage",
-                "value": str(
-                    Decimal.from_float(bank_account.transaction_commission_percent)
-                ),
+                "value": bank_account.transaction_commission_percent,
             }
 
         payment_mode, _ = PaymentMode.objects.get_or_create(**kwargs)
@@ -1005,7 +1020,13 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     )
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="sales_rows")
     description = models.TextField(blank=True, null=True)
-    quantity = models.PositiveSmallIntegerField(default=1)
+
+    quantity = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("1.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     unit = models.ForeignKey(
         Unit,
         on_delete=models.SET_NULL,
@@ -1013,8 +1034,17 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         null=True,
         related_name="sales_rows",
     )
-    rate = models.FloatField()
-    discount = models.FloatField(default=0)
+    rate = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    discount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     discount_type = models.CharField(
         choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
     )
@@ -1031,9 +1061,27 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     )
 
     # Computed values
-    discount_amount = models.FloatField(blank=True, null=True)
-    tax_amount = models.FloatField(blank=True, null=True)
-    net_amount = models.FloatField(blank=True, null=True)
+    discount_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    tax_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    net_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
 
     # Model key for module based permission
     key = "Sales"
@@ -1083,7 +1131,12 @@ class PurchaseOrderRow(TransactionModel, InvoiceRowModel):
         Item, on_delete=models.CASCADE, related_name="purchase_order_rows"
     )
     description = models.TextField(blank=True, null=True)
-    quantity = models.PositiveSmallIntegerField(default=1)
+    quantity = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("1.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
 
     # Model key for module based permission
@@ -1110,7 +1163,12 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
 
-    discount = models.FloatField(default=0)
+    discount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     discount_type = models.CharField(
         choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
     )
@@ -1126,7 +1184,13 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     remarks = models.TextField(blank=True, null=True)
     is_import = models.BooleanField(default=False)
 
-    total_amount = models.FloatField(blank=True, null=True)
+    total_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(
@@ -1299,7 +1363,11 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         Item, related_name="purchase_rows", on_delete=models.CASCADE
     )
     description = models.TextField(blank=True, null=True)
-    quantity = models.FloatField()
+    quantity = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     unit = models.ForeignKey(
         Unit,
         blank=True,
@@ -1307,19 +1375,31 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         on_delete=models.SET_NULL,
         related_name="purchase_rows",
     )
-    rate = models.FloatField()
+    rate = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
 
-    discount = models.FloatField(default=0)
+    discount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     discount_type = models.CharField(
-        choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
+        choices=DISCOUNT_TYPES,
+        max_length=15,
+        null=True,
+        blank=True,
     )
     trade_discount = models.BooleanField(default=False)
     discount_obj = models.ForeignKey(
         PurchaseDiscount,
-        blank=True,
         null=True,
-        on_delete=models.SET_NULL,
+        blank=True,
         related_name="purchase_rows",
+        on_delete=models.SET_NULL,
     )
 
     tax_scheme = models.ForeignKey(
@@ -1327,9 +1407,27 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     )
 
     # Computed values
-    discount_amount = models.FloatField(blank=True, null=True)
-    tax_amount = models.FloatField(blank=True, null=True)
-    net_amount = models.FloatField(blank=True, null=True)
+    discount_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    tax_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    net_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     key = "PurchaseVoucher"
 
     def save(self, *args, **kwargs):
@@ -1382,7 +1480,12 @@ class CreditNote(TransactionModel, InvoiceModel, CompanyBaseModel):
 
     invoices = models.ManyToManyField(SalesVoucher, related_name="credit_notes")
 
-    discount = models.FloatField(default=0)
+    discount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     discount_type = models.CharField(
         choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
     )
@@ -1408,7 +1511,13 @@ class CreditNote(TransactionModel, InvoiceModel, CompanyBaseModel):
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
 
-    total_amount = models.FloatField(blank=True, null=True)
+    total_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
 
     remarks = models.TextField()
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
@@ -1572,9 +1681,19 @@ class CreditNoteRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
-    rate = models.FloatField()
 
-    discount = models.FloatField(default=0)
+    rate = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+
+    discount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     discount_type = models.CharField(
         choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
     )
@@ -1605,7 +1724,13 @@ class DebitNote(TransactionModel, InvoiceModel, CompanyBaseModel):
 
     invoices = models.ManyToManyField(PurchaseVoucher, related_name="debit_notes")
 
-    discount = models.FloatField(default=0)
+    discount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+
     discount_type = models.CharField(
         choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
     )
@@ -1631,7 +1756,13 @@ class DebitNote(TransactionModel, InvoiceModel, CompanyBaseModel):
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
 
-    total_amount = models.FloatField(blank=True, null=True)
+    total_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
 
     remarks = models.TextField()
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
@@ -1759,9 +1890,18 @@ class DebitNoteRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
-    rate = models.FloatField()
+    rate = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
 
-    discount = models.FloatField(default=0)
+    discount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     discount_type = models.CharField(
         choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
     )
@@ -1802,10 +1942,21 @@ class PaymentReceipt(TransactionModel, CompanyBaseModel):
     mode = models.CharField(
         choices=PAYMENT_MODES, default=PAYMENT_MODES[0][0], max_length=15
     )
-    amount = models.FloatField()
-    tds_amount = models.FloatField(default=0)
+    amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    tds_amount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     status = models.CharField(
-        max_length=20, choices=PAYMENT_STATUSES, default=PAYMENT_STATUSES[0][0]
+        max_length=20,
+        choices=PAYMENT_STATUSES,
+        default=PAYMENT_STATUSES[0][0],
     )
     transaction_charge_account = models.ForeignKey(
         TransactionCharge,
@@ -1814,7 +1965,12 @@ class PaymentReceipt(TransactionModel, CompanyBaseModel):
         null=True,
         on_delete=models.PROTECT,
     )
-    transaction_charge = models.FloatField(default=0)
+    transaction_charge = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        default=Decimal("0.000000"),
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
     bank_account = models.ForeignKey(
         BankAccount,
         related_name="payment_receipts",

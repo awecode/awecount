@@ -29,23 +29,26 @@ def get_next_voucher_no(cls, company_id, attr="voucher_no"):
 
 def zero_for_none(obj):
     if obj is None or obj == "":
-        return 0
-    else:
+        return Decimal("0.000000")
+    if isinstance(obj, Decimal):
         return obj
+    return Decimal(str(obj))
 
 
 def decimalize(obj):
     if obj is None or obj == "":
         return Decimal(0)
-    else:
-        return Decimal(str(obj))
+    if isinstance(obj, Decimal):
+        return obj
+    return Decimal(str(obj))
 
 
 def none_for_zero(obj):
     if not obj:
         return None
-    else:
+    if isinstance(obj, Decimal):
         return obj
+    return Decimal(str(obj))
 
 
 def model_exists_in_db(model):

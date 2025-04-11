@@ -1,8 +1,10 @@
 from datetime import datetime
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Case, Count, F, FloatField, Max, Q, Sum, When
+from django.db import models
+from django.db.models import Case, Count, F, Max, Q, Sum, When
 from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -594,11 +596,14 @@ class TransactionViewSet(
                                 transactions__journal_entry__date=target_date,
                                 then="transactions__dr_amount",
                             ),
-                            default=0.0,
-                            output_field=FloatField(),
+                            default=Decimal("0.000000"),
+                            output_field=models.DecimalField(
+                                max_digits=24,
+                                decimal_places=6,
+                            ),
                         )
                     ),
-                    0.0,
+                    Decimal("0.000000"),
                 ),
                 today_cr=Coalesce(
                     Sum(
@@ -607,11 +612,14 @@ class TransactionViewSet(
                                 transactions__journal_entry__date=target_date,
                                 then="transactions__cr_amount",
                             ),
-                            default=0.0,
-                            output_field=FloatField(),
+                            default=Decimal("0.000000"),
+                            output_field=models.DecimalField(
+                                max_digits=24,
+                                decimal_places=6,
+                            ),
                         )
                     ),
-                    0.0,
+                    Decimal("0.000000"),
                 ),
                 total_dr=Coalesce(
                     Sum(
@@ -620,11 +628,14 @@ class TransactionViewSet(
                                 transactions__journal_entry__date__lte=target_date,
                                 then="transactions__dr_amount",
                             ),
-                            default=0.0,
-                            output_field=FloatField(),
+                            default=Decimal("0.000000"),
+                            output_field=models.DecimalField(
+                                max_digits=24,
+                                decimal_places=6,
+                            ),
                         )
                     ),
-                    0.0,
+                    Decimal("0.000000"),
                 ),
                 total_cr=Coalesce(
                     Sum(
@@ -633,11 +644,14 @@ class TransactionViewSet(
                                 transactions__journal_entry__date__lte=target_date,
                                 then="transactions__cr_amount",
                             ),
-                            default=0.0,
-                            output_field=FloatField(),
+                            default=Decimal("0.000000"),
+                            output_field=models.DecimalField(
+                                max_digits=24,
+                                decimal_places=6,
+                            ),
                         )
                     ),
-                    0.0,
+                    Decimal("0.000000"),
                 ),
             )
             .filter(

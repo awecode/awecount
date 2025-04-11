@@ -1,9 +1,11 @@
 from datetime import datetime
+from decimal import Decimal
 
 import requests
 from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from apps.ledger.models import JournalEntry
@@ -11,12 +13,48 @@ from awecount.libs import nepdate, wGenerator
 
 
 class InvoiceModel(models.Model):
-    meta_sub_total = models.FloatField(blank=True, null=True)
-    meta_sub_total_after_row_discounts = models.FloatField(blank=True, null=True)
-    meta_discount = models.FloatField(blank=True, null=True)
-    meta_non_taxable = models.FloatField(blank=True, null=True)
-    meta_taxable = models.FloatField(blank=True, null=True)
-    meta_tax = models.FloatField(blank=True, null=True)
+    meta_sub_total = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    meta_sub_total_after_row_discounts = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    meta_discount = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    meta_non_taxable = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    meta_taxable = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+    meta_tax = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
 
     def __str__(self):
         return str(self.voucher_no)
