@@ -1185,12 +1185,14 @@ def set_inventory_transactions(model, date, *args, clear=True):
             journal_entry.transactions.filter(account=arg[1]) if not created else []
         )
         diff = 0
+
+        arg[2] = Decimal(arg[2])
+
         if not matches:
             transaction = Transaction()
         else:
             transaction = matches[0]
-            diff = zero_for_none(transaction.cr_amount)
-            diff -= zero_for_none(transaction.dr_amount)
+            diff = zero_for_none(transaction.cr_amount) - zero_for_none(transaction.dr_amount)
         if arg[0] in ["dr", "ob"]:
             transaction.cr_amount = None
             transaction.dr_amount = arg[2]
