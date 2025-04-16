@@ -781,24 +781,29 @@ class SalesVoucherMinListSerializer(serializers.ModelSerializer):
             "remarks",
         )
 
+class PaymentReceiptLiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentReceipt
+        fields = ("id", "amount", "tds_amount", "status")
 
 class SalesVoucherListSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
-    payment_receipts = serializers.SerializerMethodField()
+    payment_receipts = PaymentReceiptLiteSerializer(many=True, source="receipts")
     payment_mode = serializers.SerializerMethodField()
 
-    def get_payment_receipts(self, obj):
-        receipts = []
-        for receipt in obj.receipts:
-            receipts.append(
-                {
-                    "id": receipt.id,
-                    "amount": receipt.amount,
-                    "tds_amount": receipt.tds_amount,
-                    "status": receipt.status,
-                }
-            )
-        return receipts
+    # def get_payment_receipts(self, obj):
+    #     return PaymentReceiptLiteSerializer(obj.receipts, many=True).data
+    #     receipts = []
+    #     for receipt in obj.receipts:
+    #         receipts.append(
+    #             {
+    #                 "id": receipt.id,
+    #                 "amount": receipt.amount,
+    #                 "tds_amount": receipt.tds_amount,
+    #                 "status": receipt.status,
+    #             }
+    #         )
+    #     return receipts
 
     def get_payment_mode(self, obj):
         if not obj.payment_mode:
