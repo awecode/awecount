@@ -30,7 +30,8 @@ class BankAccount(CompanyBaseModel):
     transaction_commission_percent = models.DecimalField(
         max_digits=24,
         decimal_places=6,
-        default=Decimal("0.000000"),
+        blank=True,
+        null=True,
         validators=[MinValueValidator(Decimal("0.000000"))],
     )
     company = models.ForeignKey(
