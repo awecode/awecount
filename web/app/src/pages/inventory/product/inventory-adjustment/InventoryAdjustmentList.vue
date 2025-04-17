@@ -166,10 +166,10 @@ const newColumn = [
               class="text-white text-subtitle row items-center justify-center"
               style="border-radius: 8px; padding: 2px 10px"
               :class="
-                props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
-                : props.row.status == 'Paid' ? 'bg-green-2 text-green-10'
-                  : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
-                    : props.row.status == 'Partially Paid' ? 'bg-green-1 text-green-6'
+                props.row.status === 'Issued' ? 'bg-blue-2 text-blue-10'
+                : props.row.status === 'Paid' ? 'bg-green-2 text-green-10'
+                  : props.row.status === 'Draft' ? 'bg-orange-2 text-orange-10'
+                    : props.row.status === 'Partially Paid' ? 'bg-green-1 text-green-6'
                       : 'bg-red-2 text-red-10'
               "
             >

@@ -203,7 +203,7 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
             :to="`/${$route.params.company}/account/journal-vouchers/${props.id || route.params.id}/edit`"
           />
         </div>
-        <div v-if="fields?.status == 'Approved' && checkPermissions('journalvoucher.cancel')">
+        <div v-if="fields?.status === 'Approved' && checkPermissions('journalvoucher.cancel')">
           <q-btn
             class="text-h7 q-py-sm"
             color="red"

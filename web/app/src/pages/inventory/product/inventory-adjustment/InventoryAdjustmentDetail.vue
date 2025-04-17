@@ -92,7 +92,7 @@ export default {
         fields.value = data
       })
       .catch((error) => {
-        if (error.response && error.response.status == 404) {
+        if (error.response && error.response.status === 404) {
           router.replace({ path: '/ErrorNotFound' })
         }
       })
