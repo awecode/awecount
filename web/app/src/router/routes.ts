@@ -218,6 +218,14 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'cheque-deposits/:id',
+        name: 'company-banking-cheque-deposits-id',
+        component: () => import('pages/bank/cheque-deposit/ChequeDepositDetail.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Cheque Deposits', 'Detail'],
+        },
+      },
+      {
         path: 'cheque-deposits/:id/edit',
         name: 'company-banking-cheque-deposits-id-edit',
         component: () => import('pages/bank/cheque-deposit/ChequeDepositForm.vue'),
@@ -774,6 +782,14 @@ const companyRoutes: RouteRecordRaw[] = [
       {
         path: 'payment-modes/:id',
         name: 'company-settings-payment-modes-id',
+        component: () => import('pages/settings/PaymentModeForm.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Payment Modes', 'Detail'],
+        },
+      },
+      {
+        path: 'payment-modes/:id/edit',
+        name: 'company-settings-payment-modes-id-edit',
         component: () => import('pages/settings/PaymentModeForm.vue'),
         meta: {
           breadcrumbs: ['Settings', 'Payment Modes', 'Edit'],
