@@ -120,6 +120,11 @@ export default {
           {{ props.row.is_wallet ? props.row.wallet_name : props.row.bank_name }}
         </q-td>
       </template>
+      <template #body-cell-rate="props">
+        <q-td :props="props">
+          <FormattedNumber type="unit" unit="percent" :value="props.row.rate" />
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>

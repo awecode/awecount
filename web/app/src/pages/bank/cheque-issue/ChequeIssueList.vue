@@ -29,7 +29,6 @@ export default {
         name: 'amount',
         label: 'Amount',
         align: 'left',
-        field: row => Math.round(row.amount * 100) / 100,
         sortable: true,
       },
       {
@@ -179,6 +178,11 @@ export default {
               {{ props.row.status }}
             </div>
           </div>
+        </q-td>
+      </template>
+      <template #body-cell-amount="props">
+        <q-td :props="props">
+          <FormattedNumber type="currency" :value="props.row.amount" />
         </q-td>
       </template>
       <template #body-cell-actions="props">

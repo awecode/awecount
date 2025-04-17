@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { Ref } from 'vue'
 
+import Decimal from 'decimal.js'
 import DateConverter from 'src/components/date/VikramSamvat.js'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from 'src/stores/login-info'
@@ -114,6 +115,7 @@ export default {
     return {
       props,
       getVoucherUrl,
+      Decimal,
       checkPermissions,
       getPermissionsWithSourceType,
       store,
@@ -202,13 +204,13 @@ export default {
           </td>
           <td></td>
           <td class="text-left">
-            {{ $nf(fields.aggregate.total.dr + fields.aggregate.opening.dr, 2) }}
+            <FormattedNumber type="currency" :value="new Decimal(fields.aggregate.total.dr).add(fields.aggregate.opening.dr).toNumber()" />
           </td>
           <td class="text-left">
-            {{ $nf(fields.aggregate.total.cr + fields.aggregate.opening.cr, 2) }}
+            <FormattedNumber type="currency" :value="new Decimal(fields.aggregate.total.cr).add(fields.aggregate.opening.cr).toNumber()" />
           </td>
           <td class="text-left">
-            {{ $nf(fields.aggregate.total.dr + fields.aggregate.opening.dr - (fields.aggregate.total.cr + fields.aggregate.opening.cr), 2) }}
+            <FormattedNumber type="currency" :value="new Decimal(fields.aggregate.total.dr).add(fields.aggregate.opening.dr).sub(fields.aggregate.total.cr).sub(fields.aggregate.opening.cr).toNumber()" />
           </td>
         </tr>
         <tr v-else class="text-weight-bold">
@@ -218,13 +220,13 @@ export default {
           </td>
           <td></td>
           <td class="text-left">
-            {{ $nf(fields.amounts.dr || 0, 2) }}
+            <FormattedNumber type="currency" :value="fields.amounts.dr ?? '0'" />
           </td>
           <td class="text-left">
-            {{ $nf(fields.amounts.cr || 0, 2) }}
+            <FormattedNumber type="currency" :value="fields.amounts.cr ?? '0'" />
           </td>
           <td class="text-left">
-            {{ $nf((fields.amounts.dr || 0) - (fields.amounts.cr || 0), 2) }}
+            <FormattedNumber type="currency" :value="new Decimal(fields.amounts.dr ?? '0').sub(fields.amounts.cr ?? '0').toNumber()" />
           </td>
         </tr>
       </template>
@@ -235,13 +237,13 @@ export default {
         </td>
         <td></td>
         <td class="text-left">
-          {{ $nf(fields.page_cumulative.current.dr + fields.page_cumulative.next.dr + fields.aggregate.opening.dr, 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(fields.page_cumulative.current.dr).add(fields.page_cumulative.next.dr).add(fields.aggregate.opening.dr).toNumber()" />
         </td>
         <td class="text-left">
-          {{ $nf(fields.page_cumulative.current.cr + fields.page_cumulative.next.cr + fields.aggregate.opening.cr, 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(fields.page_cumulative.current.cr).add(fields.page_cumulative.next.cr).add(fields.aggregate.opening.cr).toNumber()" />
         </td>
         <td class="text-left">
-          {{ $nf(fields.page_cumulative.current.dr + fields.page_cumulative.next.dr + fields.aggregate.opening.dr - (fields.page_cumulative.current.cr + fields.page_cumulative.next.cr + fields.aggregate.opening.cr), 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(fields.page_cumulative.current.dr).add(fields.page_cumulative.next.dr).add(fields.aggregate.opening.dr).sub(fields.page_cumulative.current.cr).sub(fields.page_cumulative.next.cr).sub(fields.aggregate.opening.cr).toNumber()" />
         </td>
       </tr>
       <tr v-else-if="fields.page_cumulative" class="text-weight-bold">
@@ -251,13 +253,13 @@ export default {
         </td>
         <td></td>
         <td class="text-left">
-          {{ $nf(fields.page_cumulative.current.dr + fields.page_cumulative.next.dr, 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(fields.page_cumulative.current.dr).add(fields.page_cumulative.next.dr).toNumber()" />
         </td>
         <td class="text-left">
-          {{ $nf(fields.page_cumulative.current.cr + fields.page_cumulative.next.cr, 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(fields.page_cumulative.current.cr).add(fields.page_cumulative.next.cr).toNumber()" />
         </td>
         <td class="text-left">
-          {{ $nf(fields.page_cumulative.current.dr + fields.page_cumulative.next.dr - (fields.page_cumulative.current.cr + fields.page_cumulative.next.cr), 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(fields.page_cumulative.current.dr).add(fields.page_cumulative.next.dr).sub(fields.page_cumulative.current.cr).sub(fields.page_cumulative.next.cr).toNumber()" />
         </td>
       </tr>
       <tr v-for="(transaction, index) in fields.transactions.results" :key="index">
@@ -286,13 +288,13 @@ export default {
           <span v-else>{{ transaction.voucher_no }}</span>
         </td>
         <td>
-          <span v-if="transaction.dr_amount">{{ $nf(transaction.dr_amount, 2) }}</span>
+          <FormattedNumber type="currency" :value="transaction.dr_amount" />
         </td>
         <td>
-          <span v-if="transaction.cr_amount">{{ $nf(transaction.cr_amount, 2) }}</span>
+          <FormattedNumber type="currency" :value="transaction.cr_amount" />
         </td>
         <td v-if="runningBalance && Object.keys(runningBalance).length">
-          {{ $nf(runningBalance[index].dr - runningBalance[index].cr, 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(runningBalance[index].dr).sub(runningBalance[index].cr).toNumber()" />
         </td>
       </tr>
 
@@ -303,13 +305,13 @@ export default {
         </td>
         <td></td>
         <td class="text-left">
-          {{ $nf(fields.aggregate.total.dr_amount__sum, 2) }}
+          <FormattedNumber type="currency" :value="fields.aggregate.total.dr_amount__sum" />
         </td>
         <td class="text-left">
-          {{ $nf(fields.aggregate.total.cr_amount__sum, 2) }}
+          <FormattedNumber type="currency" :value="fields.aggregate.total.cr_amount__sum" />
         </td>
         <td>
-          {{ $nf((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0), 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(fields.aggregate.total.dr_amount__sum ?? '0').sub(fields.aggregate.total.cr_amount__sum ?? '0').toNumber()" />
         </td>
       </tr>
 
@@ -343,13 +345,13 @@ export default {
         </td>
         <td></td>
         <td class="text-left">
-          {{ $nf(fields.aggregate.opening.dr + fields.page_cumulative.next.dr, 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(fields.aggregate.opening.dr).add(fields.page_cumulative.next.dr).toNumber()" />
         </td>
         <td class="text-left">
-          {{ $nf(fields.aggregate.opening.cr + fields.page_cumulative.next.cr, 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(fields.aggregate.opening.cr).add(fields.page_cumulative.next.cr).toNumber()" />
         </td>
         <td>
-          {{ $nf(fields.aggregate.opening.dr + fields.page_cumulative.next.dr - (fields.aggregate.opening.cr + fields.page_cumulative.next.cr), 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(fields.aggregate.opening.dr).add(fields.page_cumulative.next.dr).sub(fields.aggregate.opening.cr).sub(fields.page_cumulative.next.cr).toNumber()" />
         </td>
       </tr>
       <tr v-else-if="fields.page_cumulative" class="text-weight-bold">
@@ -359,13 +361,13 @@ export default {
         </td>
         <td></td>
         <td class="text-left">
-          {{ $nf(fields.page_cumulative.next.dr, 2) }}
+          <FormattedNumber type="currency" :value="fields.page_cumulative.next.dr" />
         </td>
         <td class="text-left">
-          {{ $nf(fields.page_cumulative.next.cr, 2) }}
+          <FormattedNumber type="currency" :value="fields.page_cumulative.next.cr" />
         </td>
         <td>
-          {{ $nf(fields.page_cumulative.next.dr - fields.page_cumulative.next.cr, 2) }}
+          <FormattedNumber type="currency" :value="new Decimal(fields.page_cumulative.next.dr).sub(fields.page_cumulative.next.cr).toNumber()" />
         </td>
       </tr>
       <!-- <tr class="text-weight-bold">

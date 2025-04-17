@@ -103,7 +103,7 @@ onMounted(() => {
             Dr Amount
           </div>
           <div class="q-px-md">
-            {{ $nf(fields?.amounts?.dr) || '-' }}
+            <FormattedNumber null-value="-" type="currency" :value="fields?.amounts?.dr" />
           </div>
         </div>
 
@@ -112,7 +112,7 @@ onMounted(() => {
             Cr Amount
           </div>
           <div class="q-px-md">
-            {{ $nf(fields?.amounts?.cr) || '-' }}
+            <FormattedNumber null-value="-" type="currency" :value="fields?.amounts?.cr" />
           </div>
         </div>
 
@@ -121,7 +121,7 @@ onMounted(() => {
             Closing Balance
           </div>
           <div class="q-px-md">
-            {{ $nf((fields?.amounts?.dr || 0) - (fields?.amounts?.cr || 0)) }}
+            <FormattedNumber null-value="-" type="currency" :value="fields?.amounts?.dr - fields?.amounts?.cr" />
           </div>
         </div>
       </div>

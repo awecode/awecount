@@ -221,6 +221,11 @@ export default {
           </span>
         </q-td>
       </template>
+      <template #body-cell-total_amount="props">
+        <q-td>
+          <FormattedNumber type="currency" :value="props.row.total_amount" />
+        </q-td>
+      </template>
     </q-table>
     <XLSImport
       v-model:show-import-modal="showImportModal"

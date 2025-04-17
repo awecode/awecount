@@ -1,4 +1,5 @@
 <script>
+import Decimal from 'decimal.js'
 import formatNumberWithComma from 'src/composables/formatNumberWithComma'
 import numberToText from 'src/composables/numToText'
 
@@ -16,28 +17,32 @@ export default {
     },
   },
   setup(props) {
-    const getTaxname = computed(() => {
+    const tax = computed(() => {
       let sameScheme = null
       let tax_scheme = null
       if (props.fields.rows && props.fields.rows.length) {
         props.fields.rows.forEach((item) => {
           if (sameScheme !== false && item.tax_scheme) {
-            if (sameScheme === null && item.tax_scheme && item.tax_scheme.rate != 0) {
+            if (sameScheme === null && item.tax_scheme && item.tax_scheme.rate !== 0) {
               sameScheme = item.tax_scheme.id
               tax_scheme = item.tax_scheme
             } else if (sameScheme === item.tax_scheme?.id || item.tax_scheme.rate === 0) {
+              // do nothing
             } else {
               sameScheme = false
             }
           }
         })
         if (typeof sameScheme === 'number' && tax_scheme) {
-          return `${tax_scheme.friendly_name || ''}` + ' @ ' + `${tax_scheme.rate || ''}` + '%'
+          return {
+            name: tax_scheme.friendly_name || '',
+            rate: tax_scheme.rate || '',
+          }
         } else {
-          return 'Tax'
+          return { name: 'Tax', rate: '' }
         }
       } else {
-        return ''
+        return { name: '', rate: '' }
       }
     })
     return {
@@ -45,7 +50,8 @@ export default {
       // columns,
       numberToText,
       formatNumberWithComma,
-      getTaxname,
+      tax,
+      Decimal,
     }
   },
 }
@@ -109,26 +115,47 @@ export default {
           </span>
         </q-td>
         <q-td>
-          <span v-if="props.showRateQuantity">
-            {{ row.quantity }}
+          <template v-if="props.showRateQuantity">
+            <FormattedNumber :value="row.quantity" />
+            {{ ' ' }}
             <span class="text-grey-9">({{ row.unit_name }})</span>
-          </span>
+          </template>
         </q-td>
         <q-td>
-          <span v-if="props.showRateQuantity">{{ $nf(row.rate) }}</span>
+          <FormattedNumber v-if="props.showRateQuantity" type="currency" :value="row.rate" />
         </q-td>
         <q-td>
-          <span v-if="row.discount_obj">{{ $nf(row.discount_obj.value) }} {{ row.discount_obj.type === 'Percent' ? '%' : '-/' }}</span>
-          <span v-else-if="row.discount_type">{{ $nf(row.discount) }} {{ row.discount_type === 'Percent' ? '%' : '-/' }}</span>
+          <template v-if="row.discount_obj">
+            <FormattedNumber v-if="row.discount_obj.type === 'Amount'" type="currency" :value="row.discount_obj.value" />
+            <FormattedNumber
+              v-else-if="row.discount_obj.type === 'Percent'"
+              type="unit"
+              unit="percent"
+              :value="row.discount_obj.value"
+            />
+          </template>
+          <template v-else-if="row.discount_type">
+            <FormattedNumber v-if="row.discount_type === 'Amount'" type="currency" :value="row.discount" />
+            <FormattedNumber
+              v-else-if="row.discount_type === 'Percent'"
+              type="unit"
+              unit="percent"
+              :value="row.discount"
+            />
+          </template>
         </q-td>
         <!-- <q-td> {{ row.discount }} </q-td> -->
         <q-td class="text-right">
-          {{ row.tax_scheme.rate }}% (
-          <span class="text-uppercase">{{ row.tax_scheme.friendly_name }}</span>
-          )
+          <FormattedNumber
+            type="unit"
+            unit="percent"
+            :value="row.tax_scheme.rate"
+          />
+          {{ ' ' }}
+          <span class="text-uppercase">({{ row.tax_scheme.friendly_name }})</span>
         </q-td>
         <q-td class="text-right">
-          {{ $nf(row.rate * row.quantity) }}
+          <FormattedNumber type="currency" :value="new Decimal(row.rate).mul(row.quantity).toNumber()" />
         </q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
@@ -142,7 +169,7 @@ export default {
           Sub Total
         </q-td>
         <q-td class="text-right">
-          {{ formatNumberWithComma(fields?.voucher_meta.sub_total) }}
+          <FormattedNumber type="currency" :value="fields?.voucher_meta.sub_total" />
         </q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
@@ -156,7 +183,7 @@ export default {
           Discount
         </q-td>
         <q-td class="text-right">
-          {{ formatNumberWithComma(fields?.voucher_meta.discount) }}
+          <FormattedNumber type="currency" :value="fields?.voucher_meta.discount" />
         </q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
@@ -167,10 +194,13 @@ export default {
         <q-td />
         <q-td />
         <q-td class="text-right">
-          {{ getTaxname }}
+          {{ tax.name }}
+          <template v-if="tax.rate">
+            @ <FormattedNumber type="unit" unit="percent" :value="tax.rate" />
+          </template>
         </q-td>
         <q-td class="text-right" data-testid="tax">
-          {{ formatNumberWithComma(fields?.voucher_meta.tax) }}
+          <FormattedNumber type="currency" :value="fields?.voucher_meta.tax" />
         </q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
@@ -184,7 +214,7 @@ export default {
           Total
         </q-td>
         <q-td class="text-right">
-          {{ formatNumberWithComma(fields?.voucher_meta.grand_total) }}
+          <FormattedNumber type="currency" :value="fields?.voucher_meta.grand_total" />
         </q-td>
       </q-tr>
       <q-tr class="text-subtitle2">

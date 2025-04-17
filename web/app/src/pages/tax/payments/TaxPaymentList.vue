@@ -154,6 +154,11 @@ export default {
           </div>
         </q-td>
       </template>
+      <template #body-cell-amount="props">
+        <q-td :props="props">
+          <FormattedNumber type="currency" :value="props.row.amount" />
+        </q-td>
+      </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn

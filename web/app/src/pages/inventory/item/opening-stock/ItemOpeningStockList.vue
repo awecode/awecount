@@ -96,6 +96,11 @@ export default {
           </span>
         </q-td>
       </template>
+      <template #body-cell-balance="props">
+        <q-td :props="props">
+          <FormattedNumber :value="props.row.opening_balance" />
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>

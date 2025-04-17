@@ -159,6 +159,12 @@ const newColumn = [
         </q-td>
       </template>
 
+      <template #body-cell-total_amount="props">
+        <q-td :props="props">
+          <FormattedNumber type="currency" :value="props.row.total_amount" />
+        </q-td>
+      </template>
+
       <template #body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center">

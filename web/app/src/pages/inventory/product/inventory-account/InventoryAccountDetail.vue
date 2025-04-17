@@ -198,7 +198,7 @@ const getPermissionsWithSourceType = {
             Current Balance
           </div>
           <div class="q-px-md">
-            {{ $nf(fields?.current_balance) || '-' }}
+            <FormattedNumber null-value="-" :value="fields?.current_balance" />
           </div>
         </div>
 
@@ -207,7 +207,7 @@ const getPermissionsWithSourceType = {
             Opening Balance
           </div>
           <div class="q-px-md">
-            {{ $nf(fields?.opening_balance) || '-' }}
+            <FormattedNumber null-value="-" :value="fields?.opening_balance" />
           </div>
         </div>
 
@@ -216,7 +216,7 @@ const getPermissionsWithSourceType = {
             Closing Balance
           </div>
           <div class="q-px-md">
-            {{ $nf(fields?.closing_balance) || '-' }}
+            <FormattedNumber null-value="-" :value="fields?.closing_balance" />
           </div>
         </div>
       </div>
@@ -261,6 +261,16 @@ const getPermissionsWithSourceType = {
         <template #body-cell-voucher_type="props">
           <q-td :props="props">
             <span>{{ props.row.source_type === 'Item' ? 'Opening' : props.row.source_type }}</span>
+          </q-td>
+        </template>
+        <template #body-cell-dr_amount="props">
+          <q-td :props="props">
+            <FormattedNumber null-value="-" :value="props.row.dr_amount" />
+          </q-td>
+        </template>
+        <template #body-cell-cr_amount="props">
+          <q-td :props="props">
+            <FormattedNumber null-value="-" :value="props.row.cr_amount" />
           </q-td>
         </template>
       </q-table>

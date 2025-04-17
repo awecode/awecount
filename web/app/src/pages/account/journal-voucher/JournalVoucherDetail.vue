@@ -153,10 +153,10 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
                 </router-link>
               </div>
               <div class="col-2">
-                {{ row.dr_amount || 0 }}
+                <FormattedNumber type="currency" :value="row.dr_amount" />
               </div>
               <div class="col-2">
-                {{ row.cr_amount || 0 }}
+                <FormattedNumber type="currency" :value="row.cr_amount" />
               </div>
             </div>
           </div>
@@ -169,10 +169,10 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
               Total
             </div>
             <div class="col-2">
-              {{ $nf(getTotalDrAmount) }}
+              <FormattedNumber type="currency" :value="getTotalDrAmount" />
             </div>
             <div class="col-2">
-              {{ $nf(getTotalCrAmount) }}
+              <FormattedNumber type="currency" :value="getTotalCrAmount" />
             </div>
           </div>
         </q-card-section>

@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { Ref } from 'vue'
+import Decimal from 'decimal.js'
 
 export default {
   setup() {
@@ -101,7 +102,7 @@ export default {
       fields,
       errors,
       checkPermissions,
-      formatNumberWithComma,
+      Decimal,
       loading,
       isDeleteOpen,
       deleteMsg,
@@ -190,15 +191,15 @@ export default {
                 </q-td>
                 <q-td>
                   <span>
-                    {{ row.quantity }}
+                    <FormattedNumber :value="row.quantity" />
                     <span class="text-grey-9">({{ row.unit_name }})</span>
                   </span>
                 </q-td>
                 <q-td>
-                  <span>{{ $nf(row.rate) }}</span>
+                  <FormattedNumber type="currency" :value="row.rate" />
                 </q-td>
                 <q-td class="text-right">
-                  <span>{{ $nf(row.rate * row.quantity) }}</span>
+                  <FormattedNumber type="currency" :value="new Decimal(row.rate).mul(row.quantity).toNumber()" />
                 </q-td>
               </q-tr>
               <q-tr class="text-subtitle2">
@@ -207,7 +208,7 @@ export default {
                 <q-td />
                 <q-td>Total</q-td>
                 <q-td class="text-right">
-                  {{ formatNumberWithComma(fields?.total_amount) }}
+                  <FormattedNumber :value="fields?.total_amount" />
                 </q-td>
               </q-tr>
             </tbody>

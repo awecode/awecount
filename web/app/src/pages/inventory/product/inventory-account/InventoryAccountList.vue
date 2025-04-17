@@ -99,6 +99,16 @@ export default {
           </span>
         </q-td>
       </template>
+      <template #body-cell-opening_balance="props">
+        <q-td>
+          <FormattedNumber :value="props.row.opening_balance" />
+        </q-td>
+      </template>
+      <template #body-cell-current_balance="props">
+        <q-td>
+          <FormattedNumber :value="props.row.current_balance" />
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>

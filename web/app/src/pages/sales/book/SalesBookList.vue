@@ -32,7 +32,7 @@ export default {
       },
       {
         name: 'buyers_pan',
-        label: 'Tax No.',
+        label: 'Tax Identification No.',
         align: 'left',
         field: 'buyers_pan',
       },
@@ -139,23 +139,6 @@ export default {
         </div>
       </template>
 
-      <template #body-cell-voucher_no="props">
-        <q-td style="padding: 0" :props="props">
-          <div class="row align-center" style="height: 100%">
-            <router-link
-              v-if="checkPermissions('sales.read')"
-              class="text-blue l-view-btn"
-              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; padding: 8px 8px 8px 16px"
-              :to="`/${$route.params.company}/sales/vouchers/${props.row.id}`"
-            >
-              {{ props.row.voucher_no }}
-            </router-link>
-            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
-              {{ props.row.voucher_no }}
-            </span>
-          </div>
-        </q-td>
-      </template>
       <template #header="props">
         <q-tr>
           <q-th colspan="4" style="text-align: center">
@@ -180,6 +163,49 @@ export default {
             <span>{{ header.label }}</span>
           </q-th>
         </q-tr>
+      </template>
+
+      <template #body-cell-voucher_no="props">
+        <q-td style="padding: 0" :props="props">
+          <div class="row align-center" style="height: 100%">
+            <router-link
+              v-if="checkPermissions('sales.read')"
+              class="text-blue l-view-btn"
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; padding: 8px 8px 8px 16px"
+              :to="`/${$route.params.company}/sales/vouchers/${props.row.id}`"
+            >
+              {{ props.row.voucher_no }}
+            </router-link>
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px">
+              {{ props.row.voucher_no }}
+            </span>
+          </div>
+        </q-td>
+      </template>
+      <template #body-cell-total_sales="props">
+        <q-td>
+          <FormattedNumber type="currency" :value="props.row.voucher_meta.sub_total_after_row_discounts" />
+        </q-td>
+      </template>
+      <template #body-cell-non_taxable_sales="props">
+        <q-td>
+          <FormattedNumber type="currency" :value="props.row.voucher_meta.non_taxable" />
+        </q-td>
+      </template>
+      <template #body-cell-export_sales="props">
+        <q-td>
+          <FormattedNumber type="currency" :value="props.row.voucher_meta.export_sales" />
+        </q-td>
+      </template>
+      <template #body-cell-amount="props">
+        <q-td>
+          <FormattedNumber type="currency" :value="props.row.voucher_meta.amount" />
+        </q-td>
+      </template>
+      <template #body-cell-tax="props">
+        <q-td>
+          <FormattedNumber type="currency" :value="props.row.voucher_meta.tax" />
+        </q-td>
       </template>
     </q-table>
     <!-- {{ aggregate }} -->

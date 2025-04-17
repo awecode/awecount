@@ -101,6 +101,11 @@ export default {
         })
     }
 
+    const print = (bodyOnly: boolean) => {
+      const printData = useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher, isLoggedIn ? null : fields.value.company)
+      usePrintPdfWindow(printData)
+    }
+
     const submitChangeStatus = (id: number, status: string) => {
       loading.value = true
       let endpoint = ''
@@ -178,11 +183,6 @@ export default {
       } else {
         print(bodyOnly)
       }
-    }
-
-    const print = (bodyOnly: boolean) => {
-      const printData = useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher, isLoggedIn ? null : fields.value.company)
-      usePrintPdfWindow(printData)
     }
 
     return {
@@ -277,7 +277,7 @@ export default {
               </div>
               <div class="col-3">
                 Amount:
-                <span class="text-weight-medium">Rs {{ receipt.amount }}</span>
+                <FormattedNumber type="currency" :value="receipt.amount" />
               </div>
               <div class="col-3">
                 Status:
@@ -285,7 +285,7 @@ export default {
               </div>
               <div class="col-3">
                 TDS Amount:
-                <span class="text-weight-medium">Rs {{ receipt.tds_amount }}</span>
+                <FormattedNumber type="currency" :value="receipt.tds_amount" />
               </div>
             </div>
           </q-card-section>

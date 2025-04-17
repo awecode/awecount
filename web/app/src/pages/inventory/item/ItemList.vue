@@ -162,6 +162,16 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
           <span v-else>{{ props.row.category?.name }}</span>
         </q-td>
       </template>
+      <template #body-cell-cost_price="props">
+        <q-td>
+          <FormattedNumber type="currency" :value="props.row.cost_price" />
+        </q-td>
+      </template>
+      <template #body-cell-selling_price="props">
+        <q-td>
+          <FormattedNumber type="currency" :value="props.row.selling_price" />
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>

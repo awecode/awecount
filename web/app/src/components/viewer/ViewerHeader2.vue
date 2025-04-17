@@ -138,12 +138,30 @@ export default {
           {{ fields?.status }}
         </div>
       </div>
-      <div v-if="discountComputed" class="col-12 col-md-6 row">
+
+      <div v-if="fields?.discount_type || fields?.discount_obj" class="col-12 col-md-6 row">
         <div class="col-6">
           Discount
         </div>
         <div class="col-6">
-          {{ discountComputed }}
+          <template v-if="fields?.discount_obj">
+            <FormattedNumber v-if="fields?.discount_obj.type === 'Amount'" type="currency" :value="fields?.discount_obj.value" />
+            <FormattedNumber
+              v-else-if="fields?.discount_obj.type === 'Percent'"
+              type="unit"
+              unit="percent"
+              :value="fields?.discount_obj.value"
+            />
+          </template>
+          <template v-else-if="fields?.discount_type">
+            <FormattedNumber v-if="fields?.discount_type === 'Amount'" type="currency" :value="fields?.discount" />
+            <FormattedNumber
+              v-else-if="fields?.discount_type === 'Percent'"
+              type="unit"
+              unit="percent"
+              :value="fields?.discount"
+            />
+          </template>
         </div>
       </div>
     </div>

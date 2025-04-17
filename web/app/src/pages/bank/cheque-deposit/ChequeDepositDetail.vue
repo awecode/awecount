@@ -117,7 +117,7 @@ const onCancelClick = () => {
                 Amount
               </div>
               <div class="col-6">
-                {{ fields?.amount || '-' }}
+                <FormattedNumber null-value="-" type="currency" :value="fields?.amount" />
               </div>
             </div>
             <div class="col-6 row">

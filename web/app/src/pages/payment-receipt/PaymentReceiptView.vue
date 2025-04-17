@@ -165,15 +165,18 @@ export default {
           <div class="row column q-mt-md q-gutter-y-sm">
             <span>
               <span class="text-weight-medium text-grey-8">Received from:</span>
-              {{ fields.party_name }}, {{ fields.party_address }}
+              {{ fields.party_name }}
+              <span v-if="fields.party_address">
+                , {{ fields.party_address }}
+              </span>
             </span>
             <span>
-              <span class="text-weight-medium text-grey-8">Amount:</span>
-              NRS {{ $nf(fields.amount) }}
+              <span class="text-weight-medium text-grey-8">Amount: </span>
+              <FormattedNumber type="currency" :value="fields.amount" />
             </span>
             <span>
               <span class="text-weight-medium text-grey-8">In words:</span>
-              {{ numberToText(fields.amount) }}
+              {{ numberToText(Number(fields.amount)) }}
             </span>
           </div>
         </div>
@@ -302,7 +305,9 @@ export default {
               </div>
               <div class="col-12 col-md-6 row">
                 <span class="text-weight-medium text-grey-8 col-6">Amount</span>
-                <span>Rs. {{ $nf(fields.amount) }}</span>
+                <span>
+                  <FormattedNumber type="currency" :value="fields.amount" />
+                </span>
               </div>
             </div>
             <div class="row q-gutter-y-md">
@@ -312,7 +317,9 @@ export default {
               </div>
               <div class="col-12 col-md-6 row">
                 <span class="text-weight-medium text-grey-8 col-6">TDS Amount</span>
-                <span>{{ $nf(fields.tds_amount) }}</span>
+                <span>
+                  <FormattedNumber type="currency" :value="fields.tds_amount" />
+                </span>
               </div>
             </div>
           </div>

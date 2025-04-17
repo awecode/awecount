@@ -119,6 +119,19 @@ export default {
         </div>
       </template>
 
+      <template #body-cell-value="props">
+        <q-td :props="props">
+          <FormattedNumber
+            v-if="props.row.type === 'Percent'"
+            type="unit"
+            unit="percent"
+            :value="props.row.value"
+          />
+
+          <FormattedNumber v-else type="currency" :value="props.row.value" />
+        </q-td>
+      </template>
+
       <template #body-cell-trade_discount="props">
         <q-td :props="props">
           <ShowListBoolean :value="props.row.trade_discount" />

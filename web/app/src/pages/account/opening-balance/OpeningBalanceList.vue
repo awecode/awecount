@@ -105,6 +105,16 @@ export default {
           </span>
         </q-td>
       </template>
+      <template #body-cell-opening_dr="props">
+        <q-td>
+          <FormattedNumber type="currency" :value="props.row.opening_dr" />
+        </q-td>
+      </template>
+      <template #body-cell-opening_cr="props">
+        <q-td>
+          <FormattedNumber type="currency" :value="props.row.opening_cr" />
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>

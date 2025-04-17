@@ -39,11 +39,11 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         <div class="mb-4">
           <div class="q-mb-xs">
             <span class="h6 text-weight-bold q-mr-sm">Cost Price:</span>
-            <span>Nrs. {{ data.cost_price }}</span>
+            <FormattedNumber null-value="N/A" type="currency" :value="data.cost_price" />
           </div>
           <div class="q-mb-xs">
             <span class="h6 text-weight-bold q-mr-sm">Selling Price:</span>
-            <span>Nrs. {{ data.selling_price }}</span>
+            <FormattedNumber null-value="N/A" type="currency" :value="data.selling_price" />
           </div>
           <div v-if="data.brand?.id" class="q-mb-xs">
             <span class="h6 text-weight-bold q-mr-sm">Brand:</span>
@@ -121,10 +121,14 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
               Stock
             </router-link>
           </q-td>
-          <q-td>{{ data.account?.amounts.dr }}</q-td>
-          <q-td>{{ data.account?.amounts.cr }}</q-td>
           <q-td>
-            {{ (data.account?.amounts.dr || 0) - (data.account?.amounts.cr || 0) }}
+            <FormattedNumber :value="data.account?.amounts.dr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber :value="data.account?.amounts.cr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber :value="new Decimal(data.account?.amounts.dr ?? '0').sub(data.account?.amounts.cr ?? '0').toNumber()" />
           </q-td>
         </q-tr>
         <q-tr :props="props">
@@ -133,10 +137,14 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
               Sales
             </router-link>
           </q-td>
-          <q-td>{{ data.sales_account?.amounts.dr }}</q-td>
-          <q-td>{{ data.sales_account?.amounts.cr }}</q-td>
           <q-td>
-            {{ (data.sales_account?.amounts.dr || 0) - (data.sales_account?.amounts.cr || 0) }}
+            <FormattedNumber type="currency" :value="data.sales_account?.amounts.dr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber type="currency" :value="data.sales_account?.amounts.cr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber type="currency" :value="new Decimal(data.sales_account?.amounts.dr ?? '0').sub(data.sales_account?.amounts.cr ?? '0').toNumber()" />
           </q-td>
         </q-tr>
         <q-tr v-if="data.purchase_account" :props="props">
@@ -145,10 +153,14 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
               Purchase
             </router-link>
           </q-td>
-          <q-td>{{ data.purchase_account?.amounts.dr }}</q-td>
-          <q-td>{{ data.purchase_account?.amounts.cr }}</q-td>
           <q-td>
-            {{ (data.purchase_account?.amounts.dr || 0) - (data.purchase_account?.amounts.cr || 0) }}
+            <FormattedNumber type="currency" :value="data.purchase_account?.amounts.dr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber type="currency" :value="data.purchase_account?.amounts.cr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber type="currency" :value="new Decimal(data.purchase_account?.amounts.dr ?? '0').sub(data.purchase_account?.amounts.cr ?? '0').toNumber()" />
           </q-td>
         </q-tr>
         <q-tr v-if="data.expense_account" :props="props">
@@ -157,10 +169,14 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
               Expenses
             </router-link>
           </q-td>
-          <q-td>{{ data.expense_account?.amounts.dr }}</q-td>
-          <q-td>{{ data.expense_account?.amounts.cr }}</q-td>
           <q-td>
-            {{ (data.expense_account?.amounts.dr || 0) - (data.expense_account?.amounts.cr || 0) }}
+            <FormattedNumber type="currency" :value="data.expense_account?.amounts.dr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber type="currency" :value="data.expense_account?.amounts.cr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber type="currency" :value="new Decimal(data.expense_account?.amounts.dr ?? '0').sub(data.expense_account?.amounts.cr ?? '0').toNumber()" />
           </q-td>
         </q-tr>
         <q-tr v-if="data.fixed_asset_account" :props="props">
@@ -169,10 +185,14 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
               Fixed Assets
             </router-link>
           </q-td>
-          <q-td>{{ data.fixed_asset_account?.amounts.dr }}</q-td>
-          <q-td>{{ data.fixed_asset_account?.amounts.cr }}</q-td>
           <q-td>
-            {{ (data.fixed_asset_account?.amounts.dr || 0) - (data.fixed_asset_account?.amounts.cr || 0) }}
+            <FormattedNumber type="currency" :value="data.fixed_asset_account?.amounts.dr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber type="currency" :value="data.fixed_asset_account?.amounts.cr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber type="currency" :value="new Decimal(data.fixed_asset_account?.amounts.dr ?? '0').sub(data.fixed_asset_account?.amounts.cr ?? '0').toNumber()" />
           </q-td>
         </q-tr>
         <q-tr v-if="data.discount_received_account" :props="props">
@@ -181,10 +201,14 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
               Discount Received
             </router-link>
           </q-td>
-          <q-td>{{ $nf(data.discount_received_account?.amounts.dr) }}</q-td>
-          <q-td>{{ $nf(data.discount_received_account?.amounts.cr) }}</q-td>
           <q-td>
-            {{ $nf((data.discount_received_account?.amounts.dr || 0) - (data.discount_received_account?.amounts.cr || 0)) }}
+            <FormattedNumber type="currency" :value="data.discount_received_account?.amounts.dr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber type="currency" :value="data.discount_received_account?.amounts.cr" />
+          </q-td>
+          <q-td>
+            <FormattedNumber type="currency" :value="new Decimal(data.discount_received_account?.amounts.dr ?? '0').sub(data.discount_received_account?.amounts.cr ?? '0').toNumber()" />
           </q-td>
         </q-tr>
       </template>

@@ -1,4 +1,6 @@
-<script>
+<script lang="ts">
+import Decimal from 'decimal.js'
+
 export default {
   setup() {
     const metaData = {
@@ -74,6 +76,7 @@ export default {
     return {
       ...listData,
       newColumn,
+      Decimal,
       onDownloadXls,
       checkPermissions,
       showImportModal,
@@ -271,17 +274,26 @@ export default {
           </span>
         </q-td>
       </template>
+      <template #body-cell-total_amount="props">
+        <q-td>
+          <FormattedNumber type="currency" :value="props.row.total_amount" />
+        </q-td>
+      </template>
       <template #body-cell-receipt_amount="props">
-        <td>
-          <!-- {{ props.row.payment_receipts.map((item) => item.amount) }} -->
-          {{ $nf(props.row.payment_receipts.reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0)) }}
-        </td>
+        <q-td>
+          <FormattedNumber
+            type="currency"
+            :value="props.row.payment_receipts.reduce((acc, curr) => acc.add(curr.amount ?? '0'), new Decimal('0')).toNumber()"
+          />
+        </q-td>
       </template>
       <template #body-cell-tds="props">
-        <td>
-          <!-- {{ props.row.payment_receipts.map((item) => item.amount) }} -->
-          {{ $nf(props.row.payment_receipts.reduce((a, b) => (a.tds_amount || 0) + (b.tds_amount || 0), 0)) }}
-        </td>
+        <q-td>
+          <FormattedNumber
+            type="currency"
+            :value="props.row.payment_receipts.reduce((acc, curr) => acc.add(curr.tds_amount ?? '0'), new Decimal('0')).toNumber()"
+          />
+        </q-td>
       </template>
     </q-table>
 
