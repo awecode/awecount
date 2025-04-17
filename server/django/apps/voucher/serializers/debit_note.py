@@ -10,14 +10,13 @@ from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
+from lib.drf.serializers import BaseModelSerializer
 
 from ..models import DebitNote, DebitNoteRow
 from .mixins import DiscountObjectTypeSerializerMixin
 
 
-class DebitNoteRowSerializer(
-    DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
-):
+class DebitNoteRowSerializer(DiscountObjectTypeSerializerMixin, BaseModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
@@ -42,7 +41,7 @@ class DebitNoteRowSerializer(
 class DebitNoteCreateSerializer(
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
-    serializers.ModelSerializer,
+    BaseModelSerializer,
 ):
     voucher_no = serializers.ReadOnlyField()
     rows = DebitNoteRowSerializer(many=True)
@@ -200,7 +199,7 @@ class DebitNoteCreateSerializer(
         )
 
 
-class DebitNoteListSerializer(serializers.ModelSerializer):
+class DebitNoteListSerializer(BaseModelSerializer):
     party = serializers.ReadOnlyField(source="party.name")
 
     class Meta:
@@ -219,7 +218,7 @@ class DebitNoteRowDetailSerializer(PurchaseVoucherRowDetailSerializer):
     selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
 
-class DebitNoteDetailSerializer(serializers.ModelSerializer):
+class DebitNoteDetailSerializer(BaseModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     discount_obj = PurchaseDiscountSerializer()

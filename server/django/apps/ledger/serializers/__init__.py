@@ -6,6 +6,7 @@ from rest_framework.exceptions import APIException, ValidationError
 from apps.ledger.models.base import AccountClosing
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.drf_fields import RoundedField
+from lib.drf.serializers import BaseModelSerializer
 
 from ..models import (
     Account,
@@ -18,7 +19,7 @@ from ..models import (
 )
 
 
-class PartyRepresentativeSerializer(serializers.ModelSerializer):
+class PartyRepresentativeSerializer(BaseModelSerializer):
     id = serializers.IntegerField(required=False)
 
     class Meta:
@@ -26,19 +27,19 @@ class PartyRepresentativeSerializer(serializers.ModelSerializer):
         exclude = ("party",)
 
 
-class PartyMinSerializer(serializers.ModelSerializer):
+class PartyMinSerializer(BaseModelSerializer):
     class Meta:
         model = Party
         fields = ("id", "name", "address", "tax_identification_number", "aliases")
 
 
-class CategoryMinSerializer(serializers.ModelSerializer):
+class CategoryMinSerializer(BaseModelSerializer):
     class Meta:
         model = Category
         fields = ("id", "name")
 
 
-class AccountListSerializer(serializers.ModelSerializer):
+class AccountListSerializer(BaseModelSerializer):
     # dr = RoundedField()
     # cr = RoundedField()
     # computed_balance = RoundedField()
@@ -49,7 +50,7 @@ class AccountListSerializer(serializers.ModelSerializer):
         fields = ("id", "code", "name", "category")
 
 
-class AccountSerializer(serializers.ModelSerializer):
+class AccountSerializer(BaseModelSerializer):
     # current_dr = RoundedField()
     # current_cr = RoundedField()
     selected_parent_obj = GenericSerializer(source="parent", read_only=True)
@@ -61,19 +62,19 @@ class AccountSerializer(serializers.ModelSerializer):
         exclude = ("company", "default")
 
 
-class AccountFormSerializer(serializers.ModelSerializer):
+class AccountFormSerializer(BaseModelSerializer):
     class Meta:
         model = Account
         fields = ("id", "name", "code", "parent", "category")
 
 
-class AccountBalanceSerializer(serializers.ModelSerializer):
+class AccountBalanceSerializer(BaseModelSerializer):
     class Meta:
         model = Account
         fields = ("id", "code", "amounts")
 
 
-class PartyAccountSerializer(serializers.ModelSerializer):
+class PartyAccountSerializer(BaseModelSerializer):
     supplier_account = AccountBalanceSerializer()
     customer_account = AccountBalanceSerializer()
 
@@ -88,7 +89,7 @@ class PartyAccountSerializer(serializers.ModelSerializer):
         )
 
 
-class PartySerializer(serializers.ModelSerializer):
+class PartySerializer(BaseModelSerializer):
     tax_identification_number = serializers.CharField(
         max_length=255, required=False, allow_null=True, allow_blank=True
     )
@@ -142,7 +143,7 @@ class PartySerializer(serializers.ModelSerializer):
         exclude = ("company",)
 
 
-class PartyListSerializer(serializers.ModelSerializer):
+class PartyListSerializer(BaseModelSerializer):
     dr = serializers.ReadOnlyField()
     cr = serializers.ReadOnlyField()
     balance = serializers.ReadOnlyField()
@@ -162,7 +163,7 @@ class PartyListSerializer(serializers.ModelSerializer):
         )
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(BaseModelSerializer):
     is_default = serializers.ReadOnlyField()
 
     class Meta:
@@ -180,7 +181,7 @@ class CategoryDetailSerializer(CategorySerializer):
     selected_parent_obj = GenericSerializer(source="parent", read_only=True)
 
 
-class AccountMinSerializer(serializers.ModelSerializer):
+class AccountMinSerializer(BaseModelSerializer):
     class Meta:
         model = Account
         fields = (
@@ -191,7 +192,7 @@ class AccountMinSerializer(serializers.ModelSerializer):
         )
 
 
-class JournalEntrySerializer(serializers.ModelSerializer):
+class JournalEntrySerializer(BaseModelSerializer):
     dr_amount = serializers.SerializerMethodField()
     cr_amount = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
@@ -248,7 +249,7 @@ class JournalEntrySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class TransactionSerializer(serializers.ModelSerializer):
+class TransactionSerializer(BaseModelSerializer):
     account = AccountMinSerializer()
 
     class Meta:
@@ -272,7 +273,7 @@ class JournalEntriesSerializer(JournalEntrySerializer):
         return TransactionSerializer(transactions, many=True).data
 
 
-class JournalEntryMultiAccountSerializer(serializers.ModelSerializer):
+class JournalEntryMultiAccountSerializer(BaseModelSerializer):
     dr_amount = serializers.SerializerMethodField()
     cr_amount = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
@@ -329,7 +330,7 @@ class JournalEntryMultiAccountSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class AccountDetailSerializer(serializers.ModelSerializer):
+class AccountDetailSerializer(BaseModelSerializer):
     # journal_entries = serializers.SerializerMethodField()
     closing_balance = serializers.ReadOnlyField(source="get_balance")
     category_name = serializers.ReadOnlyField(source="category.name")
@@ -362,7 +363,7 @@ class AccountDetailSerializer(serializers.ModelSerializer):
         )
 
 
-class CategoryTreeSerializer(serializers.ModelSerializer):
+class CategoryTreeSerializer(BaseModelSerializer):
     children = serializers.SerializerMethodField()
 
     def get_children(self, obj):
@@ -383,7 +384,7 @@ class CategoryTreeSerializer(serializers.ModelSerializer):
         ]
 
 
-class AccountOpeningBalanceListSerializer(serializers.ModelSerializer):
+class AccountOpeningBalanceListSerializer(BaseModelSerializer):
     name = serializers.ReadOnlyField(source="account.name")
 
     class Meta:
@@ -391,7 +392,7 @@ class AccountOpeningBalanceListSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "opening_dr", "opening_cr")
 
 
-class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
+class AccountOpeningBalanceSerializer(BaseModelSerializer):
     name = serializers.ReadOnlyField(source="account.name")
 
     class Meta:
@@ -399,7 +400,7 @@ class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
         fields = ("id", "account", "name", "opening_dr", "opening_cr")
 
 
-class TransactionQsEntrySerializer(serializers.ModelSerializer):
+class TransactionQsEntrySerializer(BaseModelSerializer):
     date = serializers.ReadOnlyField(source="journal_entry.date")
     source_type = serializers.SerializerMethodField()
     source_id = serializers.ReadOnlyField(source="journal_entry.source.get_source_id")
@@ -446,7 +447,7 @@ class TransactionQsEntrySerializer(serializers.ModelSerializer):
         )
 
 
-class TransactionMinSerializer(serializers.ModelSerializer):
+class TransactionMinSerializer(BaseModelSerializer):
     date = serializers.ReadOnlyField(source="journal_entry.date")
     source_type = serializers.SerializerMethodField()
     source_id = serializers.ReadOnlyField(source="journal_entry.source.get_source_id")
@@ -531,7 +532,7 @@ class TransactionEntrySerializer(serializers.Serializer):
     #     fields = ('source_id', 'count', 'source_type', 'date', 'dr_amount', 'cr_amount', 'account_names', 'account_ids')
 
 
-class TransactionReportSerializer(serializers.ModelSerializer):
+class TransactionReportSerializer(BaseModelSerializer):
     voucher_no = serializers.ReadOnlyField(source="journal_entry.source_voucher_no")
     source_id = serializers.ReadOnlyField(source="journal_entry.source_voucher_id")
     date = serializers.ReadOnlyField(source="journal_entry.date")
@@ -569,7 +570,7 @@ class TransactionReportSerializer(serializers.ModelSerializer):
         ]
 
 
-class ContentTypeListSerializer(serializers.ModelSerializer):
+class ContentTypeListSerializer(BaseModelSerializer):
     name = serializers.SerializerMethodField()
 
     class Meta:
@@ -591,7 +592,7 @@ class AggregatorSerializer(serializers.Serializer):
     total_credit = RoundedField()
 
 
-class AccountClosingSerializer(serializers.ModelSerializer):
+class AccountClosingSerializer(BaseModelSerializer):
     # fiscal_period = serializers.StringRelatedField()
     company = serializers.StringRelatedField()
 

@@ -20,6 +20,7 @@ from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.helpers import get_full_file_url
 from awecount.libs.serializers import StatusReversionMixin
+from lib.drf.serializers import BaseModelSerializer
 
 from ..models import (
     PurchaseVoucher,
@@ -32,20 +33,20 @@ from ..models.invoice_design import InvoiceDesign
 from .mixins import DiscountObjectTypeSerializerMixin
 
 
-class SalesDiscountSerializer(serializers.ModelSerializer):
+class SalesDiscountSerializer(BaseModelSerializer):
     class Meta:
         model = SalesDiscount
         exclude = ("company",)
         extra_kwargs = {"name": {"required": True}}
 
 
-class SalesDiscountMinSerializer(serializers.ModelSerializer):
+class SalesDiscountMinSerializer(BaseModelSerializer):
     class Meta:
         model = SalesDiscount
         fields = ("id", "name", "type", "value")
 
 
-class PaymentReceiptSerializer(serializers.ModelSerializer):
+class PaymentReceiptSerializer(BaseModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
     invoices = serializers.SerializerMethodField()
 
@@ -69,7 +70,7 @@ class PaymentReceiptSerializer(serializers.ModelSerializer):
         )
 
 
-class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
+class PaymentReceiptDetailSerializer(BaseModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
     party_address = serializers.ReadOnlyField(source="party.address")
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
@@ -111,7 +112,7 @@ class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
         )
 
 
-class PaymentReceiptFormSerializer(serializers.ModelSerializer):
+class PaymentReceiptFormSerializer(BaseModelSerializer):
     cheque_date = serializers.DateField(required=False, source="cheque_deposit.date")
     cheque_number = serializers.CharField(
         required=False, source="cheque_deposit.cheque_number"
@@ -226,9 +227,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
         )
 
 
-class SalesVoucherRowSerializer(
-    DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
-):
+class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, BaseModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
@@ -259,7 +258,7 @@ class SalesVoucherRowSerializer(
 class SalesVoucherCreateSerializer(
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
-    serializers.ModelSerializer,
+    BaseModelSerializer,
 ):
     voucher_no = serializers.ReadOnlyField()
     print_count = serializers.ReadOnlyField()
@@ -578,7 +577,7 @@ class RecurringVoucherTemplatePurchaseInvoiceDataSerializer(
         )
 
 
-class RecurringVoucherTemplateCreateSerializer(serializers.ModelSerializer):
+class RecurringVoucherTemplateCreateSerializer(BaseModelSerializer):
     repeat_interval = serializers.IntegerField()
 
     def validate_repeat_interval(self, value):
@@ -676,13 +675,13 @@ class ImportRequestSerializer(serializers.Serializer):
         return value
 
 
-class SalesAgentSerializer(serializers.ModelSerializer):
+class SalesAgentSerializer(BaseModelSerializer):
     class Meta:
         model = SalesAgent
         exclude = ("company",)
 
 
-class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
+class SalesVoucherRowDetailSerializer(BaseModelSerializer):
     item_id = serializers.IntegerField()
     unit_id = serializers.IntegerField()
     tax_scheme_id = serializers.IntegerField()
@@ -699,7 +698,7 @@ class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
         exclude = ("voucher", "item", "unit")
 
 
-class SalesVoucherDetailSerializer(serializers.ModelSerializer):
+class SalesVoucherDetailSerializer(BaseModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
     party_contact_no = serializers.ReadOnlyField(source="party.contact_no")
     party_email = serializers.ReadOnlyField(source="party.email")
@@ -760,13 +759,13 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
         )
 
 
-class SalesVoucherChoiceSerializer(serializers.ModelSerializer):
+class SalesVoucherChoiceSerializer(BaseModelSerializer):
     class Meta:
         model = SalesVoucher
         fields = ("id", "voucher_no", "date", "status", "customer_name", "total_amount")
 
 
-class SalesVoucherMinListSerializer(serializers.ModelSerializer):
+class SalesVoucherMinListSerializer(BaseModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
 
     class Meta:
@@ -781,12 +780,14 @@ class SalesVoucherMinListSerializer(serializers.ModelSerializer):
             "remarks",
         )
 
-class PaymentReceiptLiteSerializer(serializers.ModelSerializer):
+
+class PaymentReceiptLiteSerializer(BaseModelSerializer):
     class Meta:
         model = PaymentReceipt
         fields = ("id", "amount", "tds_amount", "status")
 
-class SalesVoucherListSerializer(serializers.ModelSerializer):
+
+class SalesVoucherListSerializer(BaseModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
     payment_receipts = PaymentReceiptLiteSerializer(many=True, source="receipts")
     payment_mode = serializers.SerializerMethodField()
@@ -825,7 +826,7 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
         )
 
 
-class SaleVoucherOptionsSerializer(serializers.ModelSerializer):
+class SaleVoucherOptionsSerializer(BaseModelSerializer):
     value = serializers.ReadOnlyField(source="pk")
     text = serializers.ReadOnlyField(source="voucher_no")
 
@@ -837,13 +838,13 @@ class SaleVoucherOptionsSerializer(serializers.ModelSerializer):
         )
 
 
-class InvoiceDesignSerializer(serializers.ModelSerializer):
+class InvoiceDesignSerializer(BaseModelSerializer):
     class Meta:
         model = InvoiceDesign
         exclude = ("company",)
 
 
-class SalesBookSerializer(serializers.ModelSerializer):
+class SalesBookSerializer(BaseModelSerializer):
     buyers_name = serializers.ReadOnlyField(source="buyer_name")
     buyers_pan = serializers.ReadOnlyField(source="party.tax_identification_number")
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
@@ -864,7 +865,7 @@ class SalesBookSerializer(serializers.ModelSerializer):
         )
 
 
-class SalesBookExportSerializer(serializers.ModelSerializer):
+class SalesBookExportSerializer(BaseModelSerializer):
     buyers_name = serializers.ReadOnlyField(source="buyer_name")
     buyers_pan = serializers.ReadOnlyField(source="party.tax_identification_number")
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
@@ -882,7 +883,7 @@ class SalesBookExportSerializer(serializers.ModelSerializer):
         )
 
 
-class PurchaseBookSerializer(serializers.ModelSerializer):
+class PurchaseBookSerializer(BaseModelSerializer):
     sellers_name = serializers.ReadOnlyField(source="party.name")
     sellers_pan = serializers.ReadOnlyField(source="party.tax_identification_number")
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
@@ -900,7 +901,7 @@ class PurchaseBookSerializer(serializers.ModelSerializer):
         )
 
 
-class SalesRowSerializer(serializers.ModelSerializer):
+class SalesRowSerializer(BaseModelSerializer):
     item = serializers.CharField(source="item.name")
     buyers_name = serializers.ReadOnlyField(source="voucher.buyer_name")
     buyers_pan = serializers.ReadOnlyField(
@@ -926,7 +927,7 @@ class SalesRowSerializer(serializers.ModelSerializer):
         )
 
 
-class ChallanRowSerializer(serializers.ModelSerializer):
+class ChallanRowSerializer(BaseModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
@@ -942,7 +943,7 @@ class ChallanRowSerializer(serializers.ModelSerializer):
         )
 
 
-class ChallanListSerializer(serializers.ModelSerializer):
+class ChallanListSerializer(BaseModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
 
     class Meta:
@@ -950,7 +951,7 @@ class ChallanListSerializer(serializers.ModelSerializer):
         fields = ("id", "voucher_no", "party_name", "date", "customer_name", "status")
 
 
-class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
+class ChallanCreateSerializer(StatusReversionMixin, BaseModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     print_count = serializers.ReadOnlyField()
     selected_party_obj = GenericSerializer(source="party", read_only=True)

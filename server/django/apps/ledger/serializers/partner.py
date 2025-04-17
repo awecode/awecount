@@ -18,6 +18,7 @@ from awecount.libs.serializers import (
     DisableCancelEditMixin,
     RoyaltyLedgerInfoSerializer,
 )
+from lib.drf.serializers import BaseModelSerializer
 
 
 class PartnerAccountSerializer(serializers.Serializer):
@@ -46,7 +47,7 @@ class PartnerAccountSerializer(serializers.Serializer):
     )
 
 
-class PartnerJournalVoucherRowSerializer(serializers.ModelSerializer):
+class PartnerJournalVoucherRowSerializer(BaseModelSerializer):
     account = PartnerAccountSerializer(default={})
     account_id = serializers.IntegerField(required=False)
     dr_amount = serializers.DecimalField(
@@ -69,7 +70,7 @@ class PartnerJournalVoucherRowSerializer(serializers.ModelSerializer):
 
 
 class PartnerJournalVoucherCreateSerializer(
-    DisableCancelEditMixin, serializers.ModelSerializer
+    DisableCancelEditMixin, BaseModelSerializer
 ):
     voucher_no = serializers.CharField(required=False)
     status = serializers.ChoiceField(
@@ -136,7 +137,7 @@ class PartnerJournalVoucherCreateResponseSerializer(serializers.Serializer):
 
 
 class PartnerJournalVoucherStatusChangeSerializer(
-    serializers.ModelSerializer, DisableCancelEditMixin
+    BaseModelSerializer, DisableCancelEditMixin
 ):
     reason = serializers.CharField(required=False)
 
@@ -145,7 +146,7 @@ class PartnerJournalVoucherStatusChangeSerializer(
         fields = ("voucher_no", "status", "reason")
 
 
-class PartnerPartyListSerializer(serializers.ModelSerializer):
+class PartnerPartyListSerializer(BaseModelSerializer):
     class Meta:
         model = Party
         fields = (

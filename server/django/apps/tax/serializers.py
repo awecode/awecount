@@ -2,14 +2,15 @@ from rest_framework import serializers
 
 from apps.ledger.serializers import (
     AccountBalanceSerializer,
+    AccountMinSerializer,
     JournalEntrySerializer,
     TransactionSerializer,
-    AccountMinSerializer,
 )
 from apps.tax.models import TaxPayment, TaxScheme
+from lib.drf.serializers import BaseModelSerializer
 
 
-class TaxSchemeSerializer(serializers.ModelSerializer):
+class TaxSchemeSerializer(BaseModelSerializer):
     default = serializers.ReadOnlyField()
     friendly_name = serializers.ReadOnlyField(source="__str__")
 
@@ -18,7 +19,7 @@ class TaxSchemeSerializer(serializers.ModelSerializer):
         exclude = ("company",)
 
 
-class TaxAccountSerializer(serializers.ModelSerializer):
+class TaxAccountSerializer(BaseModelSerializer):
     payable = AccountBalanceSerializer()
     receivable = AccountBalanceSerializer()
 
@@ -27,7 +28,7 @@ class TaxAccountSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "payable", "receivable", "recoverable")
 
 
-class TaxSchemeMinSerializer(serializers.ModelSerializer):
+class TaxSchemeMinSerializer(BaseModelSerializer):
     name = serializers.ReadOnlyField(source="__str__")
 
     class Meta:
@@ -35,7 +36,7 @@ class TaxSchemeMinSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "rate")
 
 
-class TaxPaymentSerializer(serializers.ModelSerializer):
+class TaxPaymentSerializer(BaseModelSerializer):
     cr_account_name = serializers.ReadOnlyField(source="cr_account.name")
     tax_scheme_name = serializers.ReadOnlyField(source="tax_scheme.friendly_name")
 
@@ -43,8 +44,10 @@ class TaxPaymentSerializer(serializers.ModelSerializer):
         model = TaxPayment
         exclude = ("company",)
 
+
 class TaxPaymentFormSerializer(TaxPaymentSerializer):
     selected_cr_account_obj = AccountMinSerializer(read_only=True, source="cr_account")
+
 
 class TaxPaymentJournalEntrySerializer(JournalEntrySerializer):
     transactions = serializers.SerializerMethodField()

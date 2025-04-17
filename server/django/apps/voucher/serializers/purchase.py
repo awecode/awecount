@@ -9,6 +9,7 @@ from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
+from lib.drf.serializers import BaseModelSerializer
 
 from ..models import (
     PurchaseDiscount,
@@ -20,7 +21,7 @@ from ..models import (
 from .mixins import DiscountObjectTypeSerializerMixin
 
 
-class PurchaseDiscountSerializer(serializers.ModelSerializer):
+class PurchaseDiscountSerializer(BaseModelSerializer):
     class Meta:
         model = PurchaseDiscount
         exclude = ("company",)
@@ -28,7 +29,7 @@ class PurchaseDiscountSerializer(serializers.ModelSerializer):
 
 
 class PurchaseVoucherRowSerializer(
-    DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
+    DiscountObjectTypeSerializerMixin, BaseModelSerializer
 ):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
@@ -62,7 +63,7 @@ class PurchaseVoucherRowSerializer(
 class PurchaseVoucherCreateSerializer(
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
-    serializers.ModelSerializer,
+    BaseModelSerializer,
 ):
     rows = PurchaseVoucherRowSerializer(many=True)
     purchase_order_numbers = serializers.ReadOnlyField()
@@ -211,7 +212,7 @@ class PurchaseVoucherCreateSerializer(
         exclude = ("company", "user", "bank_account", "discount_obj", "fiscal_year")
 
 
-class PurchaseVoucherListSerializer(serializers.ModelSerializer):
+class PurchaseVoucherListSerializer(BaseModelSerializer):
     party = serializers.ReadOnlyField(source="party.name")
     name = serializers.SerializerMethodField()
     payment_mode = serializers.SerializerMethodField()
@@ -238,7 +239,7 @@ class PurchaseVoucherListSerializer(serializers.ModelSerializer):
         )
 
 
-class PurchaseVoucherRowDetailSerializer(serializers.ModelSerializer):
+class PurchaseVoucherRowDetailSerializer(BaseModelSerializer):
     item_id = serializers.IntegerField()
     unit_id = serializers.IntegerField()
     tax_scheme_id = serializers.IntegerField()
@@ -255,7 +256,7 @@ class PurchaseVoucherRowDetailSerializer(serializers.ModelSerializer):
         exclude = ("voucher", "item", "unit")
 
 
-class PurchaseVoucherDetailSerializer(serializers.ModelSerializer):
+class PurchaseVoucherDetailSerializer(BaseModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     discount_obj = PurchaseDiscountSerializer()
@@ -279,7 +280,7 @@ class PurchaseVoucherDetailSerializer(serializers.ModelSerializer):
         )
 
 
-class PurchaseBookExportSerializer(serializers.ModelSerializer):
+class PurchaseBookExportSerializer(BaseModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
     tax_identification_number = serializers.ReadOnlyField(
         source="party.tax_identification_number"
@@ -297,7 +298,7 @@ class PurchaseBookExportSerializer(serializers.ModelSerializer):
         )
 
 
-class PurchaseOrderRowSerializer(serializers.ModelSerializer):
+class PurchaseOrderRowSerializer(BaseModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=False)
     unit_id = serializers.IntegerField(required=False)
@@ -309,7 +310,7 @@ class PurchaseOrderRowSerializer(serializers.ModelSerializer):
         exclude = ["item", "voucher", "unit"]
 
 
-class PurchaseOrderListSerializer(serializers.ModelSerializer):
+class PurchaseOrderListSerializer(BaseModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
 
     class Meta:
@@ -317,7 +318,7 @@ class PurchaseOrderListSerializer(serializers.ModelSerializer):
         fields = ["id", "voucher_no", "party_name", "date", "status"]
 
 
-class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
+class PurchaseOrderCreateSerializer(BaseModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     print_count = serializers.ReadOnlyField()
     rows = PurchaseOrderRowSerializer(many=True)

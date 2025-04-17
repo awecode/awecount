@@ -26,6 +26,7 @@ from awecount.libs.serializers import (
     RoyaltyLedgerInfoSerializer,
     StatusReversionMixin,
 )
+from lib.drf.serializers import BaseModelSerializer
 
 
 class PartnerItemSerializer(serializers.Serializer):
@@ -179,7 +180,7 @@ class PartnerItemSelectSerializer(serializers.Serializer):
 
 class PartnerPurchaseVoucherRowSerializer(
     DiscountObjectTypeSerializerMixin,
-    serializers.ModelSerializer,
+    BaseModelSerializer,
     PartnerItemSelectSerializer,
 ):
     id = serializers.IntegerField(required=False)
@@ -219,7 +220,7 @@ class PartnerPurchaseVoucherRowSerializer(
 class PartnerPurchaseVoucherCreateSerializer(
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
-    serializers.ModelSerializer,
+    BaseModelSerializer,
 ):
     rows = PartnerPurchaseVoucherRowSerializer(many=True)
     purchase_order_numbers = serializers.ReadOnlyField()
@@ -327,7 +328,7 @@ class PartnerPurchaseVoucherCreateSerializer(
         exclude = ("company", "user", "bank_account", "discount_obj", "fiscal_year")
 
 
-class PartnerPurchaseDiscountSerializer(serializers.ModelSerializer):
+class PartnerPurchaseDiscountSerializer(BaseModelSerializer):
     class Meta:
         model = PurchaseDiscount
         exclude = ("company",)

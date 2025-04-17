@@ -1,11 +1,11 @@
+from django.db.models import Count, F, Q
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from django.db.models import F
 
 from apps.ledger.serializers import AccountMinSerializer, PartyMinSerializer
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.serializers import StatusReversionMixin
-from django.db.models import Q, Count
+from lib.drf.serializers import BaseModelSerializer
 
 from .models import (
     BankAccount,
@@ -19,31 +19,32 @@ from .models import (
 )
 
 
-class BankAccountSerializer(serializers.ModelSerializer):
+class BankAccountSerializer(BaseModelSerializer):
     name = serializers.ReadOnlyField(source="__str__")
 
     class Meta:
         model = BankAccount
         exclude = ("company",)
 
-class BankAccountMinSerializer(serializers.ModelSerializer):
+
+class BankAccountMinSerializer(BaseModelSerializer):
     name = serializers.ReadOnlyField(source="__str__")
 
     class Meta:
         model = BankAccount
         fields = ("id", "name")
-        
-class BankAccountWithLedgerSerializer(serializers.ModelSerializer):
+
+
+class BankAccountWithLedgerSerializer(BaseModelSerializer):
     name = serializers.ReadOnlyField(source="__str__")
     cheque_no = serializers.ReadOnlyField(source="next_cheque_no")
-
 
     class Meta:
         model = BankAccount
         fields = ("id", "name", "ledger_id", "cheque_no", "account_number")
 
 
-class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
+class ChequeDepositCreateSerializer(StatusReversionMixin, BaseModelSerializer):
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     benefactor_name = serializers.ReadOnlyField(source="benefactor.name")
     # clearing_date = serializers.ReadOnlyField()
@@ -75,7 +76,7 @@ class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSeria
         exclude = ("company",)
 
 
-class ChequeDepositListSerializer(serializers.ModelSerializer):
+class ChequeDepositListSerializer(BaseModelSerializer):
     bank_account_name = serializers.ReadOnlyField(source="bank_account.account_number")
     benefactor_name = serializers.ReadOnlyField(source="benefactor.name")
 
@@ -92,7 +93,7 @@ class ChequeDepositListSerializer(serializers.ModelSerializer):
         )
 
 
-class BankCashDepositListSerializer(serializers.ModelSerializer):
+class BankCashDepositListSerializer(BaseModelSerializer):
     bank_account_name = serializers.ReadOnlyField(source="bank_account.account_number")
     benefactor_name = serializers.ReadOnlyField(source="benefactor.name")
 
@@ -110,7 +111,7 @@ class BankCashDepositListSerializer(serializers.ModelSerializer):
         )
 
 
-class ChequeIssueSerializer(serializers.ModelSerializer):
+class ChequeIssueSerializer(BaseModelSerializer):
     # party_id = serializers.IntegerField(source='party.id', required=False)
     payee = serializers.SerializerMethodField()
     party_name = serializers.ReadOnlyField(source="party.name")
@@ -129,18 +130,19 @@ class ChequeIssueSerializer(serializers.ModelSerializer):
         exclude = ("company",)
 
 
-class FundTransferSerializer(serializers.ModelSerializer):
+class FundTransferSerializer(BaseModelSerializer):
     selected_from_account_obj = GenericSerializer(read_only=True, source="from_account")
     selected_to_account_obj = GenericSerializer(read_only=True, source="to_account")
     selected_transaction_fee_account_obj = GenericSerializer(
         read_only=True, source="transaction_fee_account"
     )
+
     class Meta:
         model = FundTransfer
         exclude = ("company",)
 
 
-class FundTransferListSerializer(serializers.ModelSerializer):
+class FundTransferListSerializer(BaseModelSerializer):
     from_account_name = serializers.ReadOnlyField(source="from_account.name")
     to_account_name = serializers.ReadOnlyField(source="to_account.name")
 
@@ -159,10 +161,13 @@ class FundTransferListSerializer(serializers.ModelSerializer):
         )
 
 
-class FundTransferTemplateSerializer(serializers.ModelSerializer):
+class FundTransferTemplateSerializer(BaseModelSerializer):
     selected_from_account_obj = GenericSerializer(read_only=True, source="from_account")
     selected_to_account_obj = GenericSerializer(read_only=True, source="to_account")
-    selected_transaction_fee_account_obj = GenericSerializer(read_only=True, source="transaction_fee_account")
+    selected_transaction_fee_account_obj = GenericSerializer(
+        read_only=True, source="transaction_fee_account"
+    )
+
     class Meta:
         model = FundTransferTemplate
         fields = (
@@ -178,7 +183,7 @@ class FundTransferTemplateSerializer(serializers.ModelSerializer):
         )
 
 
-class BankAccountChequeIssueSerializer(serializers.ModelSerializer):
+class BankAccountChequeIssueSerializer(BaseModelSerializer):
     name = serializers.ReadOnlyField(source="__str__")
     cheque_no = serializers.ReadOnlyField(source="next_cheque_no")
 
@@ -191,14 +196,16 @@ class BankAccountChequeIssueSerializer(serializers.ModelSerializer):
             "cheque_no",
         )
 
+
 class ChequeIssueFormSerializer(ChequeIssueSerializer):
-    selected_bank_account_obj = BankAccountChequeIssueSerializer(read_only=True, source="bank_account")
+    selected_bank_account_obj = BankAccountChequeIssueSerializer(
+        read_only=True, source="bank_account"
+    )
     selected_party_obj = PartyMinSerializer(source="party", read_only=True)
     selected_dr_account_obj = GenericSerializer(source="dr_account", read_only=True)
 
-class BankCashDepositCreateSerializer(
-    StatusReversionMixin, serializers.ModelSerializer
-):
+
+class BankCashDepositCreateSerializer(StatusReversionMixin, BaseModelSerializer):
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     benefactor_name = serializers.ReadOnlyField(source="benefactor.name")
     voucher_no = serializers.IntegerField(required=False, allow_null=True)
@@ -222,51 +229,73 @@ class BankCashDepositCreateSerializer(
         exclude = ("company",)
 
 
-class ReconciliationRowSerializer(serializers.ModelSerializer):
+class ReconciliationRowSerializer(BaseModelSerializer):
     class Meta:
         model = ReconciliationRow
-        exclude = ("updated_at", "statement" )
-        
+        exclude = ("updated_at", "statement")
+
+
 class ReconciliationStatementImportSerializer(serializers.Serializer):
     account_id = serializers.IntegerField()
     transactions = serializers.ListField(child=serializers.DictField())
     start_date = serializers.DateField(required=False)
     end_date = serializers.DateField(required=False)
     merge_description = serializers.BooleanField(default=False)
-    
+
     class Meta:
-        fields = ('account_id', 'transactions', 'start_date', 'end_date', 'merge_description')
-        
-class ReconciliationStatementListSerializer(serializers.ModelSerializer):
+        fields = (
+            "account_id",
+            "transactions",
+            "start_date",
+            "end_date",
+            "merge_description",
+        )
+
+
+class ReconciliationStatementListSerializer(BaseModelSerializer):
     account = AccountMinSerializer()
     total_rows = serializers.SerializerMethodField()
     reconciled_rows = serializers.SerializerMethodField()
     has_updated_rows = serializers.SerializerMethodField()
-    
+
     def get_total_rows(self, obj):
         return obj.rows.count()
-    
+
     def get_reconciled_rows(self, obj):
-        return obj.rows.filter(status='Reconciled').count()
-    
+        return obj.rows.filter(status="Reconciled").count()
+
     def get_has_updated_rows(self, obj):
         # find if there are any rows that have been updated
-        return obj.rows.annotate(
-            transaction_count=Count('transactions')
-        ).filter(
-            Q(transaction_count__gt=0) & Q(transactions__transaction__isnull=True) | 
-            Q(transactions__transaction_last_updated_at__lt=F('transactions__transaction__updated_at'))
-        ).exists()
+        return (
+            obj.rows.annotate(transaction_count=Count("transactions"))
+            .filter(
+                Q(transaction_count__gt=0) & Q(transactions__transaction__isnull=True)
+                | Q(
+                    transactions__transaction_last_updated_at__lt=F(
+                        "transactions__transaction__updated_at"
+                    )
+                )
+            )
+            .exists()
+        )
 
     class Meta:
         model = ReconciliationStatement
-        fields = ('id', 'account', 'start_date', 'end_date', 'total_rows', 'reconciled_rows', 'has_updated_rows')
-        
+        fields = (
+            "id",
+            "account",
+            "start_date",
+            "end_date",
+            "total_rows",
+            "reconciled_rows",
+            "has_updated_rows",
+        )
 
-class ReconciliationStatementSerializer(serializers.ModelSerializer):
+
+class ReconciliationStatementSerializer(BaseModelSerializer):
     account = AccountMinSerializer()
     entries = ReconciliationRowSerializer(many=True)
 
     class Meta:
         model = ReconciliationStatement
-        fields = ('id', 'account', 'start_date', 'end_date', 'entries')
+        fields = ("id", "account", "start_date", "end_date", "entries")

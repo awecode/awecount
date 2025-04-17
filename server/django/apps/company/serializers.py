@@ -3,16 +3,17 @@ from rest_framework import serializers
 from apps.company.constants import RESTRICTED_COMPANY_SLUGS
 from apps.company.models import Company, CompanyMember, CompanyMemberInvite, Permission
 from apps.users.serializers import UserLiteSerializer
+from lib.drf.serializers import BaseModelSerializer
 
 
-class CompanyLiteSerializer(serializers.ModelSerializer):
+class CompanyLiteSerializer(BaseModelSerializer):
     class Meta:
         model = Company
         fields = ["name", "slug", "logo", "id"]
         read_only_fields = fields
 
 
-class CompanyCreateSerializer(serializers.ModelSerializer):
+class CompanyCreateSerializer(BaseModelSerializer):
     class Meta:
         model = Company
         fields = [
@@ -27,7 +28,7 @@ class CompanyCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ["slug"]
 
 
-class CompanySerializer(serializers.ModelSerializer):
+class CompanySerializer(BaseModelSerializer):
     owner = UserLiteSerializer(read_only=True)
     total_members = serializers.IntegerField(read_only=True)
     logo_url = serializers.CharField(read_only=True)
@@ -56,21 +57,21 @@ class CompanySerializer(serializers.ModelSerializer):
         ]
 
 
-class CompanyPermissionLiteSerializer(serializers.ModelSerializer):
+class CompanyPermissionLiteSerializer(BaseModelSerializer):
     class Meta:
         model = Permission
         fields = ["id", "name"]
         read_only_fields = fields
 
 
-class CompanyPermissionSerializer(serializers.ModelSerializer):
+class CompanyPermissionSerializer(BaseModelSerializer):
     class Meta:
         model = Permission
         fields = "__all__"
         read_only_fields = ["id", "company"]
 
 
-class CompanyMemberSerializer(serializers.ModelSerializer):
+class CompanyMemberSerializer(BaseModelSerializer):
     member = UserLiteSerializer(read_only=True)
     permissions = CompanyPermissionSerializer(read_only=True, many=True)
 
@@ -85,7 +86,7 @@ class CompanyMemberSerializer(serializers.ModelSerializer):
         ]
 
 
-class CompanyMemberInviteSerializer(serializers.ModelSerializer):
+class CompanyMemberInviteSerializer(BaseModelSerializer):
     created_by = UserLiteSerializer(read_only=True)
     company = CompanyLiteSerializer(read_only=True)
     permissions = CompanyPermissionLiteSerializer(read_only=True, many=True)

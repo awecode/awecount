@@ -15,6 +15,7 @@ from awecount.libs import get_next_voucher_no
 from awecount.libs.Base64FileField import Base64FileField
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
+from lib.drf.serializers import BaseModelSerializer
 
 from ..models import (
     BillOfMaterial,
@@ -35,7 +36,7 @@ from ..models import (
 )
 
 
-class ItemSerializer(serializers.ModelSerializer):
+class ItemSerializer(BaseModelSerializer):
     tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
     unit_id = serializers.IntegerField(required=False, allow_null=True)
     default_unit_obj = GenericSerializer(read_only=True, source="unit")
@@ -109,7 +110,7 @@ class ItemSerializer(serializers.ModelSerializer):
         )
 
 
-class ItemSalesSerializer(serializers.ModelSerializer):
+class ItemSalesSerializer(BaseModelSerializer):
     rate = serializers.ReadOnlyField(source="selling_price")
     is_trackable = serializers.ReadOnlyField()
     default_unit_obj = GenericSerializer(read_only=True, source="unit")
@@ -129,7 +130,7 @@ class ItemSalesSerializer(serializers.ModelSerializer):
         )
 
 
-class ItemOpeningSerializer(serializers.ModelSerializer):
+class ItemOpeningSerializer(BaseModelSerializer):
     name = serializers.ReadOnlyField(source="item.name")
     item_id = serializers.ReadOnlyField(source="item.id")
 
@@ -141,7 +142,7 @@ class ItemOpeningSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class ItemPOSSerializer(serializers.ModelSerializer):
+class ItemPOSSerializer(BaseModelSerializer):
     rate = serializers.ReadOnlyField(source="selling_price")
 
     class Meta:
@@ -149,7 +150,7 @@ class ItemPOSSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "unit_id", "rate", "tax_scheme_id", "code")
 
 
-class ItemPurchaseSerializer(serializers.ModelSerializer):
+class ItemPurchaseSerializer(BaseModelSerializer):
     rate = serializers.ReadOnlyField(source="cost_price")
     is_trackable = serializers.ReadOnlyField()
     default_unit_obj = GenericSerializer(read_only=True, source="unit")
@@ -205,17 +206,19 @@ class BookSerializer(ItemSerializer):
         return instance
 
 
-class UnitSerializer(serializers.ModelSerializer):
+class UnitSerializer(BaseModelSerializer):
     class Meta:
         model = Unit
         exclude = ("company",)
 
 
-class InventoryCategorySerializer(serializers.ModelSerializer):
+class InventoryCategorySerializer(BaseModelSerializer):
     default_unit_id = serializers.IntegerField(required=False, allow_null=True)
     default_tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
     selected_default_unit_obj = UnitSerializer(read_only=True, source="default_unit")
-    selected_default_tax_scheme_obj = GenericSerializer(read_only=True, source="default_tax_scheme")
+    selected_default_tax_scheme_obj = GenericSerializer(
+        read_only=True, source="default_tax_scheme"
+    )
 
     def validate(self, attrs):
         type_account_tuples = [
@@ -252,7 +255,9 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
 
 class InventoryCategoryFormSerializer(InventoryCategorySerializer):
     selected_default_unit_obj = UnitSerializer(read_only=True, source="default_unit")
-    selected_default_tax_scheme_obj = GenericSerializer(read_only=True, source="default_tax_scheme")
+    selected_default_tax_scheme_obj = GenericSerializer(
+        read_only=True, source="default_tax_scheme"
+    )
     sales_account_obj = AccountMinSerializer(read_only=True, source="sales_account")
     purchase_account_obj = AccountMinSerializer(
         read_only=True, source="purchase_account"
@@ -285,19 +290,19 @@ class ItemFormSerializer(ItemSerializer):
     selected_brand_obj = GenericSerializer(read_only=True, source="brand")
 
 
-class InventoryCategoryTrialBalanceSerializer(serializers.ModelSerializer):
+class InventoryCategoryTrialBalanceSerializer(BaseModelSerializer):
     class Meta:
         model = InventoryCategory
         fields = ("name", "id", "can_be_sold", "can_be_purchased", "fixed_asset")
 
 
-class BrandSerializer(serializers.ModelSerializer):
+class BrandSerializer(BaseModelSerializer):
     class Meta:
         model = Brand
         exclude = ("company",)
 
 
-class InventoryAccountSerializer(serializers.ModelSerializer):
+class InventoryAccountSerializer(BaseModelSerializer):
     class Meta:
         model = InventoryAccount
         fields = (
@@ -311,13 +316,13 @@ class InventoryAccountSerializer(serializers.ModelSerializer):
         )
 
 
-class InventoryAccountBalanceSerializer(serializers.ModelSerializer):
+class InventoryAccountBalanceSerializer(BaseModelSerializer):
     class Meta:
         model = InventoryAccount
         fields = ("id", "amounts")
 
 
-class ItemDetailSerializer(serializers.ModelSerializer):
+class ItemDetailSerializer(BaseModelSerializer):
     brand = BrandSerializer()
     category = InventoryCategorySerializer()
     unit = UnitSerializer()
@@ -337,7 +342,7 @@ class ItemDetailSerializer(serializers.ModelSerializer):
         exclude = ("company",)
 
 
-class ItemListSerializer(serializers.ModelSerializer):
+class ItemListSerializer(BaseModelSerializer):
     category = GenericSerializer()
 
     class Meta:
@@ -345,7 +350,7 @@ class ItemListSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "category", "cost_price", "selling_price", "code")
 
 
-class ItemListMinSerializer(serializers.ModelSerializer):
+class ItemListMinSerializer(BaseModelSerializer):
     name = serializers.SerializerMethodField()
 
     def get_name(self, obj):
@@ -356,7 +361,7 @@ class ItemListMinSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "code"]
 
 
-class JournalEntrySerializer(serializers.ModelSerializer):
+class JournalEntrySerializer(BaseModelSerializer):
     dr_amount = serializers.SerializerMethodField()
     cr_amount = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
@@ -413,7 +418,7 @@ class JournalEntrySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class TransactionEntrySerializer(serializers.ModelSerializer):
+class TransactionEntrySerializer(BaseModelSerializer):
     date = serializers.ReadOnlyField(source="journal_entry.date")
     source_type = serializers.SerializerMethodField()
     source_id = serializers.ReadOnlyField(source="journal_entry.source.get_source_id")
@@ -446,13 +451,13 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
         )
 
 
-class InventorySettingCreateSerializer(serializers.ModelSerializer):
+class InventorySettingCreateSerializer(BaseModelSerializer):
     class Meta:
         model = InventorySetting
         exclude = ["company"]
 
 
-class BillOfMaterialRowSerializer(serializers.ModelSerializer):
+class BillOfMaterialRowSerializer(BaseModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
@@ -462,7 +467,7 @@ class BillOfMaterialRowSerializer(serializers.ModelSerializer):
         exclude = ("item", "unit", "bill_of_material")
 
 
-class BillOfMaterialCreateSerializer(serializers.ModelSerializer):
+class BillOfMaterialCreateSerializer(BaseModelSerializer):
     unit_id = serializers.IntegerField(required=True)
     rows = BillOfMaterialRowSerializer(many=True)
     finished_product_name = serializers.ReadOnlyField(source="finished_product.name")
@@ -499,7 +504,7 @@ class BillOfMaterialCreateSerializer(serializers.ModelSerializer):
         exclude = ("company", "unit")
 
 
-class BillOfMaterialListSerializer(serializers.ModelSerializer):
+class BillOfMaterialListSerializer(BaseModelSerializer):
     item = serializers.ReadOnlyField(source="finished_product.name")
 
     class Meta:
@@ -507,7 +512,7 @@ class BillOfMaterialListSerializer(serializers.ModelSerializer):
         fields = ["id", "item"]
 
 
-class InventoryAdjustmentVoucherRowSerializer(serializers.ModelSerializer):
+class InventoryAdjustmentVoucherRowSerializer(BaseModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=True)
@@ -525,7 +530,7 @@ class InventoryAdjustmentVoucherRowSerializer(serializers.ModelSerializer):
         )
 
 
-class InventoryAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
+class InventoryAdjustmentVoucherCreateSerializer(BaseModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     rows = InventoryAdjustmentVoucherRowSerializer(many=True)
     total_amount = serializers.ReadOnlyField()
@@ -628,13 +633,13 @@ class InventoryAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         exclude = ("company",)
 
 
-class InventoryAdjustmentVoucherListSerializer(serializers.ModelSerializer):
+class InventoryAdjustmentVoucherListSerializer(BaseModelSerializer):
     class Meta:
         model = InventoryAdjustmentVoucher
         fields = ["id", "voucher_no", "date", "status", "purpose", "total_amount"]
 
 
-class InventoryAdjustmentVoucherDetailSerializer(serializers.ModelSerializer):
+class InventoryAdjustmentVoucherDetailSerializer(BaseModelSerializer):
     rows = InventoryAdjustmentVoucherRowSerializer(many=True)
 
     class Meta:
@@ -642,7 +647,7 @@ class InventoryAdjustmentVoucherDetailSerializer(serializers.ModelSerializer):
         exclude = ("company",)
 
 
-class InventoryConversionVoucherRowSerializer(serializers.ModelSerializer):
+class InventoryConversionVoucherRowSerializer(BaseModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=True)
@@ -674,7 +679,7 @@ class InventoryConversionVoucherRowSerializer(serializers.ModelSerializer):
         )
 
 
-class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
+class InventoryConversionVoucherCreateSerializer(BaseModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     rows = InventoryConversionVoucherRowSerializer(many=True)
 
@@ -795,7 +800,7 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
         exclude = ("company",)
 
 
-class InventoryConversionVoucherListSerializer(serializers.ModelSerializer):
+class InventoryConversionVoucherListSerializer(BaseModelSerializer):
     finished_product_name = serializers.ReadOnlyField(
         source="finished_product.finished_product.name"
     )
@@ -811,7 +816,7 @@ class InventoryConversionVoucherListSerializer(serializers.ModelSerializer):
         ]
 
 
-class InventoryConversionVoucherDetailSerializer(serializers.ModelSerializer):
+class InventoryConversionVoucherDetailSerializer(BaseModelSerializer):
     rows = InventoryConversionVoucherRowSerializer(many=True)
     finished_product_name = serializers.ReadOnlyField(
         source="finished_product.finished_product.name"

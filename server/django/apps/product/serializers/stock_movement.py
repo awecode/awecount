@@ -1,9 +1,10 @@
 from rest_framework import serializers
 
 from apps.product.models import Item
+from lib.drf.serializers import BaseModelSerializer
 
 
-class StockMovementSerializer(serializers.ModelSerializer):
+class StockMovementSerializer(BaseModelSerializer):
     unit = serializers.SerializerMethodField()
     opening_qty = serializers.DecimalField(max_digits=20, decimal_places=2)
     opening_value = serializers.DecimalField(max_digits=20, decimal_places=2)

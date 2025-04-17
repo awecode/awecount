@@ -4,10 +4,12 @@ from auditlog.models import LogEntry
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
+from lib.drf.serializers import BaseModelSerializer
+
 from .models import Widget
 
 
-class LogEntrySerializer(serializers.ModelSerializer):
+class LogEntrySerializer(BaseModelSerializer):
     content_type_name = serializers.SerializerMethodField()
     actor = serializers.SerializerMethodField()
     actor_id = serializers.ReadOnlyField()
@@ -37,7 +39,7 @@ class LogEntrySerializer(serializers.ModelSerializer):
         exclude = ("timestamp", "changes")
 
 
-class WidgetSerializer(serializers.ModelSerializer):
+class WidgetSerializer(BaseModelSerializer):
     data = serializers.ReadOnlyField(source="get_data")
 
     class Meta:
@@ -45,7 +47,7 @@ class WidgetSerializer(serializers.ModelSerializer):
         exclude = ("user",)
 
 
-class WidgetListSerializer(serializers.ModelSerializer):
+class WidgetListSerializer(BaseModelSerializer):
     class Meta:
         model = Widget
         fields = (
@@ -60,7 +62,7 @@ class WidgetListSerializer(serializers.ModelSerializer):
         )
 
 
-class WidgetUpdateSerializer(serializers.ModelSerializer):
+class WidgetUpdateSerializer(BaseModelSerializer):
     def validate(self, data):
         if data.get("count") < 1:
             # TODO proper exception message

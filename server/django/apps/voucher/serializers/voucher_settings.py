@@ -4,33 +4,34 @@ from rest_framework import serializers
 from apps.bank.serializers import BankAccount, BankAccountMinSerializer
 from apps.voucher.models.voucher_settings import PurchaseSetting, SalesSetting
 from awecount.libs.helpers import get_full_file_url, get_relative_file_path
+from lib.drf.serializers import BaseModelSerializer
 
 
-class SalesCreateSettingSerializer(serializers.ModelSerializer):
+class SalesCreateSettingSerializer(BaseModelSerializer):
     class Meta:
         model = SalesSetting
         fields = ("fields", "options")
 
 
-class SalesUpdateSettingSerializer(serializers.ModelSerializer):
+class SalesUpdateSettingSerializer(BaseModelSerializer):
     class Meta:
         model = SalesSetting
         fields = ("options",)
 
 
-class PurchaseCreateSettingSerializer(serializers.ModelSerializer):
+class PurchaseCreateSettingSerializer(BaseModelSerializer):
     class Meta:
         model = PurchaseSetting
         fields = ("fields", "options")
 
 
-class PurchaseUpdateSettingSerializer(serializers.ModelSerializer):
+class PurchaseUpdateSettingSerializer(BaseModelSerializer):
     class Meta:
         model = PurchaseSetting
         fields = ("options",)
 
 
-class PurchaseSettingCreateSerializer(serializers.ModelSerializer):
+class PurchaseSettingCreateSerializer(BaseModelSerializer):
     class Meta:
         model = PurchaseSetting
         exclude = ("company",)
@@ -40,7 +41,7 @@ class PurchaseSettingCreateSerializer(serializers.ModelSerializer):
     #     return super().update(instance, validated_data)
 
 
-class PurchaseSettingSerializer(serializers.ModelSerializer):
+class PurchaseSettingSerializer(BaseModelSerializer):
     mode = serializers.SerializerMethodField()
     selected_mode_obj = serializers.SerializerMethodField()
 
@@ -60,7 +61,7 @@ class PurchaseSettingSerializer(serializers.ModelSerializer):
         return None
 
 
-class SalesSettingCreateSerializer(serializers.ModelSerializer):
+class SalesSettingCreateSerializer(BaseModelSerializer):
     default_email_attachments = serializers.ListField(
         child=serializers.CharField(),
         default=list,
@@ -75,7 +76,7 @@ class SalesSettingCreateSerializer(serializers.ModelSerializer):
         exclude = ("company",)
 
 
-class SalesSettingsSerializer(serializers.ModelSerializer):
+class SalesSettingsSerializer(BaseModelSerializer):
     mode = serializers.SerializerMethodField()
     selected_mode_obj = serializers.SerializerMethodField()
     default_email_attachments = serializers.SerializerMethodField()

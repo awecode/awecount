@@ -2,9 +2,10 @@ from rest_framework import serializers
 
 from apps.company.models import Company, FiscalYear
 from apps.users.models import Role, User
+from lib.drf.serializers import BaseModelSerializer
 
 
-class CompanySerializer(serializers.ModelSerializer):
+class CompanySerializer(BaseModelSerializer):
     request = None
     logo_url = serializers.SerializerMethodField()
     current_fiscal_year = serializers.ReadOnlyField(source="current_fiscal_year.name")
@@ -30,7 +31,7 @@ class CompanySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class RoleSerializer(serializers.ModelSerializer):
+class RoleSerializer(BaseModelSerializer):
     modules = serializers.ListField()
 
     class Meta:
@@ -38,7 +39,7 @@ class RoleSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "modules")
 
 
-class FiscalYearSerializer(serializers.ModelSerializer):
+class FiscalYearSerializer(BaseModelSerializer):
     # Maintain backward compatibility with the old field names
     start = serializers.DateField(source="start_date")
     end = serializers.DateField(source="end_date")
@@ -48,14 +49,14 @@ class FiscalYearSerializer(serializers.ModelSerializer):
         exclude = ()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(BaseModelSerializer):
     class Meta:
         model = User
         fields = ["full_name", "email", "phone_number"]
         read_only_fields = ["email"]
 
 
-class UserLiteSerializer(serializers.ModelSerializer):
+class UserLiteSerializer(BaseModelSerializer):
     class Meta:
         model = User
         fields = [

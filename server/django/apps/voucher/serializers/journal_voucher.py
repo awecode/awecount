@@ -5,13 +5,14 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
 
 from awecount.libs import decimalize
-from awecount.libs.serializers import DisableCancelEditMixin
 from awecount.libs.CustomViewSet import GenericSerializer
+from awecount.libs.serializers import DisableCancelEditMixin
+from lib.drf.serializers import BaseModelSerializer
 
 from ..models.journal_vouchers import JournalVoucher, JournalVoucherRow
 
 
-class JournalVoucherRowSerializer(serializers.ModelSerializer):
+class JournalVoucherRowSerializer(BaseModelSerializer):
     id = serializers.IntegerField(required=False)
     account_id = serializers.IntegerField(source="account.id", required=True)
 
@@ -23,9 +24,7 @@ class JournalVoucherRowSerializer(serializers.ModelSerializer):
         )
 
 
-class JournalVoucherCreateSerializer(
-    DisableCancelEditMixin, serializers.ModelSerializer
-):
+class JournalVoucherCreateSerializer(DisableCancelEditMixin, BaseModelSerializer):
     rows = JournalVoucherRowSerializer(many=True)
 
     def validate(self, attrs):
@@ -88,22 +87,30 @@ class JournalVoucherCreateSerializer(
         exclude = ("company",)
 
 
-class JournalVoucherListSerializer(serializers.ModelSerializer):
+class JournalVoucherListSerializer(BaseModelSerializer):
     class Meta:
         model = JournalVoucher
         fields = ("id", "voucher_no", "date", "status", "narration")
 
 
-class JournalVoucherRowDetailSerializer(serializers.ModelSerializer):
+class JournalVoucherRowDetailSerializer(BaseModelSerializer):
     account_name = serializers.ReadOnlyField(source="account.name")
     selected_account_obj = GenericSerializer(read_only=True, source="account")
 
     class Meta:
         model = JournalVoucherRow
-        fields = ("id", "account_id", "account_name", "type", "dr_amount", "cr_amount", "selected_account_obj")
+        fields = (
+            "id",
+            "account_id",
+            "account_name",
+            "type",
+            "dr_amount",
+            "cr_amount",
+            "selected_account_obj",
+        )
 
 
-class JournalVoucherDetailSerializer(serializers.ModelSerializer):
+class JournalVoucherDetailSerializer(BaseModelSerializer):
     rows = JournalVoucherRowDetailSerializer(many=True)
 
     class Meta:

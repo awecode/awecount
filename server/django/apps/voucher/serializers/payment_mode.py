@@ -2,9 +2,10 @@ from rest_framework import serializers
 
 from apps.ledger.serializers import AccountListSerializer
 from apps.voucher.models import PaymentMode, TransactionFeeConfig
+from lib.drf.serializers import BaseModelSerializer
 
 
-class PaymentModeCreateSerializer(serializers.ModelSerializer):
+class PaymentModeCreateSerializer(BaseModelSerializer):
     def validate_transaction_fee_config(self, value):
         if not value:
             return
@@ -36,7 +37,7 @@ class PaymentModeCreateSerializer(serializers.ModelSerializer):
         ]
 
 
-class PaymentModeRetrieveSerializer(serializers.ModelSerializer):
+class PaymentModeRetrieveSerializer(BaseModelSerializer):
     selected_account_obj = AccountListSerializer(source="account", read_only=True)
     selected_transaction_fee_account_obj = AccountListSerializer(
         source="transaction_fee_account", read_only=True
@@ -75,7 +76,7 @@ class PaymentModeRetrieveSerializer(serializers.ModelSerializer):
         ]
 
 
-class PaymentModeListSerializer(serializers.ModelSerializer):
+class PaymentModeListSerializer(BaseModelSerializer):
     class Meta:
         model = PaymentMode
         fields = [

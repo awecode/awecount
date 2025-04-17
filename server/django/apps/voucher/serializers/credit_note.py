@@ -4,6 +4,7 @@ from rest_framework.exceptions import ValidationError
 from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.serializers import StatusReversionMixin
+from lib.drf.serializers import BaseModelSerializer
 
 from ..models import CreditNote, CreditNoteRow
 from .mixins import DiscountObjectTypeSerializerMixin
@@ -14,9 +15,7 @@ from .sales import (
 )
 
 
-class CreditNoteRowSerializer(
-    DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
-):
+class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, BaseModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
@@ -41,7 +40,7 @@ class CreditNoteRowSerializer(
 class CreditNoteCreateSerializer(
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
-    serializers.ModelSerializer,
+    BaseModelSerializer,
 ):
     voucher_no = serializers.ReadOnlyField()
     rows = CreditNoteRowSerializer(many=True)
@@ -142,7 +141,7 @@ class CreditNoteCreateSerializer(
         )
 
 
-class CreditNoteListSerializer(serializers.ModelSerializer):
+class CreditNoteListSerializer(BaseModelSerializer):
     party = serializers.ReadOnlyField(source="party.name")
 
     class Meta:
@@ -161,7 +160,7 @@ class CreditNoteRowDetailSerializer(SalesVoucherRowDetailSerializer):
     selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
 
-class CreditNoteDetailSerializer(serializers.ModelSerializer):
+class CreditNoteDetailSerializer(BaseModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     discount_obj = SalesDiscountSerializer()
