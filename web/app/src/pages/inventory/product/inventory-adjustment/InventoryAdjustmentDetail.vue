@@ -86,7 +86,7 @@ export default {
       window.print()
     }
 
-    const endpoint = `/api/company/${route.params.company}inventory-adjustment/${route.params.id}/`
+    const endpoint = `/api/company/${route.params.company}/inventory-adjustment/${route.params.id}/`
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         fields.value = data

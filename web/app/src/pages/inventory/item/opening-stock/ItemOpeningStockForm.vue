@@ -3,11 +3,11 @@ import ItemAdd from '../ItemForm.vue'
 
 export default {
   setup() {
-    const endpoint = '/api/company/item-opening-balance/'
     const isDeleteOpen = ref(false)
     const router = useRouter()
     const route = useRoute()
     const $q = useQuasar()
+    const endpoint = `/api/company/${route.params.company}/item-opening-balance/`
     const metaData = {
       title: 'Stock Opening | Awecount',
     }
@@ -55,8 +55,8 @@ export default {
             <div v-if="!isEdit" class="col-12 col-md-6">
               <n-auto-complete-v2
                 v-model="fields.item_id"
-                endpoint="/api/company/item-opening-balance/create-defaults/items"
                 label="Item *"
+                :endpoint="`/api/company/${$route.params.company}/item-opening-balance/create-defaults/items`"
                 :error="errors?.item_id"
                 :modal-component="ItemAdd"
                 :options="formDefaults.collections?.items"

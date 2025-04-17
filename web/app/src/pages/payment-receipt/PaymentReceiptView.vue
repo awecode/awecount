@@ -358,7 +358,7 @@ export default {
             color="blue-7"
             icon="mdi-checkbook"
             label="View Cheque deposit"
-            :to="`/${$route.params.company}/cheque-deposit/${fields?.id}/view`"
+            :to="`/${$route.params.company}/banking/cheque-deposits/${fields?.id}`"
           />
           <q-btn
             v-if="fields.status === 'Cleared'"

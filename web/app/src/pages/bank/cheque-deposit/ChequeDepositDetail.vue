@@ -25,14 +25,14 @@ const route = useRoute()
 const $q = useQuasar()
 const isDeleteOpen = ref(false)
 const getData = async () =>
-  await useApi(`/api/company/${route.params.company}/cheque-deposits/${props.id}/details/`, { method: 'GET' }, false, true).then((data) => {
+  await useApi(`/api/company/${route.params.company}/cheque-deposits/${props.id || route.params.id}/details/`, { method: 'GET' }, false, true).then((data) => {
     fields.value = data
   })
 getData()
 
 const onClearedClick = () => {
   loading.value = true
-  useApi(`/api/company/${route.params.company}/cheque-deposits/${props.id}/mark_as_cleared/`, {
+  useApi(`/api/company/${route.params.company}/cheque-deposits/${props.id || route.params.id}/mark_as_cleared/`, {
     method: 'POST',
     body: {},
   })
@@ -57,7 +57,7 @@ const onClearedClick = () => {
 
 const onCancelClick = () => {
   loading.value = true
-  useApi(`/api/company/${route.params.company}/cheque-deposits/${props.id}/cancel/`, {
+  useApi(`/api/company/${route.params.company}/cheque-deposits/${props.id || route.params.id}/cancel/`, {
     method: 'POST',
     body: {},
   })
@@ -207,7 +207,7 @@ const onCancelClick = () => {
           color="orange"
           icon="edit"
           label="Edit"
-          :to="`/${$route.params.company}/banking/cheque-deposits/${props.id}/edit`"
+          :to="`/${$route.params.company}/banking/cheque-deposits/${props.id || route.params.id}/edit`"
         />
       </div>
       <div v-if="fields?.status === 'Issued' && checkPermissions('chequedeposit.update')">

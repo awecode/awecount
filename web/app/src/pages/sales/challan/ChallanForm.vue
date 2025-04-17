@@ -5,6 +5,8 @@ import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 
 export default {
   setup() {
+    const route = useRoute()
+
     const endpoint = `/api/company/${route.params.company}/challan/`
     const openDatePicker = ref(false)
     const $q = useQuasar()

@@ -18,14 +18,14 @@ const loading = ref(false)
 const errors = ref(null)
 useMeta(metaData)
 const getData = () =>
-  useApi(`/api/company/${route.params.company}/journal-voucher/${props.id}/`).then((data) => {
+  useApi(`/api/company/${route.params.company}/journal-voucher/${props.id || route.params.id}/`).then((data) => {
     fields.value = data
   })
 getData()
 
 const onCancelClick = () => {
   loading.value = true
-  useApi(`/api/company/${route.params.company}/journal-voucher/${props.id}/cancel/`, {
+  useApi(`/api/company/${route.params.company}/journal-voucher/${props.id || route.params.id}/cancel/`, {
     method: 'POST',
     body: { message: deleteMsg.value },
   })
@@ -200,7 +200,7 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
             color="orange"
             icon="edit"
             label="Edit"
-            :to="`/${$route.params.company}/account/journal-vouchers/${props.id}/edit`"
+            :to="`/${$route.params.company}/account/journal-vouchers/${props.id || route.params.id}/edit`"
           />
         </div>
         <div v-if="fields?.status == 'Approved' && checkPermissions('journalvoucher.cancel')">

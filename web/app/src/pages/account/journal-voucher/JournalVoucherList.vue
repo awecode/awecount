@@ -45,7 +45,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Journal Voucher"
-        :to="`/${$route.params.company}/journal-voucher/create`"
+        :to="`/${$route.params.company}/account/journal-vouchers/create`"
       />
     </div>
 
@@ -117,7 +117,7 @@ export default {
               color="blue"
               label="View"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/journal-voucher/${props.row.id}/view`"
+              :to="`/${$route.params.company}/account/journal-vouchers/${props.row.id}`"
             />
             <q-btn
               v-if="props.row.status !== 'Cancelled' && checkPermissions('journalvoucher.update')"
@@ -125,7 +125,7 @@ export default {
               color="orange-7"
               label="Edit"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/journal-voucher/${props.row.id}/edit`"
+              :to="`/${$route.params.company}/account/journal-vouchers/${props.row.id}/edit`"
             />
           </div>
         </q-td>
@@ -154,7 +154,7 @@ export default {
               v-if="checkPermissions('journalvoucher.read')"
               class="text-blue"
               style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-              :to="`/${$route.params.company}/journal-voucher/${props.row.id}/view`"
+              :to="`/${$route.params.company}/account/journal-vouchers/${props.row.id}`"
             >
               {{ props.row.voucher_no }}
             </router-link>

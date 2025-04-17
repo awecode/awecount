@@ -188,7 +188,9 @@ const useTransactionFeeValidation = () => {
   }
 }
 
-const { fields, errors, formDefaults, isEdit, submitForm, cancel, loading } = useForm(`/api/company/${$route.params.company}/payment-modes/`, {
+const route = useRoute()
+
+const { fields, errors, formDefaults, isEdit, submitForm, cancel, loading } = useForm(`/api/company/${route.params.company}/payment-modes/`, {
   getDefaults: true,
   successRoute: `/${route.params.company}/settings/payment-modes`,
 })
