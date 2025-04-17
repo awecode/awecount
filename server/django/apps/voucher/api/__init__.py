@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 import openpyxl
 from django.conf import settings
@@ -961,7 +962,7 @@ class POSViewSet(
                             - timedelta(days=30)
                         ),
                     ),
-                    0,
+                    Decimal("0"),
                 )
             )
             .only("name", "unit_id", "selling_price", "tax_scheme_id", "code")
