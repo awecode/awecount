@@ -1,4 +1,5 @@
 <script setup>
+import Decimal from 'decimal.js'
 import { $api } from 'src/composables/api'
 
 const data = ref({})
