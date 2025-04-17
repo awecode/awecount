@@ -258,7 +258,7 @@ export default {
             color="blue-7"
             icon="books"
             label="Journal Entries"
-            :to="`/${$route.params.company}/journal-entries/purchase-voucher/${fields.id}`"
+            :to="`/${$route.params.company}/journal-entries/purchase-vouchers/${fields.id}`"
           />
         </div>
       </div>
