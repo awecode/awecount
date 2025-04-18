@@ -36,8 +36,8 @@ export default antfu({
       'vue/attributes-order': [
         'error',
         {
-          order: ['DEFINITION', 'LIST_RENDERING', 'CONDITIONALS', 'RENDER_MODIFIERS', 'GLOBAL', 'UNIQUE', 'SLOT', 'TWO_WAY_BINDING', 'OTHER_DIRECTIVES', 'ATTR_SHORTHAND_BOOL', 'ATTR_STATIC', 'ATTR_DYNAMIC', 'EVENTS', 'CONTENT'],
           alphabetical: true,
+          order: ['DEFINITION', 'LIST_RENDERING', 'CONDITIONALS', 'RENDER_MODIFIERS', 'GLOBAL', 'UNIQUE', 'SLOT', 'TWO_WAY_BINDING', 'OTHER_DIRECTIVES', 'ATTR_SHORTHAND_BOOL', 'ATTR_STATIC', 'ATTR_DYNAMIC', 'EVENTS', 'CONTENT'],
         },
       ],
     },

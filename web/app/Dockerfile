@@ -27,13 +27,10 @@ FROM base AS runner
 
 ENV NODE_ENV production
 
-RUN npm install -g serve
-
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/dist/spa ./dist/spa
+COPY --from=builder /app/.output ./.output
 
 EXPOSE 3000
 
 ENV PORT 3000
 
-CMD HOSTNAME="0.0.0.0" serve -s -l 3000 dist/spa
+CMD node .output/server/index.mjs
