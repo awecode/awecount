@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import type { EssentialLinkProps } from '@/components/EssentialLink.vue'
 
-import { $api } from '@/composables/api'
-import { useBreadcrumbItems } from '@/composables/breadcrumb.js'
-
 import { useLoginStore } from '@/stores/login-info'
 import { getGravatarUrl } from '@/utils/gravatar'
 
@@ -12,6 +9,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
+const { $api } = useNuxtApp()
 
 const miniState = ref(false)
 const logoutDialogOpen = ref(false)
