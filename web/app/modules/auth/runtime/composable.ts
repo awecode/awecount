@@ -13,7 +13,7 @@ import authconfig from '#build/auth.config'
  *   }
  * }
  */
-type AuthUser<T = {}> = {
+type AuthUser<T = object> = {
   access_level: 'owner' | 'admin' | 'member'
   email: string
   display_name: string
@@ -52,7 +52,7 @@ export const URLs = {
   CHANGE_PASSWORD: `${BASE_PREFIX}/account/password/change`,
 
   // Switch company
-  SWITCH_COMPANY: `/api/me/switch-company/`,
+  SWITCH_COMPANY: `/api/user/me/switch-company/`,
 
   // Auth: Social
   PROVIDER_SIGNUP: `${BASE_PREFIX}/auth/provider/signup`,
@@ -69,8 +69,8 @@ export const useAuth = <T = {}>(namespace: string = 'default') => {
 
   const prefix = namespace !== 'default' ? `${namespace}:` : ''
 
-  const user = useStatefulCookie<AuthUser<T> | null>(`${prefix}user`, { default: () => null })
-  const company = useStatefulCookie<Company | null>(`${prefix}org`, { default: () => null })
+  const user = useStatefulCookie<AuthUser<T> | object>(`${prefix}user`, { default: () => ({}) })
+  const company = useStatefulCookie<Company | object>(`${prefix}org`, { default: () => ({}) })
 
   const accessToken = useStatefulCookie<string | null>(`${prefix}access_token`, { default: () => null })
   const refreshToken = useStatefulCookie<string | null>(`${prefix}refresh_token`, { default: () => null })
@@ -136,7 +136,7 @@ export const useAuth = <T = {}>(namespace: string = 'default') => {
   }
 
   const _fetchPermissions = async (companySlug: string) => {
-    const res = await $api<{ roles?: string[], access_level?: string, permissions: Record<string, Record<string, boolean>> }>(`/api/company/${companySlug}/permissions/`, {
+    const res = await $api(`/api/company/${companySlug}/permissions/mine/`, {
       method: 'GET',
       protected: true,
     })
@@ -331,6 +331,7 @@ export const useAuth = <T = {}>(namespace: string = 'default') => {
 
   // TODO: move this to a separate store/composable
   const switchCompany = async (companySlug: string) => {
+    debugger
     if (companySlug === user.value?.redirect) {
       return
     }
@@ -340,7 +341,8 @@ export const useAuth = <T = {}>(namespace: string = 'default') => {
       user.value.redirect = companySlug
       await _fetchCompany(companySlug)
       await _fetchPermissions(companySlug)
-      await navigateTo({ name: route.name, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
+      const next = route.name === 'onboarding' ? 'company-dashboard' : route.name
+      await navigateTo({ name: next, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
       return res
     } catch (error) {
       if (error.response?.status === 404 && !['onboarding', 'invitations', 'create-company'].includes(companySlug)) {
