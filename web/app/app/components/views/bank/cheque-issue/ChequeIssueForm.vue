@@ -2,7 +2,7 @@
 import checkPermissions from '@/composables/checkPermissions'
 import formatNumberWithCommas from '@/composables/formatNumberWithComma'
 import useGenerateChequePdf from '@/composables/pdf/useGenerateChequePdf'
-import BenefactorForm from '@/pages/account/ledger/LedgerForm.vue'
+import BenefactorForm from '@/components/views/account/ledger/LedgerForm.vue'
 import { useRoute } from 'vue-router'
 
 // const $q = useQuasar()

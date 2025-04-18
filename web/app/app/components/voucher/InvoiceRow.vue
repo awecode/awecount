@@ -1,6 +1,6 @@
 <script>
 import checkPermissions from '@/composables/checkPermissions'
-import ItemForm from '@/pages/inventory/item/ItemForm.vue'
+import ItemForm from '@/components/views/inventory/item/ItemForm.vue'
 
 export default {
   props: {

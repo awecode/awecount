@@ -1,8 +1,8 @@
 <script setup>
 import checkPermissions from '@/composables/checkPermissions'
 import { discount_types, modes } from '@/helpers/constants/invoice'
-import PartyForm from '@/pages/party/PartyForm.vue'
-import PurchaseDiscountForm from '@/pages/purchase/discounts/PurchaseDiscountForm.vue'
+import PartyForm from '@/components/views/party/PartyForm.vue'
+import PurchaseDiscountForm from '@/components/views/purchase/discounts/PurchaseDiscountForm.vue'
 import { useLoginStore } from '@/stores/login-info'
 import { useRoute } from 'vue-router'
 

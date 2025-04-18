@@ -2,8 +2,8 @@
 import type { Ref } from 'vue'
 import checkPermissions from '@/composables/checkPermissions'
 import { getPermissionFromSourceType, getVoucherUrl } from '@/composables/getVoucherUrlAndPermissions'
-import ChequeIssueForm from '@/pages/bank/cheque-issue/ChequeIssueForm.vue'
-import FundTransferForm from '@/pages/bank/fund-transfer/FundTransferForm.vue'
+import ChequeIssueForm from '@/components/views/bank/cheque-issue/ChequeIssueForm.vue'
+import FundTransferForm from '@/components/views/bank/fund-transfer/FundTransferForm.vue'
 import { useRoute } from 'vue-router'
 
 interface AccountDetails {

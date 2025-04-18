@@ -1,7 +1,7 @@
 <script>
 import checkPermissions from '@/composables/checkPermissions'
 import useForm from '@/composables/useForm'
-import LedgerForm from '@/pages/account/ledger/LedgerForm.vue'
+import LedgerForm from '@/components/views/account/ledger/LedgerForm.vue'
 
 export default {
   setup() {

@@ -1,6 +1,6 @@
 <script setup>
 import checkPermissions from '@/composables/checkPermissions'
-import LedgerForm from '@/pages/account/ledger/LedgerForm.vue'
+import LedgerForm from '@/components/views/account/ledger/LedgerForm.vue'
 
 const props = defineProps(['voucher', 'index', 'options', 'errors'])
 const emit = defineEmits(['deleteVoucher', 'checkAddVoucher'])

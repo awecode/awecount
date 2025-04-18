@@ -446,7 +446,7 @@ onMounted(() => {
   fetchCompanies()
 })
 
-const breadcrumbs = useBreadcrumbItems()
+const breadcrumbs = useBreadcrumbItems({ hideRoot: true, overrides: [false] })
 </script>
 
 <template>

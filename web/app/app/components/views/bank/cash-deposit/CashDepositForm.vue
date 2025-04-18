@@ -1,7 +1,7 @@
 <script>
 import checkPermissions from '@/composables/checkPermissions'
 import useForm from '@/composables/useForm'
-import BenefactorForm from '@/pages/account/ledger/LedgerForm.vue'
+import BenefactorForm from '@/components/views/account/ledger/LedgerForm.vue'
 import CreateAccount from '../account/AccountForm.vue'
 
 export default {

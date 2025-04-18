@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import checkPermissions from '@/composables/checkPermissions'
-import AccountForm from '@/pages/account/ledger/LedgerForm.vue'
+import AccountForm from '@/components/views/account/ledger/LedgerForm.vue'
 import { useRoute } from 'vue-router'
 import CategoryForm from '../account/category/CategoryForm.vue'
 

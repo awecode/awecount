@@ -3,8 +3,8 @@ import { useMeta, useQuasar } from 'quasar'
 import checkPermissions from '@/composables/checkPermissions'
 import useApi from '@/composables/useApi'
 import useForm from '@/composables/useForm'
-import PartyAlias from '@/pages/party/PartyAlias.vue'
-import PartyRepresentative from '@/pages/party/PartyRepresentative.vue'
+import PartyAlias from '@/components/views/party/PartyAlias.vue'
+import PartyRepresentative from '@/components/views/party/PartyRepresentative.vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const $q = useQuasar()

@@ -1,10 +1,10 @@
 <script setup>
 import NAutoComplete from '@/components/NAutoComplete.vue'
 import checkPermissions from '@/composables/checkPermissions'
-import BrandForm from '@/pages/inventory/product/brand/BrandForm.vue'
-import InventoryCategoryForm from '@/pages/inventory/product/category/InventoryCategoryForm.vue'
-import UnitForm from '@/pages/inventory/unit/UnitForm.vue'
-import TaxForm from '@/pages/tax/scheme/TaxForm.vue'
+import BrandForm from '@/components/views/inventory/product/brand/BrandForm.vue'
+import InventoryCategoryForm from '@/components/views/inventory/product/category/InventoryCategoryForm.vue'
+import UnitForm from '@/components/views/inventory/unit/UnitForm.vue'
+import TaxForm from '@/components/views/tax/scheme/TaxForm.vue'
 
 const route = useRoute()
 const $q = useQuasar()

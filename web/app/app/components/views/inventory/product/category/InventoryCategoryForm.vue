@@ -1,8 +1,8 @@
 <script setup>
 import NAutoComplete from '@/components/NAutoComplete.vue'
 import checkPermissions from '@/composables/checkPermissions'
-import UnitForm from '@/pages/inventory/unit/UnitForm.vue'
-import TaxForm from '@/pages/tax/scheme/TaxForm.vue'
+import UnitForm from '@/components/views/inventory/unit/UnitForm.vue'
+import TaxForm from '@/components/views/tax/scheme/TaxForm.vue'
 
 const route = useRoute()
 const extraFieldTypes = [

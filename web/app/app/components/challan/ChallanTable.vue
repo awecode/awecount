@@ -1,6 +1,6 @@
 <script>
 import useCalcDiscount from '@/composables/useCalcDiscount.js'
-import ItemAdd from '@/pages/inventory/item/ItemForm.vue'
+import ItemAdd from '@/components/views/inventory/item/ItemForm.vue'
 
 export default {
   props: {

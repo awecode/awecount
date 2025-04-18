@@ -1,6 +1,6 @@
 <script setup>
+import LedgerForm from '@/components/views/account/ledger/LedgerForm.vue'
 import checkPermissions from '@/composables/checkPermissions'
-import LedgerForm from '@/pages/account/ledger/LedgerForm.vue'
 import { useRoute } from 'vue-router'
 
 const props = defineProps({

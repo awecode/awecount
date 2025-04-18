@@ -1,7 +1,7 @@
 <script>
 import checkPermissions from '@/composables/checkPermissions'
 import useForm from '@/composables/useForm'
-import CategoryForm from '@/pages/account/category/CategoryForm.vue'
+import CategoryForm from '@/components/views/account/category/CategoryForm.vue'
 
 export default {
   setup() {

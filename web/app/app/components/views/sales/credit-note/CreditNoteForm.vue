@@ -3,9 +3,9 @@ import InvoiceTable from '@/components/voucher/InvoiceTable.vue'
 import checkPermissions from '@/composables/checkPermissions'
 import useForm from '@/composables/useForm'
 import { discount_types, modes } from '@/helpers/constants/invoice'
-import CategoryForm from '@/pages/account/category/CategoryForm.vue'
-import PartyForm from '@/pages/party/PartyForm.vue'
-import SalesDiscountForm from '@/pages/sales/discount/SalesDiscountForm.vue'
+import CategoryForm from '@/components/views/account/category/CategoryForm.vue'
+import PartyForm from '@/components/views/party/PartyForm.vue'
+import SalesDiscountForm from '@/components/views/sales/discount/SalesDiscountForm.vue'
 import { useLoginStore } from '@/stores/login-info'
 
 export default {

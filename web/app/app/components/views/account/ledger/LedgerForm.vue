@@ -1,7 +1,7 @@
 <script setup>
-import checkPermissions from 'src/composables/checkPermissions'
-import useForm from 'src/composables/useForm'
-import CategoryForm from 'src/pages/account/category/CategoryForm.vue'
+import CategoryForm from '@/components/views/account/category/CategoryForm.vue'
+import checkPermissions from '@/composables/checkPermissions'
+import useForm from '@/composables/useForm'
 
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
