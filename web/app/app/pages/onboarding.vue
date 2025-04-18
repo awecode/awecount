@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import onboarding from '@/components/views/onboarding.vue'
+import Onboarding from '@/components/views/onboarding.vue'
+
+definePageMeta({
+  layout: false,
+})
 </script>
 
 <template>
-<onboarding />
+  <Onboarding />
 </template>

@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import index from '@/components/views/profile/index.vue'
+import Profile from '@/components/views/profile/index.vue'
+
+definePageMeta({
+  layout: false,
+})
 </script>
 
 <template>
-<index />
+  <Profile />
 </template>
