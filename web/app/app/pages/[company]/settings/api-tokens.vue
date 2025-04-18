@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import api-tokens from '@/components/views/company/settings/api-tokens.vue'
+import APITokens from '@/components/views/company/settings/api-tokens.vue'
 </script>
 
 <template>
-<api-tokens />
+  <APITokens />
 </template>
