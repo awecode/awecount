@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     'nuxt-quasar-ui',
     '@pinia/nuxt',
     'pinia-plugin-persistedstate/nuxt',
+    '@nuxtjs/tailwindcss',
   ],
 
   ssr: false, // TODO: Remove this
