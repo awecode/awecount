@@ -214,7 +214,6 @@ const handleSubmitSuccess = (data, noPrint) => {
     usePrintPdfWindow(printData)
   }
   fields.value.rows = []
-  fields.value.mode = 'Cash'
   partyMode.value = false
   fields.value.party = ''
   delete fields.value.status
@@ -245,12 +244,12 @@ onMounted(() => {
 
 const modeOptionsComputed = computed(() => {
   const obj = {
-    results: ['Cash'],
+    results: [],
     pagination: {},
   }
-  if (formDefaults.value?.collections?.bank_accounts?.results) {
-    obj.results = obj.results.concat(formDefaults.value.collections.bank_accounts.results)
-    Object.assign(obj.pagination, formDefaults.value.collections.bank_accounts.pagination)
+  if (formDefaults.value?.collections?.payment_modes?.results) {
+    obj.results = obj.results.concat(formDefaults.value.collections.payment_modes.results)
+    Object.assign(obj.pagination, formDefaults.value.collections.payment_modes.pagination)
   }
   return obj
 })
@@ -384,24 +383,24 @@ const modeOptionsComputed = computed(() => {
                 <div class="flex -my-2 items-center gap-x-8">
                   <div class="flex-grow min-w-[225px]">
                     <n-auto-complete-v2
-                      v-model="fields.mode"
+                      v-model="fields.payment_mode"
                       emit-value
                       map-options
                       class="col-12 col-md-6"
-                      label="Mode"
+                      endpoint="v1/pos/create-defaults/payment_modes"
+                      label="Payment Mode"
                       option-label="name"
                       option-value="id"
-                      :endpoint="`/api/company/${$route.params.company}/pos/create-defaults/bank_accounts`"
-                      :error="!!errors?.mode"
-                      :error-message="errors?.mode ? errors.mode[0] : null"
+                      :error="!!errors?.payment_mode"
+                      :error-message="errors?.payment_mode ? errors.payment_mode[0] : null"
                       :options="modeOptionsComputed"
                     >
                       <template #append>
                         <q-icon
-                          v-if="fields.mode !== null"
+                          v-if="fields.payment_mode !== null"
                           class="cursor-pointer"
                           name="clear"
-                          @click.stop.prevent="fields.mode = null"
+                          @click.stop.prevent="fields.payment_mode = null"
                         />
                       </template>
                     </n-auto-complete-v2>
@@ -415,7 +414,7 @@ const modeOptionsComputed = computed(() => {
                               <div class="row">
                                 <div class="col-10">
                                   <q-input
-                                    v-if="partyMode && fields.mode !== 'Credit'"
+                                    v-if="partyMode && fields.payment_mode"
                                     v-model="fields.customer_name"
                                     label="Customer Name"
                                     :error="!!errors?.customer_name"
