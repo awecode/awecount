@@ -90,7 +90,7 @@ const menuItems = computed(() => [
       <div class="q-pa-md q-px-lg">
         <div class="row justify-start">
           <div class="col-12">
-            <router-view />
+            <slot></slot>
           </div>
         </div>
       </div>

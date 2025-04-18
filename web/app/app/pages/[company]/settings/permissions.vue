@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import permissions from '@/components/views/company/settings/permissions.vue'
+import Permissions from '@/components/views/company/settings/permissions.vue'
+import SettingsLayout from '@/layouts/settings.vue'
 </script>
 
 <template>
-<permissions />
+  <SettingsLayout>
+    <Permissions />
+  </SettingsLayout>
 </template>

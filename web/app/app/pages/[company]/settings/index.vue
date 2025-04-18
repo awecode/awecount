@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import index from '@/components/views/company/settings/index.vue'
+import Index from '@/components/views/company/settings/index.vue'
+import SettingsLayout from '@/layouts/settings.vue'
 </script>
 
 <template>
-<index />
+  <SettingsLayout>
+    <Index />
+  </SettingsLayout>
 </template>
