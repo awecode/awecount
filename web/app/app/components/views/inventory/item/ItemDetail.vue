@@ -1,11 +1,12 @@
 <script setup>
 import Decimal from 'decimal.js'
-import { $api } from '@/composables/api'
+
+const { $api } = useNuxtApp()
 
 const data = ref({})
 
 useHead({
-  title: () => `${data.value.name || 'Item'}| Awecount`,
+  title: () => `${data.value.name || 'Item'} | Awecount`,
 })
 
 const route = useRoute()

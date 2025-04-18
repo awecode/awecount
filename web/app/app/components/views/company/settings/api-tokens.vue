@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
-import { $api } from '@/composables/api'
 import { useRoute } from 'vue-router'
+
+const { $api } = useNuxtApp()
 
 const $q = useQuasar()
 const route = useRoute()

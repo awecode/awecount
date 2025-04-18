@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { useMeta } from 'quasar'
-import { $api } from '@/composables/api'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 
-useMeta({
-  title: 'Dashboard',
-  titleTemplate: (title: string) => `${title} | Awecount`,
+const { $api } = useNuxtApp()
+useHead({
+  title: 'Dashboard | Awecount',
 })
 
 const route = useRoute()
