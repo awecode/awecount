@@ -1,5 +1,5 @@
 <script>
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Suppliers | Awecount',
@@ -70,7 +70,7 @@ export default {
     ]
     return { ...listData, newColumn, checkPermissions }
   },
-}
+})
 </script>
 
 <template>

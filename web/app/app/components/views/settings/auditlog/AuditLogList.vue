@@ -1,5 +1,5 @@
 <script>
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Audit Logs | Awecount',
@@ -44,7 +44,7 @@ export default {
 
     return { ...listData, newColumn, onDownloadXls }
   },
-}
+})
 </script>
 
 <template>

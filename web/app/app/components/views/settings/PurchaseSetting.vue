@@ -2,7 +2,7 @@
 import useForm from '@/composables/useForm'
 import { modes } from '@/helpers/constants/invoice'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const $q = useQuasar()
@@ -94,7 +94,7 @@ export default {
       modeOptionsComputed,
     }
   },
-}
+})
 </script>
 
 <template>

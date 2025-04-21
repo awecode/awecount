@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Ref } from 'vue'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Category Tree | Awecount',
@@ -15,7 +15,7 @@ export default {
     // TODO: add 404 error routing
     return { treeData }
   },
-}
+})
 </script>
 
 <template>

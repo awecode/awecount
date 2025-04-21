@@ -1,7 +1,7 @@
 <script>
 import useApi from '@/composables/useApi'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const fields = ref(null)
 
@@ -25,7 +25,7 @@ export default {
         }
       })
   },
-}
+})
 </script>
 
 <template>

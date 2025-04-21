@@ -10,7 +10,7 @@ const add = (a, b) => {
   return new Decimal(a).plus(new Decimal(b)).toNumber()
 }
 
-export default {
+export default defineNuxtComponent({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const route = useRoute()
@@ -106,7 +106,7 @@ export default {
       onSubmitClick,
     }
   },
-}
+})
 </script>
 
 <template>

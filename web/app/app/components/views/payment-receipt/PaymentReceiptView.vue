@@ -18,7 +18,7 @@ interface Fields {
   date: Date
 }
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const metaData = {
@@ -92,7 +92,7 @@ export default {
         }
       })
   },
-}
+})
 </script>
 
 <template>

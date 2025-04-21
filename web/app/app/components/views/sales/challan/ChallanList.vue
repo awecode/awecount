@@ -2,7 +2,7 @@
 import checkPermissions from '@/composables/checkPermissions'
 import useList from '@/composables/useList'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/challan/`
@@ -32,7 +32,7 @@ export default {
 
     return { ...listData, newColumn, checkPermissions }
   },
-}
+})
 </script>
 
 <template>

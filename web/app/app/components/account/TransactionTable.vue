@@ -6,7 +6,7 @@ import DateConverter from '@/components/date/VikramSamvat.js'
 import checkPermissions from '@/composables/checkPermissions'
 import { useLoginStore } from '@/stores/login-info'
 
-export default {
+export default defineNuxtComponent({
   props: {
     fields: {
       type: Object || null,
@@ -123,7 +123,7 @@ export default {
       runningBalance,
     }
   },
-}
+})
 </script>
 
 <template>

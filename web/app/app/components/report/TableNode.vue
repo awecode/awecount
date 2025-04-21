@@ -1,7 +1,7 @@
 <script>
 import { useLoginStore } from '@/stores/login-info'
 
-export default {
+export default defineNuxtComponent({
   props: {
     item: {
       type: Object,
@@ -150,7 +150,7 @@ export default {
       loginStore,
     }
   },
-}
+})
 </script>
 
 <template>

@@ -7,7 +7,7 @@ import PartyForm from '@/components/views/party/PartyForm.vue'
 import SalesDiscountForm from '@/components/views/sales/discount/SalesDiscountForm.vue'
 
 const route = useRoute()
-export default {
+export default defineNuxtComponent({
   setup() {
     const endpoint = `/api/company/${route.params.company}/purchase-order/`
     const openDatePicker = ref(false)
@@ -110,7 +110,7 @@ export default {
     }
   },
   // onmounted: () => console.log('mounted'),
-}
+})
 </script>
 
 <template>

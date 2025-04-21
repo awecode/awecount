@@ -2,7 +2,7 @@
 import type { Ref } from 'vue'
 import Decimal from 'decimal.js'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Inventory Adjustment | Awecount',
@@ -110,7 +110,7 @@ export default {
       onPrintclick,
     }
   },
-}
+})
 </script>
 
 <template>

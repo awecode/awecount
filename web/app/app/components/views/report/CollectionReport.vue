@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Ref } from 'vue'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const reportData: Ref<Record<string, string | object> | null> = ref(null)
     const fields: Ref<Record<string, Date | null>> = ref({
@@ -22,7 +22,7 @@ export default {
     }
     return { reportData, fetchData, fields }
   },
-}
+})
 </script>
 
 <template>

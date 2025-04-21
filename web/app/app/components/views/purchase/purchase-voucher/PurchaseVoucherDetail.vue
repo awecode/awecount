@@ -19,7 +19,7 @@ interface Fields {
   discount_type: null | 'Amount' | 'Percent'
   purchase_order_numbers: Array<number>
 }
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Purchase/Expenses | Awecount',
@@ -143,7 +143,7 @@ export default {
         }
       })
   },
-}
+})
 </script>
 
 <template>

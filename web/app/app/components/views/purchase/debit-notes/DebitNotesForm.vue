@@ -9,7 +9,7 @@ import PurchaseDiscountForm from '@/components/views/purchase/discounts/Purchase
 import { useLoginStore } from '@/stores/login-info'
 import { useRoute } from 'vue-router'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const store = useLoginStore()
@@ -199,7 +199,7 @@ export default {
         console.log('error fetching choices due to', err)
       })
   },
-}
+})
 </script>
 
 <template>

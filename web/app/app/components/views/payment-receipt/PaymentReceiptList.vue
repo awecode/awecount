@@ -3,7 +3,7 @@ import checkPermissions from '@/composables/checkPermissions'
 import usedownloadFile from '@/composables/usedownloadFile'
 import useList from '@/composables/useList'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/payment-receipt/`
@@ -59,7 +59,7 @@ export default {
 
     return { ...listData, newColumn, onDownloadXls, checkPermissions }
   },
-}
+})
 </script>
 
 <template>

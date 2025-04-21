@@ -1,7 +1,7 @@
 <script>
 import ItemAdd from '../ItemForm.vue'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const isDeleteOpen = ref(false)
     const router = useRouter()
@@ -37,7 +37,7 @@ export default {
       ItemAdd,
     }
   },
-}
+})
 </script>
 
 <template>

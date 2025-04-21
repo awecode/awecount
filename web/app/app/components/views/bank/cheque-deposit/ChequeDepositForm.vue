@@ -4,7 +4,7 @@ import useForm from '@/composables/useForm'
 import BenefactorForm from '@/components/views/account/ledger/LedgerForm.vue'
 import CreateAccount from '../account/AccountForm.vue'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/cheque-deposits/`
@@ -36,7 +36,7 @@ export default {
       onSubmitClick,
     }
   },
-}
+})
 </script>
 
 <template>

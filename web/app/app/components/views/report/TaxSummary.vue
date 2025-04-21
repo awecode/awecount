@@ -2,7 +2,7 @@
 import type { Ref } from 'vue'
 import { $nf } from '@/composables/global'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Periodic Tax Summary | Awecount',
@@ -41,7 +41,7 @@ export default {
     // })
     return { reportData, fetchData, fields, $nf }
   },
-}
+})
 </script>
 
 <template>

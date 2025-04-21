@@ -3,7 +3,7 @@ import Decimal from 'decimal.js'
 import formatNumberWithComma from '@/composables/formatNumberWithComma'
 import numberToText from '@/composables/numToText'
 
-export default {
+export default defineNuxtComponent({
   props: {
     fields: {
       type: Object,
@@ -54,7 +54,7 @@ export default {
       Decimal,
     }
   },
-}
+})
 </script>
 
 <template>

@@ -3,7 +3,7 @@ import checkPermissions from '@/composables/checkPermissions'
 import useForm from '@/composables/useForm'
 import CategoryForm from '@/components/views/account/category/CategoryForm.vue'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/purchase-discount/`
@@ -27,7 +27,7 @@ export default {
       checkPermissions,
     }
   },
-}
+})
 </script>
 
 <template>

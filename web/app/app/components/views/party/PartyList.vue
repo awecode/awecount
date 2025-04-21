@@ -1,5 +1,5 @@
 <script>
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const metaData = {
@@ -50,7 +50,7 @@ export default {
     ]
     return { ...listData, newColumn, checkPermissions }
   },
-}
+})
 </script>
 
 <template>

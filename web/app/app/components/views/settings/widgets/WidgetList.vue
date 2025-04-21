@@ -2,7 +2,7 @@
 import checkPermissions from '@/composables/checkPermissions'
 import useList from '@/composables/useList'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Dashboard Widgets | Awecount',
@@ -27,7 +27,7 @@ export default {
     ]
     return { ...listData, newColumn, checkPermissions }
   },
-}
+})
 </script>
 
 <template>

@@ -2,7 +2,7 @@
 import checkPermissions from '@/composables/checkPermissions'
 import useList from '@/composables/useList'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Cheque Issues | Awecount',
@@ -60,7 +60,7 @@ export default {
     }
     return { ...useList(endpoint), newColumn, onDownloadXls, checkPermissions }
   },
-}
+})
 </script>
 
 <template>

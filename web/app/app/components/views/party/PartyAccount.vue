@@ -5,7 +5,7 @@ import useApi from '@/composables/useApi'
 import { withQuery } from 'ufo'
 import { useRoute, useRouter } from 'vue-router'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Party Account | Awecount',
@@ -124,7 +124,7 @@ export default {
         }
       })
   },
-}
+})
 </script>
 
 <template>

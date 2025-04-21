@@ -6,7 +6,7 @@ import checkPermissions from '@/composables/checkPermissions'
 import useList from '@/composables/useList'
 import { useLoginStore } from '@/stores/login-info'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const store = useLoginStore()
     const route = useRoute()
@@ -111,7 +111,7 @@ export default {
       aggregate_headers,
     }
   },
-}
+})
 </script>
 
 <template>

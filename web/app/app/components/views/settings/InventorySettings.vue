@@ -1,7 +1,7 @@
 <script>
 import useForm from '@/composables/useForm'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const $q = useQuasar()
     const route = useRoute()
@@ -46,7 +46,7 @@ export default {
       onUpdateClick,
     }
   },
-}
+})
 </script>
 
 <template>

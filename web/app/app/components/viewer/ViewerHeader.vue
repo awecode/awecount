@@ -4,7 +4,7 @@ import DateConverter from '@/components/date/VikramSamvat.js'
 import { modes } from '@/helpers/constants/invoice'
 import { useLoginStore } from '@/stores/login-info'
 
-export default {
+export default defineNuxtComponent({
   props: {
     fields: {
       type: Object,
@@ -88,7 +88,7 @@ export default {
       dateComputed,
     }
   },
-}
+})
 </script>
 
 <template>

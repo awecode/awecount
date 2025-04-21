@@ -2,7 +2,7 @@
 import checkPermissions from '@/composables/checkPermissions'
 import useList from '@/composables/useList'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const metaData = {
@@ -12,7 +12,7 @@ export default {
     const endpoint = `/api/company/${route.params.company}/units/`
     return { ...useList(endpoint), checkPermissions }
   },
-}
+})
 </script>
 
 <template>

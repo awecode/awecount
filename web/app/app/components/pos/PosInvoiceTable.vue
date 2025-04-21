@@ -2,7 +2,7 @@
 import useCalcDiscount from '@/composables/useCalcDiscount.js'
 import InvoiceRow from '../voucher/InvoiceRow.vue'
 
-export default {
+export default defineNuxtComponent({
   components: { InvoiceRow },
   props: {
     unitOptions: {
@@ -186,7 +186,7 @@ export default {
       rowEmpty,
     }
   },
-}
+})
 </script>
 
 <template>

@@ -1,7 +1,7 @@
 <script>
 // import { utils, writeFile } from 'xlsx'
 // import XLSX from "xlsx-js-style"
-export default {
+export default defineNuxtComponent({
   setup() {
     useHead({
       title: 'Trial Balance | Awecount',
@@ -183,7 +183,7 @@ export default {
       updateData,
     }
   },
-}
+})
 </script>
 
 <template>

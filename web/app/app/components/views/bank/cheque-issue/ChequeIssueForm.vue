@@ -7,7 +7,7 @@ import { useRoute } from 'vue-router'
 
 // const $q = useQuasar()
 
-export default {
+export default defineNuxtComponent({
   props: {
     bankAccount: {
       type: Object,
@@ -168,7 +168,7 @@ export default {
       isDeleteOpen,
     }
   },
-}
+})
 </script>
 
 <template>

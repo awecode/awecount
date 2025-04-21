@@ -1,5 +1,5 @@
 <script>
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Credit Notes | Awecount',
@@ -28,7 +28,7 @@ export default {
     }
     return { ...useList(endpoint), newColumns, onDownloadXls, checkPermissions }
   },
-}
+})
 </script>
 
 <template>

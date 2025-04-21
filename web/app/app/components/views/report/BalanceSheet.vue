@@ -3,7 +3,7 @@
 import DateConverter from '@/components/date/VikramSamvat.js'
 import { useLoginStore } from '@/stores/login-info'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const store = useLoginStore()
@@ -177,7 +177,7 @@ export default {
       DateConverter,
     }
   }
-}
+})
 </script>
 
 <template>

@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Ref } from 'vue'
 
-export default {
+export default defineNuxtComponent({
   props: {
     options: {
       type: Array<string>,
@@ -60,7 +60,7 @@ export default {
       onStatusClick,
     }
   },
-}
+})
 </script>
 
 <template>

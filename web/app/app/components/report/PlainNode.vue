@@ -1,5 +1,5 @@
 <script lang="ts">
-export default {
+export default defineNuxtComponent({
   props: {
     data: {
       type: Object,
@@ -17,7 +17,7 @@ export default {
   setup() {
     return {}
   },
-}
+})
 </script>
 
 <template>

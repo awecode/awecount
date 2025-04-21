@@ -1,7 +1,7 @@
 <script>
 import { withQuery } from 'ufo'
 
-export default {
+export default defineNuxtComponent({
   props: {
     label: {
       type: String,
@@ -279,7 +279,7 @@ export default {
       fetchLoading,
     }
   },
-}
+})
 </script>
 
 <template>

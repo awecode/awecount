@@ -3,7 +3,7 @@ import CategoryForm from '@/components/views/account/category/CategoryForm.vue'
 import PartyForm from '@/components/views/party/PartyForm.vue'
 import SalesDiscountForm from '@/components/views/sales/discount/SalesDiscountForm.vue'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
 
@@ -169,7 +169,7 @@ export default {
       deleteMsg,
     }
   },
-}
+})
 </script>
 
 <template>

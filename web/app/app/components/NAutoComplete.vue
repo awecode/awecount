@@ -3,7 +3,7 @@ import { useModalFormLoading } from '@/stores/ModalFormLoading'
 // import { useLoginStore } from '@/stores/login-info'
 import FormSkeleton from './FormSkeleton.vue'
 
-export default {
+export default defineNuxtComponent({
   props: {
     label: {
       type: String,
@@ -108,7 +108,7 @@ export default {
       modalId,
     }
   },
-}
+})
 </script>
 
 <template>

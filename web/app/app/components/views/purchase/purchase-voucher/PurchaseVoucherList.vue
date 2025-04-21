@@ -1,5 +1,5 @@
 <script>
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Purchases/Expenses | Awecount',
@@ -59,7 +59,7 @@ export default {
       importRequiredColumns,
     }
   },
-}
+})
 </script>
 
 <template>

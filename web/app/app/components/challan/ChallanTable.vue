@@ -2,7 +2,7 @@
 import useCalcDiscount from '@/composables/useCalcDiscount.js'
 import ItemAdd from '@/components/views/inventory/item/ItemForm.vue'
 
-export default {
+export default defineNuxtComponent({
   props: {
     itemOptions: {
       type: Object,
@@ -102,7 +102,7 @@ export default {
       choiceEndpointBaseComputed,
     }
   },
-}
+})
 </script>
 
 <template>

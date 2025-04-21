@@ -2,7 +2,7 @@
 import checkPermissions from '@/composables/checkPermissions'
 import useForm from '@/composables/useForm'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/sales-agent/`
@@ -20,7 +20,7 @@ export default {
       checkPermissions,
     }
   },
-}
+})
 </script>
 
 <template>

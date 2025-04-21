@@ -1,7 +1,7 @@
 <script>
 import { withQuery } from 'ufo'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const router = useRouter()
@@ -118,7 +118,7 @@ export default {
       loading,
     }
   },
-}
+})
 </script>
 
 <template>

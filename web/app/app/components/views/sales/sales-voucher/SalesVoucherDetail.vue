@@ -23,7 +23,7 @@ interface Fields {
   hash: string
   company: any
 }
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Sales Invoices | Awecount',
@@ -228,7 +228,7 @@ export default {
         }
       })
   },
-}
+})
 </script>
 
 <template>

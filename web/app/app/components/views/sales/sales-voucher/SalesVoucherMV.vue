@@ -1,7 +1,7 @@
 <script lang="ts">
 import useApi from '@/composables/useApi'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Sales Invoices Materialized View | Awecount',
@@ -38,7 +38,7 @@ export default {
         }
       })
   },
-}
+})
 </script>
 
 <template>

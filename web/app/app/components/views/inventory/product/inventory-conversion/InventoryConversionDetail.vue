@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Ref } from 'vue'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Inventory Conversion | Awecount',
@@ -121,7 +121,7 @@ export default {
       onPrintclick,
     }
   },
-}
+})
 </script>
 
 <template>

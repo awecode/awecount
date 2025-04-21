@@ -1,5 +1,5 @@
 <script>
-export default {
+export default defineNuxtComponent({
   props: {
     modelValue: {
       type: Array,
@@ -36,7 +36,7 @@ export default {
       rowErrorComp,
     }
   },
-}
+})
 </script>
 
 <template>

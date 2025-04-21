@@ -1,7 +1,7 @@
 <script>
 // import usedownloadFile from '@/composables/usedownloadFile'
 // TODO: add integration
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Import/Export  | Awecount',
@@ -49,7 +49,7 @@ export default {
       downloadFile,
     }
   },
-}
+})
 </script>
 
 <template>

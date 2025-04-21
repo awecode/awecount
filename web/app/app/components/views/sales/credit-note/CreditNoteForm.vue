@@ -8,7 +8,7 @@ import PartyForm from '@/components/views/party/PartyForm.vue'
 import SalesDiscountForm from '@/components/views/sales/discount/SalesDiscountForm.vue'
 import { useLoginStore } from '@/stores/login-info'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const store = useLoginStore()
@@ -196,7 +196,7 @@ export default {
       modeOptionsComputed,
     }
   },
-}
+})
 </script>
 
 <template>

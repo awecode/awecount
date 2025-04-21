@@ -1,7 +1,7 @@
 <script lang="ts">
 import Decimal from 'decimal.js'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Sales Invoices | Awecount',
@@ -83,7 +83,7 @@ export default {
       importFileRequiredColumns,
     }
   },
-}
+})
 </script>
 
 <template>

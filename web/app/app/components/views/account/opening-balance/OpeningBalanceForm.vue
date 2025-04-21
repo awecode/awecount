@@ -3,7 +3,7 @@ import checkPermissions from '@/composables/checkPermissions'
 import useForm from '@/composables/useForm'
 import LedgerForm from '@/components/views/account/ledger/LedgerForm.vue'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/account-opening-balance/`
@@ -20,7 +20,7 @@ export default {
       checkPermissions,
     }
   },
-}
+})
 </script>
 
 <template>

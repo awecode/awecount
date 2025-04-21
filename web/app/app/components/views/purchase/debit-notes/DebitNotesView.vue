@@ -21,7 +21,7 @@ interface Fields {
   address: string
 }
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Debit Note | Awecount',
@@ -157,7 +157,7 @@ export default {
         }
       })
   },
-}
+})
 </script>
 
 <template>

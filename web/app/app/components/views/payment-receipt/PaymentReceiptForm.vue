@@ -3,7 +3,7 @@ import checkPermissions from '@/composables/checkPermissions'
 import useForm from '@/composables/useForm'
 import { useLoginStore } from '@/stores/login-info'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/payment-receipt/`
@@ -118,7 +118,7 @@ export default {
       checkPermissions,
     }
   },
-}
+})
 </script>
 
 <template>

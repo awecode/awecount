@@ -4,7 +4,7 @@ import { useLoginStore } from '@/stores/login-info'
 // import XLSX from "xlsx-js-style"
 import { useRoute } from 'vue-router'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const categoryTree = ref(null)
     const category_accounts = ref({})
@@ -195,7 +195,7 @@ export default {
       unCatogarizedData,
     }
   },
-}
+})
 </script>
 
 <template>

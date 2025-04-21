@@ -6,7 +6,7 @@ import useGeneratePdf from '@/composables/pdf/useGeneratePdf'
 import useApi from '@/composables/useApi'
 import { modes } from '@/helpers/constants/invoice'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Credit Note | Awecount',
@@ -111,7 +111,7 @@ export default {
         }
       })
   },
-}
+})
 </script>
 
 <template>

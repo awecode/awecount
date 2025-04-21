@@ -2,7 +2,7 @@
 import checkPermissions from '@/composables/checkPermissions'
 import useList from '@/composables/useList'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const metaData = {
       title: 'Sales Invoices | Awecount',
@@ -173,7 +173,7 @@ export default {
         }
       })
   },
-}
+})
 </script>
 
 <template>

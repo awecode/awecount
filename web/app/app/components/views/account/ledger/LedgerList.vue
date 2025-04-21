@@ -1,5 +1,5 @@
 <script>
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/accounts/`
@@ -87,7 +87,7 @@ export default {
     )
     return { ...listData, newColumn, checkPermissions }
   },
-}
+})
 </script>
 
 <template>

@@ -2,7 +2,7 @@
 import checkPermissions from '@/composables/checkPermissions'
 import ItemForm from '@/components/views/inventory/item/ItemForm.vue'
 
-export default {
+export default defineNuxtComponent({
   props: {
     itemOptions: {
       type: Object,
@@ -211,7 +211,7 @@ export default {
       updateItem,
     }
   },
-}
+})
 </script>
 
 <template>

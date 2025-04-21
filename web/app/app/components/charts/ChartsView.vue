@@ -1,7 +1,7 @@
 <script>
 import Chart from 'chart.js/auto'
 
-export default {
+export default defineNuxtComponent({
   props: {
     data: {
       type: Object,
@@ -76,7 +76,7 @@ export default {
     })
     return { chartDiagram, datacomputed }
   },
-}
+})
 </script>
 
 <template>

@@ -4,7 +4,7 @@ import { modes } from '@/helpers/constants/invoice'
 import { uploadFiles } from '@/utils/file-upload'
 import { parseErrors } from '@/utils/helpers'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const $q = useQuasar()
     const route = useRoute()
@@ -80,7 +80,7 @@ export default {
       modeOptionsComputed,
     }
   },
-}
+})
 </script>
 
 <template>

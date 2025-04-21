@@ -2,7 +2,7 @@
 import checkPermissions from '@/composables/checkPermissions'
 import useForm from '@/composables/useForm'
 
-export default {
+export default defineNuxtComponent({
   setup() {
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/tax-payments/`
@@ -33,7 +33,7 @@ export default {
       isDeleteOpen,
     }
   },
-}
+})
 </script>
 
 <template>
