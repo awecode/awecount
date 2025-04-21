@@ -12,11 +12,11 @@ from pathlib import Path
 # Load environment variables from .env file
 ######################################################################
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
-ROOT_DIR = BASE_DIR.parent
-PROJECT_DIR = ROOT_DIR.parent.parent
 
+ROOT_DIR = BASE_DIR.parent
+
+PROJECT_DIR = ROOT_DIR.parent.parent
 
 load_dotenv(dotenv_path=PROJECT_DIR / ".env")
 
@@ -40,15 +40,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ######################################################################
 # Domains
 ######################################################################
-APP_URL = os.environ.get("APP_URL", "http://localhost:3000")
-
-# TODO: Parse domain from APP_URL
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+
+APP_URL = os.environ.get("APP_URL", "http://localhost:3000")
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [*default_headers, "X-Session-Token", "X-Invitation-Token"]
 
 CORS_ORIGIN_WHITELIST = os.environ.get("CORS_ORIGIN_WHITELIST", APP_URL).split(",")
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", APP_URL).split(",")
 
 
 ######################################################################
@@ -177,7 +177,7 @@ STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
         "OPTIONS": {
-            "location": os.path.normpath(os.path.join(ROOT_DIR, "media")),
+            "location": os.environ.get("MEDIA_ROOT", ROOT_DIR / "media")
         },
     },
     "staticfiles": {
@@ -232,17 +232,14 @@ USE_L10N = True
 
 
 ######################################################################
-# Static
+# Static & Media
 ######################################################################
-STATIC_URL = "/static/"
+STATIC_URL = os.environ.get("STATIC_URL", "/static/")
+STATIC_ROOT = os.environ.get("STATIC_ROOT", ROOT_DIR / "static")
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
-STATICFILES_DIRS = [os.path.normpath(os.path.join(ROOT_DIR, "staticfiles"))]
-
-STATIC_ROOT = os.path.normpath(os.path.join(ROOT_DIR, "static"))
-
-MEDIA_ROOT = os.path.normpath(os.path.join(ROOT_DIR, "media"))
-
-MEDIA_URL = "/media/"
+MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
+MEDIA_ROOT = os.environ.get("MEDIA_ROOT", ROOT_DIR / "media")
 
 
 ############################################################################
@@ -381,6 +378,16 @@ Q_CLUSTER = {
 
 if SENTRY_DSN := os.environ.get("SENTRY_DSN", None):
     Q_CLUSTER["error_reporter"] = {"sentry": {"dsn": SENTRY_DSN}}
+
+
+################################################################
+# Whitenoise
+################################################################
+if os.environ.get("USE_WHITENOISE", "False") == "True":
+    MIDDLEWARE.insert(2, "whitenoise.middleware.WhiteNoiseMiddleware")
+    STORAGES["staticfiles"] = {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    }
 
 
 ######################################################################
