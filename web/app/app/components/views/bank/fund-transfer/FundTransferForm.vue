@@ -1,7 +1,7 @@
 <script setup>
 import checkPermissions from '@/composables/checkPermissions'
+import useForm from '@/composables/useForm'
 import { useRoute } from 'vue-router'
-import useForm from '/src/composables/useForm'
 
 const props = defineProps({
   fromAccount: {
