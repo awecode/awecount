@@ -18,7 +18,7 @@ const totalTableData = ref({
   taxableAmount: 0,
   addTotal: 0,
 })
-useMeta(metaData)
+useHead(metaData)
 const store = useLoginStore()
 const route = useRoute()
 const endpoint = `/api/company/${route.params.company}/pos/`

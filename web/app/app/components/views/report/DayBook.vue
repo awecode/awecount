@@ -44,7 +44,7 @@ async function fetchPurchaseData() {
 const metaData = {
   title: 'Day Book | Awecount',
 }
-useMeta(metaData)
+useHead(metaData)
 
 fetchData()
 fetchSalesData()

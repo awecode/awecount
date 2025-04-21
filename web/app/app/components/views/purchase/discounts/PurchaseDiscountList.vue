@@ -5,7 +5,7 @@ export default {
       title: 'Purchase Discounts | Awecount',
     }
     const route = useRoute()
-    useMeta(metaData)
+    useHead(metaData)
     const endpoint = `/api/company/${route.params.company}/purchase-discount/`
     const listData = useList(endpoint)
     const onDownloadXls = () => {

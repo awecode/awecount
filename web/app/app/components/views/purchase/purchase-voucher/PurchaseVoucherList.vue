@@ -4,7 +4,7 @@ export default {
     const metaData = {
       title: 'Purchases/Expenses | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/purchase-vouchers/`
     const listData = useList(endpoint)

@@ -8,7 +8,7 @@ export default {
       title: 'Periodic Tax Summary | Awecount',
     }
     const route = useRoute()
-    useMeta(metaData)
+    useHead(metaData)
     const reportData: Ref<Record<string, string | object> | null> = ref(null)
     const fields: Ref<Record<string, Date | null>> = ref({
       start_date: null,

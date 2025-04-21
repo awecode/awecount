@@ -9,7 +9,7 @@ export default {
     const metaData = {
       title: 'Bill of Material | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: `/${route.params.company}/inventory/bill-of-materials`,

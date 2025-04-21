@@ -14,7 +14,7 @@ export default {
     const metaData = {
       title: 'Inventory Settings | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const onUpdateClick = (fields) => {
       useApi(`${endpoint}${fields.id}/`, {
         method: 'PUT',

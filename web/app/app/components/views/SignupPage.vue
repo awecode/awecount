@@ -1,5 +1,5 @@
 <script setup>
-useMeta({ title: 'Sign Up | Awecount' })
+useHead({ title: 'Sign Up | Awecount' })
 </script>
 
 <template>

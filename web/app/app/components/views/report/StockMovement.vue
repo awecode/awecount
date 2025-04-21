@@ -1,5 +1,5 @@
 <script setup>
-useMeta({
+useHead({
   title: 'Stock Movement Report',
 })
 

@@ -9,7 +9,7 @@ export default {
     const metaData = {
       title: 'Inventory Conversion | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const $q = useQuasar()
     const isDeleteOpen = ref(false)
     const deleteMsg = ref(null)

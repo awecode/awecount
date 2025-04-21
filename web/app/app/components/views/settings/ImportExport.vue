@@ -6,7 +6,7 @@ export default {
     const metaData = {
       title: 'Import/Export  | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const showPasswordStatus = ref(false)
     const showPasswordStatus2 = ref(false)
     const export_file = ref({

@@ -6,7 +6,7 @@ const endpoint = `/api/company/${route.params.company}/account-closing/`
 const metaData = {
   title: 'Account Closing | Awecount',
 }
-useMeta(metaData)
+useHead(metaData)
 const { fields, formDefaults, submitForm, loading } = useForm(endpoint, {
   getDefaults: true,
   successRoute: `/${route.params.company}/settings/account-closing`,

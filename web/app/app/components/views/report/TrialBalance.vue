@@ -3,7 +3,7 @@
 // import XLSX from "xlsx-js-style"
 export default {
   setup() {
-    useMeta({
+    useHead({
       title: 'Trial Balance | Awecount',
     })
     const categoryTree = ref(null)

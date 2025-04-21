@@ -16,7 +16,7 @@ export default {
     const metaData = {
       title: 'Sales Settings | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const fields = ref(null)
     const errors = ref({})
     const formLoading = ref(false)

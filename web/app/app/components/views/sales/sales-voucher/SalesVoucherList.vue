@@ -6,7 +6,7 @@ export default {
     const metaData = {
       title: 'Sales Invoices | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/sales-voucher/`
     const listData = useList(endpoint)

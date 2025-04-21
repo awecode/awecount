@@ -7,7 +7,7 @@ import { useLoginStore } from '@/stores/login-info'
 const metaData = {
   title: 'Inventory Accounts Details | Awecount',
 }
-useMeta(metaData)
+useHead(metaData)
 const store = useLoginStore()
 const fields = ref(null)
 const route = useRoute()

@@ -8,7 +8,7 @@ export default {
     const metaData = {
       title: 'Units | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const endpoint = `/api/company/${route.params.company}/units/`
     return { ...useList(endpoint), checkPermissions }
   },

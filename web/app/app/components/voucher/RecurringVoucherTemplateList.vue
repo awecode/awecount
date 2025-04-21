@@ -17,7 +17,7 @@ const capitalizedType = capitalize(props.type)
 const metaData = {
   title: `Recurring ${capitalizedType} Invoice Templates | Awecount`,
 }
-useMeta(metaData)
+useHead(metaData)
 
 const endpoint = `/api/company/${route.params.company}/recurring-voucher-template/?type=${capitalizedType} Voucher`
 const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)

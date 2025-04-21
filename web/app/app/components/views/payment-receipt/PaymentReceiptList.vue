@@ -11,7 +11,7 @@ export default {
     const metaData = {
       title: 'Payment Receipts | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const onDownloadXls = () => {
       useApi(`/api/company/${$route.params.company}/sales-voucher/export`)
         .then(data => usedownloadFile(data, 'application/vnd.ms-excel', 'Credit_Notes'))

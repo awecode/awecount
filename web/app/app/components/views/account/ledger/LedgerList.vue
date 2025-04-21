@@ -6,7 +6,7 @@ export default {
     const metaData = {
       title: 'Accounts | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const newColumn = [
       {
         name: 'code',

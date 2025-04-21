@@ -15,7 +15,7 @@ export default {
     const metaData = {
       title: 'Journal Entries | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     interface Fields {
       total_amount: number
       voucher_number: number

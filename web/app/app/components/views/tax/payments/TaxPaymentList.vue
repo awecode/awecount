@@ -7,7 +7,7 @@ export default {
     const metaData = {
       title: 'Tax Payments | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/tax-payments/`
     const listData = useList(endpoint)

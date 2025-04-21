@@ -11,7 +11,7 @@ export default {
     const metaData = {
       title: 'Credit Note | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const route = useRoute()
     const $q = useQuasar()
     const fields = ref(null)

@@ -11,7 +11,7 @@ export default {
     const metaData = {
       title: 'Collection Report | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const route = useRoute()
     const fetchData = () => {
       const endpoint = `/api/company/${route.params.company}/payment-receipt/collection-report/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`

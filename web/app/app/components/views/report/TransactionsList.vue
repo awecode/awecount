@@ -22,7 +22,7 @@ export default {
       },
     ]
     const filterOptions = ref({})
-    useMeta(metaData)
+    useHead(metaData)
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/transaction/`
     const listData = useList(endpoint)

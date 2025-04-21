@@ -19,7 +19,7 @@ const fields: Ref<Record<string, string>> = ref({
   start_date: '',
   end_date: '',
 })
-useMeta(metaData)
+useHead(metaData)
 const newColumn = [
   {
     name: 'category',

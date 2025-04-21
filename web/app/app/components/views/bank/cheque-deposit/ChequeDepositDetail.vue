@@ -10,7 +10,7 @@ const store = useLoginStore()
 const metaData = {
   title: 'Cheque Deposit View | Awecount',
 }
-useMeta(metaData)
+useHead(metaData)
 const fields = ref(null)
 
 const getDate = computed(() => {

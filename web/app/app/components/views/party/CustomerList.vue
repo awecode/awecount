@@ -5,7 +5,7 @@ export default {
       title: 'Customers | Awecount',
     }
     const route = useRoute()
-    useMeta(metaData)
+    useHead(metaData)
     const endpoint = `/api/company/${route.params.company}/parties/customers/`
     const listData = useList(endpoint)
     const newColumn = [

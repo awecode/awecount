@@ -9,7 +9,7 @@ export default {
     const metaData = {
       title: 'Inventory Adjustment | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const isAdjustmentImportOpen = ref(false)
     const importErrorData = []
     const $q = useQuasar()

@@ -10,7 +10,7 @@ export default {
     const metaData = {
       title: 'Party Account | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const router = useRouter()
     const route = useRoute()
     const $q = useQuasar()

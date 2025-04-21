@@ -11,7 +11,7 @@ export default {
     const metaData = {
       title: 'Stock Opening | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const onDeleteClick = (id) => {
       useApi(`/api/company/${route.params.company}/item-opening-balance/${id}/`, { method: 'DELETE' })
         .then(() => {

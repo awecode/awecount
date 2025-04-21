@@ -3,7 +3,7 @@ const router = useRouter()
 const metaData = {
   title: 'Item Merge | Awecount',
 }
-useMeta(metaData)
+useHead(metaData)
 const modalValueArray = ref([
   {
     items: [null, null],

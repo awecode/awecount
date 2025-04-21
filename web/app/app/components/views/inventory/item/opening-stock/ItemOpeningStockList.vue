@@ -28,7 +28,7 @@ export default {
         align: 'left',
       },
     ]
-    useMeta(metaData)
+    useHead(metaData)
     return { ...useList(endpoint), checkPermissions, newColumns }
   },
 }

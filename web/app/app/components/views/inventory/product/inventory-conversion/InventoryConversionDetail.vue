@@ -6,7 +6,7 @@ export default {
     const metaData = {
       title: 'Inventory Conversion | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
 
     const route = useRoute()
     const router = useRouter()

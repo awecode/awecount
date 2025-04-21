@@ -7,7 +7,7 @@ export default {
     const metaData = {
       title: 'Debit Notes | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
       useApi(`/api/company/${route.params.company}/debit-note/export${query}`)

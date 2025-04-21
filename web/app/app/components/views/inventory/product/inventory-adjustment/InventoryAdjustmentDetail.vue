@@ -9,7 +9,7 @@ export default {
     }
     const route = useRoute()
     const router = useRouter()
-    useMeta(metaData)
+    useHead(metaData)
     const $q = useQuasar()
     const fields: Ref<Record<string, any>> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)

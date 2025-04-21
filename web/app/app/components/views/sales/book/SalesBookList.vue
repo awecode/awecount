@@ -10,7 +10,7 @@ export default {
     const metaData = {
       title: 'Sales Book | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const newColumn = [
       {
         name: 'date',

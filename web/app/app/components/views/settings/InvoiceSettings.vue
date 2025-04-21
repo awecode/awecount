@@ -7,7 +7,7 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 
-useMeta({
+useHead({
   title: 'Invoice Settings | Awecount',
 })
 

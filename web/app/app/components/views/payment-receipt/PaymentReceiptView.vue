@@ -24,7 +24,7 @@ export default {
     const metaData = {
       title: 'Payment Receipts | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const loginStore = useLoginStore()
     const fields: Ref<Fields | null> = ref(null)
     const modeOptions: Ref<Array<object> | null> = ref(null)

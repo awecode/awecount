@@ -9,7 +9,7 @@ export default {
     const metaData = {
       title: 'Inventory Category | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const newColumns = [
       {
         name: 'code',

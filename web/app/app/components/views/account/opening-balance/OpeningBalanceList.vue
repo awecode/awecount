@@ -4,7 +4,7 @@ export default {
     const metaData = {
       title: 'Account Opening Balances | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
 
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/account-opening-balance/`

@@ -5,7 +5,7 @@ export default {
       title: 'Journal Vouchers | Awecount',
     }
     const route = useRoute()
-    useMeta(metaData)
+    useHead(metaData)
     const endpoint = `/api/company/${route.params.company}/journal-voucher/`
     const newColumns = [
       {

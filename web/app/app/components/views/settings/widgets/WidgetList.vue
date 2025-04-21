@@ -7,7 +7,7 @@ export default {
     const metaData = {
       title: 'Dashboard Widgets | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/widgets/`
     const listData = useList(endpoint)

@@ -6,7 +6,7 @@ export default {
     const metaData = {
       title: 'Fund Transfers | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const newColumn = [
       {
         name: 'voucher_no',

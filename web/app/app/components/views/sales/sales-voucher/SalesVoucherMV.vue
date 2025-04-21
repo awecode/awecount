@@ -6,7 +6,7 @@ export default {
     const metaData = {
       title: 'Sales Invoices Materialized View | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     interface Fields {
       total_amount: number
     }

@@ -40,7 +40,7 @@ export default {
     const metaData = {
       title: 'Inventory Accounts | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     return { ...useList(endpoint), columnList, checkPermissions }
   },
 }

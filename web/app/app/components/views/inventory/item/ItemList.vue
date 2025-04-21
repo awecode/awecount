@@ -1,5 +1,5 @@
 <script setup>
-import { useMeta } from 'quasar'
+import { useHead } from 'quasar'
 import checkPermissions from '@/composables/checkPermissions'
 import useList from '@/composables/useList'
 
@@ -8,7 +8,7 @@ const endpoint = `/api/company/${route.params.company}/items`
 const metaData = {
   title: 'Items | Awecount',
 }
-useMeta(metaData)
+useHead(metaData)
 const isItemImportOpen = ref(false)
 const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onFilterUpdate, resetFilters, loadData } = useList(endpoint)
 </script>

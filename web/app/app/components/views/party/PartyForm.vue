@@ -1,5 +1,5 @@
 <script setup>
-import { useMeta, useQuasar } from 'quasar'
+import { useHead, useQuasar } from 'quasar'
 import checkPermissions from '@/composables/checkPermissions'
 import useApi from '@/composables/useApi'
 import useForm from '@/composables/useForm'

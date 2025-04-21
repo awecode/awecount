@@ -7,7 +7,7 @@ export default {
       title: 'Category Tree | Awecount',
     }
     const route = useRoute()
-    useMeta(metaData)
+    useHead(metaData)
     const treeData: Ref<Record<string, string | object> | null> = ref(null)
     useApi(`/api/company/${route.params.company}/full-category-tree/`)
       .then(data => (treeData.value = data))

@@ -67,7 +67,7 @@ const getData = () => {
     const metaData = {
       title: `${fields.value.name} | Account Detail | Awecount`,
     }
-    useMeta(metaData)
+    useHead(metaData)
   })
 }
 getData()

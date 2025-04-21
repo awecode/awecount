@@ -9,7 +9,7 @@ export default {
     const metaData = {
       title: 'Brands | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     return {
       ...useForm(endpoint, {
         getDefaults: false,

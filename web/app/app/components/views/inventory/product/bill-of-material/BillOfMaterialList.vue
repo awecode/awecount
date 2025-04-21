@@ -1,5 +1,5 @@
 <script setup>
-import { useMeta } from 'quasar'
+import { useHead } from 'quasar'
 import checkPermissions from '@/composables/checkPermissions'
 import useList from '@/composables/useList'
 
@@ -18,7 +18,7 @@ const newColumn = [
   },
   { name: 'actions', align: 'left', label: 'Actions' },
 ]
-useMeta(metaData)
+useHead(metaData)
 const { rows, loading, searchQuery, pagination, onRequest } = useList(endpoint)
 </script>
 

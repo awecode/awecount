@@ -15,7 +15,7 @@ export default {
       title: 'Purchase Settings | Awecount',
     }
     const formLoading = ref(false)
-    useMeta(metaData)
+    useHead(metaData)
     const fields = ref(null)
     const modeErrors = ref(null)
     const emailListErrors = ref(null)

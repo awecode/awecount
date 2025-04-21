@@ -25,7 +25,7 @@ export default {
       title: 'Purchase/Expenses | Awecount',
     }
     const route = useRoute()
-    useMeta(metaData)
+    useHead(metaData)
     const store = useLoginStore()
     const $q = useQuasar()
     const fields: Ref<Fields | null> = ref(null)

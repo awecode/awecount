@@ -5,7 +5,7 @@ const metaData = {
   title: 'Account Categories | Awecount',
 }
 const route = useRoute()
-useMeta(metaData)
+useHead(metaData)
 const endpoint = `/api/company/${route.params.company}/categories/`
 const newColumns = [
   {

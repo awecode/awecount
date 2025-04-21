@@ -12,7 +12,7 @@ export default {
     const metaData = {
       title: 'Customer Ageing Report | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
 
     // Initialize date if not set
     if (!date.value) {

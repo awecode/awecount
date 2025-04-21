@@ -50,7 +50,7 @@ const fields = ref({
   email: '',
   phone_no: '',
 })
-useMeta({
+useHead({
   title: 'Awecount',
 })
 </script>

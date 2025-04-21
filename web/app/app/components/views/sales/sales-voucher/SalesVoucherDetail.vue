@@ -29,7 +29,7 @@ export default {
       title: 'Sales Invoices | Awecount',
     }
     const route = useRoute()
-    useMeta(metaData)
+    useHead(metaData)
     const $q = useQuasar()
     const fields: Ref<Fields | null> = ref(null)
     const loading: Ref<boolean> = ref(false)

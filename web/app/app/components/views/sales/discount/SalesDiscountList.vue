@@ -8,7 +8,7 @@ export default {
       title: 'Sales Discounts | Awecount',
     }
     const route = useRoute()
-    useMeta(metaData)
+    useHead(metaData)
     const endpoint = `/api/company/${route.params.company}/sales-discount/`
     const listData = useList(endpoint)
     const newColumn = [

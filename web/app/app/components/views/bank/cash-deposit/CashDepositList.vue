@@ -4,7 +4,7 @@ export default {
     const metaData = {
       title: 'Cash Deposits | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/bank-cash-deposits/`
     const newColumn = [

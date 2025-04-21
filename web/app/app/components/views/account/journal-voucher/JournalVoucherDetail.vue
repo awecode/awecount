@@ -16,7 +16,7 @@ const deleteMsg = ref(null)
 const isDeleteOpen = ref(false)
 const loading = ref(false)
 const errors = ref(null)
-useMeta(metaData)
+useHead(metaData)
 const getData = () =>
   useApi(`/api/company/${route.params.company}/journal-voucher/${props.id || route.params.id}/`).then((data) => {
     fields.value = data

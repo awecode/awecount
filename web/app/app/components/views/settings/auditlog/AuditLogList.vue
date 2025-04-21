@@ -4,7 +4,7 @@ export default {
     const metaData = {
       title: 'Audit Logs | Awecount',
     }
-    useMeta(metaData)
+    useHead(metaData)
     const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/log-entries/`
     const listData = useList(endpoint)

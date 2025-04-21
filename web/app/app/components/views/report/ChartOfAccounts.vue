@@ -65,7 +65,7 @@ watchEffect(() => {
   router.replace({ query: newQuery })
 })
 
-useMeta({
+useHead({
   title: 'Chart of Accounts | Awecount',
 })
 
