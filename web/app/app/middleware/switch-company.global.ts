@@ -42,6 +42,7 @@ const publicPaths = [
  */
 export default defineNuxtRouteMiddleware(async (to, from) => {
   const router = useRouter()
+
   const { user, switchCompany } = useAuth()
 
   // Skip company switching logic for public paths
@@ -51,20 +52,17 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   // Handle 404 routes by attempting to resolve with company slug
   // This provides backward compatibility for URLs without company slug
-  if (to.matched.some(m => m.name === '404')) {
-    // TODO: use nuxt.payload.error, as 404 page is not a thing here
-    const resolved = router.resolve(`/${user?.redirect}${to.fullPath}`)
-    if (resolved.matched.some(m => m.name === '404')) {
+  if (to.matched.length === 0) {
+    const resolved = router.resolve(`/${user.value?.redirect}${to.fullPath}`)
+    if (resolved.matched.length === 0) {
       return
     }
-    return navigateTo(resolved)
+    return navigateTo({ name: resolved.name as string, params: resolved.params, query: resolved.query, hash: resolved.hash })
   }
 
   // Handle direct navigation to a different company via URL
   // This allows users to switch companies by entering a different company's URL
-  if (from.params.company === undefined && to.params.company && to.params.company !== user?.redirect) {
+  if (from.params.company === undefined && to.params.company && to.params.company !== user.value?.redirect) {
     await switchCompany(to.params.company as string)
   }
-
-  return
 })
