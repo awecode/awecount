@@ -331,7 +331,6 @@ export const useAuth = <T = {}>(namespace: string = 'default') => {
 
   // TODO: move this to a separate store/composable
   const switchCompany = async (companySlug: string) => {
-    debugger
     if (companySlug === user.value?.redirect) {
       return
     }
