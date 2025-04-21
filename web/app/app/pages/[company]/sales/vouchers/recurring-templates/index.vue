@@ -3,5 +3,5 @@ import RecurringTemplateList from '@/components/views/sales/sales-voucher/Recurr
 </script>
 
 <template>
-<RecurringTemplateList />
+  <RecurringTemplateList />
 </template>

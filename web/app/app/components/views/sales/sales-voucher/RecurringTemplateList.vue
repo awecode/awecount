@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import RecurringVoucherTemplateList from '@/components/voucher/RecurringVoucherTemplateList.vue'
+</script>
+
 <template>
-  <recurring-voucher-template-list type="sales" />
+  <RecurringVoucherTemplateList type="sales" />
 </template>
