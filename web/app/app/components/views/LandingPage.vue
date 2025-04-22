@@ -65,7 +65,7 @@ useHead({
       <div class="row q-gutter-md btns-con">
         <a href="https://docs.awecount.com/" style="color: inherit"><q-btn style="letter-spacing: 1px">Documentation</q-btn></a>
         <template v-if="isAuthenticated">
-          <q-btn color="primary" style="letter-spacing: 1px" :to="`/${user.redirect}/dashboard`">
+          <q-btn color="primary" style="letter-spacing: 1px" :href="`/${user.redirect}/dashboard`">
             Go to Dashboard
           </q-btn>
         </template>
@@ -130,7 +130,7 @@ useHead({
                 <q-btn
                   class="q-mt-md"
                   color="primary"
-                  :to="`/${user.redirect}/dashboard`"
+                  :href="`/${user.redirect}/dashboard`"
                 >
                   Go to Dashboard
                 </q-btn>
