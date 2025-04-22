@@ -43,6 +43,7 @@ export const useLoginStore = defineStore(
         ...authStore.company,
         emails: [authStore.company.email, authStore.company.alternate_email].filter(Boolean),
         contact_no: [authStore.company.phone, authStore.company.alternate_phone].filter(Boolean).join(', '),
+        logo_url: authStore.company.logo,
       }
     })
     const userInfo = computed(() => authStore.user)
