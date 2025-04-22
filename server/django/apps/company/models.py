@@ -322,7 +322,10 @@ class CompanyBaseModel(BaseModel):
         instance_company = getattr(instance, "company", None)
 
         for field in instance._meta.get_fields():
-            if not isinstance(field, models.ForeignKey):
+            if not isinstance(field, (models.ForeignKey, models.OneToOneField)):
+                continue
+
+            if field.related_model == settings.AUTH_USER_MODEL:
                 continue
 
             related_instance = getattr(instance, field.name, None)
