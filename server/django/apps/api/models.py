@@ -111,5 +111,6 @@ class APIKey(TimeAuditModel):
         return str(self.name)
 
     def is_valid(self, key: str) -> bool:
-        key_generator = self.objects.key_generator
+        klass = self.__class__
+        key_generator = klass.objects.key_generator
         return key_generator.verify(key, self.hashed_key)
