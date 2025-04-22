@@ -401,7 +401,7 @@ class CompanyMember(BaseModel):
         related_name="member_company",
     )
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.MEMBER)
-    permissions = models.ManyToManyField(Permission, related_name="member_permission")
+    permissions = models.ManyToManyField(Permission, related_name="member_permission", blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
