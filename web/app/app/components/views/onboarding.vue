@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
 import { getGravatarUrl } from '@/utils/gravatar'
+import { useQuasar } from 'quasar'
 
 const step = ref(Number.parseInt(sessionStorage.getItem('onboarding-step') || '1'))
 
+const route = useRoute()
+const router = useRouter()
 const { $api } = useNuxtApp()
 const { switchCompany } = useAuth()
 
@@ -163,7 +165,7 @@ const completeOnboarding = async () => {
     sessionStorage.removeItem('onboarding-state')
     sessionStorage.removeItem('onboarding-step')
 
-    await switchCompany(companySlug.value)
+    await switchCompany(companySlug.value, { router, route })
   } catch (err: any) {
     $q.notify({
       type: 'negative',

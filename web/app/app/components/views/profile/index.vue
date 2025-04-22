@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
 import { getGravatarUrl } from '@/utils/gravatar'
+import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
+const route = useRoute()
 const router = useRouter()
 
 const { $api } = useNuxtApp()
@@ -241,7 +242,7 @@ onMounted(() => {
               :key="company.slug"
               v-ripple
               clickable
-              @click="() => switchCompany(company.slug)"
+              @click="() => switchCompany(company.slug, { router, route })"
             >
               <q-item-section avatar>
                 <q-avatar color="primary" size="24px" text-color="white">

@@ -1,4 +1,4 @@
-import type { RouteLocationRaw } from 'vue-router'
+import type { RouteLocationNormalized, RouteLocationRaw, Router } from 'vue-router'
 
 // @ts-expect-error vfs
 import authconfig from '#build/auth.config'
@@ -65,7 +65,7 @@ export const useAuth = (namespace: string = 'default') => {
   const url = useRequestURL()
   const config = useRuntimeConfig()
 
-  const { $api, _route: route } = useNuxtApp()
+  const { $api } = useNuxtApp()
 
   const prefix = namespace !== 'default' ? `${namespace}:` : ''
 
@@ -197,9 +197,9 @@ export const useAuth = (namespace: string = 'default') => {
       }
     }
 
-    if (explicitRedirectTo === undefined && route.query.next) {
-      await navigateTo(route.query.next.toString())
-    }
+    // if (explicitRedirectTo === undefined && route.query.next) {
+    //   await navigateTo(route.query.next.toString())
+    // }
 
     if (explicitRedirectTo) {
       await navigateTo(explicitRedirectTo)
@@ -333,7 +333,7 @@ export const useAuth = (namespace: string = 'default') => {
   }
 
   // TODO: move this to a separate store/composable
-  const switchCompany = async (companySlug: string) => {
+  const switchCompany = async (companySlug: string, { router, route }: { router?: Router, route?: RouteLocationNormalized } = {}) => {
     if (companySlug === user.value?.redirect) {
       return
     }
@@ -344,16 +344,17 @@ export const useAuth = (namespace: string = 'default') => {
       await _fetchCompany(companySlug)
       await _fetchPermissions(companySlug)
 
-      const next = route.name === 'onboarding' ? 'company-dashboard' : route.name
-      // const resolved = router.resolve({ name: next, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
-      // window.location.href = resolved.href
-
-      await navigateTo({ name: next, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
+      if (router && route) {
+        const next = route.name === 'onboarding' ? 'company-dashboard' : route.name
+        router.push({ name: next, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
+      } else {
+        window.location.href = `${url.origin}/${companySlug}/dashboard`
+      }
 
       return res
     } catch (error: any) {
       if (error.response?.status === 404 && !['onboarding', 'invitations', 'create-company'].includes(companySlug)) {
-        switchCompany(user.value?.redirect)
+        switchCompany(user.value?.redirect, { router, route })
       }
       throw error
     }

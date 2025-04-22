@@ -3,6 +3,7 @@ import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
+const route = useRoute()
 const router = useRouter()
 
 const { $api } = useNuxtApp()
@@ -91,7 +92,7 @@ const createCompany = async () => {
       message: 'Company created successfully!',
     })
 
-    await switchCompany(data.slug)
+    await switchCompany(data.slug, { router, route })
   } catch (err: any) {
     if (err.response?.data?.errors) {
       const apiErrors = err.response.data.errors

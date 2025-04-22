@@ -63,6 +63,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   // Handle direct navigation to a different company via URL
   // This allows users to switch companies by entering a different company's URL
   if (from.params.company === undefined && to.params.company && to.params.company !== user.value?.redirect) {
-    await switchCompany(to.params.company as string)
+    await switchCompany(to.params.company as string, { router, route: to })
   }
 })
