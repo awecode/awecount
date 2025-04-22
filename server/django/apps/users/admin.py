@@ -118,7 +118,6 @@ class UserAdmin(DjangoUserAdmin):
                     "email",
                     "password1",
                     "password2",
-                    "company",
                 )
             },
         ),
