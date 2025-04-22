@@ -1,5 +1,4 @@
 <script setup>
-import { useHead } from 'quasar'
 import checkPermissions from '@/composables/checkPermissions'
 import useList from '@/composables/useList'
 

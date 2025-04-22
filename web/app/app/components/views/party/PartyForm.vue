@@ -1,10 +1,11 @@
 <script setup>
-import { useHead, useQuasar } from 'quasar'
+import PartyAlias from '@/components/views/party/PartyAlias.vue'
+import PartyRepresentative from '@/components/views/party/PartyRepresentative.vue'
 import checkPermissions from '@/composables/checkPermissions'
 import useApi from '@/composables/useApi'
 import useForm from '@/composables/useForm'
-import PartyAlias from '@/components/views/party/PartyAlias.vue'
-import PartyRepresentative from '@/components/views/party/PartyRepresentative.vue'
+
+import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 
 const $q = useQuasar()
