@@ -189,7 +189,10 @@ export const useAuth = (namespace: string = 'default') => {
           await _fetchPermissions(next) // next is the company slug
           await _fetchCompany(next) // next is the company slug
           // TODO: make this configureable
-          await navigateTo({ name: 'company-dashboard', params: { company: next } })
+          // FIXME: navigateTo() is not working here
+          // const resolved = route.resolve({ name: 'company-dashboard', params: { company: next } })
+          window.location.href = `${url.origin}/${next}/dashboard`
+          // navigateTo({ name: 'company-dashboard', params: { company: next } })
           break
       }
     }
@@ -340,8 +343,13 @@ export const useAuth = (namespace: string = 'default') => {
       user.value.redirect = companySlug
       await _fetchCompany(companySlug)
       await _fetchPermissions(companySlug)
+
       const next = route.name === 'onboarding' ? 'company-dashboard' : route.name
+      // const resolved = router.resolve({ name: next, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
+      // window.location.href = resolved.href
+
       await navigateTo({ name: next, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
+
       return res
     } catch (error: any) {
       if (error.response?.status === 404 && !['onboarding', 'invitations', 'create-company'].includes(companySlug)) {
