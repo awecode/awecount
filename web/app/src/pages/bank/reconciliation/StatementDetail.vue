@@ -296,11 +296,12 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
         <template #top>
           <div class="search-bar">
             <q-input
-              v-model="searchQuery as string"
               dense
               class="full-width search-input"
               debounce="500"
               placeholder="Search"
+              :model-value="searchQuery"
+              @update:model-value="($event) => searchQuery = $event"
             >
               <template #append>
                 <q-icon name="search" />
