@@ -141,14 +141,17 @@ export default {
         data.subTotal = data.subTotal + rowTotal
         const rowDiscount = useCalcDiscount(item.discount_type, rowTotal, item.discount, props.discountOptions) || 0
         let currentTaxObj = null
-        if (item.tax_scheme_id && props.taxOptions && props.taxOptions.length) {
-          const taxindex = props.taxOptions.findIndex(taxItem => taxItem.id === item.tax_scheme_id)
+
+        const taxOptions = Array.isArray(props.taxOptions) ? props.taxOptions : Object.hasOwn(props.taxOptions, 'results') ? props.taxOptions.results : []
+
+        if (item.tax_scheme_id && taxOptions && taxOptions.length) {
+          const taxindex = taxOptions.findIndex(taxItem => taxItem.id === item.tax_scheme_id)
           if (taxindex > -1) {
-            currentTaxObj = props.taxOptions[taxindex]
+            currentTaxObj = taxOptions[taxindex]
           }
         }
         if (data.sameScheme !== false && currentTaxObj) {
-          if (data.sameScheme === null && currentTaxObj && currentTaxObj.rate != 0) {
+          if (data.sameScheme === null && currentTaxObj && currentTaxObj.rate !== 0) {
             data.sameScheme = currentTaxObj.id
             data.taxObj = currentTaxObj
           } else if (data.sameScheme === currentTaxObj?.id || currentTaxObj.rate === 0) {
