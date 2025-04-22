@@ -13,14 +13,14 @@ import authconfig from '#build/auth.config'
  *   }
  * }
  */
-type AuthUser<T = object> = {
+interface AuthUser {
   access_level: 'owner' | 'admin' | 'member'
   email: string
   display_name: string
   roles: string[]
   permissions: Record<string, Record<string, boolean>>
   [key: string]: any
-} & T
+}
 
 interface Company {
   slug: string
@@ -61,7 +61,7 @@ export const URLs = {
   REDIRECT_TO_PROVIDER: `${BASE_PREFIX}/auth/provider/redirect`,
 } as const
 
-export const useAuth = <T = {}>(namespace: string = 'default') => {
+export const useAuth = (namespace: string = 'default') => {
   const url = useRequestURL()
   const config = useRuntimeConfig()
 
@@ -69,8 +69,8 @@ export const useAuth = <T = {}>(namespace: string = 'default') => {
 
   const prefix = namespace !== 'default' ? `${namespace}:` : ''
 
-  const user = useStatefulCookie<AuthUser<T> | object>(`${prefix}user`, { default: () => ({}) })
-  const company = useStatefulCookie<Company | object>(`${prefix}org`, { default: () => ({}) })
+  const user = useStatefulCookie<AuthUser>(`${prefix}user`, { default: () => ({}) as AuthUser })
+  const company = useStatefulCookie<Company>(`${prefix}org`, { default: () => ({}) as Company })
 
   const accessToken = useStatefulCookie<string | null>(`${prefix}access_token`, { default: () => null })
   const refreshToken = useStatefulCookie<string | null>(`${prefix}refresh_token`, { default: () => null })
@@ -78,7 +78,7 @@ export const useAuth = <T = {}>(namespace: string = 'default') => {
   const authenticatedAt = useStatefulCookie<number | null>(`${prefix}authenticated_at`, { default: () => null })
 
   const isAuthenticated = computed(() => !!accessToken.value && !!sessionToken.value)
-  const onboarded = computed(() => user.value?.onboarded)
+  const onboarded = computed(() => user.value?.is_onboarded)
 
   const _roles = useStatefulCookie<string[]>(`${prefix}roles`, { default: () => [] })
   const _permissions = useStatefulCookie<Record<string, Record<string, boolean>>>(`${prefix}permissions`, { default: () => ({}) })
@@ -127,16 +127,16 @@ export const useAuth = <T = {}>(namespace: string = 'default') => {
   }
 
   const _resetAuthState = () => {
-    user.value = null
+    user.value = {} as AuthUser
     accessToken.value = null
     refreshToken.value = null
     sessionToken.value = null
     authenticatedAt.value = null
-    company.value = null
+    company.value = {} as Company
   }
 
   const _fetchPermissions = async (companySlug: string) => {
-    const res = await $api(`/api/company/${companySlug}/permissions/mine/`, {
+    const res = await $api<{ roles: string[], role: string, permissions: Record<string, Record<string, boolean>> }>(`/api/company/${companySlug}/permissions/mine/`, {
       method: 'GET',
       protected: true,
     })
@@ -215,7 +215,7 @@ export const useAuth = <T = {}>(namespace: string = 'default') => {
       await _request(URLs.SESSION, { method: 'DELETE' })
     } catch (error: any) {
       if ([401, 410].includes(error.response?.status)) {
-        user.value = null
+        user.value = {} as AuthUser
         accessToken.value = null
         refreshToken.value = null
         sessionToken.value = null
@@ -321,7 +321,7 @@ export const useAuth = <T = {}>(namespace: string = 'default') => {
   const changePassword = async (data: Record<string, any>) => {
     try {
       return await _request(URLs.CHANGE_PASSWORD, { method: 'POST', body: data })
-    } catch (error) {
+    } catch (error: any) {
       if (error.response?.status === 401) {
         return error.response._data
       }
@@ -343,7 +343,7 @@ export const useAuth = <T = {}>(namespace: string = 'default') => {
       const next = route.name === 'onboarding' ? 'company-dashboard' : route.name
       await navigateTo({ name: next, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
       return res
-    } catch (error) {
+    } catch (error: any) {
       if (error.response?.status === 404 && !['onboarding', 'invitations', 'create-company'].includes(companySlug)) {
         switchCompany(user.value?.redirect)
       }
