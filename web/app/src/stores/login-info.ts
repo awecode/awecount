@@ -38,7 +38,13 @@ export const useLoginStore = defineStore(
     const username = computed(() => authStore.user?.full_name)
     const email = computed(() => authStore.user?.email)
     const token = computed(() => authStore.token)
-    const companyInfo = computed(() => authStore.company)
+    const companyInfo = computed(() => {
+      return {
+        ...authStore.company,
+        emails: [authStore.company.email, authStore.company.alternate_email].filter(Boolean),
+        contact_no: [authStore.company.phone, authStore.company.alternate_phone].filter(Boolean).join(', '),
+      }
+    })
     const userInfo = computed(() => authStore.user)
 
     return {
