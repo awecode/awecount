@@ -5,6 +5,7 @@ from copy import deepcopy
 from decimal import Decimal
 from io import BytesIO
 from typing import Union
+from urllib.parse import urljoin
 
 from auditlog.registry import auditlog
 from dateutil.relativedelta import relativedelta
@@ -828,13 +829,14 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
         email.content_subtype = "html"
         email.send()
 
+
     @property
     def pdf_url(self):
-        return "{}sales-voucher/{}/view?pdf=1".format(settings.BASE_URL, self.pk)
+        return urljoin(settings.APP_URL, f"/{self.company.slug}/sales/vouchers/{self.pk}?pdf=1")
 
     @property
     def view_url(self):
-        return "{}sales-voucher/{}/view".format(settings.BASE_URL, self.pk)
+        return urljoin(settings.APP_URL, f"/{self.company.slug}/sales/vouchers/{self.pk}")
 
     @property
     def item_names(self):
