@@ -43,16 +43,18 @@ export default defineNuxtPlugin({
           )
         }
 
-        if (!onboarded.value && config.onboarding.enabled) {
-          if (typeof config.onboarding.route === 'string' && config.onboarding.route === to.fullPath) {
-            return
-          }
+        if (config.onboarding.enabled) {
+          const isOnboardingRoute = (typeof config.onboarding.route === 'string' && config.onboarding.route === to.fullPath)
+            || (typeof config.onboarding.route === 'object' && config.onboarding.route.name === to.name)
 
-          if (typeof config.onboarding.route === 'object' && config.onboarding.route.name === to.name) {
+          if (onboarded.value) {
+            if (isOnboardingRoute) {
+              return navigateTo(config.onboarding.successRoute)
+            }
             return
+          } else {
+            return navigateTo(config.onboarding.route)
           }
-
-          return navigateTo(config.onboarding.route)
         }
 
         if (routeRoles && hasAnyRole(routeRoles)) {

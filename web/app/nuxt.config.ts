@@ -41,6 +41,7 @@ export default defineNuxtConfig({
     onboarding: {
       enabled: true,
       route: '/onboarding',
+      successRoute: '/dashboard',
     },
   },
 })

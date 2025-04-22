@@ -1,3 +1,4 @@
+import type { RouterContext } from 'rou3'
 import type { RouteLocationRaw } from 'vue-router'
 
 import { defu } from 'defu'
@@ -37,7 +38,7 @@ interface ModuleOptions {
   loginRoute?: string
   fullAccessRoles?: string[]
   redirectIfNotAllowed?: string | false
-  onboarding?: { enabled?: false } | { enabled: true, route: RouteLocationRaw }
+  onboarding?: { enabled?: false } | { enabled: true, route: RouteLocationRaw, successRoute: RouteLocationRaw }
 }
 
 const createRouter = <T extends Record<string, any> = Record<string, string>>(routes: string[] | Record<string, T>): RouterContext<T> => {
