@@ -108,11 +108,11 @@ fetchData()
           class="f-reset-btn"
           color="red"
           icon="close"
-          @click="
+          @click="() => {
             fields = { start_date: '', end_date: '' }
             updateRouteUrl()
             fetchData()
-          "
+          }"
         />
         <q-btn
           class="f-submit-btn"
