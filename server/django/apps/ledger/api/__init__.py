@@ -424,7 +424,7 @@ class CustomerClosingView(APIView):
     def get(self, request, format=None, *args, **kwargs):
         customers = (
             self.get_queryset()
-            .filter(company_id=self.request.user.company_id)
+            .filter(company_id=request.company.id)
             .exclude(transactions__isnull=True)
         )
 
