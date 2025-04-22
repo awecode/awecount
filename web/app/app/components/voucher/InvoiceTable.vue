@@ -1,6 +1,6 @@
 <script>
-import useCalcDiscount from '@/composables/useCalcDiscount.js'
 import ItemAdd from '@/components/views/inventory/item/ItemForm.vue'
+import useCalcDiscount from '@/composables/useCalcDiscount.js'
 import InvoiceRow from './InvoiceRow.vue'
 
 export default defineNuxtComponent({
