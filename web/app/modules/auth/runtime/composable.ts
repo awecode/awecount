@@ -346,7 +346,8 @@ export const useAuth = (namespace: string = 'default') => {
 
       if (router && route) {
         const next = route.name === 'onboarding' ? 'company-dashboard' : route.name
-        router.push({ name: next, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
+        const resolved = router.resolve({ name: next, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
+        window.location.href = resolved.href
       } else {
         window.location.href = `${url.origin}/${companySlug}/dashboard`
       }
