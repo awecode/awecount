@@ -18,15 +18,13 @@ export default defineNuxtConfig({
 
   css: ['assets/css/app.scss'],
 
-  quasar: {
-    plugins: ['Notify', 'Dialog'],
-    config: {
-      notify: { position: 'top-right', progress: true },
-    },
-    extras: {
-      font: 'roboto-font',
-      fontIcons: ['mdi-v7', 'fontawesome-v6', 'material-icons'],
-    },
+  components: {
+    dirs: [
+      {
+        path: '@/components',
+        pathPrefix: false,
+      },
+    ],
   },
 
   api: {
@@ -43,5 +41,22 @@ export default defineNuxtConfig({
       route: '/onboarding',
       successRoute: '/dashboard',
     },
+  },
+
+  quasar: {
+    plugins: ['Notify', 'Dialog'],
+    config: {
+      notify: { position: 'top-right', progress: true },
+    },
+    extras: {
+      font: 'roboto-font',
+      fontIcons: ['mdi-v7', 'fontawesome-v6', 'material-icons'],
+    },
+  },
+
+  routeRules: {
+    '/**': { auth: { protected: true } },
+    '/login': { auth: { redirectIfLoggedIn: '/dashboard', protected: false } },
+    '/': { auth: { protected: false } },
   },
 })
