@@ -33,7 +33,7 @@ const fetchCompanies = async () => {
   }
 }
 
-const essentialLinks: EssentialLinkProps[] = [
+const essentialLinks = computed(() => [
   {
     title: 'Dashboard',
     icon: 'mdi-view-dashboard',
@@ -437,7 +437,7 @@ const essentialLinks: EssentialLinkProps[] = [
     link: `/${activeCompany.value}/sales/pos`,
     hide: !hasPermission('SalesCreate') && !hasPermission('sales'),
   },
-]
+] as EssentialLinkProps[])
 
 const leftDrawerOpen = ref(false)
 
