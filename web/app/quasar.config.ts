@@ -3,6 +3,7 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 import { defineConfig } from '#q-app/wrappers'
+import { cloudflare } from '@cloudflare/vite-plugin'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 
 import dotenv from 'dotenv'
@@ -52,6 +53,7 @@ export default defineConfig((/* ctx */) => {
             project: 'awecount',
           }),
         ],
+        cloudflare(),
       ],
       extendViteConf: (viteConf) => {
         viteConf.define ||= {}
