@@ -99,7 +99,7 @@ export default {
         color="green"
         icon-right="add"
         label="New Account"
-        :to="`/${$route.params.company}/account/create`"
+        :to="`/${$route.params.company}/account/ledgers/create`"
       />
     </div>
 
