@@ -1,48 +1,38 @@
-<script>
+<script setup>
+import { useMeta } from 'quasar'
+
 import checkPermissions from 'src/composables/checkPermissions'
 import useForm from 'src/composables/useForm'
 import CategoryForm from 'src/pages/account/category/CategoryForm.vue'
 
-export default {
-  setup(_props, _context) {
-    const route = useRoute()
-    const endpoint = `/api/company/${route.params.company}/accounts/`
-    const formData = useForm(endpoint, {
-      getDefaults: true,
-      successRoute: `/${route.params.company}/account/ledgers`,
-    })
-    useMeta(() => {
-      return {
-        title: `${formData.isEdit?.value ? 'Account Update' : 'Account Add'} | Awecount`,
-      }
-    })
-    const categoryChoices = ref(null)
-    const accountChoices = ref(null)
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 
-    useApi(`/api/company/${route.params.company}/accounts/choices/`)
-      .then((res) => {
-        this.accountChoices = res
-      })
-      .catch((err) => {
-        console.log('error fetching choices due to', err)
-      })
-    useApi(`/api/company/${route.params.company}/categories/choices/`)
-      .then((res) => {
-        this.categoryChoices = res
-      })
-      .catch((err) => {
-        console.log('error fetching choices due to', err)
-      })
+const route = useRoute()
+const endpoint = `/api/company/${route.params.company}/accounts/`
+const { isEdit, errors, fields, loading, submitForm } = useForm(endpoint, {
+  getDefaults: true,
+  successRoute: `/${route.params.company}/account/ledgers`,
+})
 
-    return {
-      ...formData,
-      CategoryForm,
-      categoryChoices,
-      accountChoices,
-      checkPermissions,
-    }
-  },
-}
+useMeta(() => ({
+  title: `${isEdit.value ? 'Account Update' : 'Account Add'} | Awecount`,
+}))
+
+const categoryChoices = ref(null)
+const accountChoices = ref(null)
+
+useApi(`/api/company/${route.params.company}/accounts/choices/`)
+  .then((res) => {
+    accountChoices.value = res
+  })
+  .catch(console.error)
+
+useApi(`/api/company/${route.params.company}/categories/choices/`)
+  .then((res) => {
+    categoryChoices.value = res
+  })
+  .catch(console.error)
 </script>
 
 <template>
