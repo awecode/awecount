@@ -92,8 +92,8 @@ class PartyViewSet(
             qs = (
                 qs.filter(customer_account__transactions__isnull=False)
                 .annotate(
-                    dr=Coalesce(Sum("customer_account__transactions__dr_amount"), 0.0),
-                    cr=Coalesce(Sum("customer_account__transactions__cr_amount"), 0.0),
+                    dr=Coalesce(Sum("customer_account__transactions__dr_amount"), Decimal("0.0")),
+                    cr=Coalesce(Sum("customer_account__transactions__cr_amount"), Decimal("0.0")),
                 )
                 .annotate(balance=F("dr") - F("cr"))
             )
@@ -101,8 +101,8 @@ class PartyViewSet(
             qs = (
                 qs.filter(supplier_account__transactions__isnull=False)
                 .annotate(
-                    dr=Coalesce(Sum("supplier_account__transactions__dr_amount"), 0.0),
-                    cr=Coalesce(Sum("supplier_account__transactions__cr_amount"), 0.0),
+                    dr=Coalesce(Sum("supplier_account__transactions__dr_amount"), Decimal("0.0")),
+                    cr=Coalesce(Sum("supplier_account__transactions__cr_amount"), Decimal("0.0")),
                 )
                 .annotate(balance=F("dr") - F("cr"))
             )
