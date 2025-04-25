@@ -343,7 +343,7 @@ class CompanyBaseModel(BaseModel):
                 )
 
     def save(self, *args, **kwargs):
-        self.check_company_references(self)
+        # self.check_company_references(self)
         super().save(*args, **kwargs)
 
 
