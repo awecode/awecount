@@ -60,6 +60,4 @@ class PartnerPartyViewSet(viewsets.GenericViewSet):
 
 class PartnerSalesVoucherViewSet(SalesVoucherViewSet):
     def get_serializer_class(self):
-        if self.request.META.get("HTTP_SECRET"):
-            return PartnerSalesVoucherAccessSerializer
-        return super().get_serializer_class()
+        return PartnerSalesVoucherAccessSerializer
