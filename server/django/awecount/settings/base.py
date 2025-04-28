@@ -1,12 +1,11 @@
 import datetime
 import os
+from pathlib import Path
 
 import dj_database_url
 from corsheaders.defaults import default_headers
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
-from pathlib import Path
-
 
 ######################################################################
 # Load environment variables from .env file
@@ -62,7 +61,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Inhouse apps
+    # Project apps
     "apps.users",
     "apps.company",
     "apps.authentication",
@@ -85,7 +84,6 @@ INSTALLED_APPS = [
     "corsheaders",
     "import_export",
     "django_filters",
-    "djoser",
     "auditlog",
     "mptt",
     "django_q",
