@@ -36,12 +36,12 @@ http {
             proxy_pass http://backend:8000/api/;
         }
 
-        location /aweadmin/ {
+        location /awedmin/ {
             proxy_http_version 1.1;
             proxy_set_header Upgrade ${dollar}http_upgrade;
             proxy_set_header Connection "upgrade";
             proxy_set_header Host ${dollar}http_host;
-            proxy_pass http://backend:8000/aweadmin/;
+            proxy_pass http://backend:8000/awedmin/;
         }
 
         location /_allauth/ {

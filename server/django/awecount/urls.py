@@ -3,7 +3,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-admin_path = "admin/" if settings.DEBUG else "aweadmin/"
+# admin_path = "admin/" if settings.DEBUG else "awedmin/"
+admin_path = "awedmin/"
 
 urlpatterns = []
 
