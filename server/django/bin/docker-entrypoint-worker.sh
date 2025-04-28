@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
 # Wait for database
-python manage.py wait_for_db
+uv run manage.py wait_for_db
 
 # Wait for migrations
-python manage.py wait_for_migrations
+uv run manage.py wait_for_migrations
 
 # Run processes
-python manage.py qcluster
+uv run manage.py qcluster
