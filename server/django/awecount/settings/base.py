@@ -13,9 +13,10 @@ from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-ROOT_DIR = BASE_DIR.parent
-PROJECT_DIR = ROOT_DIR.parent.parent
 
+ROOT_DIR = BASE_DIR.parent
+
+PROJECT_DIR = ROOT_DIR.parent.parent
 
 load_dotenv(dotenv_path=PROJECT_DIR / ".env")
 
@@ -39,16 +40,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ######################################################################
 # Domains
 ######################################################################
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+
 APP_URL = os.environ.get("APP_URL", "http://localhost:3000")
 
-# TODO: Parse domain from APP_URL
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [*default_headers, "X-Session-Token", "X-Invitation-Token"]
 
 CORS_ORIGIN_WHITELIST = os.environ.get("CORS_ORIGIN_WHITELIST", APP_URL).split(",")
-
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", APP_URL).split(",")
 
 ######################################################################
 # Apps
