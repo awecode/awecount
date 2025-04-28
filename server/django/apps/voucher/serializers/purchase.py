@@ -17,8 +17,10 @@ from ..models import (
     PurchaseOrderRow,
     PurchaseVoucher,
     PurchaseVoucherRow,
+    LandedCostRow,
 )
 from .mixins import DiscountObjectTypeSerializerMixin
+from .landed_cost import LandedCostRowSerializer
 
 
 class PurchaseDiscountSerializer(BaseModelSerializer):
@@ -66,6 +68,7 @@ class PurchaseVoucherCreateSerializer(
     BaseModelSerializer,
 ):
     rows = PurchaseVoucherRowSerializer(many=True)
+    landed_cost_rows = LandedCostRowSerializer(many=True, required=False)
     purchase_order_numbers = serializers.ReadOnlyField()
     selected_party_obj = PartyMinSerializer(source="party", read_only=True)
     selected_mode_obj = GenericSerializer(source="bank_account", read_only=True)
@@ -167,6 +170,7 @@ class PurchaseVoucherCreateSerializer(
 
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
+        landed_cost_rows_data = validated_data.pop("landed_cost_rows", [])
         if validated_data.get("voucher_no") == "":
             validated_data["voucher_no"] = None
         request = self.context["request"]
@@ -176,9 +180,19 @@ class PurchaseVoucherCreateSerializer(
         validated_data["company_id"] = request.company.id
         validated_data["user_id"] = request.user.id
         instance = PurchaseVoucher.objects.create(**validated_data)
+
+        # Create purchase voucher rows
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
+
+        # Create landed cost if rows exist
+        if landed_cost_rows_data:
+            LandedCostRow.objects.bulk_create([
+                LandedCostRow(invoice=instance, **row_data)
+                for row_data in landed_cost_rows_data
+            ])
+
         if purchase_orders:
             instance.purchase_orders.clear()
             instance.purchase_orders.set(purchase_orders)
@@ -188,17 +202,31 @@ class PurchaseVoucherCreateSerializer(
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop("rows")
+        landed_cost_rows_data = validated_data.pop("landed_cost_rows", [])
         if validated_data.get("voucher_no") == "":
             validated_data["voucher_no"] = None
         purchase_orders = validated_data.pop("purchase_orders", None)
         self.assign_fiscal_year(validated_data, instance=instance)
         self.assign_discount_obj(validated_data)
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
+
+        # Update purchase voucher rows
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             PurchaseVoucherRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
             )
+
+        # Update landed cost rows
+        if landed_cost_rows_data:
+            # Delete existing rows
+            instance.landed_cost_rows.all().delete()
+            # Create new rows
+            LandedCostRow.objects.bulk_create([
+                LandedCostRow(invoice=instance, **row_data)
+                for row_data in landed_cost_rows_data
+            ])
+
         if purchase_orders:
             instance.purchase_orders.clear()
             instance.purchase_orders.set(purchase_orders)
@@ -261,6 +289,7 @@ class PurchaseVoucherDetailSerializer(BaseModelSerializer):
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     discount_obj = PurchaseDiscountSerializer()
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
+    landed_cost_rows = LandedCostRowSerializer(many=True, read_only=True)
 
     rows = PurchaseVoucherRowDetailSerializer(many=True)
     tax_identification_number = serializers.ReadOnlyField(

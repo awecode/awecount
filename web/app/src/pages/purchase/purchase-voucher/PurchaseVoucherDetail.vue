@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { Ref } from 'vue'
 import DateConverter from 'src/components/date/VikramSamvat.js'
+import FormattedNumber from 'src/components/FormattedNumber.vue'
 import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { useLoginStore } from 'src/stores/login-info'
@@ -18,6 +19,7 @@ interface Fields {
   discount: null | number
   discount_type: null | 'Amount' | 'Percent'
   purchase_order_numbers: Array<number>
+  landed_cost_rows: Array<{ type: string, amount: number, is_percentage: boolean, currency: string, description: string }>
 }
 export default {
   setup() {
@@ -218,6 +220,39 @@ export default {
       <q-card id="to_print" class="q-mx-lg">
         <q-card-section>
           <ViewerTable :fields="fields" />
+        </q-card-section>
+      </q-card>
+
+      <q-card v-if="fields?.landed_cost_rows?.length" class="q-mx-lg q-my-md">
+        <q-card-section>
+          <div class="text-subtitle2 text-grey-9 q-mb-md">
+            Landed Costs:
+          </div>
+          <q-table
+            bordered
+            flat
+            :columns="[
+              { name: 'type', label: 'Cost Type', field: 'type', align: 'left', style: 'width: 25%' },
+              { name: 'amount', label: 'Amount', field: 'amount', align: 'right', style: 'width: 25%' },
+              { name: 'description', label: 'Description', field: 'description', align: 'left', style: 'width: 20%' },
+            ]"
+            :pagination="{ rowsPerPage: 0 }"
+            :rows="fields.landed_cost_rows"
+          >
+            <template #body-cell-amount="props">
+              <q-td :props="props">
+                <FormattedNumber
+                  type="currency"
+                  :value="props.row.amount"
+                />
+              </q-td>
+            </template>
+            <template #body-cell-is_percentage="props">
+              <q-td :props="props">
+                {{ props.row.is_percentage ? 'Percentage' : 'Fixed' }}
+              </q-td>
+            </template>
+          </q-table>
         </q-card-section>
       </q-card>
       <q-card v-if="fields?.remarks" class="q-mx-lg q-my-md">
