@@ -128,6 +128,7 @@ from ..models import (
     DebitNote,
     DebitNoteRow,
     Import,
+    LandedCostRow,
     PaymentMode,
     PurchaseDiscount,
     PurchaseOrder,
@@ -1155,7 +1156,12 @@ class PurchaseVoucherViewSet(
                         "item", "item__category", "unit", "discount_obj", "tax_scheme"
                     )
                     .order_by("pk"),
-                )
+                ),
+                Prefetch(
+                    "landed_cost_rows",
+                    LandedCostRow.objects.all()
+                    .order_by("pk"),
+                ),
             )
             .select_related(
                 "discount_obj", "bank_account", "company__purchase_setting", "party"
