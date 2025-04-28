@@ -97,7 +97,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -379,6 +378,16 @@ Q_CLUSTER = {
 
 if SENTRY_DSN := os.environ.get("SENTRY_DSN", None):
     Q_CLUSTER["error_reporter"] = {"sentry": {"dsn": SENTRY_DSN}}
+
+
+################################################################
+# Whitenoise
+################################################################
+if os.environ.get("USE_WHITENOISE", "False") == "True":
+    MIDDLEWARE.insert(2, "whitenoise.middleware.WhiteNoiseMiddleware")
+    STORAGES["staticfiles"] = {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    }
 
 
 ######################################################################
