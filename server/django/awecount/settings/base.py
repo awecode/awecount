@@ -270,9 +270,12 @@ if SENTRY_DSN := os.environ.get("SENTRY_DSN", None):
         dsn=SENTRY_DSN,
         environment=os.environ.get("SENTRY_ENVIRONMENT"),
         integrations=[DjangoIntegration(), RedisIntegration()],
+        enable_tracing=True,
         traces_sample_rate=1.0,
         send_default_pii=True,
     )
+
+    MIDDLEWARE.insert(-1, "lib.sentry.middleware.SentryMiddleware")
 
 
 ######################################################################
