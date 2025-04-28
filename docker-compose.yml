@@ -49,7 +49,7 @@ services:
   frontend:
     build:
       context: ./web/app
-      dockerfile: ./web/app/Dockerfile
+      dockerfile: Dockerfile
     deploy:
       replicas: 1
       restart_policy:
@@ -62,7 +62,7 @@ services:
   backend:
     build:
       context: ./server/django
-      dockerfile: ./server/django/Dockerfile
+      dockerfile: Dockerfile
     command: ./bin/docker-entrypoint-server.sh
     deploy:
       replicas: 1
@@ -79,7 +79,7 @@ services:
   worker:
     build:
       context: ./server/django
-      dockerfile: ./server/django/Dockerfile
+      dockerfile: Dockerfile
     command: ./bin/docker-entrypoint-worker.sh
     deploy:
       replicas: 1
@@ -95,7 +95,7 @@ services:
   migrator:
     build:
       context: ./server/django
-      dockerfile: ./server/django/Dockerfile
+      dockerfile: Dockerfile
     command: ./bin/docker-entrypoint-migrator.sh
     deploy:
       replicas: 1
