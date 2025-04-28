@@ -175,7 +175,7 @@ STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
         "OPTIONS": {
-            "location": os.path.normpath(os.path.join(ROOT_DIR, "media")),
+            "location": os.environ.get("MEDIA_ROOT", ROOT_DIR / "media"),
         },
     },
     "staticfiles": {
@@ -230,17 +230,14 @@ USE_L10N = True
 
 
 ######################################################################
-# Static
+# Static & Media
 ######################################################################
-STATIC_URL = "/static/"
+STATIC_URL = os.environ.get("STATIC_URL", "/static/")
+STATIC_ROOT = os.environ.get("STATIC_ROOT", ROOT_DIR / "static")
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
-STATICFILES_DIRS = [os.path.normpath(os.path.join(ROOT_DIR, "staticfiles"))]
-
-STATIC_ROOT = os.path.normpath(os.path.join(ROOT_DIR, "static"))
-
-MEDIA_ROOT = os.path.normpath(os.path.join(ROOT_DIR, "media"))
-
-MEDIA_URL = "/media/"
+MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
+MEDIA_ROOT = os.environ.get("MEDIA_ROOT", ROOT_DIR / "media")
 
 
 ############################################################################
