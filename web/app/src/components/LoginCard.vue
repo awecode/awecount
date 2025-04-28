@@ -13,6 +13,8 @@ const loading = ref(false)
 const showVerificationModal = ref(false)
 const resendCooldown = ref(0)
 
+const allowSignup = import.meta.env.ALLOW_SIGNUP
+
 const state = reactive({
   email: null,
   password: null,
@@ -187,7 +189,7 @@ const onLoginSubmit = async () => {
           <q-btn class="bg-blue full-width text-white q-px-lg q-mb-md" type="submit" :loading="loading">
             Login
           </q-btn>
-          <!-- <div class="text-grey-7 q-mt-sm">
+          <div v-if="allowSignup" class="text-grey-7 q-mt-sm">
             Don't have an account?
             <q-btn
               dense
@@ -198,7 +200,7 @@ const onLoginSubmit = async () => {
             >
               Sign up here
             </q-btn>
-          </div> -->
+          </div>
         </div>
       </q-form>
     </div>
