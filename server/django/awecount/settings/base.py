@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "apps.product",
     "apps.tax",
     "apps.voucher",
+    "apps.diagnostic",
     # 3rd party apps
     "allauth",
     "allauth.account",
