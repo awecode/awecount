@@ -34,6 +34,7 @@ dependencies = [
     "whitenoise>=6.9.0",
     "xhtml2pdf>=0.2.17",                         # Remove this once migrated to WeasyPrint
     "xlsxwriter>=3.2.3",                         # Remove this once migrated to Openpyxl
+    "uvicorn>=0.34.2",
 ]
 
 [tool.ruff]
