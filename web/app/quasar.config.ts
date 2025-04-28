@@ -56,6 +56,7 @@ export default defineConfig((/* ctx */) => {
       extendViteConf: (viteConf) => {
         viteConf.define ||= {}
         viteConf.define['import.meta.env.API_BASE_URL'] = JSON.stringify(process.env.API_URL)
+        viteConf.define['import.meta.env.ALLOW_SIGNUP'] = process.env.ALLOW_SIGNUP === 'True'
       },
     },
   }
