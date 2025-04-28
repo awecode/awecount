@@ -1,6 +1,7 @@
 import datetime
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 import dj_database_url
 from corsheaders.defaults import default_headers
@@ -40,10 +41,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ######################################################################
 # Domains
 ######################################################################
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
-
 APP_URL = os.environ.get("APP_URL", "http://localhost:3000")
 
+parsed_url = urlparse(APP_URL)
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", parsed_url.hostname).split(",")
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [*default_headers, "X-Session-Token", "X-Invitation-Token"]
@@ -298,7 +299,7 @@ REST_FRAMEWORK = {
 ######################################################################
 # Allauth & Simple JWT
 ######################################################################
-SIGNUP_ALLOWED = os.environ.get("SIGNUP_ALLOWED", "True") == "True"
+SIGNUP_ALLOWED = os.environ.get("ALLOW_SIGNUP", "True") == "True"
 
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "email"
