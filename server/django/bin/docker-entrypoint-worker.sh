@@ -8,4 +8,4 @@ python manage.py wait_for_db
 python manage.py wait_for_migrations
 
 # Run processes
-python manage.py q-cluster
+python manage.py qcluster
