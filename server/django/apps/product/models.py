@@ -1128,23 +1128,25 @@ def fifo_avg(consumption_data, required_quantity):
     consumption_data = OrderedDict(
         sorted(consumption_data.items(), key=lambda x: int(x[0]))
     )
-    cumulative_quantity = 0
-    cumulative_rate = 0
+    cumulative_quantity = Decimal("0")
+    cumulative_rate = Decimal("0")
 
     # in fifo, we can't consume more than the total quantity
     # if the required quantity is more than the total quantity,
     # we'll calculate the average rate for the total quantity
     required_quantity = min(
-        required_quantity, sum([x[0] for x in consumption_data.values()])
+        required_quantity, sum([Decimal(x[0]) for x in consumption_data.values()])
     )
 
     for quantity, rate in consumption_data.values():
-        if cumulative_quantity + quantity <= required_quantity:
-            cumulative_quantity += quantity
-            cumulative_rate += quantity * rate
+        _quantity = Decimal(quantity)
+        _rate = Decimal(rate)
+        if cumulative_quantity + _quantity <= required_quantity:
+            cumulative_quantity += _quantity
+            cumulative_rate += _quantity * _rate
         else:
             remaining_quantity = required_quantity - cumulative_quantity
-            cumulative_rate += remaining_quantity * rate
+            cumulative_rate += remaining_quantity * _rate
             break
     # TODO: temp fix for 0 required_quantity
     return cumulative_rate / (required_quantity or 1)
@@ -1192,7 +1194,9 @@ def set_inventory_transactions(model, date, *args, clear=True):
             transaction = Transaction()
         else:
             transaction = matches[0]
-            diff = zero_for_none(transaction.cr_amount) - zero_for_none(transaction.dr_amount)
+            diff = zero_for_none(transaction.cr_amount) - zero_for_none(
+                transaction.dr_amount
+            )
         if arg[0] in ["dr", "ob"]:
             transaction.cr_amount = None
             transaction.dr_amount = arg[2]
@@ -1289,7 +1293,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
                 transaction.consumption_data[t.id] = [
                     arg[2],
-                    t.rate,
+                    str(t.rate),
                 ]
 
             else:
@@ -1383,7 +1387,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                                 updated_txns.append(tx_next)
                                 transaction.consumption_data[tx_next.id] = [
                                     req_qty,
-                                    tx_next.rate,
+                                    str(tx_next.rate),
                                 ]
                             else:
                                 transaction.fifo_inconsistency_quantity = req_qty
@@ -1391,7 +1395,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                         for txn in txn_qs:
                             transaction.consumption_data[txn.id] = [
                                 txn.remaining_quantity,
-                                txn.rate,
+                                str(txn.rate),
                             ]
 
                         updated_txns += [
@@ -1411,7 +1415,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                             tx_next.save()
                             transaction.consumption_data[tx_next.id] = [
                                 req_qty,
-                                tx_next.rate,
+                                str(tx_next.rate),
                             ]
                         else:
                             transaction.fifo_inconsistency_quantity = req_qty
