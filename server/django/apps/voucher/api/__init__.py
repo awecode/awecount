@@ -190,7 +190,7 @@ def send_sales_voucher_import_completion_email(
         message = f"""
         <p>Your sales invoices have been successfully imported.</p>
         <p><strong>{len(new_invoices)} invoice(s)</strong> have been imported and are now available in your system.</p>
-        <p>You can view and manage these invoices in your <a href="{origin}/sales-voucher/list/">Sales Voucher List</a>.</p>
+        <p>You can view and manage these invoices in your <a href="{origin}/{request.company.slug}/sales/vouchers">Sales Voucher List</a>.</p>
         <p>Thank you for using our service. If you need any further assistance, don't hesitate to contact us.</p>
         """
 
