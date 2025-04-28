@@ -1397,16 +1397,16 @@ const routes: RouteRecordRaw[] = [
       },
     },
   },
-  {
-    path: '/signup',
-    name: 'signup-page',
-    component: () => import('pages/SignupPage.vue'),
-    meta: {
-      auth: {
-        redirectIfLoggedIn: '/',
-      },
-    },
-  },
+  // {
+  //   path: '/signup',
+  //   name: 'signup-page',
+  //   component: () => import('pages/SignupPage.vue'),
+  //   meta: {
+  //     auth: {
+  //       redirectIfLoggedIn: '/',
+  //     },
+  //   },
+  // },
   {
     path: '/auth',
     meta: {
