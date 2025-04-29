@@ -2144,6 +2144,9 @@ class LandedCostRowType(models.TextChoices):
     LABOUR = "Labour"
     REGULATORY_FEE = "Regulatory Fee"
     OTHER = "Other"
+    PACKAGING = "Packaging"
+    LOADING = "Loading"
+    UNLOADING = "Unloading"
 
 
 class LandedCostRow(models.Model):
