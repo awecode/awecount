@@ -140,7 +140,6 @@ export default {
       () => props.taxType,
       () => {
         modalValue.value.tax_scheme_id = null
-        emit('update:modelValue', modalValue.value)
       }
     )
 

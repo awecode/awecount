@@ -153,7 +153,7 @@ export default {
           }
         }
         let updatedRate = item.rate
-        if (props.taxType === 'tax_inclusive') {
+        if (props.taxType === 'tax_inclusive' && currentTaxObj) {
           updatedRate = Number((item.rate / (1 + currentTaxObj.rate / 100)).toFixed(6))
         }
 
