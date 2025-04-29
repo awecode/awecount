@@ -88,6 +88,9 @@ const landedCostTypes = [
   { label: 'Insurance', value: 'Insurance' },
   { label: 'Storage', value: 'Storage' },
   { label: 'Labour', value: 'Labour' },
+  { label: 'Packaging', value: 'Packaging' },
+  { label: 'Loading', value: 'Loading' },
+  { label: 'Unloading', value: 'Unloading' },
   { label: 'Regulatory Fee', value: 'Regulatory Fee' },
   { label: 'Other', value: 'Other' },
 ]
