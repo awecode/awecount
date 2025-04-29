@@ -10,6 +10,8 @@ export const useLoginStore = defineStore(
     const isCalendarInAD = ref<boolean>(true)
     const trialBalanceCollapseId = ref<string[]>([])
     const stockTrialBalanceCollapseId = ref<string[]>([])
+    const balanceSheetCollapseId = ref<string[]>([])
+    const incomeStatementCollapseId = ref<string[]>([])
     const chartOfAccountsExpandId = ref<string[]>([])
     const dateRange = ref<{
       start_date: string | null
@@ -57,6 +59,8 @@ export const useLoginStore = defineStore(
       isCalendarInAD,
       trialBalanceCollapseId,
       stockTrialBalanceCollapseId,
+      balanceSheetCollapseId,
+      incomeStatementCollapseId,
       chartOfAccountsExpandId,
       posData,
       isFormLoading,

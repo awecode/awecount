@@ -449,6 +449,10 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Discount Income": "DIS-INCOME",
     "Income": "INCOME",
     "Expenses": "EXPENSES",
+    "Assets": "ASSETS",
+    "Liabilities": "LIABILITIES",
+    "Equity": "EQUITY",
+    "Opening Balance Difference": "OPEN-BAL-DIFF"
 }
 
 # Bank reconciliation settings

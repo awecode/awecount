@@ -59,6 +59,16 @@ urlpatterns = [
         name="trial-balance",
     ),
     re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/balance-sheet/$",
+        ledger.BalanceSheetView.as_view(),
+        name="balance-sheet",
+    ),
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/income-statement/$",
+        ledger.IncomeStatementView.as_view(),
+        name="income-statement",
+    ),
+    re_path(
         r"^api/company/(?P<company_slug>[-\w]+)/tax-summary/$",
         ledger.TaxSummaryView.as_view(),
         name="tax-summary",

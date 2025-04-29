@@ -382,6 +382,12 @@ class CategoryTreeSerializer(BaseModelSerializer):
             "rght",
             "default",
         ]
+        
+class CategoryTreeSerializerWithSystemCode(CategoryTreeSerializer):
+
+    class Meta:
+        model = Category
+        fields = ["id", "system_code", "children"]
 
 
 class AccountOpeningBalanceListSerializer(BaseModelSerializer):

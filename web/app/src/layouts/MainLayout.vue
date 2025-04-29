@@ -255,11 +255,11 @@ const essentialLinks = computed(() => [
         icon: 'mdi-chart-gantt',
         link: `/${activeCompany.value}/reports/chart-of-accounts`,
       },
-      {
-        title: 'Income Statement',
-        icon: 'mdi-chart-gantt',
-        link: `/${activeCompany.value}/reports/income-statement`,
-      },
+      // {
+      //   title: 'Income Statement',
+      //   icon: 'mdi-chart-gantt',
+      //   link: `/${activeCompany.value}/reports/income-statement`,
+      // },
       {
         title: 'Balance Sheet',
         icon: 'mdi-clipboard-text',

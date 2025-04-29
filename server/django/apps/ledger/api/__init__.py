@@ -4,7 +4,8 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import Case, Count, F, Max, Q, Sum, When
+from django.db import connection
+from django.db.models import Case, F, Max, OuterRef, Q, Subquery, Sum, When
 from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -46,6 +47,7 @@ from ..serializers import (
     CategoryDetailSerializer,
     CategorySerializer,
     CategoryTreeSerializer,
+    CategoryTreeSerializerWithSystemCode,
     ContentTypeListSerializer,
     JournalEntrySerializer,
     PartyAccountSerializer,
@@ -92,8 +94,12 @@ class PartyViewSet(
             qs = (
                 qs.filter(customer_account__transactions__isnull=False)
                 .annotate(
-                    dr=Coalesce(Sum("customer_account__transactions__dr_amount"), Decimal("0.0")),
-                    cr=Coalesce(Sum("customer_account__transactions__cr_amount"), Decimal("0.0")),
+                    dr=Coalesce(
+                        Sum("customer_account__transactions__dr_amount"), Decimal("0.0")
+                    ),
+                    cr=Coalesce(
+                        Sum("customer_account__transactions__cr_amount"), Decimal("0.0")
+                    ),
                 )
                 .annotate(balance=F("dr") - F("cr"))
             )
@@ -101,8 +107,12 @@ class PartyViewSet(
             qs = (
                 qs.filter(supplier_account__transactions__isnull=False)
                 .annotate(
-                    dr=Coalesce(Sum("supplier_account__transactions__dr_amount"), Decimal("0.0")),
-                    cr=Coalesce(Sum("supplier_account__transactions__cr_amount"), Decimal("0.0")),
+                    dr=Coalesce(
+                        Sum("supplier_account__transactions__dr_amount"), Decimal("0.0")
+                    ),
+                    cr=Coalesce(
+                        Sum("supplier_account__transactions__cr_amount"), Decimal("0.0")
+                    ),
                 )
                 .annotate(balance=F("dr") - F("cr"))
             )
@@ -719,4 +729,344 @@ class AccountClosingViewSet(
         account_closing.close()
         return Response(
             "Successfully closed accounts for selected fiscal year.", status=200
+        )
+
+
+class BalanceSheetView(APIView):
+    action = "list"
+
+    def get_queryset(self):
+        return Account.objects.none()
+
+    def get(self, request, format=None, *args, **kwargs):
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        if not start_date or not end_date:
+            return Response({})
+
+        company = request.company
+        category_codes = ["A", "L", "Q"]
+
+        # Get all relevant categories and their descendants in a single query
+        categories = Category.objects.filter(company=company, code__in=category_codes)
+        category_ids = categories.values("tree_id", "lft", "rght")
+
+        all_ids = Category.objects.filter(
+            Q(tree_id__in=[category["tree_id"] for category in category_ids])
+            & Q(
+                lft__gte=Subquery(
+                    categories.filter(tree_id=OuterRef("tree_id")).values("lft")[:1]
+                )
+            )
+            & Q(
+                rght__lte=Subquery(
+                    categories.filter(tree_id=OuterRef("tree_id")).values("rght")[:1]
+                )
+            )
+        ).values_list("id", flat=True)
+
+        # Get income and expense categories and their descendants in a single query
+        income_category = Category.objects.filter(company=company, code="I").first()
+        expense_category = Category.objects.filter(company=company, code="E").first()
+
+        income_ids = Category.objects.filter(
+            Q(tree_id=income_category.tree_id)
+            & Q(lft__gte=income_category.lft)
+            & Q(rght__lte=income_category.rght)
+        ).values_list("id", flat=True)
+
+        expense_ids = Category.objects.filter(
+            Q(tree_id=expense_category.tree_id)
+            & Q(lft__gte=expense_category.lft)
+            & Q(rght__lte=expense_category.rght)
+        ).values_list("id", flat=True)
+
+        # Annotate accounts with their debit and credit sums in a single query
+        accounts = (
+            Account.objects.filter(company=company)
+            .annotate(
+                cd=Sum(
+                    "transactions__dr_amount",
+                    filter=Q(transactions__journal_entry__date__lt=end_date)
+                    | Q(
+                        transactions__journal_entry__date=end_date,
+                        transactions__type="Regular",
+                    ),
+                ),
+                cc=Sum(
+                    "transactions__cr_amount",
+                    filter=Q(transactions__journal_entry__date__lt=end_date)
+                    | Q(
+                        transactions__journal_entry__date=end_date,
+                        transactions__type="Regular",
+                    ),
+                ),
+            )
+            .exclude(cd=None, cc=None)
+        )
+
+        # Filter accounts by category IDs and prepare the result
+        qq = accounts.filter(category_id__in=all_ids).values(
+            "id", "name", "category_id", "cd", "cc"
+        )
+
+        # Calculate total income and expense using the same annotated accounts
+        total_income = (
+            accounts.filter(category_id__in=income_ids).aggregate(
+                total_income=Sum(F("cc")) - Sum(F("cd"))
+            )["total_income"]
+            or 0
+        )
+
+        total_expense = (
+            accounts.filter(category_id__in=expense_ids).aggregate(
+                total_expense=Sum(F("cd")) - Sum(F("cc"))
+            )["total_expense"]
+            or 0
+        )
+
+        # Calculate profit/loss
+        profit_loss = total_income - total_expense
+
+        # Append profit/loss to the result
+        qq = list(qq)
+        qq.append(
+            {
+                "name": "Profit/Loss",
+                "id": 0,
+                "cd": abs(profit_loss) if profit_loss < 0 else 0,
+                "cc": profit_loss if profit_loss > 0 else 0,
+                "category_id": Category.objects.filter(company=company, code="L")
+                .values_list("id", flat=True)
+                .first(),
+            }
+        )
+
+        return Response(qq)
+
+
+class IncomeStatementView(APIView):
+    action = "list"
+
+    def get_queryset(self):
+        return Account.objects.none()
+
+    def get(self, request, format=None, *args, **kwargs):
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+
+        if not start_date or not end_date:
+            return Response({})
+
+        company = request.company
+        category_system_codes = ["INCOME", "EXPENSES"]
+
+        # Get all relevant categories and their descendants in a single query
+        categories = Category.objects.filter(
+            company=company, system_code__in=category_system_codes
+        )
+
+        # Compute net
+        categories = Category.objects.filter(company=request.company)
+
+        # Get all categories with their descendants
+        category_tree = get_cached_trees(categories)
+
+        # Serialize the tree structure
+        serializer = CategoryTreeSerializerWithSystemCode(category_tree, many=True)
+
+        def get_all_ids(category):
+            all_ids = [category["id"]]
+            for child in category.get("children", []):
+                all_ids.extend(get_all_ids(child))
+            return all_ids
+
+        income_categories = []
+        expense = []
+        accounts_ids = []
+        direct_expense_category = []
+        indirect_expense_category = []
+        purchase_category = []
+
+        for category in serializer.data:
+            if category.get("system_code") == "INCOME":
+                income_categories.append(category)
+                accounts_ids.extend(get_all_ids(category))
+            elif category.get("system_code") == "EXPENSES":
+                expense.append(category)
+                for child in category.get("children", []):
+                    if child.get("system_code") == "DIR-EXP":
+                        direct_expense_category.append(child)
+                        accounts_ids.extend(get_all_ids(child))
+
+                    if child.get("system_code") == "IND-EXP":
+                        indirect_expense_category.append(child)
+                        accounts_ids.extend(get_all_ids(child))
+
+                    if child.get("system_code") == "PURCHASE":
+                        purchase_category.append(child)
+                        accounts_ids.extend(get_all_ids(child))
+
+        accounts = (
+            Account.objects.filter(company=company)
+            .annotate(
+                cd=Sum(
+                    "transactions__dr_amount",
+                    filter=Q(transactions__journal_entry__date__lt=end_date)
+                    | Q(
+                        transactions__journal_entry__date=end_date,
+                        transactions__type="Regular",
+                    ),
+                ),
+                cc=Sum(
+                    "transactions__cr_amount",
+                    filter=Q(transactions__journal_entry__date__lt=end_date)
+                    | Q(
+                        transactions__journal_entry__date=end_date,
+                        transactions__type="Regular",
+                    ),
+                ),
+            )
+            .exclude(cd=None, cc=None)
+            .values("id", "name", "category_id", "cd", "cc")
+            .filter(category_id__in=accounts_ids)
+        )
+
+        # raw sql to get opening and closing stock
+        query = f"""
+            WITH RECURSIVE weight_calc AS (
+                SELECT
+                    ROW_NUMBER() OVER (PARTITION BY account_id ORDER BY product_journalentry.date, product_transaction.id) AS rn,
+                    product_transaction.id AS id,
+                    dr_amount,
+                    cr_amount,
+                    account_id,
+                    django_content_type.model AS content_type,
+                    CASE
+                        WHEN dr_amount IS NOT NULL THEN rate
+                    END AS entered_rate,
+                    COALESCE(dr_amount, cr_amount * -1) AS weight,
+                    CASE
+                        WHEN product_journalentry.date < '{start_date}' THEN 'opening'
+                        ELSE 'closing'
+                    END AS period
+                FROM product_transaction
+                JOIN product_journalentry
+                    ON product_transaction.journal_entry_id = product_journalentry.id
+                JOIN django_content_type
+                    ON product_journalentry.content_type_id = django_content_type.id
+                WHERE
+                    product_journalentry.date <= '{end_date}'
+            ),
+            running_calcs AS (
+                SELECT
+                    *,
+                    SUM(weight) OVER (PARTITION BY account_id ORDER BY rn) AS current_balance
+                FROM weight_calc
+            ),
+            final_calc AS (
+                SELECT
+                    rn,
+                    id,
+                    account_id,
+                    dr_amount,
+                    cr_amount,
+                    entered_rate,
+                    weight,
+                    current_balance,
+                    CASE
+                        WHEN content_type = 'debitnoterow' THEN entered_rate
+                        WHEN content_type = 'creditnoterow' THEN 0
+                        WHEN dr_amount IS NOT NULL THEN entered_rate
+                        ELSE 0
+                    END AS supposed_rate,
+                    CASE
+                        WHEN content_type = 'debitnoterow' THEN entered_rate
+                        WHEN content_type = 'creditnoterow' THEN 0
+                        WHEN dr_amount IS NOT NULL THEN entered_rate
+                        ELSE 0
+                    END AS calculated_rate,
+                    period
+                FROM running_calcs
+                WHERE rn = 1
+                UNION ALL
+                SELECT
+                    rc.rn,
+                    rc.id,
+                    rc.account_id,
+                    rc.dr_amount,
+                    rc.cr_amount,
+                    rc.entered_rate,
+                    rc.weight,
+                    rc.current_balance,
+                    CASE
+                        WHEN rc.content_type = 'debitnoterow' THEN rc.entered_rate
+                        WHEN rc.content_type = 'creditnoterow' THEN fc.calculated_rate
+                        WHEN rc.dr_amount IS NOT NULL THEN rc.entered_rate
+                        ELSE fc.calculated_rate
+                    END AS supposed_rate,
+                    CASE
+                        WHEN rc.current_balance <> 0 THEN
+                            (
+                                (fc.calculated_rate * fc.current_balance) +
+                                (
+                                    rc.weight *
+                                    CASE
+                                        WHEN rc.content_type = 'debitnoterow' THEN rc.entered_rate
+                                        WHEN rc.content_type = 'creditnoterow' THEN fc.calculated_rate
+                                        WHEN rc.dr_amount IS NOT NULL THEN rc.entered_rate
+                                        ELSE fc.calculated_rate
+                                    END
+                                )
+                            ) / rc.current_balance
+                        ELSE 0
+                    END AS calculated_rate,
+                    rc.period
+                FROM running_calcs rc
+                JOIN final_calc fc
+                    ON rc.rn = fc.rn + 1 AND rc.account_id = fc.account_id
+            ),
+            ranked_rows AS (
+                SELECT
+                    *,
+                    ROW_NUMBER() OVER (PARTITION BY account_id, period ORDER BY rn DESC) AS row_num
+                FROM final_calc
+            ),
+            aggregated_results AS (
+                SELECT
+                    account_id,
+                    MAX(CASE WHEN period = 'opening' THEN calculated_rate ELSE NULL END) AS opening_rate,
+                    MAX(CASE WHEN period = 'closing' THEN calculated_rate ELSE NULL END) AS closing_rate,
+                    MAX(CASE WHEN period = 'opening' THEN current_balance ELSE NULL END) AS opening_qty,
+                    MAX(CASE WHEN period = 'closing' THEN current_balance ELSE NULL END) AS closing_qty,
+                    MAX(CASE WHEN period = 'opening' THEN current_balance * calculated_rate ELSE NULL END) AS opening_value,
+                    MAX(CASE WHEN period = 'closing' THEN current_balance * calculated_rate ELSE NULL END) AS closing_value
+                FROM ranked_rows
+                WHERE row_num = 1
+                GROUP BY account_id
+            )
+            SELECT 
+                SUM(opening_value) AS total_opening_value,
+                SUM(closing_value) AS total_closing_value
+            FROM aggregated_results
+        """
+        # get opening and closing stock
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            row = cursor.fetchone()
+            opening_stock = row[0] or 0
+            closing_stock = row[1] or 0
+
+        return Response(
+            {
+                "accounts": accounts,
+                "opening_stock": opening_stock,
+                "closing_stock": closing_stock,
+                "category_tree": {
+                    "net_sales": income_categories,
+                    "direct_expense": direct_expense_category,
+                    "purchase": purchase_category,
+                    "indirect_expense": indirect_expense_category,
+                },
+            }
         )
