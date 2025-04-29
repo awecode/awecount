@@ -395,12 +395,6 @@ const essentialLinks = computed(() => [
     icon: 'mdi-dots-horizontal',
     children: [
       {
-        title: 'Company Settings',
-        icon: 'mdi-office-building-cog',
-        link: `/${activeCompany.value}/settings/company`,
-        hide: !hasAnyRole(['superuser', 'admin']),
-      },
-      {
         title: 'Audit Logs',
         icon: 'mdi-view-list',
         link: `/${activeCompany.value}/settings/audit-logs`,
