@@ -138,9 +138,12 @@ export default {
 
     watch(
       () => props.taxType,
-      () => {
-        modalValue.value.tax_scheme_id = null
-      }
+      (newTaxType) => {
+        if (newTaxType === 'no_tax') {
+          modalValue.value.tax_scheme_id = null
+        }
+      },
+      { deep: true }
     )
 
     watch(
@@ -198,7 +201,7 @@ export default {
         modalValue.value.description = itemObject.description
         modalValue.value.rate = itemObject.rate
         modalValue.value.unit_id = itemObject.unit_id
-        modalValue.value.tax_scheme_id = itemObject.tax_scheme_id
+        modalValue.value.tax_scheme_id = props.taxType === 'no_tax' ? null : itemObject.tax_scheme_id
         modalValue.value.selected_unit_obj = itemObject.default_unit_obj
         modalValue.value.selected_tax_scheme_obj = itemObject.default_tax_scheme_obj
       }

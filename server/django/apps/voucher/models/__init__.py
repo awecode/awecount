@@ -1057,7 +1057,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         related_name="sales_rows",
     )
     tax_scheme = models.ForeignKey(
-        TaxScheme, on_delete=models.CASCADE, related_name="sales_rows"
+        TaxScheme, on_delete=models.CASCADE, related_name="sales_rows", blank=True, null=True
     )
 
     # Computed values

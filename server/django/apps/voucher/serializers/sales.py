@@ -230,7 +230,7 @@ class PaymentReceiptFormSerializer(BaseModelSerializer):
 class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, BaseModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
-    tax_scheme_id = serializers.IntegerField(required=True)
+    tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
     unit_id = serializers.IntegerField(required=False)
     item_name = serializers.ReadOnlyField(source="item.name")
     amount_before_tax = serializers.ReadOnlyField()

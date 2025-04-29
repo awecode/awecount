@@ -147,12 +147,13 @@ export default {
         <!-- <q-td> {{ row.discount }} </q-td> -->
         <q-td class="text-right">
           <FormattedNumber
+            v-if="row.tax_scheme"
             type="unit"
             unit="percent"
             :value="row.tax_scheme.rate"
           />
           {{ ' ' }}
-          <span class="text-uppercase">({{ row.tax_scheme.friendly_name }})</span>
+          <span v-if="row.tax_scheme" class="text-uppercase">({{ row.tax_scheme.friendly_name }})</span>
         </q-td>
         <q-td class="text-right">
           <FormattedNumber type="currency" :value="new Decimal(row.rate).mul(row.quantity).toNumber()" />
