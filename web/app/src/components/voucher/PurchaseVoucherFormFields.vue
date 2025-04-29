@@ -7,6 +7,7 @@ import PartyForm from 'src/pages/party/PartyForm.vue'
 import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountForm.vue'
 import { useLoginStore } from 'src/stores/login-info'
 import { useRoute } from 'vue-router'
+import InvoiceTable from './InvoiceTable.vue'
 
 const props = defineProps({
   formDefaults: {
@@ -211,7 +212,7 @@ const convertPercentagesToFixedAmounts = () => {
   if (!fields.value.landed_cost_rows) return
 
   // Calculate invoice total (sum of all row amounts)
-  const invoiceTotal = fields.value.rows?.reduce((sum, row) => sum.add(new Decimal(row.rate).mul(row.quantity)), new Decimal('0')) || new Decimal('0')
+  const invoiceTotal = fields.value.rows?.reduce((sum, row) => sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
 
   const targetCurrency = loginStore.companyInfo.currency_code || 'USD'
 
@@ -225,6 +226,14 @@ const convertPercentagesToFixedAmounts = () => {
     }
   })
 }
+
+const averageRate = computed(() => {
+  if (!fields.value.rows || !fields.value.landed_cost_rows) return 0
+  const totalAmount = fields.value.rows.reduce((sum, row) => sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
+  const totalLandedCosts = fields.value.landed_cost_rows.reduce((sum, row) => sum.add(row.amount || '0'), new Decimal('0'))
+  const totalQuantity = fields.value.rows.reduce((sum, row) => sum.add(row.quantity || '0'), new Decimal('0'))
+  return totalAmount.add(totalLandedCosts).div(totalQuantity).toNumber()
+})
 
 // Watch for initial data to copy amount to value
 watch(
@@ -590,7 +599,7 @@ onMounted(() => {
       <!-- {{ fields.date }} -->
     </q-card-section>
   </q-card>
-  <invoice-table
+  <InvoiceTable
     v-if="formDefaults.collections"
     v-model="fields.rows"
     used-in="purchase"
@@ -627,9 +636,9 @@ onMounted(() => {
           v-if="fields.landed_cost_rows?.length"
           bordered
           flat
+          hide-pagination
           row-key="type"
           :columns="landedCostColumns"
-          :pagination="{ rowsPerPage: 0 }"
           :rows="fields.landed_cost_rows"
         >
           <template #body-cell-actions="cellProps">
@@ -710,6 +719,20 @@ onMounted(() => {
                 :error-message="errors?.landed_cost_rows?.[cellProps.rowIndex]?.description"
               />
             </q-td>
+          </template>
+          <template #bottom-row>
+            <q-tr>
+              <q-td class="text-right" colspan="5">
+                Average rate per item:
+              </q-td>
+              <q-td class="text-right text-bold" colspan="1">
+                <FormattedNumber
+                  type="currency"
+                  :currency="loginStore.companyInfo.currency_code"
+                  :value="averageRate"
+                />
+              </q-td>
+            </q-tr>
           </template>
         </q-table>
       </div>
