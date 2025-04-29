@@ -38,11 +38,11 @@ const staticOptions = {
 const EXCHANGE_RATES = {
   USD: {
     INR: '83.12',
-    NPR: '133.45',
+    NPR: '135.76',
   },
   INR: {
     USD: '0.012',
-    NPR: '1.61',
+    NPR: '1.60',
   },
   NPR: {
     USD: '0.0075',
