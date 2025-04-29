@@ -26,6 +26,21 @@ const props = defineProps({
   },
 })
 
+const taxTypes = [
+  {
+    label: 'No Tax',
+    value: 'no_tax',
+  },
+  {
+    label: 'Tax Exclusive',
+    value: 'tax_exclusive',
+  },
+  {
+    label: 'Tax Inclusive',
+    value: 'tax_inclusive',
+  },
+]
+
 const route = useRoute()
 
 const importChallanModal = ref(false)
@@ -244,6 +259,8 @@ watch(
     }
   },
 )
+
+fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
 </script>
 
 <template>
@@ -442,6 +459,9 @@ watch(
             </template>
           </n-auto-complete-v2>
         </div>
+        <div class="col-12 col-md-6">
+          <q-select v-model="fields.tax_type" map-options emit-value class="w-full" label="Tax Type" option-label="label" option-value="value" :options="taxTypes" />
+        </div>
       </div>
     </q-card-section>
   </q-card>
@@ -463,6 +483,7 @@ watch(
     :show-rate-quantity="formDefaults.options?.show_rate_quantity_in_voucher"
     :show-row-trade-discount="formDefaults.options?.show_trade_discount_in_row"
     :tax-options="formDefaults.collections?.tax_schemes"
+    :tax-type="fields.tax_type"
     :unit-options="formDefaults.collections ? formDefaults.collections.units : null"
     @delete-row-err="deleteRowErr"
   />

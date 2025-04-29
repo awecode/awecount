@@ -35,6 +35,12 @@ export default {
         return []
       },
     },
+    taxType: {
+      type: String,
+      default: () => {
+        return null
+      },
+    },
     mainDiscount: {
       type: Object,
       default: () => {
@@ -137,19 +143,24 @@ export default {
         data.addTotal = data.addTotal + (item.rate || 0) * (item.quantity || 0)
       })
       modalValue.value.forEach((item, index) => {
-        const rowTotal = (item.rate || 0) * (item.quantity || 0)
-        data.subTotal = data.subTotal + rowTotal
-        const rowDiscount = useCalcDiscount(item.discount_type, rowTotal, item.discount, props.discountOptions) || 0
         let currentTaxObj = null
 
         const taxOptions = Array.isArray(props.taxOptions) ? props.taxOptions : Object.hasOwn(props.taxOptions, 'results') ? props.taxOptions.results : []
-
-        if (item.tax_scheme_id && taxOptions && taxOptions.length) {
-          const taxindex = taxOptions.findIndex(taxItem => taxItem.id === item.tax_scheme_id)
+        if (item.tax_scheme_id && taxOptions && taxOptions.length && props.taxType !== 'no_tax') {
+          const taxindex = taxOptions.findIndex((taxItem) => taxItem.id === item.tax_scheme_id)
           if (taxindex > -1) {
             currentTaxObj = taxOptions[taxindex]
           }
         }
+        let updatedRate = item.rate
+        if (props.taxType === 'tax_inclusive') {
+          updatedRate = Number((item.rate / (1 + currentTaxObj.rate / 100)).toFixed(6))
+        }
+
+        const rowTotal = updatedRate * (item.quantity || 0)
+        data.subTotal = data.subTotal + rowTotal
+        const rowDiscount = useCalcDiscount(item.discount_type, rowTotal, item.discount, props.discountOptions) || 0
+
         if (data.sameScheme !== false && currentTaxObj) {
           if (data.sameScheme === null && currentTaxObj && currentTaxObj.rate !== 0) {
             data.sameScheme = currentTaxObj.id
@@ -325,33 +336,7 @@ export default {
           <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="row">
-          <InvoiceRow
-            v-if="modalValue[index]"
-            v-model="modalValue[index]"
-            :COGSData="COGSData"
-            :discount-options="discountOptions"
-            :enable-row-description="props.enableRowDescription"
-            :errors="
-              !rowEmpty
-                ? Array.isArray(errors)
-                  ? errors[index]
-                  : null
-                : null
-            "
-            :has-challan="hasChallan"
-            :index="index"
-            :input-amount="props.inputAmount"
-            :is-fifo="isFifo"
-            :item-options="itemOptions"
-            :row-empty="(rowEmpty && index === 0) || false"
-            :show-rate-quantity="props.showRateQuantity"
-            :show-row-trade-discount="props.showRowTradeDiscount"
-            :tax-options="taxOptions"
-            :unit-options="unitOptions"
-            :used-in="props.usedIn"
-            @delete-row="(index) => removeRow(index)"
-            @on-item-id-update="onItemIdUpdate"
-          />
+          <InvoiceRow v-if="modalValue[index]" v-model="modalValue[index]" :COGSData="COGSData" :discount-options="discountOptions" :enable-row-description="props.enableRowDescription" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null" :has-challan="hasChallan" :index="index" :input-amount="props.inputAmount" :is-fifo="isFifo" :item-options="itemOptions" :row-empty="(rowEmpty && index === 0) || false" :show-rate-quantity="props.showRateQuantity" :show-row-trade-discount="props.showRowTradeDiscount" :tax-options="taxOptions" :taxType="taxType" :unit-options="unitOptions" :used-in="props.usedIn" @delete-row="(index) => removeRow(index)" @on-item-id-update="onItemIdUpdate" />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center text-left pt-2"></div>

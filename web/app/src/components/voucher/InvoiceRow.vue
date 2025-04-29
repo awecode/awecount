@@ -54,6 +54,12 @@ export default {
         return []
       },
     },
+    taxType: {
+      type: String,
+      default: () => {
+        return null
+      },
+    },
     modelValue: {
       type: Object,
       default: () => {
@@ -127,7 +133,15 @@ export default {
       (newValue) => {
         emit('update:modelValue', newValue)
       },
-      { deep: true },
+      { deep: true }
+    )
+
+    watch(
+      () => props.taxType,
+      () => {
+        modalValue.value.tax_scheme_id = null
+        emit('update:modelValue', modalValue.value)
+      }
     )
 
     watch(
@@ -409,7 +423,7 @@ export default {
             </div>
           </div>
         </div>
-        <div class="col-3" data-testid="row-tax-select">
+        <div v-if="taxType !== 'no_tax'" class="col-3" data-testid="row-tax-select">
           <n-auto-complete-v2
             v-model="modalValue.tax_scheme_id"
             label="Tax"
