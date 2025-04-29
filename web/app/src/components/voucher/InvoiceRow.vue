@@ -135,12 +135,17 @@ export default {
       },
       { deep: true }
     )
+    const oldTaxSchemeId = ref(null)
 
     watch(
       () => props.taxType,
       (newTaxType) => {
         if (newTaxType === 'no_tax') {
+          oldTaxSchemeId.value = modalValue.value.tax_scheme_id
           modalValue.value.tax_scheme_id = null
+        } else if (oldTaxSchemeId.value) {
+          modalValue.value.tax_scheme_id = oldTaxSchemeId.value
+          oldTaxSchemeId.value = null
         }
       },
       { deep: true }
