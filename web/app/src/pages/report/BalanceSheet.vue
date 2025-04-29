@@ -4,27 +4,10 @@
       <div class="flex items-center justify-between gap-2">
         <div class="flex gap-x-6 gap-y-2 items-center">
           <div>
-            <DateRangePicker
-              v-model:startDate="fields.start_date"
-              v-model:endDate="fields.end_date"
-              :hide-btns="true"
-              :focusOnMount="true"
-            />
+            <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date" :hide-btns="true" :focusOnMount="true" />
           </div>
-          <q-btn
-            v-if="fields.start_date || fields.end_date"
-            color="red"
-            icon="close"
-            @click="fields = { start_date: null, end_date: null }"
-            class="f-reset-btn"
-          ></q-btn>
-          <q-btn
-            :disable="!fields.start_date && !fields.end_date ? true : false"
-            color="green"
-            label="fetch"
-            @click="updateData"
-            class="f-submit-btn"
-          ></q-btn>
+          <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close" @click="fields = { start_date: null, end_date: null }" class="f-reset-btn"></q-btn>
+          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch" @click="updateData" class="f-submit-btn"></q-btn>
         </div>
 
         <div class="flex gap-6" v-if="!isLoading">
@@ -36,16 +19,10 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_accounts"
-                      label="Hide Accounts?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.hide_accounts" label="Hide Accounts?"></q-checkbox>
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_sums"
-                      label="Hide Sums?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.hide_sums" label="Hide Sums?"></q-checkbox>
                   </div>
                   <!-- <div class="q-pb-sm">
                     <q-checkbox
@@ -54,35 +31,22 @@
                     ></q-checkbox>
                   </div> -->
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_zero_balance"
-                      label="Hide accounts without balance?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.hide_zero_balance" label="Hide accounts without balance?"></q-checkbox>
                   </div>
                 </div>
               </div>
             </q-menu>
           </q-btn>
-          <q-btn
-            color="blue"
-            label="Export Xls"
-            icon-right="download"
-            @click="onDownloadXls"
-            class="export-btn"
-          />
+          <q-btn color="blue" label="Export Xls" icon-right="download" @click="onDownloadXls" class="export-btn" />
         </div>
       </div>
     </div>
-    <div class="flex gap-2">
+    <div class="flex gap-2" v-if="!isLoading && categoryTree && columns.length">
       <q-markup-table id="tableRef" separator="none" class="grow">
         <thead>
           <tr v-if="!isLoading">
             <th class="text-left"></th>
-            <th
-              class="text-left"
-              v-for="column in columns"
-              :key="column.start_date"
-            >
+            <th class="text-left" v-for="column in columns" :key="column.start_date">
               {{ getLocalDate(column.start_date) }} -
               {{ getLocalDate(column.end_date) }}
             </th>
@@ -90,16 +54,7 @@
         </thead>
         <tbody>
           <template v-if="!isLoading">
-            <AccountBalanceTableNode
-              v-for="category in categoryTree"
-              :key="category.id"
-              :item="category"
-              :root="true"
-              :accounts="accounts"
-              :category_accounts="category_accounts"
-              :config="config"
-              :is-balance-sheet="true"
-            ></AccountBalanceTableNode>
+            <AccountBalanceTableNode v-for="category in categoryTree" :key="category.id" :item="category" :root="true" :accounts="accounts" :category_accounts="category_accounts" :config="config" :is-balance-sheet="true"></AccountBalanceTableNode>
           </template>
           <tr>
             <td class="text-weight-medium">
@@ -108,11 +63,7 @@
             <td
               class="text-left text-weight-medium"
               v-for="total in categoryTree
-                ?.filter(
-                  (category) =>
-                    category.system_code === 'LIABILITIES' ||
-                    category.system_code === 'EQUITY'
-                )
+                ?.filter((category) => category.system_code === 'LIABILITIES' || category.system_code === 'EQUITY')
                 .reduce(
                   (acc, category) => {
                     category.total.forEach((total, index) => {
@@ -133,31 +84,16 @@
           </tr>
         </tbody>
       </q-markup-table>
-      <q-btn
-        color="green"
-        icon="add"
-        class="m-none q-pa-sm h-fit"
-        title="Add Column"
-        v-if="!isLoading"
-      >
+      <q-btn color="green" icon="add" class="m-none q-pa-sm h-fit" title="Add Column" v-if="!isLoading">
         <q-menu>
           <div class="menu-wrapper" style="width: min(300px, 90vw)">
             <div style="border-bottom: 1px solid lightgrey">
               <h6 class="q-ma-md text-grey-9">Add Column</h6>
             </div>
             <div class="q-mx-md row q-gutter-md q-mt-xs q-mb-md">
-              <DateRangePicker
-                v-model:startDate="column.start_date"
-                v-model:endDate="column.end_date"
-                :hide-btns="true"
-                id="add-column"
-              />
+              <DateRangePicker v-model:startDate="column.start_date" v-model:endDate="column.end_date" :hide-btns="true" id="add-column" />
               <q-btn color="green" label="Filter" @click="addColumn"></q-btn>
-              <q-btn
-                color="red"
-                icon="close"
-                @click="column = { start_date: null, end_date: null }"
-              ></q-btn>
+              <q-btn color="red" icon="close" @click="column = { start_date: null, end_date: null }"></q-btn>
             </div>
           </div>
         </q-menu>
@@ -223,10 +159,7 @@ const getLocalDate = (date: string | null) => {
   if (!date) {
     return ''
   }
-  return DateConverter.getRepresentation(
-    date,
-    store.isCalendarInAD ? 'ad' : 'bs'
-  )
+  return DateConverter.getRepresentation(date, store.isCalendarInAD ? 'ad' : 'bs')
 }
 
 const categoryEndpoint = `/api/company/${route.params.company}/full-category-tree/`
@@ -240,10 +173,7 @@ useApi(categoryEndpoint, { method: 'GET' })
 
 const categoryTree = ref<CategoryNode[] | null>(null)
 
-const mapAccountsToCategories = (
-  categories: CategoryNode[],
-  accounts: Account[]
-) => {
+const mapAccountsToCategories = (categories: CategoryNode[], accounts: Account[]) => {
   const categoryMap = new Map<number, Account[]>()
 
   // Group accounts by category_id
@@ -260,9 +190,7 @@ const mapAccountsToCategories = (
     categoryMap.get(account.category_id)!.push(account)
   }
 
-  const calculateTotalWithChildren = (
-    node: CategoryNode
-  ): { closing_dr: number; closing_cr: number }[] => {
+  const calculateTotalWithChildren = (node: CategoryNode): { closing_dr: number; closing_cr: number }[] => {
     // Get the totals for the current node's accounts
     const currentNodeTotal = categoryMap.get(node.id)?.reduce(
       (acc, account) => {
@@ -316,11 +244,7 @@ const mapAccountsToCategories = (
   addAccountsToTree(categories)
 }
 
-const updateAccountsAndRecalculateTotals = (
-  categories: CategoryNode[],
-  newAccounts: Account[],
-  currentIndex: number
-) => {
+const updateAccountsAndRecalculateTotals = (categories: CategoryNode[], newAccounts: Account[], currentIndex: number) => {
   const categoryMap = new Map<number, Account[]>()
 
   // Populate categoryMap with existing accounts
@@ -338,15 +262,11 @@ const updateAccountsAndRecalculateTotals = (
 
   // Update or add accounts in the categoryMap
   for (const [categoryId, accounts] of categoryMap.entries()) {
-    const newAccountsForCategory = newAccounts.filter(
-      (newAccount) => newAccount.category_id === categoryId
-    )
+    const newAccountsForCategory = newAccounts.filter((newAccount) => newAccount.category_id === categoryId)
 
     // Update existing accounts
     for (const account of accounts) {
-      const matchingNewAccount = newAccountsForCategory.find(
-        (newAccount) => newAccount.id === account.id
-      )
+      const matchingNewAccount = newAccountsForCategory.find((newAccount) => newAccount.id === account.id)
 
       if (matchingNewAccount) {
         // Append new transaction data for the current index without altering previous totals
@@ -384,9 +304,7 @@ const updateAccountsAndRecalculateTotals = (
   }
 
   // Recursive function to calculate totals for the tree
-  const calculateTotals = (
-    node: CategoryNode
-  ): { closing_dr: number; closing_cr: number }[] => {
+  const calculateTotals = (node: CategoryNode): { closing_dr: number; closing_cr: number }[] => {
     const currentNodeAccounts = categoryMap.get(node.id) || []
 
     // Aggregate totals for the current node's accounts
@@ -417,12 +335,8 @@ const updateAccountsAndRecalculateTotals = (
     // Combine current node totals with children totals
     const maxLength = Math.max(currentNodeTotal.length, childrenTotal.length)
     const combinedTotal = Array.from({ length: maxLength }, (_, index) => ({
-      closing_dr:
-        (currentNodeTotal[index]?.closing_dr || 0) +
-        (childrenTotal[index]?.closing_dr || 0),
-      closing_cr:
-        (currentNodeTotal[index]?.closing_cr || 0) +
-        (childrenTotal[index]?.closing_cr || 0),
+      closing_dr: (currentNodeTotal[index]?.closing_dr || 0) + (childrenTotal[index]?.closing_dr || 0),
+      closing_cr: (currentNodeTotal[index]?.closing_cr || 0) + (childrenTotal[index]?.closing_cr || 0),
     }))
     return combinedTotal
   }
@@ -472,13 +386,7 @@ const addColumn = async () => {
     return
   }
   // Check if the column already exists
-  if (
-    columns.value.some(
-      (col) =>
-        col.start_date === column.value.start_date &&
-        col.end_date === column.value.end_date
-    )
-  ) {
+  if (columns.value.some((col) => col.start_date === column.value.start_date && col.end_date === column.value.end_date)) {
     $q.notify({
       message: 'Column already exists',
       color: 'red',
@@ -493,11 +401,7 @@ const addColumn = async () => {
 
   try {
     const data = await useApi(endpoint) // Fetch data
-    updateAccountsAndRecalculateTotals(
-      categoryTree.value!,
-      data,
-      columns.value.length
-    )
+    updateAccountsAndRecalculateTotals(categoryTree.value!, data, columns.value.length)
 
     // Add new column
     columns.value.push({
@@ -537,36 +441,15 @@ const onDownloadXls = async () => {
       const hexCode = getComputedStyle(td).color
       const hexArray = hexCode.slice(4, hexCode.length - 1).split(',')
       const numsArray = hexArray.map((e) => Number(e))
-      const rgbValue = (
-        (1 << 24) |
-        (numsArray[0] << 16) |
-        (numsArray[1] << 8) |
-        numsArray[2]
-      )
-        .toString(16)
-        .slice(1)
+      const rgbValue = ((1 << 24) | (numsArray[0] << 16) | (numsArray[1] << 8) | numsArray[2]).toString(16).slice(1)
       worksheet[i].s.font.color = { rgb: `${rgbValue}` }
     }
     if (cell.r > -1) {
       const td = elt.rows[cell.r].cells[cell.c]
-      if (td instanceof HTMLElement)
-        worksheet[i].s.font.bold =
-          Number(getComputedStyle(td).fontWeight) >= 500
+      if (td instanceof HTMLElement) worksheet[i].s.font.bold = Number(getComputedStyle(td).fontWeight) >= 500
     }
   }
-  worksheet['!cols'] = [
-    { width: 50 },
-    { width: 16 },
-    { width: 16 },
-    { width: 16 },
-    { width: 16 },
-    { width: 16 },
-    { width: 16 },
-    { width: 16 },
-    { width: 16 },
-    { width: 16 },
-    { width: 16 },
-  ]
+  worksheet['!cols'] = [{ width: 50 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }]
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'sheet_name_here')
   // const excelBuffer = XLSX.write(workbook, {

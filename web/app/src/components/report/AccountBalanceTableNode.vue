@@ -138,12 +138,12 @@ const calculateBalance = (obj: Transaction) => {
   }
 }
 const hasNoBalance = (account: Account) => {
-  return account.transaction_data.every((obj) => obj.closing_cr - obj.closing_dr === 0)
+  return account.transaction_data?.every((obj) => obj.closing_cr - obj.closing_dr === 0)
 }
 // // check zero trans status
 const hasZeroBalance = () => {
   if (props.item?.children?.length) {
-    return props.item.total.every((obj: Transaction) => obj.closing_cr - obj.closing_dr === 0)
+    return props.item.total?.every((obj: Transaction) => obj.closing_cr - obj.closing_dr === 0)
   } else {
     return props.item.accounts?.every((account: Account) => hasNoBalance(account))
   }
