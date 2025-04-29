@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db import connection
-from django.db.models import Case, F, Max, OuterRef, Q, Subquery, Sum, When
+from django.db.models import Case, F, Max, OuterRef, Q, Subquery, Sum, When, Count
 from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
