@@ -2134,6 +2134,50 @@ class Import(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class LandedCostRowType(models.TextChoices):
+    DUTY = "Duty"
+    FREIGHT = "Freight"
+    SHIPPING = "Shipping"
+    BROKERAGE = "Brokerage"
+    INSURANCE = "Insurance"
+    STORAGE = "Storage"
+    LABOUR = "Labour"
+    REGULATORY_FEE = "Regulatory Fee"
+    OTHER = "Other"
+    PACKAGING = "Packaging"
+    LOADING = "Loading"
+    UNLOADING = "Unloading"
+
+
+class LandedCostRow(models.Model):
+    type = models.CharField(choices=LandedCostRowType.choices, max_length=25)
+    description = models.TextField(blank=True, null=True)
+    amount = models.DecimalField(max_digits=24, decimal_places=6)
+    invoice = models.ForeignKey(
+        PurchaseVoucher,
+        on_delete=models.CASCADE,
+        related_name="landed_cost_rows",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+# class LandingCostDistribution(models.Model):
+#     landing_cost_row = models.ForeignKey(
+#         LandingCostRow,
+#         on_delete=models.CASCADE,
+#         related_name="distributions",
+#     )
+#     invoice_row = models.ForeignKey(
+#         PurchaseVoucherRow,
+#         on_delete=models.CASCADE,
+#         related_name="landing_cost_distributions",
+#     )
+#     amount = models.DecimalField(max_digits=24, decimal_places=6)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+
+
 auditlog.register(Challan)
 auditlog.register(ChallanRow)
 auditlog.register(SalesVoucher)

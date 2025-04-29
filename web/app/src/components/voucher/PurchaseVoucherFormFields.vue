@@ -1,10 +1,13 @@
 <script setup>
+import Decimal from 'decimal.js'
+import FormattedNumber from 'src/components/FormattedNumber.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountForm.vue'
 import { useLoginStore } from 'src/stores/login-info'
 import { useRoute } from 'vue-router'
+import InvoiceTable from './InvoiceTable.vue'
 
 const props = defineProps({
   formDefaults: {
@@ -31,7 +34,253 @@ const staticOptions = {
   discount_types,
   modes,
 }
+
+// Currency conversion matrix for USD, INR, and NPR
+const EXCHANGE_RATES = {
+  USD: {
+    INR: '83.12',
+    NPR: '135.76',
+  },
+  INR: {
+    USD: '0.012',
+    NPR: '1.60',
+  },
+  NPR: {
+    USD: '0.0075',
+    INR: '0.62',
+  },
+}
+
+// Available currencies
+const AVAILABLE_CURRENCIES = ['USD', 'INR', 'NPR']
+
+// Utility function to convert currency
+const convertCurrency = (amount, fromCurrency, toCurrency) => {
+  if (!amount) return new Decimal(0)
+
+  amount = new Decimal(amount)
+
+  if (fromCurrency === toCurrency) return amount
+
+  // Get exchange rate
+  const rate = new Decimal(EXCHANGE_RATES[fromCurrency]?.[toCurrency] || '0')
+  if (!rate) {
+    console.warn(`Exchange rate not found for ${fromCurrency} to ${toCurrency}`)
+    return amount
+  }
+
+  return amount.mul(rate)
+}
+
 const fields = defineModel('fields')
+
+const showLandedCosts = ref(false)
+
+// Initialize landed costs if not present
+if (!fields.value.landed_cost_rows) {
+  fields.value.landed_cost_rows = []
+}
+
+const landedCostTypes = [
+  { label: 'Duty', value: 'Duty' },
+  { label: 'Freight', value: 'Freight' },
+  { label: 'Shipping', value: 'Shipping' },
+  { label: 'Brokerage', value: 'Brokerage' },
+  { label: 'Insurance', value: 'Insurance' },
+  { label: 'Storage', value: 'Storage' },
+  { label: 'Labour', value: 'Labour' },
+  { label: 'Packaging', value: 'Packaging' },
+  { label: 'Loading', value: 'Loading' },
+  { label: 'Unloading', value: 'Unloading' },
+  { label: 'Regulatory Fee', value: 'Regulatory Fee' },
+  { label: 'Other', value: 'Other' },
+]
+
+// Presets for landed cost types
+const LANDED_COST_PRESETS = {
+  'Duty': {
+    is_percentage: true,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Freight': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Shipping': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Brokerage': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Insurance': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Storage': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Labour': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Regulatory Fee': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Other': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+}
+
+const landedCostColumns = [
+  {
+    name: 'type',
+    label: 'Cost Type',
+    field: 'type',
+    align: 'left',
+    sortable: true,
+    style: 'width: 150px',
+  },
+  {
+    name: 'amount',
+    label: 'Amount',
+    field: 'amount',
+    align: 'right',
+    sortable: true,
+    style: 'width: 200px',
+  },
+  {
+    name: 'is_percentage',
+    label: 'Amount Type',
+    field: 'is_percentage',
+    align: 'center',
+    style: 'width: 120px',
+  },
+  {
+    name: 'currency',
+    label: 'Currency',
+    field: 'currency',
+    align: 'center',
+    style: 'width: 100px',
+  },
+  {
+    name: 'description',
+    label: 'Description',
+    field: 'description',
+    align: 'left',
+    sortable: true,
+    style: 'width: 200px',
+  },
+  {
+    name: 'actions',
+    label: 'Actions',
+    field: 'actions',
+    align: 'center',
+    style: 'width: 80px',
+  },
+]
+
+const addLandedCostRow = () => {
+  if (!fields.value.landed_cost_rows) {
+    fields.value.landed_cost_rows = []
+  }
+  fields.value.landed_cost_rows.push({
+    type: '',
+    value: 0,
+    amount: 0,
+    description: '',
+    is_percentage: false,
+    currency: loginStore.companyInfo.currency_code || 'USD',
+  })
+}
+
+// Handle type selection to apply presets
+const handleTypeChange = (row) => {
+  if (row.type && LANDED_COST_PRESETS[row.type]) {
+    const preset = LANDED_COST_PRESETS[row.type]
+    row.is_percentage = preset.is_percentage
+    row.currency = preset.default_currency
+  }
+}
+
+// Function to convert percentage amounts to fixed amounts based on invoice total
+const convertPercentagesToFixedAmounts = () => {
+  if (!fields.value.landed_cost_rows) return
+
+  // Calculate invoice total (sum of all row amounts)
+  const invoiceTotal = fields.value.rows?.reduce((sum, row) => sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+
+  const targetCurrency = loginStore.companyInfo.currency_code || 'USD'
+
+  fields.value.landed_cost_rows.forEach((row) => {
+    if (row.is_percentage && row.value) {
+      // For percentage-based costs, just calculate the amount without currency conversion
+      row.amount = invoiceTotal.mul(row.value).div('100')
+    } else {
+      // For fixed amounts, convert to target currency if needed
+      row.amount = convertCurrency(row.value, row.currency, targetCurrency)
+    }
+  })
+}
+
+const averageRate = computed(() => {
+  if (!fields.value.rows || !fields.value.landed_cost_rows) return 0
+  const totalAmount = fields.value.rows.reduce((sum, row) => sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
+  const totalLandedCosts = fields.value.landed_cost_rows.reduce((sum, row) => sum.add(row.amount || '0'), new Decimal('0'))
+  const totalQuantity = fields.value.rows.reduce((sum, row) => sum.add(row.quantity || '0'), new Decimal('0'))
+  return totalAmount.add(totalLandedCosts).div(totalQuantity).toNumber()
+})
+
+// Watch for initial data to copy amount to value
+watch(
+  () => fields.value.landed_cost_rows,
+  (newRows) => {
+    if (newRows?.length) {
+      newRows.forEach((row) => {
+        if (row.amount && !row.value) {
+          row.value = row.amount
+          row.is_percentage = false
+          row.currency = loginStore.companyInfo.currency_code || 'USD'
+        }
+      })
+      showLandedCosts.value = true
+    }
+  },
+  { immediate: true },
+)
+
+// Watch for changes in rows to update fixed amounts
+watch(
+  () => fields.value.rows,
+  () => {
+    // Only update if there are landed cost rows with percentage values
+    if (fields.value.landed_cost_rows?.some(row => row.is_percentage && row.value)) {
+      convertPercentagesToFixedAmounts()
+    }
+  },
+  { deep: true },
+)
+
+// Watch for changes in landed cost rows to update fixed amounts
+watch(
+  () => fields.value.landed_cost_rows?.map(row => ({
+    is_percentage: row.is_percentage,
+    value: row.value,
+    currency: row.currency,
+  })),
+  () => {
+    convertPercentagesToFixedAmounts()
+  },
+  { deep: true },
+)
+
+const removeLandedCostRow = (index) => {
+  fields.value.landed_cost_rows.splice(index, 1)
+}
 
 const errors = defineModel('errors')
 
@@ -170,7 +419,7 @@ watch(
   () => {
     if (!props.isEdit) {
       if (props.formDefaults.fields?.mode) {
-        if (isNaN(props.formDefaults.fields?.mode)) {
+        if (Number.isNaN(props.formDefaults.fields?.mode)) {
           fields.value.mode = props.formDefaults.fields.mode
         } else {
           fields.value.mode = Number(props.formDefaults.fields.mode)
@@ -180,7 +429,7 @@ watch(
       }
     }
 
-    if (props.formDefaults.fields?.hasOwnProperty('trade_discount')) {
+    if (Object.hasOwn(props.formDefaults.fields, 'trade_discount')) {
       fields.value.trade_discount = props.formDefaults.fields?.trade_discount
     }
   },
@@ -350,7 +599,7 @@ onMounted(() => {
       <!-- {{ fields.date }} -->
     </q-card-section>
   </q-card>
-  <invoice-table
+  <InvoiceTable
     v-if="formDefaults.collections"
     v-model="fields.rows"
     used-in="purchase"
@@ -367,6 +616,128 @@ onMounted(() => {
     :unit-options="formDefaults.collections ? formDefaults.collections.units : null"
     @delete-row-err="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)"
   />
+  <q-card class="q-mx-lg q-mt-md">
+    <q-card-section>
+      <div class="row items-center q-mb-md">
+        <q-checkbox v-model="showLandedCosts" label="Landed Costs" />
+      </div>
+      <div v-if="showLandedCosts">
+        <div class="row q-col-gutter-md q-mb-md">
+          <div class="col-12">
+            <q-btn
+              color="primary"
+              icon="add"
+              label="Add Cost"
+              @click="addLandedCostRow"
+            />
+          </div>
+        </div>
+        <q-table
+          v-if="fields.landed_cost_rows?.length"
+          bordered
+          flat
+          hide-pagination
+          row-key="type"
+          :columns="landedCostColumns"
+          :rows="fields.landed_cost_rows"
+        >
+          <template #body-cell-actions="cellProps">
+            <q-td :props="cellProps">
+              <q-btn
+                flat
+                round
+                color="negative"
+                icon="delete"
+                @click="removeLandedCostRow(cellProps.rowIndex)"
+              />
+            </q-td>
+          </template>
+          <template #body-cell-type="cellProps">
+            <q-td :props="cellProps">
+              <q-select
+                v-model="cellProps.row.type"
+                dense
+                emit-value
+                map-options
+                options-dense
+                :options="landedCostTypes"
+                @update:model-value="handleTypeChange(cellProps.row)"
+              />
+            </q-td>
+          </template>
+          <template #body-cell-is_percentage="cellProps">
+            <q-td :props="cellProps">
+              <q-toggle
+                v-model="cellProps.row.is_percentage"
+                class="full-width"
+                :label="cellProps.row.is_percentage ? 'Percentage' : 'Fixed'"
+              />
+            </q-td>
+          </template>
+          <template #body-cell-amount="cellProps">
+            <q-td :props="cellProps">
+              <div class="row items-center no-wrap">
+                <q-input
+                  v-model="cellProps.row.value"
+                  dense
+                  class="col"
+                  type="number"
+                  :error="!!errors?.landed_cost_rows?.[cellProps.rowIndex]?.value"
+                  :error-message="errors?.landed_cost_rows?.[cellProps.rowIndex]?.value"
+                  :value="cellProps.row.amount"
+                />
+                <span class="q-ml-sm text-no-wrap">{{ cellProps.row.is_percentage ? '%' : cellProps.row.currency }}</span>
+                <div v-if="cellProps.row.amount" class="q-ml-sm text-grey-6 text-no-wrap">
+                  (<FormattedNumber
+                    type="currency"
+                    :currency="loginStore.companyInfo.currency_code"
+                    :value="cellProps.row.amount"
+                  />)
+                </div>
+              </div>
+            </q-td>
+          </template>
+          <template #body-cell-currency="cellProps">
+            <q-td :props="cellProps">
+              <q-select
+                v-model="cellProps.row.currency"
+                dense
+                emit-value
+                map-options
+                options-dense
+                :disable="cellProps.row.is_percentage"
+                :options="AVAILABLE_CURRENCIES"
+              />
+            </q-td>
+          </template>
+          <template #body-cell-description="cellProps">
+            <q-td :props="cellProps">
+              <q-input
+                v-model="cellProps.row.description"
+                dense
+                :error="!!errors?.landed_cost_rows?.[cellProps.rowIndex]?.description"
+                :error-message="errors?.landed_cost_rows?.[cellProps.rowIndex]?.description"
+              />
+            </q-td>
+          </template>
+          <template #bottom-row>
+            <q-tr>
+              <q-td class="text-right" colspan="5">
+                Average rate per item:
+              </q-td>
+              <q-td class="text-right text-bold" colspan="1">
+                <FormattedNumber
+                  type="currency"
+                  :currency="loginStore.companyInfo.currency_code"
+                  :value="averageRate"
+                />
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </div>
+    </q-card-section>
+  </q-card>
   <div class="row q-px-lg">
     <div class="col-12 col-md-6 row">
       <!-- <q-input

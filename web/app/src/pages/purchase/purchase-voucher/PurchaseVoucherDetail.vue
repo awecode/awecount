@@ -1,6 +1,8 @@
 <script lang="ts">
 import type { Ref } from 'vue'
+import Decimal from 'decimal.js'
 import DateConverter from 'src/components/date/VikramSamvat.js'
+import FormattedNumber from 'src/components/FormattedNumber.vue'
 import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { useLoginStore } from 'src/stores/login-info'
@@ -18,6 +20,7 @@ interface Fields {
   discount: null | number
   discount_type: null | 'Amount' | 'Percent'
   purchase_order_numbers: Array<number>
+  landed_cost_rows: Array<{ type: string, amount: number, is_percentage: boolean, currency: string, description: string }>
 }
 export default {
   setup() {
@@ -111,6 +114,15 @@ export default {
         }
       }
     }
+
+    const averageRate = computed(() => {
+      if (!fields.value.rows || !fields.value.landed_cost_rows) return 0
+      const totalAmount = fields.value.rows.reduce((sum, row) => sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
+      const totalLandedCosts = fields.value.landed_cost_rows.reduce((sum, row) => sum.add(row.amount || '0'), new Decimal('0'))
+      const totalQuantity = fields.value.rows.reduce((sum, row) => sum.add(row.quantity || '0'), new Decimal('0'))
+      return totalAmount.add(totalLandedCosts).div(totalQuantity).toNumber()
+    })
+
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -128,6 +140,7 @@ export default {
       checkPermissions,
       isLoading,
       errors,
+      averageRate,
     }
   },
   created() {
@@ -218,6 +231,47 @@ export default {
       <q-card id="to_print" class="q-mx-lg">
         <q-card-section>
           <ViewerTable :fields="fields" />
+        </q-card-section>
+      </q-card>
+
+      <q-card v-if="fields?.landed_cost_rows?.length" class="q-mx-lg q-my-md">
+        <q-card-section>
+          <div class="text-subtitle2 text-grey-9 q-mb-md">
+            Landed Costs:
+          </div>
+          <q-table
+            bordered
+            flat
+            hide-pagination
+            :columns="[
+              { name: 'type', label: 'Cost Type', field: 'type', align: 'left', style: 'width: 20%' },
+              { name: 'amount', label: 'Amount', field: 'amount', align: 'right', style: 'width: 25%' },
+              { name: 'description', label: 'Description', field: 'description', align: 'left', style: 'width: 50%' },
+            ]"
+            :rows="fields.landed_cost_rows"
+          >
+            <template #body-cell-amount="props">
+              <q-td :props="props">
+                <FormattedNumber
+                  type="currency"
+                  :value="props.row.amount"
+                />
+              </q-td>
+            </template>
+            <template #bottom-row>
+              <q-tr>
+                <q-td colspan="3">
+                  Average rate per item:
+
+                  <FormattedNumber
+                    class="text-bold"
+                    type="currency"
+                    :value="averageRate"
+                  />
+                </q-td>
+              </q-tr>
+            </template>
+          </q-table>
         </q-card-section>
       </q-card>
       <q-card v-if="fields?.remarks" class="q-mx-lg q-my-md">
