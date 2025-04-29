@@ -2,7 +2,6 @@ import uuid
 
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
-from rest_framework.exceptions import APIException
 
 from apps.company.models import Company
 from awecount.libs.fields import ChoiceArrayField
@@ -104,20 +103,6 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_superuser
-
-    def has_module_perms(self, app_label):
-        return self.is_superuser
-
-    def has_perm(self, perm, obj=None):
-        return self.is_superuser
-
-    def check_perm(self, perm):
-        if perm not in self.role_modules:
-            raise APIException(
-                {
-                    "detail": "User does not have enough permissions to perform the action."
-                }
-            )
 
 
 class Profile(TimeAuditModel):
