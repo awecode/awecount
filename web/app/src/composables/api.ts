@@ -39,7 +39,7 @@ export const useAPI = <T = any, R extends ResponseType = 'json'>(request: FetchR
   const router = useRouter()
   const { onRequest, onResponseError, handleErrors = true, protected: _protected = config.api.protected, trailingSlash = config.api.trailingSlash, ...options } = opts || {}
 
-  const { token } = useAuthStore()
+  const { token, logout } = useAuthStore()
 
   let controller: AbortController | null = null
 
@@ -75,7 +75,7 @@ export const useAPI = <T = any, R extends ResponseType = 'json'>(request: FetchR
 
         if (statusCodes.includes(ctx.response.status)) {
           if (strategy === 'redirect' && redirect) {
-            await router.push(redirect)
+            await logout({ redirectTo: redirect as string })
             return
           }
 

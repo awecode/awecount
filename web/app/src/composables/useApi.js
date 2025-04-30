@@ -22,10 +22,10 @@ const useApi = async (endpoint, body, omitToken, permissionRedirect = false) => 
     api(endpoint, options)
       .then((data) => resolve(data))
       .catch((error) => {
-        if (error.status === 401 && omitToken !== true) {
-          loginStore.reset()
-          router.push('/login')
-        }
+        // if (error.status === 401 && omitToken !== true) {
+        //   loginStore.reset()
+        //   router.push('/login')
+        // }
         if (permissionRedirect && error.status === 403 && error.data.detail === 'You don\'t have the permission to perform this action!') {
           router.push('/no-permission')
         }
