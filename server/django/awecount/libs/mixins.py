@@ -43,8 +43,10 @@ class InputChoiceMixin(object):
 
 class ShortNameChoiceMixin(object):
     def get_serializer_context(self):
+        context = super().get_serializer_context()
         extra_fields = self.extra_fields if hasattr(self, "extra_fields") else None
-        return {"extra_fields": extra_fields}
+        context["extra_fields"] = extra_fields
+        return context
 
     def get_serializer_class(self):
         if self.action in ("choices",):
