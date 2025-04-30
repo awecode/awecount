@@ -2023,6 +2023,8 @@ class InventorySetting(models.Model):
 
     enable_fifo = models.BooleanField(default=False)
     enable_negative_stock_check = models.BooleanField(default=False)
+    mandate_hs_code = models.BooleanField(default=False)
+    mandate_category = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return "Inventory Setting - {}".format(self.company.name)
