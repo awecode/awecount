@@ -370,3 +370,6 @@ EMAIL_USE_SSL=$(prompt_for_env "EMAIL_USE_SSL" "Email use SSL?" "False" "yesno" 
 EMAIL_HOST_USER=$(prompt_for_env "EMAIL_HOST_USER" "Email host user? (leave blank if not using email)" "" "text" "" "" "" "" "" "Warning: SMTP email sending will be disabled.")
 EMAIL_HOST_PASSWORD=$(prompt_for_env "EMAIL_HOST_PASSWORD" "Email host password? (leave blank if not using email)" "" "text" "" "" "" "" "" "Warning: SMTP email sending will be disabled.")
 SENTRY_DSN=$(prompt_for_env "SENTRY_DSN" "Sentry DSN? (leave blank if not using Sentry)" "" "text")
+
+# Execute docker compose up --build -d
+docker compose up --build -d
