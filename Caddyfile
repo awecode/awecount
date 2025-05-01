@@ -1,9 +1,11 @@
-:80 {
-  encode zstd gzip
-  root * /srv
-  file_server
+(common_proxy_config) {
+    header {
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer-when-downgrade"
+        Permissions-Policy "interest-cohort=()"
+    }
 
-  handle /api/* {
+      handle /api/* {
     reverse_proxy backend:8000
   }
 
@@ -11,13 +13,15 @@
     reverse_proxy backend:8000
   }
 
+}
+
+:80 {
+  import common_proxy_config
+  encode zstd gzip
+  root * /srv
+  file_server
+
   handle {
     try_files {path} /index.html
-  }
-
-  header {
-    X-Content-Type-Options "nosniff"
-    Referrer-Policy "no-referrer-when-downgrade"
-    Permissions-Policy "interest-cohort=()"
   }
 }
