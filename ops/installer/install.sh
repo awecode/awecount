@@ -309,6 +309,8 @@ else
   echo "awecount directory already exists. Skipping clone."
 fi
 
+cd awecount
+
 # Copy the .env.example.docker-compose file to .env
 # If the file already exists, do not copy
 if [ ! -f ".env" ]; then
