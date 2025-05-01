@@ -135,14 +135,11 @@ services:
   proxy:
     image: caddy:2-alpine
     ports:
-      - target: 80
-        published: ${PROXY_PORT:-80}
-        protocol: tcp
-        mode: host
+      - "80:80"
+      - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
-      - caddy_config:/config
     environment:
       <<: *proxy-env
     depends_on:
@@ -153,4 +150,3 @@ volumes:
   pgdata:
   redisdata:
   caddy_data:
-  caddy_config:
