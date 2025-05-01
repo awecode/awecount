@@ -69,7 +69,7 @@ services:
       <<: *proxy-env
     depends_on:
       - frontend
-      # - backend
+      - backend
 
   frontend:
     build:
@@ -85,79 +85,79 @@ services:
       ALLOW_SIGNUP: ${ALLOW_SIGNUP}
     volumes:
       - frontend_dist:/srv
-    # depends_on:
-    #   - backend
+    depends_on:
+      - backend
 
-  # backend:
-  #   build:
-  #     context: ./server/django
-  #     dockerfile: Dockerfile
-  #   command: ./bin/docker-entrypoint-server.sh
-  #   deploy:
-  #     replicas: 1
-  #     restart_policy:
-  #       condition: on-failure
-  #   environment:
-  #     <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
-  #     USE_WHITENOISE: "True"
+  backend:
+    build:
+      context: ./server/django
+      dockerfile: Dockerfile
+    command: ./bin/docker-entrypoint-server.sh
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
+      USE_WHITENOISE: "True"
 
-  #   depends_on:
-  #     - awecount-db
-  #     - awecount-redis
+    depends_on:
+      - awecount-db
+      - awecount-redis
 
-  # worker:
-  #   build:
-  #     context: ./server/django
-  #     dockerfile: Dockerfile
-  #   command: ./bin/docker-entrypoint-worker.sh
-  #   deploy:
-  #     replicas: 1
-  #     restart_policy:
-  #       condition: on-failure
-  #   environment:
-  #     <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
-  #   depends_on:
-  #     - backend
-  #     - awecount-db
-  #     - awecount-redis
+  worker:
+    build:
+      context: ./server/django
+      dockerfile: Dockerfile
+    command: ./bin/docker-entrypoint-worker.sh
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
+    depends_on:
+      - backend
+      - awecount-db
+      - awecount-redis
 
-  # migrator:
-  #   build:
-  #     context: ./server/django
-  #     dockerfile: Dockerfile
-  #   command: ./bin/docker-entrypoint-migrator.sh
-  #   deploy:
-  #     replicas: 1
-  #     restart_policy:
-  #       condition: on-failure
-  #   environment:
-  #     <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
-  #   depends_on:
-  #     - awecount-db
-  #     - awecount-redis
+  migrator:
+    build:
+      context: ./server/django
+      dockerfile: Dockerfile
+    command: ./bin/docker-entrypoint-migrator.sh
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
+    depends_on:
+      - awecount-db
+      - awecount-redis
 
-  # awecount-db:
-  #   image: postgres:16-alpine
-  #   deploy:
-  #     replicas: 1
-  #     restart_policy:
-  #       condition: on-failure
-  #   command: postgres -c 'max_connections=1000'
-  #   environment:
-  #     <<: *db-env
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
+  awecount-db:
+    image: postgres:16-alpine
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    command: postgres -c 'max_connections=1000'
+    environment:
+      <<: *db-env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
-  # awecount-redis:
-  #   image: valkey/valkey:7.2-alpine
-  #   deploy:
-  #     replicas: 1
-  #     restart_policy:
-  #       condition: on-failure
-  #   environment:
-  #     <<: *redis-env
-  #   volumes:
-  #     - redisdata:/data
+  awecount-redis:
+    image: valkey/valkey:7.2-alpine
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      <<: *redis-env
+    volumes:
+      - redisdata:/data
 
 volumes:
   pgdata:
