@@ -1,27 +1,30 @@
+{
+	auto_https off
+}
+
 (common_proxy_config) {
-    header {
-        X-Content-Type-Options "nosniff"
-        Referrer-Policy "no-referrer-when-downgrade"
-        Permissions-Policy "interest-cohort=()"
-    }
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer-when-downgrade"
+		Permissions-Policy "interest-cohort=()"
+	}
 
-      handle /api/* {
-    reverse_proxy backend:8000
-  }
+	handle /api/* {
+		reverse_proxy backend:8000
+	}
 
-  handle /static/* {
-    reverse_proxy backend:8000
-  }
-
+	handle /static/* {
+		reverse_proxy backend:8000
+	}
 }
 
 :80 {
-  import common_proxy_config
-  encode zstd gzip
-  root * /srv
-  file_server
+	import common_proxy_config
+	encode zstd gzip
+	root * /srv
+	file_server
 
-  handle {
-    try_files {path} /index.html
-  }
+	handle {
+		try_files {path} /index.html
+	}
 }
