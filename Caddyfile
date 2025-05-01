@@ -1,15 +1,37 @@
-{
-    # Global options
-    auto_https off
-    debug
-}
+: {
+    header {
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer-when-downgrade"
+        Permissions-Policy "interest-cohort=()"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Forwarded-Proto {http.request.scheme}
+        X-Forwarded-Host {http.request.host}
+        X-Forwarded-For {http.request.remote}
+        X-Real-IP {http.request.remote}
+    }
 
-# Frontend service
-frontend:80 {
-    reverse_proxy frontend:3000
-}
+    handle / {
+        reverse_proxy frontend:3000 {
+            header_up Host {http.request.host}
+            header_up X-Real-IP {http.request.remote}
+            header_up X-Forwarded-For {http.request.remote}
+            header_up X-Forwarded-Proto {http.request.scheme}
+        }
+    }
 
-# Backend service
-backend:80 {
-    reverse_proxy backend:8000
-} 
+    handle /api/* {
+        reverse_proxy backend:8000
+    }
+
+    handle /awedmin/* {
+        reverse_proxy backend:8000
+    }
+
+    handle /_allauth/* {
+        reverse_proxy backend:8000
+    }
+
+    handle /static/* {
+        reverse_proxy backend:8000
+    }
+}
