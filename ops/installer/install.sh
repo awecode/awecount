@@ -319,13 +319,48 @@ fi
 
 
 APP_URL=$(prompt_for_env "APP_URL" "Enter the application URL" "http://localhost:8000")
+
+# Strip protocol, trailing slash, www. if present
+SITE_ADDRESS=$(echo "$APP_URL" | sed -e 's|^https\?://||' -e 's|/$||' -e 's|^www\.||')
+# Strip port if present
+DOMAIN=$(echo "$SITE_ADDRESS" | sed -e 's|:[0-9]*$||')
+
+# Extract port using regex only if present
+if [[ "$SITE_ADDRESS" =~ :([0-9]+)$ ]]; then
+  PORT="${BASH_REMATCH[1]}"
+else
+  # Default based on protocol
+  if [[ "$APP_URL" == https:* ]]; then
+    PORT=443
+  else
+    PORT=80
+  fi
+fi
+
+# Write or update PROXY_PORT to the .env file
+if grep -q "^PROXY_PORT=" .env; then
+  sed -i "s|^PROXY_PORT=.*|PROXY_PORT=${PORT}|" .env
+else
+  echo "PROXY_PORT=${PORT}" >> .env
+fi
+
+
+# if DOMAIN is localhost, set the SITE_ADDRESS to just the :port to support both localhost, 127.0.0.1, and other ip addresses and domain names
+if [ "$DOMAIN" == "localhost" ]; then
+  SITE_ADDRESS=":${PORT}"
+fi
+
+# Write or update SITE_ADDRESS to the .env file
+if grep -q "^SITE_ADDRESS=" .env; then
+  sed -i "s|^SITE_ADDRESS=.*|SITE_ADDRESS=${SITE_ADDRESS}|" .env
+else
+  echo "SITE_ADDRESS=${SITE_ADDRESS}" >> .env
+fi
+
 SECRET_KEY=$(prompt_for_env "SECRET_KEY" "App secret key?" "" "secret" "" 50)
 DEBUG=$(prompt_for_env "DEBUG" "Debug mode?" "True" "yesno" "" "" "y" "True" "False")
 ALLOW_SIGNUP=$(prompt_for_env "ALLOW_SIGNUP" "Allow signup?" "True" "yesno" "" "" "y" "True" "False")
 POSTGRES_PASSWORD=$(prompt_for_env "POSTGRES_PASSWORD" "Postgres password?" "" "secret" "" 20)
-
-# Strip protocol, trailing slash, www. if present, and port if present
-DOMAIN=$(echo "$APP_URL" | sed -e 's|^https\?://||' -e 's|/$||' -e 's|^www\.||' -e 's|:[0-9]*$||')
 SERVER_EMAIL=$(prompt_for_env "SERVER_EMAIL" "Server email?" "support@$DOMAIN" "text")
 DEFAULT_FROM_EMAIL=$(prompt_for_env "DEFAULT_FROM_EMAIL" "Default from email?" "$SERVER_EMAIL" "text")
 EMAIL_HOST=$(prompt_for_env "EMAIL_HOST" "Email host?" "email-smtp.us-east-1.amazonaws.com" "text")
