@@ -13,6 +13,10 @@
 		reverse_proxy backend:8000
 	}
 
+	handle /awedmin/* {
+		reverse_proxy backend:8000
+	}
+
 	handle /static/* {
 		reverse_proxy backend:8000
 	}
