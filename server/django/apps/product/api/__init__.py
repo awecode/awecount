@@ -2,7 +2,6 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Literal
 
-
 from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import Q, Sum
@@ -17,7 +16,6 @@ from rest_framework.mixins import DestroyModelMixin
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 from xlsxwriter import Workbook
-
 
 from apps.ledger.models import Account
 from apps.ledger.models import Category as AccountCategory
@@ -87,9 +85,7 @@ from ..serializers import (
     TransactionEntrySerializer,
     UnitSerializer,
 )
-
 from ..serializers.stock_movement import StockMovementSerializer
-
 
 acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
 
@@ -813,7 +809,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     def stock_movement(self, request, pk=None, *args, **kwargs):
         start_date = request.query_params.get("start_date")
         if not start_date:
-            start_date = request.company.current_fiscal_year.start_date.strftime("%Y-%m-%d")
+            start_date = request.company.current_fiscal_year.start_date.strftime(
+                "%Y-%m-%d"
+            )
 
         end_date = request.query_params.get("end_date")
         if not end_date:
@@ -1283,7 +1281,6 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             return self.export_stock_movement_report(serializer)
 
         return self.get_paginated_response(serializer.data)
-
 
 
 class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
