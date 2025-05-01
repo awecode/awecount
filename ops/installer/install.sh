@@ -314,8 +314,8 @@ DEBUG=$(prompt_for_env "DEBUG" "Debug mode?" "True" "yesno" "" "" "y" "True" "Fa
 ALLOW_SIGNUP=$(prompt_for_env "ALLOW_SIGNUP" "Allow signup?" "True" "yesno" "" "" "y" "True" "False")
 POSTGRES_PASSWORD=$(prompt_for_env "POSTGRES_PASSWORD" "Postgres password?" "" "secret" "" 20)
 
-# Strip protocol and trailing slash from APP_URL
-DOMAIN=$(echo "$APP_URL" | sed -e 's|^https\?://||' -e 's|/$||')
+# Strip protocol, trailing slash, www. if present, and port if present
+DOMAIN=$(echo "$APP_URL" | sed -e 's|^https\?://||' -e 's|/$||' -e 's|^www\.||' -e 's|:[0-9]*$||')
 SERVER_EMAIL=$(prompt_for_env "SERVER_EMAIL" "Server email?" "support@$DOMAIN" "text")
 DEFAULT_FROM_EMAIL=$(prompt_for_env "DEFAULT_FROM_EMAIL" "Default from email?" "$SERVER_EMAIL" "text")
 EMAIL_HOST=$(prompt_for_env "EMAIL_HOST" "Email host?" "email-smtp.us-east-1.amazonaws.com" "text")
