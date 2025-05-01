@@ -1,4 +1,5 @@
 #!/bin/bash
+# Or #!/bin/zsh
 
 # Function to prompt user for input and update/append to a .env file.
 # Provides features like default values, yes/no handling (with custom output),
@@ -26,7 +27,9 @@
 #                                Defaults to "no".
 #  $10: "Warning if empty" (Optional) A warning message displayed (in yellow) if the user provides no input AND there's no default value.
 #
-#   The final value (user input or default/generated value).
+# Returns (via echo):
+#   The final value (user input, default, or generated value) for ALL types, including secrets.
+#   This value is printed to standard output and can be captured using command substitution $(...).
 #   Informational messages (updates, warnings) are printed to stderr.
 #
 # Example:
@@ -35,10 +38,12 @@
 #   ENABLE_SSL=$(prompt_for_env "ENABLE_SSL" "Enable SSL?" "" "yesno" "" "" "y")
 #   # Custom True/False for Python, default to True (explicitly set)
 #   PYTHON_DEBUG=$(prompt_for_env "PYTHON_DEBUG" "Enable Python Debug Mode?" "True" "yesno" "" "" "y" "True" "False")
-#   # Secret generation
-#   SECRET_KEY=$(prompt_for_env "APP_SECRET_KEY" "Generate an app secret key?" "GENERATE" "secret" "" 64)
+#   # Secret generation - ADMIN_PASSWORD variable will contain the secret
+#   ADMIN_PASSWORD=$(prompt_for_env "APP_SECRET_KEY" "Generate an app secret key?" "GENERATE" "secret" "" 64)
 #   # Text input with warning if left empty
 #   ADMIN_EMAIL=$(prompt_for_env "ADMIN_EMAIL" "Enter admin email address" "" "text" "" "" "" "" "" "Warning: Admin notifications will not be sent if empty.")
+#   # Use captured DB_HOST in a subsequent prompt default
+#   DB_URL=$(prompt_for_env "DATABASE_URL" "Enter full database URL" "postgres://${DB_HOST}:5432/mydb")
 #
 prompt_for_env() {
   # --- Parameters ---
@@ -75,7 +80,7 @@ prompt_for_env() {
   local prompt_string=""
   local effective_default="" # The actual value to use if user presses Enter
   local user_input=""
-  local final_value=""
+  local final_value="" # This variable will hold the value to be saved and echoed
   local env_file=".env"
   local temp_env_file=".env.tmp.$$" # Unique temp file using PID
   local actual_yes_value="yes" # Default output for yes
@@ -202,11 +207,10 @@ prompt_for_env() {
   fi
 
   # --- Update .env file ---
-  touch "$env_file" || { echo -e "  ${C_YELLOW}⚠️ Error: Cannot create $env_file${C_RESET}" >&2; echo "$final_value"; return 1; }
+  touch "$env_file" || { echo -e "  ${C_YELLOW}⚠️ Error: Cannot create $env_file${C_RESET}" >&2; return 1; } # Return 1 on error
 
   export _PROMPT_KEY="$key"
-  # Ensure the final value is correctly passed to awk, especially if it's empty
-  export _PROMPT_VALUE="$final_value"
+  export _PROMPT_VALUE="$final_value" # Pass the actual value to awk
   awk '
     BEGIN {
         key = ENVIRON["_PROMPT_KEY"]
@@ -241,19 +245,26 @@ prompt_for_env() {
           # Error message in Yellow
           echo -e "  ${C_YELLOW}⚠️ Error: Failed to move $temp_env_file to $env_file${C_RESET}\n" >&2
           rm -f "$temp_env_file"
+          return 1 # Indicate failure
       fi
   else
       # Error message in Yellow
       echo -e "  ${C_YELLOW}⚠️ Error: awk failed to process $env_file (status: $awk_status)${C_RESET}\n" >&2
       rm -f "$temp_env_file"
+      return 1 # Indicate failure
   fi
 
   # --- Return Value ---
+  # Echo the final value to stdout. This will be captured by command substitution $(...).
+  # Note: This WILL print secrets to stdout if captured.
   echo "$final_value"
+
+  # Return success status code
+  return 0
 }
 
 # --- Example Usage ---
-# (Example usage remains the same)
+# Note: Variables captured using $(...) will contain the actual value, including secrets.
 
 # echo "Configuring App..."
 # # Standard text input
@@ -271,7 +282,7 @@ prompt_for_env() {
 # # Text input with warning if left empty
 # SMTP_PASS=$(prompt_for_env "SMTP_PASSWORD" "Enter SMTP password (leave blank if not using SMTP)" "" "text" "" "" "" "" "" "Warning: SMTP email sending will be disabled.")
 
-# # Secret generation
+# # Secret generation - ADMIN_PASSWORD variable will contain the secret
 # ADMIN_PASSWORD=$(prompt_for_env "ADMIN_PASSWORD" "Set initial admin password (leave blank to generate)" "GENERATE" "secret" "" 20)
 
 
@@ -282,7 +293,8 @@ prompt_for_env() {
 # echo "Use New API: $USE_NEW_API"
 # echo "SMTP Password Set: $( [[ -n $SMTP_PASS ]] && echo 'Yes' || echo 'No' )"
 # # Avoid echoing sensitive values like passwords in real scripts
-# # echo "Admin Password: <set>"
+# # echo "Admin Password: $ADMIN_PASSWORD" # Uncommenting this would print the secret
+# echo "Admin Password Set in .env: Yes"
 # echo "-----------------------------"
 # echo "Check the .env file for saved values."
 
@@ -296,27 +308,19 @@ cp .env.example.docker-compose .env
 
 
 APP_URL=$(prompt_for_env "APP_URL" "Enter the application URL" "http://localhost:8000")
-prompt_for_env "SECRET_KEY" "App secret key?" "" "secret" "" 50
-prompt_for_env "DEBUG" "Debug mode?" "True" "yesno" "" "" "y" "True" "False"
-prompt_for_env "ALLOW_SIGNUP" "Allow signup?" "True" "yesno" "" "" "y" "True" "False"
-prompt_for_env "POSTGRES_PASSWORD" "Postgres password?" "" "secret" "" 20
+SECRET_KEY=$(prompt_for_env "SECRET_KEY" "App secret key?" "" "secret" "" 50)
+DEBUG=$(prompt_for_env "DEBUG" "Debug mode?" "True" "yesno" "" "" "y" "True" "False")
+ALLOW_SIGNUP=$(prompt_for_env "ALLOW_SIGNUP" "Allow signup?" "True" "yesno" "" "" "y" "True" "False")
+POSTGRES_PASSWORD=$(prompt_for_env "POSTGRES_PASSWORD" "Postgres password?" "" "secret" "" 20)
 
 # Strip protocol and trailing slash from APP_URL
 DOMAIN=$(echo "$APP_URL" | sed -e 's|^https\?://||' -e 's|/$||')
 SERVER_EMAIL=$(prompt_for_env "SERVER_EMAIL" "Server email?" "support@$DOMAIN" "text")
-
 DEFAULT_FROM_EMAIL=$(prompt_for_env "DEFAULT_FROM_EMAIL" "Default from email?" "$SERVER_EMAIL" "text")
-
 EMAIL_HOST=$(prompt_for_env "EMAIL_HOST" "Email host?" "email-smtp.us-east-1.amazonaws.com" "text")
-
 EMAIL_PORT=$(prompt_for_env "EMAIL_PORT" "Email port?" "587" "text")
-
 EMAIL_USE_TLS=$(prompt_for_env "EMAIL_USE_TLS" "Email use TLS?" "True" "yesno" "" "" "y" "True" "False")
-
 EMAIL_USE_SSL=$(prompt_for_env "EMAIL_USE_SSL" "Email use SSL?" "False" "yesno" "" "" "n" "True" "False")
-
 EMAIL_HOST_USER=$(prompt_for_env "EMAIL_HOST_USER" "Email host user?" "" "text")
-
 EMAIL_HOST_PASSWORD=$(prompt_for_env "EMAIL_HOST_PASSWORD" "Email host password?" "" "text")
-
 SENTRY_DSN=$(prompt_for_env "SENTRY_DSN" "Sentry DSN?" "" "text")
