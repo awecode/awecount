@@ -452,7 +452,7 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Assets": "ASSETS",
     "Liabilities": "LIABILITIES",
     "Equity": "EQUITY",
-    "Opening Balance Difference": "OPEN-BAL-DIFF"
+    "Opening Balance Difference": "OPEN-BAL-DIFF",
 }
 
 # Bank reconciliation settings

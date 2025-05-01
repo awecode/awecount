@@ -46,10 +46,27 @@ x-proxy-env: &proxy-env
 #   AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
 
 services:
+  # Comment this if you already have a reverse proxy running
+  proxy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      # - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - frontend_dist:/srv
+    environment:
+      <<: *proxy-env
+    depends_on:
+      - frontend
+      # - backend
+
   frontend:
     build:
       context: ./web/app
       dockerfile: Dockerfile
+      target: dist
     deploy:
       replicas: 1
       restart_policy:
@@ -57,96 +74,84 @@ services:
     environment:
       API_URL: ${APP_URL}
       ALLOW_SIGNUP: ${ALLOW_SIGNUP}
-    depends_on:
-      - backend
-
-  backend:
-    build:
-      context: ./server/django
-      dockerfile: Dockerfile
-    command: ./bin/docker-entrypoint-server.sh
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-    environment:
-      <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
-      USE_WHITENOISE: "True"
-
-    depends_on:
-      - awecount-db
-      - awecount-redis
-
-  worker:
-    build:
-      context: ./server/django
-      dockerfile: Dockerfile
-    command: ./bin/docker-entrypoint-worker.sh
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-    environment:
-      <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
-    depends_on:
-      - backend
-      - awecount-db
-      - awecount-redis
-
-  migrator:
-    build:
-      context: ./server/django
-      dockerfile: Dockerfile
-    command: ./bin/docker-entrypoint-migrator.sh
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-    environment:
-      <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
-    depends_on:
-      - awecount-db
-      - awecount-redis
-
-  awecount-db:
-    image: postgres:16-alpine
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-    command: postgres -c 'max_connections=1000'
-    environment:
-      <<: *db-env
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - frontend_dist:/srv
+    # depends_on:
+    #   - backend
 
-  awecount-redis:
-    image: valkey/valkey:7.2-alpine
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-    environment:
-      <<: *redis-env
-    volumes:
-      - redisdata:/data
+  # backend:
+  #   build:
+  #     context: ./server/django
+  #     dockerfile: Dockerfile
+  #   command: ./bin/docker-entrypoint-server.sh
+  #   deploy:
+  #     replicas: 1
+  #     restart_policy:
+  #       condition: on-failure
+  #   environment:
+  #     <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
+  #     USE_WHITENOISE: "True"
 
-  # Comment this if you already have a reverse proxy running
-  proxy:
-    image: caddy:2-alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-    environment:
-      <<: *proxy-env
-    depends_on:
-      - frontend
-      - backend
+  #   depends_on:
+  #     - awecount-db
+  #     - awecount-redis
+
+  # worker:
+  #   build:
+  #     context: ./server/django
+  #     dockerfile: Dockerfile
+  #   command: ./bin/docker-entrypoint-worker.sh
+  #   deploy:
+  #     replicas: 1
+  #     restart_policy:
+  #       condition: on-failure
+  #   environment:
+  #     <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
+  #   depends_on:
+  #     - backend
+  #     - awecount-db
+  #     - awecount-redis
+
+  # migrator:
+  #   build:
+  #     context: ./server/django
+  #     dockerfile: Dockerfile
+  #   command: ./bin/docker-entrypoint-migrator.sh
+  #   deploy:
+  #     replicas: 1
+  #     restart_policy:
+  #       condition: on-failure
+  #   environment:
+  #     <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
+  #   depends_on:
+  #     - awecount-db
+  #     - awecount-redis
+
+  # awecount-db:
+  #   image: postgres:16-alpine
+  #   deploy:
+  #     replicas: 1
+  #     restart_policy:
+  #       condition: on-failure
+  #   command: postgres -c 'max_connections=1000'
+  #   environment:
+  #     <<: *db-env
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+
+  # awecount-redis:
+  #   image: valkey/valkey:7.2-alpine
+  #   deploy:
+  #     replicas: 1
+  #     restart_policy:
+  #       condition: on-failure
+  #   environment:
+  #     <<: *redis-env
+  #   volumes:
+  #     - redisdata:/data
 
 volumes:
   pgdata:
   redisdata:
   caddy_data:
+  frontend_dist:

@@ -22,18 +22,7 @@ COPY . .
 RUN pnpm build
 
 
-# Stage 3: Run the app
-FROM base AS runner
-
-ENV NODE_ENV production
-
-RUN npm install -g serve
-
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/dist/spa ./dist/spa
-
-EXPOSE 3000
-
-ENV PORT 3000
-
-CMD HOSTNAME="0.0.0.0" serve -s -l 3000 dist/spa
+# Stage 3: Distribute
+FROM base AS dist
+RUN mkdir -p /srv
+COPY --from=builder /app/dist/spa /srv
