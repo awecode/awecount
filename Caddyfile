@@ -1,0 +1,15 @@
+{
+    # Global options
+    auto_https off
+    debug
+}
+
+# Frontend service
+frontend:80 {
+    reverse_proxy frontend:3000
+}
+
+# Backend service
+backend:80 {
+    reverse_proxy backend:8000
+} 

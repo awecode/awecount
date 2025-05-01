@@ -30,7 +30,7 @@ x-sentry-env: &sentry-env
   SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT}
 
 x-proxy-env: &proxy-env
-  NGINX_PORT: ${NGINX_PORT:-80}
+  CADDY_PORT: ${CADDY_PORT:-80}
   BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
   FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-5242880}
 
@@ -133,14 +133,16 @@ services:
 
   # Comment this if you already have a reverse proxy running
   proxy:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
+    image: caddy:2-alpine
     ports:
       - target: 80
-        published: ${NGINX_PORT:-80}
+        published: ${CADDY_PORT:-80}
         protocol: tcp
         mode: host
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
     environment:
       <<: *proxy-env
     depends_on:
@@ -150,3 +152,5 @@ services:
 volumes:
   pgdata:
   redisdata:
+  caddy_data:
+  caddy_config:
