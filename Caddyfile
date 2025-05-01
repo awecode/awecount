@@ -9,6 +9,10 @@
 		reverse_proxy backend:8000
 	}
 
+    handle /_allauth/* {
+		reverse_proxy backend:8000
+	}
+
 	handle /static/* {
 		reverse_proxy backend:8000
 	}
