@@ -66,7 +66,8 @@ prompt_for_env() {
 
   # --- Colors and Styles ---
   local C_RESET="" C_BOLD="" C_DIM="" C_GREEN="" C_YELLOW="" C_BLUE="" C_CYAN=""
-  if [[ -t 1 && -t 2 ]]; then # Check both stdout and stderr for terminal/color support
+  # Check only if stderr (2) is a terminal for coloring prompts and status messages
+  if [[ -t 2 ]]; then
     C_RESET='\033[0m'
     C_BOLD='\033[1m'
     C_DIM='\033[2m'      # Muted/Dim color
