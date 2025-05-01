@@ -302,10 +302,20 @@ prompt_for_env() {
 
 
 # Clone the repository
-# git clone https://github.com/awecode/awecount.git
+# If the directory already exists, do not clone
+if [ ! -d "awecount" ]; then
+  git clone https://github.com/awecode/awecount.git
+else
+  echo "awecount directory already exists. Skipping clone."
+fi
 
 # Copy the .env.example.docker-compose file to .env
-cp .env.example.docker-compose .env
+# If the file already exists, do not copy
+if [ ! -f ".env" ]; then
+  cp .env.example.docker-compose .env
+else
+  echo ".env file already exists. Skipping copy."
+fi
 
 
 APP_URL=$(prompt_for_env "APP_URL" "Enter the application URL" "http://localhost:8000")

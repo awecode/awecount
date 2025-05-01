@@ -43,3 +43,6 @@ logs
 .env.*
 !.env.example
 !.env.example.*
+
+# Clones
+awecount
