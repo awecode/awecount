@@ -41,7 +41,7 @@ class SalesSetting(models.Model):
     enable_import_challan = models.BooleanField(default=False)
     enable_amount_entry = models.BooleanField(default=False)
     show_rate_quantity_in_voucher = models.BooleanField(default=True)
-    invoice_footer_text = models.CharField(max_length=255, null=True, blank=True)
+    invoice_footer_text = models.TextField(null=True, blank=True)
     persist_pos_items = models.BooleanField(default=False)
     enable_sales_date_edit = models.BooleanField(default=False)
     default_email_attachments = ArrayField(models.CharField(max_length=255), default=list, blank=True)
