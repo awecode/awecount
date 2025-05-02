@@ -43,10 +43,9 @@ interface TransactionData {
   total_cr: number
 }
 
-const metaData = {
+useMeta({
   title: 'Journal Entries | Awecount',
-}
-useMeta(metaData)
+})
 
 const $q = useQuasar()
 const route = useRoute()
@@ -173,6 +172,7 @@ const sameTransactionsData = computed<TransactionData | false>(() => {
 const CONTENT_TYPE_TO_SLUG = {
   'purchase-vouchers': 'purchase/vouchers',
   'sales-vouchers': 'sales/vouchers',
+  'sales-voucher': 'sales/vouchers',
   'debit-notes': 'purchase/debit-notes',
   'credit-notes': 'sales/credit-notes',
   'challans': 'sales/challans',
@@ -256,6 +256,7 @@ useApi(`/api/company/${route.params.company}/${route.params.slug}/${route.params
                   <FormattedNumber
                     null-value="-"
                     type="currency"
+                    zero-value="-"
                     :value="row.dr_amount"
                   />
                 </div>
@@ -263,6 +264,7 @@ useApi(`/api/company/${route.params.company}/${route.params.slug}/${route.params
                   <FormattedNumber
                     null-value="-"
                     type="currency"
+                    zero-value="-"
                     :value="row.cr_amount"
                   />
                 </div>
@@ -355,6 +357,7 @@ useApi(`/api/company/${route.params.company}/${route.params.slug}/${route.params
                 <FormattedNumber
                   null-value="-"
                   type="currency"
+                  zero-value="-"
                   :value="row.dr_amount"
                 />
               </div>
@@ -362,6 +365,7 @@ useApi(`/api/company/${route.params.company}/${route.params.slug}/${route.params
                 <FormattedNumber
                   null-value="-"
                   type="currency"
+                  zero-value="-"
                   :value="row.cr_amount"
                 />
               </div>
