@@ -262,8 +262,7 @@ const choiceEndpointBaseComputed = computed(() => {
             :error="
               errors?.item_id ? errors?.item_id[0]
               : rowEmpty ? 'Item is required'
-                : modalValue.missingFields ? `Item is missing required fields: ${modalValue.missingFields.join(', ')}`
-                  : ''
+                : ''
             "
             :modal-component="
               usedInPos || hasChallan ? undefined
@@ -280,6 +279,9 @@ const choiceEndpointBaseComputed = computed(() => {
             :label="usedInPos ? '' : 'Item'"
             :model-value="modelValue.name"
           />
+        </div>
+        <div v-if="modalValue.missingFields" class="text-orange text-sm -mt-2">
+          Item is missing required fields: {{ modalValue.missingFields.join(', ') }}
         </div>
         <div v-if="usedIn === 'creditNote'" class="col-2 row justify-center">
           <q-checkbox v-model="modalValue.is_returned" :false-value="null" />
