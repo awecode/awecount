@@ -10,7 +10,7 @@ from apps.ledger.models import Account, JournalEntry, set_ledger_transactions
 
 class TaxScheme(CompanyBaseModel):
     name = models.CharField(max_length=255)
-    short_name = models.CharField(max_length=10, blank=True, null=True)
+    short_name = models.CharField(max_length=15, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     rate = models.DecimalField(
         max_digits=24,
