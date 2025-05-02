@@ -87,6 +87,7 @@ export default (endpoint, config) => {
             router.push(removeLastUrlSegment(route.path))
           }
         }
+        return data
       })
       .catch((data) => {
         let message

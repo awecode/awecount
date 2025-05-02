@@ -42,6 +42,8 @@ export default {
     const isEmailInvoiceModalOpen: Ref<boolean> = ref(false)
     const loginStore = useLoginStore()
 
+    const triggerPrint = route.query.print === 'true'
+
     const emailInvoicePayload = ref({
       attach_pdf: true,
       attachments: [],
@@ -209,6 +211,7 @@ export default {
       emailInvoice,
       resetEmailInvoicePayload,
       emailInvoiceErrors,
+      triggerPrint,
     }
   },
   created() {
@@ -221,6 +224,9 @@ export default {
         this.fields = data
         this.paymentModeOptions = data.available_payment_modes
         this.resetEmailInvoicePayload()
+        if (this.triggerPrint) {
+          this.onPrintclick(false, data?.status === 'Draft')
+        }
       })
       .catch((error) => {
         if (error.response && error.response.status == 404) {
