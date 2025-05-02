@@ -23,7 +23,7 @@ class LogEntryViewSet(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return LogEntry.objects.filter(
-            actor__company_id=self.request.company.id
+            actor__member_company__company=self.request.company
         ).select_related("content_type", "actor")
 
     @action(detail=False)
@@ -41,8 +41,7 @@ class WidgetViewSet(CRULViewSet):
     def get_serializer_class(self):
         if self.action == "list":
             return WidgetListSerializer
-        else:
-            return WidgetUpdateSerializer
+        return WidgetUpdateSerializer
 
     @action(detail=False)
     def data(self, request, *args, **kwargs):
