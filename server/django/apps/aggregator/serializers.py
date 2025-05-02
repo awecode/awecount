@@ -18,9 +18,9 @@ class LogEntrySerializer(BaseModelSerializer):
     changes_obj = serializers.SerializerMethodField()
 
     def get_changes_obj(self, obj):
-        if obj.changes:
+        if isinstance(obj.changes, (str, bytes, bytearray)):
             return json.loads(obj.changes)
-        return
+        return obj.changes
 
     def get_datetime(self, obj):
         return "{:%x, %H:%M %p}".format(obj.timestamp)
@@ -32,7 +32,7 @@ class LogEntrySerializer(BaseModelSerializer):
         return str(obj.actor)
 
     def get_content_type_name(self, obj):
-        return obj.content_type.model.title()
+        return obj.content_type.model_class()._meta.verbose_name.title()
 
     class Meta:
         model = LogEntry
