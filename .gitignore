@@ -46,3 +46,6 @@ logs
 
 # Clones
 awecount
+
+# Dump files
+*.dump
