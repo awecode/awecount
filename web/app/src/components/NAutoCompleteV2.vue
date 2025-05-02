@@ -1,289 +1,225 @@
-<script>
+<script setup lang="ts">
+import useApi from 'src/composables/useApi'
 import { withQuery } from 'ufo'
+import { ref, watch } from 'vue'
 
-export default {
-  props: {
-    label: {
-      type: String,
-      default: 'Select',
-    },
-    modelValue: {
-      type: [Object, String, Number],
-      default: () => null,
-    },
-    options: {
-      type: Object,
-      default: () => {
-        return {
-          results: [],
-          pagination: {},
+interface Props {
+  label?: string
+  modelValue?: any
+  options?: {
+    results: any[]
+    pagination: Record<string, any>
+  }
+  modalComponent?: any
+  disabled?: boolean
+  error?: string
+  focusOnMount?: boolean
+  endpoint?: string | null
+  staticOption?: any
+  emitObj?: boolean
+  fetchOnMount?: boolean
+  dataTestid?: string
+  mapOptions?: boolean
+  errorMessage?: string
+  optionValue?: string
+  emitValue?: boolean
+  optionLabel?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  label: 'Select',
+  modelValue: null,
+  options: () => ({ results: [], pagination: {} }),
+  modalComponent: undefined,
+  disabled: false,
+  error: undefined,
+  focusOnMount: false,
+  endpoint: null,
+  staticOption: undefined,
+  emitObj: false,
+  fetchOnMount: false,
+  dataTestid: undefined,
+  mapOptions: false,
+  errorMessage: undefined,
+  optionValue: undefined,
+  emitValue: false,
+  optionLabel: undefined,
+})
+
+const emit = defineEmits<{
+  'update:modelValue': [value: any]
+  'updateObj': [value: any]
+}>()
+
+const modalValue = ref(props.modelValue)
+const initalAllOptions = props.options
+if (props.staticOption?.id) {
+  initalAllOptions.results = initalAllOptions.results.filter((item) => {
+    return props.staticOption.id !== item.id
+  })
+  initalAllOptions.results.unshift(props.staticOption)
+}
+const allOptions = ref(initalAllOptions)
+const isModalOpen = ref(false)
+const filteredOptions = ref(allOptions.value.results || [])
+const fetchLoading = ref(false)
+const filteredOptionsPagination = ref(null)
+const serachKeyword = ref(null)
+
+const valUpdated = (val: any) => {
+  emit('update:modelValue', val)
+}
+
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    modalValue.value = newValue
+    if (props.emitObj) {
+      let data = null
+      if (filteredOptions.value?.length) {
+        const index = filteredOptions.value.findIndex((item) => {
+          return item.id === newValue
+        })
+        if (index > -1) {
+          data = filteredOptions.value[index]
         }
-      },
-    },
-    modalComponent: {
-      type: Object,
-      required: false,
-    },
-    disabled: {
-      type: Boolean,
-      required: false,
-      default: () => false,
-    },
-    error: {
-      type: String,
-      required: false,
-    },
-    focusOnMount: {
-      type: Boolean,
-      default: false,
-    },
-    endpoint: {
-      type: [String, null],
-      default: () => null,
-    },
-    staticOption: {
-      type: [Object, undefined],
-      required: false,
-    },
-    emitObj: {
-      type: Boolean,
-      default: false,
-    },
-    fetchOnMount: {
-      type: Boolean,
-      default: false,
-    },
-    dataTestid: {
-      type: String,
-      required: false,
-    },
-    mapOptions: {
-      type: Boolean,
-      required: false,
-    },
-    errorMessage: {
-      type: String,
-      required: false,
-    },
-    optionValue: {
-      type: String,
-      required: false,
-    },
-    emitValue: {
-      type: Boolean,
-      required: false,
-    },
-    optionLabel: {
-      type: String,
-      required: false,
-    },
-  },
-  emits: ['update:modelValue', 'updateObj'],
-
-  setup(props, { emit }) {
-    const valUpdated = (val) => {
-      emit('update:modelValue', val)
+      }
+      emit('updateObj', data)
     }
-    const modalValue = ref(props.modelValue)
-    const initalAllOptions = props.options
-    if (props.staticOption && props.staticOption.id) {
-      initalAllOptions.results = initalAllOptions.results.filter((item) => {
+  },
+)
+
+watch(
+  () => props.options,
+  (newValue) => {
+    if (!newValue) return
+    if (props.staticOption?.id) {
+      const cleanedOptions = newValue.results.filter((item) => {
         return props.staticOption.id !== item.id
       })
-      initalAllOptions.results.unshift(props.staticOption)
+      cleanedOptions.unshift(props.staticOption)
+      allOptions.value.results = cleanedOptions
+      filteredOptions.value = cleanedOptions
+    } else {
+      allOptions.value.results = newValue.results
+      filteredOptions.value = newValue.results
     }
-    const allOptions = ref(initalAllOptions)
-    const isModalOpen = ref(false)
-    const filteredOptions = ref(allOptions.value.results || [])
-    const fetchLoading = ref(false)
-    const filteredOptionsPagination = ref(null)
-    const serachKeyword = ref(null)
-    watch(
-      () => props.modelValue,
-      (newValue) => {
-        modalValue.value = newValue
-        if (props.emitObj) {
-          let data = null
-          if (filteredOptions.value && filteredOptions.value.length) {
-            const index = filteredOptions.value.findIndex((item) => {
-              return item.id === newValue
-            })
-            if (index > -1) {
-              data = filteredOptions.value[index]
-            }
-          }
-          emit('updateObj', data)
-        }
-      },
-    )
+    Object.assign(allOptions.value.pagination, newValue.pagination)
+  },
+)
 
-    watch(
-      () => props.options,
-      (newValue) => {
-        if (!newValue) return
-        if (props.staticOption && props.staticOption.id) {
-          const cleanedOptions = newValue.results.filter((item) => {
-            return props.staticOption.id !== item.id
-          })
-          cleanedOptions.unshift(props.staticOption)
-          allOptions.value.results = cleanedOptions
-          filteredOptions.value = cleanedOptions
-        } else {
-          allOptions.value.results = newValue.results
-          filteredOptions.value = newValue.results
-        }
-        Object.assign(allOptions.value.pagination, newValue.pagination)
-      },
-    )
-
-    watch(
-      () => props.staticOption,
-      (newValue) => {
-        if (newValue && newValue.id) {
-          const cleanedOptions = allOptions.value.results.filter((item) => {
-            return newValue.id !== item.id
-          })
-          cleanedOptions.unshift(newValue)
-          allOptions.value.results = cleanedOptions
-          filteredOptions.value = cleanedOptions
-        }
-      },
-    )
-
-    // watch(
-    //   () => isActive.value, async (newValue) => {
-    //     if (newValue && !fetchLoading.value && !initiallyLoaded.value) {
-    //       await fetchOptions()
-    //       initiallyLoaded.value = true
-    //     }
-    //   }
-    // )
-
-    const filterFn = (val, update) => {
-      serachKeyword.value = val
-      if (val === '') {
-        update(() => {
-          filteredOptions.value = allOptions.value.results
-          filteredOptionsPagination.value = null
-        })
-        return
-      }
-      update(() => {
-        const endpoint = `${props.endpoint}?search=${val}`
-        useApi(endpoint)
-          .then((data) => {
-            filteredOptions.value = data.results
-            filteredOptionsPagination.value = data.pagination
-          })
-          .catch((err) => {
-            console.log(`Error While Fetching ${err}`)
-          })
-        // const needle = val.toLowerCase()
-        // filteredOptions.value = allOptions.value.results.filter(
-        //   (v) => v.name.toLowerCase().indexOf(needle) > -1
-        // )
+watch(
+  () => props.staticOption,
+  (newValue) => {
+    if (newValue?.id) {
+      const cleanedOptions = allOptions.value.results.filter((item) => {
+        return newValue.id !== item.id
       })
-    }
-
-    const openModal = () => {
-      // debugger
-      isModalOpen.value = true
-    }
-
-    const handleModalSignal = (v) => {
-      allOptions.value.results.push(v)
-      isModalOpen.value = false
-      emit('update:modelValue', v.id)
-    }
-
-    const closeModal = () => {
-      isModalOpen.value = false
-    }
-    const fetchOptions = async () => {
-      fetchLoading.value = true
-      const queryObj = {}
-      if (allOptions.value?.pagination?.page) queryObj.page = allOptions.value.pagination.page + 1
-      if (props.fetchOnMount && modalValue.value) queryObj.id = modalValue.value
-      const endpoint = withQuery(props.endpoint, queryObj)
-      try {
-        const data = await useApi(endpoint)
-        if (data) {
-          if (props.staticOption && props.staticOption.id) {
-            const filteredOptions = data.results.filter((item) => {
-              return props.staticOption.id !== item.id
-            })
-            allOptions.value.results.push(...filteredOptions)
-          } else {
-            allOptions.value.results.push(...data.results)
-          }
-          Object.assign(allOptions.value.pagination, data.pagination)
-        }
-        fetchLoading.value = false
-      } catch (error) {
-        console.log('Error While Fetching Options', error)
-        fetchLoading.value = false
-      }
-      // .then((data) => {
-      //   if (staticOptions && staticOptions.length) {
-      //     allOptions.value.results.push(...props.staticOptions, ...data.results)
-      //   } else allOptions.value.results.push(...data.results)
-      //   Object.assign(allOptions.value.pagination, data.pagination)
-      //   fetchLoading.value = false
-      // }).catch((err) => {
-      //   console.log('Error While Fetching Options', err)
-      //   fetchLoading.value = false
-      // })
-    }
-
-    // if (props.endpoint && !props.options?.results?.length > 0) {
-    //   if (props.staticOptions && props.staticOptions.length) {
-    //     fetchOptions(props.staticOptions)
-    //   } else fetchOptions()
-    // }
-
-    const onScroll = (scrollData) => {
-      if (filteredOptionsPagination.value) {
-        if (scrollData.direction === 'increase' && scrollData.to > filteredOptions.value.length - 2 && !(filteredOptionsPagination.value.page >= filteredOptionsPagination.value.pages) && !fetchLoading.value) {
-          fetchLoading.value = true
-          const endpoint = `${props.endpoint}?search=${serachKeyword.value}&page=${filteredOptionsPagination.value.page + 1}`
-          useApi(endpoint)
-            .then((data) => {
-              filteredOptions.value.push(...data.results)
-              filteredOptionsPagination.value = data.pagination
-              fetchLoading.value = false
-            })
-            .catch((err) => {
-              console.log(`Error While Fetching ${err}`)
-              fetchLoading.value = false
-            })
-        }
-      } else if (scrollData.direction === 'increase' && scrollData.to > allOptions.value.results.length - 3 && allOptions.value.pagination.page !== allOptions.value.pagination.pages && !fetchLoading.value) {
-        fetchOptions()
-      }
-    }
-    if (props.fetchOnMount && props.endpoint) {
-      fetchOptions()
-    }
-
-    return {
-      filteredOptions,
-      filterFn,
-      valUpdated,
-      isModalOpen,
-      openModal,
-      closeModal,
-      handleModalSignal,
-      props,
-      modalValue,
-      onScroll,
-      fetchLoading,
+      cleanedOptions.unshift(newValue)
+      allOptions.value.results = cleanedOptions
+      filteredOptions.value = cleanedOptions
     }
   },
+)
+
+const filterFn = async (val: string, update: (callback: () => void) => void) => {
+  serachKeyword.value = val
+  if (val === '') {
+    update(() => {
+      filteredOptions.value = allOptions.value.results
+      filteredOptionsPagination.value = null
+    })
+    return
+  }
+  update(async () => {
+    try {
+      const endpoint = `${props.endpoint}?search=${val}`
+      const data = await useApi(endpoint)
+      filteredOptions.value = data.results
+      filteredOptionsPagination.value = data.pagination
+    } catch (err) {
+      console.error(`Error While Fetching ${err}`)
+    }
+  })
+}
+
+const openModal = () => {
+  isModalOpen.value = true
+}
+
+const handleModalSignal = (v: any) => {
+  allOptions.value.results.push(v)
+  isModalOpen.value = false
+  emit('update:modelValue', v.id)
+}
+
+const closeModal = () => {
+  isModalOpen.value = false
+}
+
+const fetchOptions = async () => {
+  fetchLoading.value = true
+  const queryObj: Record<string, any> = {}
+  if (allOptions.value?.pagination?.page) queryObj.page = allOptions.value.pagination.page + 1
+  if (props.fetchOnMount && modalValue.value) queryObj.id = modalValue.value
+  const endpoint = withQuery(props.endpoint || '', queryObj)
+  try {
+    const data = await useApi(endpoint)
+    if (data) {
+      if (props.staticOption?.id) {
+        const filteredOptions = data.results.filter((item) => {
+          return props.staticOption.id !== item.id
+        })
+        allOptions.value.results.push(...filteredOptions)
+      } else {
+        allOptions.value.results.push(...data.results)
+      }
+      Object.assign(allOptions.value.pagination, data.pagination)
+    }
+    fetchLoading.value = false
+  } catch (error) {
+    console.error('Error While Fetching Options', error)
+    fetchLoading.value = false
+  }
+}
+
+const onScroll = async (scrollData: { direction: string, to: number }) => {
+  if (filteredOptionsPagination.value) {
+    if (
+      scrollData.direction === 'increase'
+      && scrollData.to > filteredOptions.value.length - 2
+      && !(filteredOptionsPagination.value.page >= filteredOptionsPagination.value.pages)
+      && !fetchLoading.value
+    ) {
+      fetchLoading.value = true
+      try {
+        const endpoint = `${props.endpoint}?search=${serachKeyword.value}&page=${filteredOptionsPagination.value.page + 1}`
+        const data = await useApi(endpoint)
+        filteredOptions.value.push(...data.results)
+        filteredOptionsPagination.value = data.pagination
+      } catch (err) {
+        console.error(`Error While Fetching ${err}`)
+      } finally {
+        fetchLoading.value = false
+      }
+    }
+  } else if (
+    scrollData.direction === 'increase'
+    && scrollData.to > allOptions.value.results.length - 3
+    && allOptions.value.pagination.page !== allOptions.value.pagination.pages
+    && !fetchLoading.value
+  ) {
+    await fetchOptions()
+  }
+}
+
+if (props.fetchOnMount && props.endpoint) {
+  fetchOptions()
 }
 </script>
 
 <template>
-  <div class="row no-wrap">
+  <div class="row no-wrap" v-bind="$attrs">
     <q-select
       v-model="modalValue"
       clearable
@@ -295,9 +231,9 @@ export default {
       option-label="name"
       option-value="id"
       :autofocus="focusOnMount"
-      :disable="props.disabled"
-      :error="!!props?.error"
-      :error-message="props?.error"
+      :disable="disabled"
+      :error="!!error"
+      :error-message="error"
       :label="label"
       :loading="fetchLoading"
       :options="filteredOptions"
