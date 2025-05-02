@@ -707,6 +707,8 @@ class SalesVoucherDetailSerializer(BaseModelSerializer):
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
     sales_agent = SalesAgentSerializer()
 
+    mode = serializers.SerializerMethodField()
+
     rows = SalesVoucherRowDetailSerializer(many=True)
     tax_identification_number = serializers.ReadOnlyField(
         source="party.tax_identification_number"
@@ -722,6 +724,11 @@ class SalesVoucherDetailSerializer(BaseModelSerializer):
         source="company.sales_setting.invoice_footer_text"
     )
     challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
+
+    def get_mode(self, obj):
+        if not obj.payment_mode:
+            return "Credit"
+        return obj.payment_mode.name
 
     def get_payment_receipts(self, obj):
         receipts = []
