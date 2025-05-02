@@ -63,10 +63,6 @@ class ItemSerializer(BaseModelSerializer):
 
         company = self.context["request"].company
 
-        if company.inventory_setting.mandate_category:
-            if not attrs.get("category"):
-                raise ValidationError({"category": ["Category is mandatory."]})
-
         # if (
         #     attrs.get("purchase_account_type") == "Category"
         #     or attrs.get("sales_account_type") == "Category"
@@ -229,10 +225,6 @@ class InventoryCategorySerializer(BaseModelSerializer):
 
     def validate(self, attrs):
         company = self.context["request"].company
-
-        if company.inventory_setting.mandate_hs_code:
-            if not attrs.get("hs_code"):
-                raise ValidationError({"hs_code": ["HS Code is mandatory."]})
 
         type_account_tuples = [
             ("items_sales_account_type", "sales_account"),

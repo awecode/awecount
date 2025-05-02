@@ -16,7 +16,6 @@ export default {
     }
     useMeta(metaData)
 
-
     const onUpdateClick = (fields) => {
       useApi(`${endpoint}${fields.id}/`, {
         method: 'PUT',
@@ -43,12 +42,6 @@ export default {
     }
     watch(formData.formDefaults, newValue => (fields.value = newValue.fields))
 
-    watch(() => fields.value?.mandate_hs_code, (newValue) => {
-      if (newValue) {
-        fields.value.mandate_category = true
-      }
-    })
-
     return {
       ...formData,
       fields,
@@ -74,15 +67,6 @@ export default {
             </div>
             <div>
               <q-checkbox v-model="fields.enable_negative_stock_check" label="Enable Negative Stock Alert?" />
-            </div>
-            <div>
-              <q-checkbox v-model="fields.mandate_hs_code" label="Mandate HS Code?" />
-            </div>
-            <div>
-              <q-checkbox
-                v-model="fields.mandate_category"
-                label="Mandate Category?"
-              />
             </div>
           </div>
         </div>
