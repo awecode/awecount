@@ -76,6 +76,9 @@ services:
       context: ./web/app
       dockerfile: Dockerfile
       target: dist
+      args:
+        API_URL: ${APP_URL}
+        ALLOW_SIGNUP: ${ALLOW_SIGNUP}
     deploy:
       replicas: 1
       restart_policy:
