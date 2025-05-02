@@ -460,7 +460,16 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
           </n-auto-complete-v2>
         </div>
         <div class="col-12 col-md-6">
-          <q-select v-model="fields.tax_type" map-options emit-value class="w-full" label="Tax Type" option-label="label" option-value="value" :options="taxTypes" />
+          <q-select
+            v-model="fields.tax_type"
+            emit-value
+            map-options
+            class="w-full"
+            label="Tax Type"
+            option-label="label"
+            option-value="value"
+            :options="taxTypes"
+          />
         </div>
       </div>
     </q-card-section>
@@ -479,6 +488,13 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
     :main-discount="{
       discount_type: fields.discount_type,
       discount: fields.discount,
+    }"
+    :missing-fields-config="{
+      enabled: true,
+      fields: {
+        code: formDefaults?.fields?.require_item_code,
+        hs_code: formDefaults?.fields?.require_item_hs_code,
+      },
     }"
     :show-rate-quantity="formDefaults.options?.show_rate_quantity_in_voucher"
     :show-row-trade-discount="formDefaults.options?.show_trade_discount_in_row"

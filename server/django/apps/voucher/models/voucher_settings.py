@@ -6,7 +6,7 @@ from apps.bank.models import BankAccount
 from apps.company.models import Company
 from apps.product.models import InventorySetting
 from apps.company.signals import company_created
-
+from apps.voucher.models import PaymentMode
 
 class SalesSetting(models.Model):
     company = models.OneToOneField(
@@ -20,6 +20,10 @@ class SalesSetting(models.Model):
     show_trade_discount_in_row = models.BooleanField(default=False)
     is_trade_discount_in_row = models.BooleanField(default=False)
     enable_due_date_in_voucher = models.BooleanField(default=False)
+
+    # Required fields settings
+    require_item_code = models.BooleanField(default=False)
+    require_item_hs_code = models.BooleanField(default=False)
 
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
@@ -48,6 +52,8 @@ class SalesSetting(models.Model):
             "mode": self.bank_account_id or self.mode,
             "payment_mode": self.payment_mode_id,
             "trade_discount": self.is_trade_discount_in_voucher,
+            "require_item_code": self.require_item_code,
+            "require_item_hs_code": self.require_item_hs_code,
         }
 
     @property
@@ -64,6 +70,8 @@ class SalesSetting(models.Model):
             "show_rate_quantity_in_voucher": self.show_rate_quantity_in_voucher,
             "persist_pos_items": self.persist_pos_items,
             "enable_sales_date_edit": self.enable_sales_date_edit,
+            "require_item_code": self.require_item_code,
+            "require_item_hs_code": self.require_item_hs_code,
         }
 
     def __str__(self):
@@ -81,6 +89,10 @@ class PurchaseSetting(models.Model):
     is_trade_discount_in_row = models.BooleanField(default=False)
     enable_due_date_in_voucher = models.BooleanField(default=False)
     enable_empty_voucher_no = models.BooleanField(default=False)
+
+    # Required fields settings
+    require_item_code = models.BooleanField(default=False)
+    require_item_hs_code = models.BooleanField(default=False)
 
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
@@ -109,6 +121,10 @@ class PurchaseSetting(models.Model):
                     self.bank_account_id = BankAccount.objects.get(
                         id=update_data["bank_account"]
                     ).id
+            elif key == "payment_mode":
+                self.payment_mode_id = PaymentMode.objects.get(
+                    id=update_data["payment_mode"]
+                ).id
             else:
                 setattr(self, key, value)
         self.save()
@@ -119,6 +135,8 @@ class PurchaseSetting(models.Model):
             "mode": self.bank_account_id or self.mode,
             "payment_mode": self.payment_mode_id,
             "trade_discount": self.is_trade_discount_in_voucher,
+            "require_item_code": self.require_item_code,
+            "require_item_hs_code": self.require_item_hs_code,
         }
 
     @property
@@ -130,6 +148,8 @@ class PurchaseSetting(models.Model):
             "is_trade_discount_in_row": self.is_trade_discount_in_row,
             "enable_due_date_in_voucher": self.enable_due_date_in_voucher,
             "enable_purchase_order_import": self.enable_purchase_order_import,
+            "require_item_code": self.require_item_code,
+            "require_item_hs_code": self.require_item_hs_code,
         }
 
     def __str__(self):

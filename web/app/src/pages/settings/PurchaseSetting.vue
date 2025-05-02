@@ -169,6 +169,12 @@ export default {
             <div>
               <q-checkbox v-model="fields.enable_item_rate_change_alert" label="Enable Item Rate Change alert?" />
             </div>
+            <div>
+              <q-checkbox v-model="fields.require_item_code" label="Require Item Code in purchase invoices?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.require_item_hs_code" label="Require Item HS Code in purchase invoices?" />
+            </div>
           </div>
           <q-card v-if="fields.enable_item_rate_change_alert" class="q-mt-lg">
             <q-card-section>

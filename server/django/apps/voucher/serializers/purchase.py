@@ -150,10 +150,19 @@ class PurchaseVoucherCreateSerializer(
         #     return data
 
     def validate_rows(self, rows):
+        request = self.context["request"]
+        purchase_setting = request.company.purchase_setting
+
+        # Collect all item IDs and fetch items in a single query
+        item_ids = [row.get("item_id") for row in rows]
+        items = {item.id: item for item in Item.objects.filter(id__in=item_ids)}
+
         for row in rows:
-            item = Item.objects.filter(pk=row.get("item_id")).first()
+            item_id = row.get("item_id")
+            item = items.get(item_id)
             if not item:
                 raise serializers.ValidationError({"item_id": ["Item not found."]})
+
             if row.get("discount_type") == "":
                 row["discount_type"] = None
             row_serializer = PurchaseVoucherRowSerializer(

@@ -377,7 +377,19 @@ class SalesVoucherCreateSerializer(
                 #     )
 
     def validate_rows(self, rows):
+        request = self.context["request"]
+        sales_setting = request.company.sales_setting
+
+        # Collect all item IDs and fetch items in a single query
+        item_ids = [row.get("item_id") for row in rows]
+        items = {item.id: item for item in Item.objects.filter(id__in=item_ids)}
+
         for row in rows:
+            item_id = row.get("item_id")
+            item = items.get(item_id)
+            if not item:
+                raise serializers.ValidationError({"item_id": ["Item not found."]})
+
             row_serializer = SalesVoucherRowSerializer(
                 data=row, context={"request": self.context["request"]}
             )

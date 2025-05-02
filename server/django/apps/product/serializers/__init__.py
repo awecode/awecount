@@ -117,6 +117,7 @@ class ItemSalesSerializer(BaseModelSerializer):
     rate = serializers.ReadOnlyField(source="selling_price")
     is_trackable = serializers.ReadOnlyField()
     default_unit_obj = GenericSerializer(read_only=True, source="unit")
+    hs_code = serializers.ReadOnlyField(source="category.hs_code")
 
     class Meta:
         model = Item
@@ -130,6 +131,7 @@ class ItemSalesSerializer(BaseModelSerializer):
             "description",
             "is_trackable",
             "default_unit_obj",
+            "hs_code",
         )
 
 
@@ -157,6 +159,7 @@ class ItemPurchaseSerializer(BaseModelSerializer):
     rate = serializers.ReadOnlyField(source="cost_price")
     is_trackable = serializers.ReadOnlyField()
     default_unit_obj = GenericSerializer(read_only=True, source="unit")
+    hs_code = serializers.ReadOnlyField(source="category.hs_code")
 
     class Meta:
         model = Item
@@ -171,6 +174,7 @@ class ItemPurchaseSerializer(BaseModelSerializer):
             "is_trackable",
             "track_inventory",
             "default_unit_obj",
+            "hs_code",
         )
 
 

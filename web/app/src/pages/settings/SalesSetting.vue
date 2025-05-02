@@ -150,6 +150,12 @@ export default {
             <div>
               <q-checkbox v-model="fields.show_rate_quantity_in_voucher" label="Show Rate and Quantity in voucher row?" />
             </div>
+            <div>
+              <q-checkbox v-model="fields.require_item_code" label="Require Item Code in sales invoices?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.require_item_hs_code" label="Require Item HS Code in sales invoices?" />
+            </div>
             <div class="row q-pl-sm">
               <q-input
                 v-model="fields.invoice_footer_text"
