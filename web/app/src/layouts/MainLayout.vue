@@ -255,11 +255,11 @@ const essentialLinks = computed(() => [
         icon: 'mdi-chart-gantt',
         link: `/${activeCompany.value}/reports/chart-of-accounts`,
       },
-      // {
-      //   title: 'Income Statement',
-      //   icon: 'mdi-chart-gantt',
-      //   link: `/${activeCompany.value}/reports/income-statement`,
-      // },
+      {
+        title: 'Income Statement',
+        icon: 'mdi-chart-gantt',
+        link: `/${activeCompany.value}/reports/income-statement`,
+      },
       {
         title: 'Balance Sheet',
         icon: 'mdi-clipboard-text',
@@ -451,18 +451,13 @@ const breadcrumbs = useBreadcrumbItems()
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
     <q-header bordered class="bg-white text-grey-8 d-print-none print-hide q-py-xs">
       <q-toolbar>
-        <q-btn
-          dense
-          flat
-          round
-          aria-label="Menu"
-          icon="mdi-menu"
-          @click="miniState = !miniState"
-        />
+        <q-btn dense flat round aria-label="Menu" icon="mdi-menu" @click="miniState = !miniState" />
 
         <q-toolbar-title class="flex items-center" style="gap: 16px">
-          <RouterLink v-if="store.companyInfo?.logo_url" style="max-width: 60px; max-height: 40px" :to="`/${$route.params.company}/dashboard`">
-            <img alt="Company Logo" style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url" />
+          <RouterLink v-if="store.companyInfo?.logo_url" style="max-width: 60px; max-height: 40px"
+            :to="`/${$route.params.company}/dashboard`">
+            <img alt="Company Logo" style="max-width: 60px; max-height: 40px; object-fit: contain"
+              :src="store.companyInfo.logo_url" />
           </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">
             <q-breadcrumbs-el v-for="breadcrumb in breadcrumbs.slice(1)" :key="breadcrumb.to" v-bind="breadcrumb" />
@@ -479,7 +474,8 @@ const breadcrumbs = useBreadcrumbItems()
                 Fiscal Year
               </q-tooltip>
             </q-btn>
-            <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2" @click="store.isCalendarInAD = !store.isCalendarInAD">
+            <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2"
+              @click="store.isCalendarInAD = !store.isCalendarInAD">
               {{ store.isCalendarInAD ? 'AD' : 'BS' }}
               <q-tooltip :delay="1000" :offset="[0, 10]">
                 Change Date Format
@@ -519,18 +515,8 @@ const breadcrumbs = useBreadcrumbItems()
                   </div>
                   <div class="q-mb-md" style="margin-top: 40px">
                     <div class="text-right text-blue-6 row justify-end q-gutter-x-lg">
-                      <q-btn
-                        flat
-                        class="text-grey-8"
-                        label="Cancel"
-                        @click="logoutDialogOpen = false"
-                      />
-                      <q-btn
-                        flat
-                        class="text-red"
-                        label="Yes"
-                        @click="() => logout({ redirectTo: '/login' })"
-                      />
+                      <q-btn flat class="text-grey-8" label="Cancel" @click="logoutDialogOpen = false" />
+                      <q-btn flat class="text-red" label="Yes" @click="() => logout({ redirectTo: '/login' })" />
                     </div>
                   </div>
                 </div>
@@ -540,32 +526,17 @@ const breadcrumbs = useBreadcrumbItems()
         </div>
       </q-toolbar>
     </q-header>
-    <q-drawer
-      v-model="leftDrawerOpen"
-      bordered
-      drawer
-      persistent
-      show-if-above
-      :mini="miniState"
-    >
+    <q-drawer v-model="leftDrawerOpen" bordered drawer persistent show-if-above :mini="miniState">
       <q-list class="icon-grey d-print-none print-hide">
-        <q-btn-dropdown
-          flat
-          class="full-width q-pa-md"
-          style="margin-top: 2px"
-          :disable="miniState"
-          :label="companies.find((c) => c.slug === activeCompany)?.name || 'Select Company'"
-        >
+        <q-btn-dropdown flat class="full-width q-pa-md" style="margin-top: 2px" :disable="miniState"
+          :label="companies.find((c) => c.slug === activeCompany)?.name || 'Select Company'">
           <q-list>
             <template v-for="company in companies" :key="company.slug">
-              <q-item
-                v-close-popup
-                clickable
-                :active="company.slug === activeCompany"
-                @click="switchCompany(company.slug, { router, route })"
-              >
+              <q-item v-close-popup clickable :active="company.slug === activeCompany"
+                @click="switchCompany(company.slug, { router, route })">
                 <q-item-section avatar>
-                  <div class="text-h6 text-white flex items-center justify-center bg-primary" style="width: 28px; height: 28px; border-radius: 4px; line-height: 0;">
+                  <div class="text-h6 text-white flex items-center justify-center bg-primary"
+                    style="width: 28px; height: 28px; border-radius: 4px; line-height: 0;">
                     {{ company.name.charAt(0).toUpperCase() }}
                   </div>
                 </q-item-section>
@@ -621,31 +592,16 @@ const breadcrumbs = useBreadcrumbItems()
                 <div class="flex gap-4">
                   <div class="flex grow gap-1">
                     <q-skeleton class="grow" height="45px" type="rect" />
-                    <q-skeleton
-                      square
-                      height="45px"
-                      type="QBtn"
-                      width="45px"
-                    />
+                    <q-skeleton square height="45px" type="QBtn" width="45px" />
                   </div>
-                  <q-skeleton
-                    square
-                    height="45px"
-                    type="QBtn"
-                    width="65px"
-                  />
+                  <q-skeleton square height="45px" type="QBtn" width="65px" />
                 </div>
                 <q-skeleton height="45px" type="QInput" />
                 <q-skeleton height="45px" type="QInput" />
                 <q-skeleton height="45px" type="QInput" />
                 <div class="flex gap-4">
                   <q-skeleton class="grow" height="45px" type="rect" />
-                  <q-skeleton
-                    square
-                    height="45px"
-                    type="QBtn"
-                    width="65px"
-                  />
+                  <q-skeleton square height="45px" type="QBtn" width="65px" />
                 </div>
                 <div></div>
                 <q-skeleton height="45px" type="QInput" />
@@ -660,12 +616,7 @@ const breadcrumbs = useBreadcrumbItems()
                     <div class="grid grid-cols-12 gap-6">
                       <div class="flex grow gap-1 col-span-5">
                         <q-skeleton class="grow" height="45px" type="rect" />
-                        <q-skeleton
-                          square
-                          height="45px"
-                          type="QBtn"
-                          width="45px"
-                        />
+                        <q-skeleton square height="45px" type="QBtn" width="45px" />
                       </div>
                       <div class="col-span-2">
                         <q-skeleton height="45px" type="rect" />
