@@ -157,13 +157,15 @@ export default {
               <q-checkbox v-model="fields.require_item_hs_code" label="Require Item HS Code in sales invoices?" />
             </div>
             <div class="row q-pl-sm">
-              <q-input
-                v-model="fields.invoice_footer_text"
-                autogrow
-                class="col-12 col-sm-6"
-                label="Invoice footer text"
-                type="textarea"
-              />
+              <div class="col-12 col-sm-6">
+                <q-label class="q-mb-md">
+                  Invoice Footer Text
+                </q-label>
+                <q-editor
+                  v-model="fields.invoice_footer_text"
+                  autogrow
+                />
+              </div>
             </div>
             <div>
               <q-checkbox v-model="fields.persist_pos_items" label="Enable Persist items in POS page?" />
