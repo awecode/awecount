@@ -102,7 +102,7 @@ function onDeletClick() {
             <q-input
               v-model="fields.tax_identification_number"
               class="col-12 col-md-6"
-              label="Tax Registration Number"
+              label="Tax Identification Number"
               type="number"
               :error="!!errors.tax_identification_number"
               :error-message="errors.tax_identification_number"
