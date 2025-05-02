@@ -32,7 +32,7 @@ const menuItems = computed(() => [
     section: 'Advanced',
     items: [
       {
-        icon: 'settings',
+        icon: 'inventory',
         label: 'Inventory Settings',
         to: `/${activeCompany.value}/settings/inventory`,
       },
@@ -45,6 +45,11 @@ const menuItems = computed(() => [
         icon: 'settings',
         label: 'Sales Settings',
         to: `/${activeCompany.value}/settings/sales`,
+      },
+      {
+        icon: 'receipt',
+        label: 'Invoice Settings',
+        to: `/${activeCompany.value}/settings/invoice`,
       },
     ],
   },

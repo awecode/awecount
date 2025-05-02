@@ -702,6 +702,14 @@ const companyRoutes: RouteRecordRaw[] = [
           breadcrumbs: ['Settings', 'Inventory Settings'],
         },
       },
+      {
+        path: 'invoice',
+        name: 'company-settings-invoice-settings',
+        component: () => import('pages/settings/InvoiceSettings.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Invoice Settings'],
+        },
+      },
     ],
   },
   {
