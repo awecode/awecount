@@ -200,13 +200,13 @@ class CompanyMemberViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.filter_queryset(
-            self.model.objects.filter(
-                company__slug=self.kwargs.get("company_slug")
-            ).select_related("company", "member")
+            self.model.objects.filter(company=self.request.company)
+            .select_related("company", "member")
+            .filter(is_active=True)
         )
 
     def destroy(self, request, company_slug, pk):
-        company_member = CompanyMember.objects.get(pk=pk, company__slug=company_slug)
+        company_member = self.get_object()
         company_member.is_active = False
         company_member.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -548,6 +548,7 @@ class UserCompanySwitchEndpoint(views.APIView):
             Company,
             slug=request.data.get("company_slug"),
             company_members__member=request.user,
+            company_members__is_active=True,
         )
 
         request.user.last_company_id = company.id
