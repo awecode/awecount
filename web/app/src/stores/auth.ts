@@ -396,6 +396,7 @@ export const useAuthStore = defineStore(
     return {
       token: accessToken,
       refreshToken,
+      sessionToken,
       user,
       company,
       isAuthenticated,
