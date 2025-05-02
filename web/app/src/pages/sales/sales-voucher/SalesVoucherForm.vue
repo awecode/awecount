@@ -156,9 +156,9 @@ const onSubmitClick = async (status, redirect) => {
                   :label="
                     isEdit
                       ? fields?.status === 'Issued and Print' ? 'Update and Print'
-                        : fields?.status === 'Draft' ? `Issue and Print # ${formDefaults.options?.voucher_no || 1} from Draft`
+                        : fields?.status === 'Draft' ? `Issue from Draft and Print`
                           : 'Update and Print'
-                      : `Issue and Print # ${formDefaults.options?.voucher_no || 1}`
+                      : `Issue and Print`
                   "
                   :loading="loading"
                   @click.prevent="
