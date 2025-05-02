@@ -63,10 +63,6 @@ class ItemSerializer(BaseModelSerializer):
 
         company = self.context["request"].company
 
-        if company.inventory_setting.mandate_category:
-            if not attrs.get("category"):
-                raise ValidationError({"category": ["Category is mandatory."]})
-
         # if (
         #     attrs.get("purchase_account_type") == "Category"
         #     or attrs.get("sales_account_type") == "Category"
@@ -121,6 +117,7 @@ class ItemSalesSerializer(BaseModelSerializer):
     rate = serializers.ReadOnlyField(source="selling_price")
     is_trackable = serializers.ReadOnlyField()
     default_unit_obj = GenericSerializer(read_only=True, source="unit")
+    hs_code = serializers.ReadOnlyField(source="category.hs_code")
 
     class Meta:
         model = Item
@@ -134,6 +131,7 @@ class ItemSalesSerializer(BaseModelSerializer):
             "description",
             "is_trackable",
             "default_unit_obj",
+            "hs_code",
         )
 
 
@@ -161,6 +159,7 @@ class ItemPurchaseSerializer(BaseModelSerializer):
     rate = serializers.ReadOnlyField(source="cost_price")
     is_trackable = serializers.ReadOnlyField()
     default_unit_obj = GenericSerializer(read_only=True, source="unit")
+    hs_code = serializers.ReadOnlyField(source="category.hs_code")
 
     class Meta:
         model = Item
@@ -175,6 +174,7 @@ class ItemPurchaseSerializer(BaseModelSerializer):
             "is_trackable",
             "track_inventory",
             "default_unit_obj",
+            "hs_code",
         )
 
 
@@ -229,10 +229,6 @@ class InventoryCategorySerializer(BaseModelSerializer):
 
     def validate(self, attrs):
         company = self.context["request"].company
-
-        if company.inventory_setting.mandate_hs_code:
-            if not attrs.get("hs_code"):
-                raise ValidationError({"hs_code": ["HS Code is mandatory."]})
 
         type_account_tuples = [
             ("items_sales_account_type", "sales_account"),

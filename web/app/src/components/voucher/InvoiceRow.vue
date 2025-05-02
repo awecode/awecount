@@ -1,238 +1,250 @@
-<script>
+<script setup lang="ts">
+import Decimal from 'decimal.js'
+import FormattedNumber from 'src/components/FormattedNumber.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import ItemForm from 'src/pages/inventory/item/ItemForm.vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
-export default {
-  props: {
-    itemOptions: {
-      type: Object,
-      default: () => {
-        return {
-          results: [],
-          pagination: {},
-        }
-      },
-    },
-    unitOptions: {
-      type: Object,
-      default: () => {
-        return {
-          results: [],
-          pagination: {},
-        }
-      },
-    },
-    discountOptions: {
-      type: Array,
-      default: () => {
-        return []
-      },
-    },
-    errors: {
-      type: Object,
-      default: () => {
-        return null
-      },
-    },
-    rowEmpty: {
-      type: Boolean,
-      default: () => false,
-    },
-    usedIn: {
-      type: String,
-      default: () => {
-        return null
-      },
-    },
-    usedInPos: {
-      type: Boolean,
-      default: () => false,
-    },
-    taxOptions: {
-      type: Array,
-      default: () => {
-        return []
-      },
-    },
-    taxType: {
-      type: String,
-      default: () => {
-        return null
-      },
-    },
-    modelValue: {
-      type: Object,
-      default: () => {
-        return {
-          quantity: 1,
-          rate: '',
-          item_id: null,
-          unit_id: null,
-          description: '',
-          discount: 0,
-          discount_type: null,
-          itemObj: null,
-          tax_scheme_id: '',
-          discount_id: null,
-          trade_discount: false,
-        }
-      },
-    },
-    index: {
-      type: Number,
-      default: () => null,
-    },
-    enableRowDescription: {
-      type: Boolean,
-      default: () => false,
-    },
-    showRowTradeDiscount: {
-      type: Boolean,
-      default: () => false,
-    },
-    inputAmount: {
-      type: Boolean,
-      default: () => false,
-    },
-    showRateQuantity: {
-      type: Boolean,
-      default: () => true,
-    },
-    isFifo: {
-      type: Boolean,
-      default: () => false,
-    },
-    COGSData: {
-      type: Object,
-      default: () => null,
-    },
-    hasChallan: {
-      type: Boolean,
-      default: () => false,
-    },
-  },
-
-  emits: ['update:modelValue', 'deleteRow', 'onItemIdUpdate'],
-  setup(props, { emit }) {
-    const route = useRoute()
-    const expandedState = ref(false)
-    const modalValue = ref(props.modelValue)
-    const selectedTax = ref(null)
-    const amountComputed = computed(() => Math.round((modalValue.value.rate || 0) * (modalValue.value.quantity || 0) * 100) / 100)
-    const selectedItem = ref(null)
-
-    watch(
-      () => props.modelValue,
-      (newValue) => {
-        modalValue.value = newValue
-        emit('update:modelValue', newValue)
-      },
-    )
-    watch(
-      () => modalValue.value,
-      (newValue) => {
-        emit('update:modelValue', newValue)
-      },
-      { deep: true }
-    )
-    const oldTaxSchemeId = ref(null)
-
-    watch(
-      () => props.taxType,
-      (newTaxType) => {
-        if (newTaxType === 'no_tax') {
-          oldTaxSchemeId.value = modalValue.value.tax_scheme_id
-          modalValue.value.tax_scheme_id = null
-        } else if (oldTaxSchemeId.value) {
-          modalValue.value.tax_scheme_id = oldTaxSchemeId.value
-          oldTaxSchemeId.value = null
-        }
-      },
-      { deep: true }
-    )
-
-    watch(
-      () => props.errors,
-      (newValue) => {
-        if (newValue?.tax_scheme_id || newValue?.unit_id) {
-          expandedState.value = true
-        }
-      },
-    )
-    watch(
-      () => props.modelValue.discount_type,
-      (newValue) => {
-        if (typeof newValue === 'number') {
-          const index = props.discountOptions.findIndex(item => newValue === item.id)
-          modalValue.value.discountObj = props.discountOptions[index]
-        } else if (newValue === null) {
-          modalValue.value.discountObj = null
-          modalValue.value.discount = null
-        } else {
-          modalValue.value.discountObj = null
-        }
-      },
-    )
-    const deleteRow = (index) => {
-      emit('deleteRow', index)
-    }
-    onMounted(() => {
-      if (props.usedIn === 'creditNote') modalValue.value.is_returned = true
-    })
-    const onAmountInput = (amount) => {
-      if (amount !== (modalValue.value.rate || 0) * (modalValue.value.quantity || 1)) {
-        if (!modalValue.value.quantity) modalValue.value.quantity = 1
-        modalValue.value.rate = amount / modalValue.value.quantity
-      }
-    }
-    if (props.isFifo && props.usedIn === 'sales' && !route.params.id && !props.usedInPos) {
-      watch(
-        () => modalValue.value.item_id,
-        (newValue) => {
-          if (modalValue.value.item_id) emit('onItemIdUpdate', newValue)
-        },
-      )
-      watch(
-        () => modalValue.value.quantity,
-        () => {
-          if (modalValue.value.item_id) emit('onItemIdUpdate')
-        },
-      )
-    }
-    const updateItem = (itemObject) => {
-      if (itemObject) {
-        modalValue.value.itemObj = itemObject
-        modalValue.value.item_id = itemObject.id
-        modalValue.value.description = itemObject.description
-        modalValue.value.rate = itemObject.rate
-        modalValue.value.unit_id = itemObject.unit_id
-        modalValue.value.tax_scheme_id = props.taxType === 'no_tax' ? null : itemObject.tax_scheme_id
-        modalValue.value.selected_unit_obj = itemObject.default_unit_obj
-        modalValue.value.selected_tax_scheme_obj = itemObject.default_tax_scheme_obj
-      }
-    }
-    const choiceEndpointBaseComputed = computed(() => {
-      if (props.usedIn === 'sales') return 'sales-voucher'
-      if (props.usedIn === 'purchase') return 'purchase-vouchers'
-      if (props.usedIn === 'creditNote') return 'credit-note'
-      // if (props.usedIn === 'debitNote') return 'debit-notes'
-      // if (props.usedIn === 'journal') return 'journal-entries'
-    })
-    return {
-      ItemForm,
-      expandedState,
-      modalValue,
-      amountComputed,
-      selectedItem,
-      selectedTax,
-      deleteRow,
-      checkPermissions,
-      onAmountInput,
-      choiceEndpointBaseComputed,
-      updateItem,
-    }
-  },
+interface Props {
+  itemOptions?: {
+    results: any[]
+    pagination: Record<string, any>
+  }
+  unitOptions?: {
+    results: any[]
+    pagination: Record<string, any>
+  }
+  discountOptions?: any[]
+  errors?: Record<string, string[]> | null
+  rowEmpty?: boolean
+  usedIn?: 'sales' | 'purchase' | 'creditNote' | null
+  usedInPos?: boolean
+  taxOptions?: {
+    results: any[]
+    pagination: Record<string, any>
+  }
+  taxType?: string | null
+  modelValue?: {
+    quantity: number
+    rate: number | string
+    item_id: number | null
+    unit_id: number | null
+    description: string
+    discount: number
+    discount_type: string | null
+    itemObj: any | null
+    tax_scheme_id: string | null
+    discount_id: number | null
+    trade_discount: boolean
+    is_returned?: boolean
+    selected_unit_obj?: any
+    selected_tax_scheme_obj?: any
+    selected_item_obj?: any
+    name?: string
+    discountObj?: any | null
+    missingFields?: string[] | null
+  }
+  index?: number | null
+  enableRowDescription?: boolean
+  showRowTradeDiscount?: boolean
+  inputAmount?: boolean
+  showRateQuantity?: boolean
+  isFifo?: boolean
+  cogsData?: Record<string, any> | null
+  hasChallan?: boolean
+  missingFieldsConfig?: {
+    enabled: boolean
+    fields: Record<string, boolean>
+  }
 }
+
+const props = withDefaults(defineProps<Props>(), {
+  itemOptions: () => ({ results: [], pagination: {} }),
+  unitOptions: () => ({ results: [], pagination: {} }),
+  discountOptions: () => [],
+  errors: null,
+  rowEmpty: false,
+  usedIn: null,
+  usedInPos: false,
+  taxOptions: () => ({ results: [], pagination: {} }),
+  taxType: null,
+  modelValue: () => ({
+    quantity: 1,
+    rate: '',
+    item_id: null,
+    unit_id: null,
+    description: '',
+    discount: 0,
+    discount_type: null,
+    itemObj: null,
+    tax_scheme_id: '',
+    discount_id: null,
+    trade_discount: false,
+    discountObj: null,
+    missingFields: null,
+  }),
+  index: null,
+  enableRowDescription: false,
+  showRowTradeDiscount: false,
+  inputAmount: false,
+  showRateQuantity: true,
+  isFifo: false,
+  cogsData: null,
+  hasChallan: false,
+  missingFieldsConfig: () => ({
+    enabled: false,
+    fields: {},
+  }),
+})
+
+const emit = defineEmits<{
+  'update:modelValue': [value: Props['modelValue']]
+  'deleteRow': [index: number]
+  'onItemIdUpdate': [value?: number]
+}>()
+
+const route = useRoute()
+const expandedState = ref(false)
+const modalValue = ref(props.modelValue)
+const amountComputed = computed(() => new Decimal(modalValue.value.rate || 0).mul(modalValue.value.quantity || 0).toNumber())
+const oldTaxSchemeId = ref<string | null>(null)
+
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    modalValue.value = newValue
+    emit('update:modelValue', newValue)
+  },
+)
+
+watch(
+  () => modalValue.value,
+  (newValue) => {
+    emit('update:modelValue', newValue)
+  },
+  { deep: true },
+)
+
+watch(
+  () => props.taxType,
+  (newTaxType) => {
+    if (newTaxType === 'no_tax') {
+      oldTaxSchemeId.value = modalValue.value.tax_scheme_id
+      modalValue.value.tax_scheme_id = null
+    } else if (oldTaxSchemeId.value) {
+      modalValue.value.tax_scheme_id = oldTaxSchemeId.value
+      oldTaxSchemeId.value = null
+    }
+  },
+  { deep: true },
+)
+
+watch(
+  () => props.errors,
+  (newValue) => {
+    if (newValue?.tax_scheme_id || newValue?.unit_id) {
+      expandedState.value = true
+    }
+  },
+)
+
+watch(
+  () => props.modelValue.discount_type,
+  (newValue) => {
+    if (typeof newValue === 'number') {
+      const index = props.discountOptions.findIndex(item => newValue === item.id)
+      modalValue.value.discountObj = props.discountOptions[index]
+    } else if (newValue === null) {
+      modalValue.value.discountObj = null
+      modalValue.value.discount = null
+    } else {
+      modalValue.value.discountObj = null
+    }
+  },
+)
+
+const deleteRow = (index: number) => {
+  emit('deleteRow', index)
+}
+
+onMounted(() => {
+  if (props.usedIn === 'creditNote') modalValue.value.is_returned = true
+})
+
+const onAmountInput = (amount: number) => {
+  const currentAmount = new Decimal(modalValue.value.rate || 0).mul(modalValue.value.quantity || 1)
+  const newAmount = new Decimal(amount)
+
+  if (!newAmount.equals(currentAmount)) {
+    if (!modalValue.value.quantity) {
+      modalValue.value.quantity = 1
+    }
+    modalValue.value.rate = newAmount.div(modalValue.value.quantity).toNumber()
+  }
+}
+
+if (props.isFifo && props.usedIn === 'sales' && !route.params.id && !props.usedInPos) {
+  watch(
+    () => modalValue.value.item_id,
+    (newValue) => {
+      if (modalValue.value.item_id) {
+        emit('onItemIdUpdate', newValue)
+      }
+    },
+  )
+  watch(
+    () => modalValue.value.quantity,
+    () => {
+      if (modalValue.value.item_id) {
+        emit('onItemIdUpdate')
+      }
+    },
+  )
+}
+
+const updateItem = (itemObject: any) => {
+  if (itemObject) {
+    modalValue.value.itemObj = itemObject
+    modalValue.value.item_id = itemObject.id
+    modalValue.value.description = itemObject.description
+    modalValue.value.rate = itemObject.rate
+    modalValue.value.unit_id = itemObject.unit_id
+    modalValue.value.tax_scheme_id = props.taxType === 'no_tax' ? null : itemObject.tax_scheme_id
+    modalValue.value.selected_unit_obj = itemObject.default_unit_obj
+    modalValue.value.selected_tax_scheme_obj = itemObject.default_tax_scheme_obj
+
+    // Check for missing fields based on config
+    if (props.missingFieldsConfig?.enabled) {
+      const missingFields = []
+      const fieldLabels: Record<string, string> = {
+        code: 'Code',
+        hs_code: 'HS Code',
+      }
+
+      Object.entries(props.missingFieldsConfig.fields).forEach(([field, enabled]) => {
+        if (enabled && (!itemObject[field] || itemObject[field].trim() === '')) {
+          missingFields.push(fieldLabels[field] || field)
+        }
+      })
+
+      if (missingFields.length > 0) {
+        modalValue.value.missingFields = missingFields
+      } else {
+        modalValue.value.missingFields = null
+      }
+    } else {
+      modalValue.value.missingFields = null
+    }
+  }
+}
+
+const choiceEndpointBaseComputed = computed(() => {
+  if (props.usedIn === 'sales') return 'sales-voucher'
+  if (props.usedIn === 'purchase') return 'purchase-vouchers'
+  if (props.usedIn === 'creditNote') return 'credit-note'
+  return ''
+})
 </script>
 
 <template>
@@ -253,9 +265,9 @@ export default {
                 : ''
             "
             :modal-component="
-              usedInPos || hasChallan ? false
+              usedInPos || hasChallan ? undefined
               : checkPermissions('inventoryaccount.create') ? ItemForm
-                : null
+                : undefined
             "
             :options="itemOptions"
             :static-option="modelValue.selected_item_obj"
@@ -267,6 +279,9 @@ export default {
             :label="usedInPos ? '' : 'Item'"
             :model-value="modelValue.name"
           />
+        </div>
+        <div v-if="modalValue.missingFields" class="text-orange text-sm -mt-2">
+          Item is missing required fields: {{ modalValue.missingFields.join(', ') }}
         </div>
         <div v-if="usedIn === 'creditNote'" class="col-2 row justify-center">
           <q-checkbox v-model="modalValue.is_returned" :false-value="null" />
@@ -282,17 +297,17 @@ export default {
             :error-message="errors?.quantity ? errors.quantity[0] : null"
             :label="usedInPos ? '' : 'Quantity'"
           >
-            <template v-if="isFifo && COGSData?.hasOwnProperty(index)" #append>
-              <q-icon v-if="COGSData[index].totalCost.status === 'error'" color="orange" name="mdi-alert">
+            <template v-if="isFifo && Object.hasOwn(cogsData, index)" #append>
+              <q-icon v-if="cogsData[index].totalCost.status === 'error'" color="orange" name="mdi-alert">
                 <q-tooltip>
-                  {{ COGSData[index].totalCost.message }}
+                  {{ cogsData[index].totalCost.message }}
                   <br />
-                  Available Quantity {{ COGSData[index].availableStock }}
+                  Available Quantity {{ cogsData[index].availableStock }}
                 </q-tooltip>
               </q-icon>
               <span v-else class="text-sm mt-4 text-blue-400">
                 <q-tooltip>Available Stock</q-tooltip>
-                {{ COGSData[index].availableStock }}
+                {{ cogsData[index].availableStock }}
               </span>
             </template>
           </q-input>
@@ -307,43 +322,35 @@ export default {
             :error-message="errors?.rate ? errors.rate[0] : null"
             :label="usedInPos ? '' : 'Rate'"
           >
-            <template v-if="isFifo && COGSData?.hasOwnProperty(index)" #append>
-              <span v-if="COGSData[index].totalCost.status != 'error'" class="text-sm mt-4 text-blue-400">
+            <template v-if="isFifo && Object.hasOwn(cogsData, index)" #append>
+              <span v-if="cogsData[index].totalCost.status !== 'error'" class="text-sm mt-4 text-blue-400">
                 <q-tooltip>Cost Rate as per Fifo.</q-tooltip>
-                {{ $nf(COGSData[index].totalCost / modalValue.quantity) }}
+                <FormattedNumber type="currency" :value="new Decimal(cogsData[index].totalCost).div(modalValue.quantity).toNumber()" />
               </span>
-              <!-- <q-icon v-else color="orange" name="mdi-alert">
-                  <q-tooltip>
-                    {{ COGSData[index].message }}
-                  </q-tooltip>
-                </q-icon> -->
             </template>
           </q-input>
         </div>
       </div>
       <div v-if="inputAmount" class="col-2" data-testid="amount-input">
-        <!-- <span class="">{{ amountComputed }}</span> -->
         <q-input v-model="amountComputed" label="Amount" @change="onAmountInput">
-          <template v-if="isFifo && COGSData?.hasOwnProperty(index) && COGSData[index].totalCost.status != 'error'" #append>
+          <template v-if="isFifo && Object.hasOwn(cogsData, index) && cogsData[index].totalCost.status !== 'error'" #append>
             <span class="text-sm mt-4 text-blue-400">
               <q-tooltip>Total Cost Price as per Fifo.</q-tooltip>
-              {{ $nf(COGSData[index].totalCost) }}
+              <FormattedNumber type="currency" :value="cogsData[index].totalCost" />
             </span>
           </template>
         </q-input>
-        <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
       <div v-else class="col-2 row justify-center items-center" data-testid="amount-input">
         <span class="">
-          {{ amountComputed }}
-          <span v-if="isFifo && COGSData?.hasOwnProperty(index) && COGSData[index].totalCost.status != 'error'" class="relative bg-red-200">
+          <FormattedNumber type="currency" :value="amountComputed" />
+          <span v-if="isFifo && Object.hasOwn(cogsData, index) && cogsData[index].totalCost.status !== 'error'" class="relative bg-red-200">
             <span class="text-sm ml-2 text-blue-400 absolute top-1/2 -right-0 -translate-y-1/2">
               <q-tooltip>Total Cost Price as per Fifo.</q-tooltip>
-              {{ $nf(COGSData[index].totalCost) }}
+              <FormattedNumber type="currency" :value="cogsData[index].totalCost" />
             </span>
           </span>
         </span>
-        <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
       <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
         <q-btn
@@ -379,23 +386,6 @@ export default {
         </q-btn>
       </div>
     </div>
-    <!-- <div v-if="isFifo && COGSData?.hasOwnProperty(index)" class="pb-2">
-      <div v-if="COGSData[index].status != 'error'" class="row text-blue-4">
-        <div class="col-5">Average Cost:</div>
-        <div class="col-2"></div>
-        <div class="col-2 q-pl-sm">
-          {{ $nf(COGSData[index] / modalValue.quantity) }}
-        </div>
-        <div class="col-2 text-center">{{ COGSData[index] }}</div>
-      </div>
-      <div v-else class="row text-orange-5">
-        <div class="col-5">Error:</div>
-        <div class="col-1"></div>
-        <div class="col-5 q-pl-sm text-right">
-          {{ COGSData[index].message }}
-        </div>
-      </div>
-    </div> -->
     <div v-if="expandedState">
       <div class="row q-col-gutter-md q-px-lg">
         <div class="col-grow" data-testid="unit-select">
@@ -404,8 +394,7 @@ export default {
             label="Unit"
             :emit-obj="usedInPos"
             :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/units`"
-            :error="errors?.unit_id ? true : false"
-            :error-message="errors?.unit_id ? errors.unit_id[0] : null"
+            :error="errors?.unit_id ? errors?.unit_id[0] : ''"
             :options="unitOptions"
             :static-option="modalValue.selected_unit_obj"
             @update-obj="(val) => (modalValue.selected_unit_obj = val)"
@@ -436,9 +425,8 @@ export default {
             label="Tax"
             :emit-obj="true"
             :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/tax_schemes`"
-            :error="errors?.tax_scheme_id ? true : null"
-            :error-message="errors?.tax_scheme_id ? 'This field is required' : null"
-            :options="taxOptions"
+            :error="errors?.tax_scheme_id ? 'This field is required' : ''"
+            :options="props.taxOptions"
             :static-option="modalValue.selected_tax_scheme_obj"
             @update-obj="(val) => (modalValue.selected_tax_scheme_obj = val)"
           />

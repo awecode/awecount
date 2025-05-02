@@ -611,6 +611,13 @@ onMounted(() => {
       discount_type: fields.discount_type,
       discount: fields.discount,
     }"
+    :missing-fields-config="{
+      enabled: true,
+      fields: {
+        code: formDefaults?.fields?.require_item_code,
+        hs_code: formDefaults?.fields?.require_item_hs_code,
+      },
+    }"
     :show-row-trade-discount="formDefaults.options?.show_trade_discount_in_row"
     :tax-options="formDefaults.collections?.tax_schemes"
     :unit-options="formDefaults.collections ? formDefaults.collections.units : null"

@@ -334,7 +334,7 @@ export default {
           </div>
         </q-card-section>
       </q-card>
-      <invoice-table
+      <InvoiceTable
         v-if="formDefaults.collections"
         v-model="fields.rows"
         used-in="creditNote"

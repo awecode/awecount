@@ -327,11 +327,11 @@ export const useAuthStore = defineStore(
         user.value.redirect = companySlug
         await _fetchCompany(companySlug)
         await _fetchPermissions(companySlug)
-        if (router && route) {
-          router.push({ name: route.name, params: { ...route.params, company: companySlug }, query: route.query, hash: route.hash })
-        } else {
-          window.location.href = `${url.origin}/${companySlug}/dashboard`
-        }
+        // if (router && route) {
+        //   router.push({ name: route.name, params: { company: companySlug }, query: route.query, hash: route.hash })
+        // } else {
+        // }
+        window.location.href = `${url.origin}/${companySlug}/dashboard`
         return res
       } catch (error) {
         if (error.response?.status === 404 && !['onboarding', 'invitations', 'create-company'].includes(companySlug)) {
