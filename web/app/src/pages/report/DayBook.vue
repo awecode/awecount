@@ -253,7 +253,7 @@ function onPurchaseRequest(props) {
                         ?.reduce((acc, cur) => {
                           return acc + cur.total_amount
                         }, 0)
-                        .toFixed(2)
+                        ?.toFixed(2)
                     }}
                   </div>
                 </div>
@@ -296,7 +296,7 @@ function onPurchaseRequest(props) {
                         ?.reduce((acc, cur) => {
                           return acc + cur.total_amount
                         }, 0)
-                        .toFixed(2)
+                        ?.toFixed(2)
                     }}
                   </div>
                 </div>
