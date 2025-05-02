@@ -151,13 +151,15 @@ export default {
               <q-checkbox v-model="fields.show_rate_quantity_in_voucher" label="Show Rate and Quantity in voucher row?" />
             </div>
             <div class="row q-pl-sm">
-              <q-input
-                v-model="fields.invoice_footer_text"
-                autogrow
-                class="col-12 col-sm-6"
-                label="Invoice footer text"
-                type="textarea"
-              />
+              <div class="col-12 col-sm-6">
+                <q-label class="q-mb-md">
+                  Invoice Footer Text
+                </q-label>
+                <q-editor
+                  v-model="fields.invoice_footer_text"
+                  autogrow
+                />
+              </div>
             </div>
             <div>
               <q-checkbox v-model="fields.persist_pos_items" label="Enable Persist items in POS page?" />

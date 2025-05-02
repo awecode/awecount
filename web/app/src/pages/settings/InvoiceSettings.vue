@@ -18,6 +18,12 @@ const fields = ref({
 })
 const formLoading = ref(false)
 
+const salesSettings = ref({})
+
+useApi(`/api/company/${route.params.company}/sales-settings/`).then((data) => {
+  salesSettings.value = data?.results[0]
+})
+
 const data = {
   party_name: 'Random Party Name',
   party_contact_no: 'jkjrkgjjr84787847',
@@ -83,7 +89,6 @@ const data = {
     show_rate_quantity_in_voucher: true,
   },
   fiscal_year: 'FY 81-82',
-  invoice_footer_text: 'test',
   challan_numbers: [],
   meta_sub_total: 500.0,
   meta_sub_total_after_row_discounts: 500.0,
@@ -128,8 +133,8 @@ const data = {
   ],
 }
 
-const generateHtml = async (template) => {
-  return useGeneratePdf('salesVoucher', false, data, false, loginStore.companyInfo, template)
+const generateHtml = (template, invoiceFooterText) => {
+  return useGeneratePdf('salesVoucher', false, { ...data, invoice_footer_text: invoiceFooterText }, false, loginStore.companyInfo, template)
 }
 
 const templateOptions = ref([
@@ -138,7 +143,13 @@ const templateOptions = ref([
   { label: 'Template 3', value: 3, html: '' },
 ])
 
-templateOptions.value.forEach(async template => (template.html = await generateHtml(template.value)))
+watch(() => salesSettings.value, (val) => {
+  templateOptions.value.forEach((template) => {
+    template.html = generateHtml(template.value, val.invoice_footer_text)
+  })
+}, {
+  deep: true,
+})
 
 const htmlDialogOpen = ref(false)
 const selectedHtml = ref('')
