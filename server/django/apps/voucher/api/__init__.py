@@ -1770,7 +1770,7 @@ class SalesBookViewSet(
         if self.is_filtered_by_date():
             input_stream_path = os.path.join(
                 settings.BASE_DIR,
-                "awecount/store/spreadsheet_templates/np/sales-book.xlsx",
+                "store/spreadsheet_templates/np/sales-book.xlsx",
             )
             input_stream = open(input_stream_path, "rb")
             wb = openpyxl.load_workbook(input_stream)
