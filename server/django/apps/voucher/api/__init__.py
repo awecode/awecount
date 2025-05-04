@@ -269,7 +269,7 @@ def import_sales_vouchers(request_obj, file):
     error_message = None
     for i in range(len(required_fields)):
         if required_fields[i] != headers[i]:
-            error_message = f"Column {i+1} should be {required_fields[i]}"
+            error_message = f"Column {i + 1} should be {required_fields[i]}"
             break
 
     if error_message:
@@ -368,7 +368,7 @@ def import_purchase_vouchers(request_obj, file):
     error_message = None
     for i in range(len(required_fields)):
         if required_fields[i] != headers[i]:
-            error_message = f"Column {i+1} should be {required_fields[i]}"
+            error_message = f"Column {i + 1} should be {required_fields[i]}"
             break
 
     if error_message:
@@ -1159,8 +1159,7 @@ class PurchaseVoucherViewSet(
                 ),
                 Prefetch(
                     "landed_cost_rows",
-                    LandedCostRow.objects.all()
-                    .order_by("pk"),
+                    LandedCostRow.objects.all().order_by("pk"),
                 ),
             )
             .select_related(
@@ -2051,7 +2050,7 @@ class PurchaseBookViewSet(
         if self.is_filtered_by_date():
             input_stream_path = os.path.join(
                 settings.BASE_DIR,
-                "awecount/store/spreadsheet_templates/np/purchase-book.xlsx",
+                "store/spreadsheet_templates/np/purchase-book.xlsx",
             )
             input_stream = open(input_stream_path, "rb")
             wb = openpyxl.load_workbook(input_stream)
