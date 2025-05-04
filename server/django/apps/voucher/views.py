@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.company.models import Company
+from apps.company.models import INVOICE_TEMPLATE_CHOICES, Company
 from awecount.libs.helpers import get_full_file_url, upload_file
 
 
@@ -43,7 +43,7 @@ class InvoiceSettingUpdateView(APIView):
 
     def patch(self, request, *args, **kwargs):
         invoice_template = request.data.get("invoice_template")
-        if invoice_template not in dict(Company.TEMPLATE_CHOICES):
+        if invoice_template not in dict(INVOICE_TEMPLATE_CHOICES):
             return Response({"message": "Invalid invoice template"}, status=400)
         company = Company.objects.get(pk=request.company_id)
         company.invoice_template = invoice_template

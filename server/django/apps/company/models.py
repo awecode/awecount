@@ -171,7 +171,7 @@ def slug_validator(value):
         raise ValidationError("Slug is not valid")
 
 
-TEMPLATE_CHOICES = [
+INVOICE_TEMPLATE_CHOICES = [
     (1, "Template 1"),
     (2, "Template 2"),
     (3, "Template 3"),
@@ -250,7 +250,7 @@ class Company(BaseModel):
     synchronize_cbms_nepal_test = models.BooleanField(default=False)
     synchronize_cbms_nepal_live = models.BooleanField(default=False)
     config_template = models.CharField(max_length=255, default="np")
-    invoice_template = models.IntegerField(choices=TEMPLATE_CHOICES, default=1)
+    invoice_template = models.IntegerField(choices=INVOICE_TEMPLATE_CHOICES, default=1)
 
     current_fiscal_year = models.ForeignKey(
         FiscalYear,
