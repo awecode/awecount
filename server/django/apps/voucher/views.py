@@ -45,7 +45,7 @@ class InvoiceSettingUpdateView(APIView):
         invoice_template = request.data.get("invoice_template")
         if invoice_template not in dict(INVOICE_TEMPLATE_CHOICES):
             return Response({"message": "Invalid invoice template"}, status=400)
-        company = Company.objects.get(pk=request.company_id)
+        company = Company.objects.get(pk=request.company.id)
         company.invoice_template = invoice_template
         company.save()
         return Response({})
