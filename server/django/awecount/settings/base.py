@@ -274,8 +274,6 @@ if SENTRY_DSN := os.environ.get("SENTRY_DSN", None):
         send_default_pii=True,
     )
 
-    MIDDLEWARE.insert(-1, "lib.sentry.middleware.SentryMiddleware")
-
 
 ######################################################################
 # DRF
@@ -380,7 +378,16 @@ Q_CLUSTER = {
 }
 
 if SENTRY_DSN := os.environ.get("SENTRY_DSN", None):
-    Q_CLUSTER["error_reporter"] = {"sentry": {"dsn": SENTRY_DSN}}
+    # TODO: upgrade django-q-sentry to 0.2.0 and then we won't need to set these options
+    Q_CLUSTER["error_reporter"] = {
+        "sentry": {
+            "dsn": SENTRY_DSN,
+            "environment": os.environ.get("SENTRY_ENVIRONMENT"),
+            "send_default_pii": True,
+            "enable_tracing": True,
+            "traces_sample_rate": 1.0,
+        }
+    }
 
 
 ################################################################
