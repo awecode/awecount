@@ -70,6 +70,12 @@ export const switchCompanyGuard = async (
     return next(resolved)
   }
 
+  // Handle dashboard route
+  if (to.params.company === 'dashboard') {
+    const resolved = router.resolve(`/${user?.redirect}${to.fullPath}`)
+    return next(resolved)
+  }
+
   // Handle direct navigation to a different company via URL
   // This allows users to switch companies by entering a different company's URL
   if (from.params.company === undefined && to.params.company && to.params.company !== user?.redirect) {
