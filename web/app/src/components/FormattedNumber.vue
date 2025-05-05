@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Decimal } from 'decimal.js'
 import { useLoginStore } from 'src/stores/login-info'
 import { computed } from 'vue'
 
@@ -15,7 +16,7 @@ const {
   nullValue = '-',
   zeroValue,
 } = defineProps<{
-  value: number
+  value: number | string | Decimal | null | undefined
   type?: FormatType
   locale?: string
   currency?: string
@@ -32,7 +33,9 @@ const formatted = computed(() => {
     return nullValue
   }
 
-  if (value === 0 && zeroValue) {
+  const _value = new Decimal(value)
+
+  if (_value.isZero() && zeroValue) {
     return zeroValue
   }
 
@@ -55,10 +58,10 @@ const formatted = computed(() => {
     options.unitDisplay = unitDisplay
   }
 
-  const formattedValue = new Intl.NumberFormat(_locale, options).format(value)
+  const formattedValue = new Intl.NumberFormat(_locale, options).format(_value.toNumber())
 
   // Add brackets for negative values for decimal and unit types
-  if (value < 0) {
+  if (_value.isNegative()) {
     return `(${formattedValue})`
   }
 
