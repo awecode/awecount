@@ -64,6 +64,9 @@ const customerMode = ref(false)
 const aliases = ref([])
 
 watch([customerMode, aliases], () => {
+  if (!fields.value.invoice_data) {
+    fields.value.invoice_data = {}
+  }
   if (!customerMode.value) {
     if (aliases.value.length === 0) {
       fields.value.invoice_data.customer_name = null
