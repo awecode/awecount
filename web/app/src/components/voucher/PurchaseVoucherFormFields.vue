@@ -80,19 +80,18 @@ const showLandedCosts = ref(false)
 if (!fields.value.landed_cost_rows) {
   fields.value.landed_cost_rows = []
 }
-
 const landedCostTypes = [
   { label: 'Duty', value: 'Duty' },
+  { label: 'Labor', value: 'Labor' },
   { label: 'Freight', value: 'Freight' },
-  { label: 'Shipping', value: 'Shipping' },
-  { label: 'Brokerage', value: 'Brokerage' },
   { label: 'Insurance', value: 'Insurance' },
+  { label: 'Brokerage', value: 'Brokerage' },
   { label: 'Storage', value: 'Storage' },
-  { label: 'Labour', value: 'Labour' },
   { label: 'Packaging', value: 'Packaging' },
   { label: 'Loading', value: 'Loading' },
   { label: 'Unloading', value: 'Unloading' },
   { label: 'Regulatory Fee', value: 'Regulatory Fee' },
+  { label: 'Customs Declaration', value: 'Customs Declaration' },
   { label: 'Other', value: 'Other' },
 ]
 
@@ -103,10 +102,6 @@ const LANDED_COST_PRESETS = {
     default_currency: loginStore.companyInfo.currency_code || 'USD',
   },
   'Freight': {
-    is_percentage: false,
-    default_currency: loginStore.companyInfo.currency_code || 'USD',
-  },
-  'Shipping': {
     is_percentage: false,
     default_currency: loginStore.companyInfo.currency_code || 'USD',
   },
@@ -122,11 +117,27 @@ const LANDED_COST_PRESETS = {
     is_percentage: false,
     default_currency: loginStore.companyInfo.currency_code || 'USD',
   },
-  'Labour': {
+  'Labor': {
     is_percentage: false,
     default_currency: loginStore.companyInfo.currency_code || 'USD',
   },
   'Regulatory Fee': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Customs Declaration': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Packaging': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Loading': {
+    is_percentage: false,
+    default_currency: loginStore.companyInfo.currency_code || 'USD',
+  },
+  'Unloading': {
     is_percentage: false,
     default_currency: loginStore.companyInfo.currency_code || 'USD',
   },

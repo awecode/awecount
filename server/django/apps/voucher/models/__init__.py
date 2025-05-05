@@ -2136,17 +2136,17 @@ class Import(models.Model):
 
 class LandedCostRowType(models.TextChoices):
     DUTY = "Duty"
+    LABOR = "Labor"
     FREIGHT = "Freight"
-    SHIPPING = "Shipping"
-    BROKERAGE = "Brokerage"
     INSURANCE = "Insurance"
+    BROKERAGE = "Brokerage"
     STORAGE = "Storage"
-    LABOUR = "Labour"
-    REGULATORY_FEE = "Regulatory Fee"
-    OTHER = "Other"
     PACKAGING = "Packaging"
     LOADING = "Loading"
     UNLOADING = "Unloading"
+    REGULATORY_FEE = "Regulatory Fee"
+    CUSTOMS_DECLARATION = "Customs Declaration"
+    OTHER = "Other"
 
 
 class LandedCostRow(models.Model):
