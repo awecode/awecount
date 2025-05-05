@@ -17,6 +17,12 @@ if settings.DEBUG:
         pass
 
 
+def trigger_error(request):
+    import sentry_sdk
+
+    sentry_sdk.capture_exception(ZeroDivisionError("Division by zero"))
+
+
 urlpatterns += [
     path(admin_path, admin.site.urls),
     path("", include("apps.aggregator.urls")),
@@ -30,6 +36,7 @@ urlpatterns += [
     path("", include("apps.tax.urls")),
     path("", include("apps.users.urls")),
     path("", include("apps.voucher.urls")),
+    path("sentry-debug/", trigger_error),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
