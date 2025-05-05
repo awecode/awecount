@@ -1233,9 +1233,9 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
                 for key, value in list(txn.consumption_data.items()):
                     if dr_txn := dr_txns.get(int(key), None):
-                        dr_txn.remaining_quantity += value[0]
+                        dr_txn.remaining_quantity += Decimal(value[0])
                         updated_txns.append(dr_txn)
-                        txn.fifo_inconsistency_quantity += value[0]
+                        txn.fifo_inconsistency_quantity += Decimal(value[0])
                         txn.consumption_data.pop(key)
 
                 updated_txns.append(txn)
@@ -1292,7 +1292,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 )
 
                 transaction.consumption_data[t.id] = [
-                    arg[2],
+                    str(arg[2]),
                     str(t.rate),
                 ]
 
@@ -1338,7 +1338,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                         txn.fifo_inconsistency_quantity = txn.cr_amount
                         for key, value in txn.consumption_data.items():
                             dr_txn = dr_txns[int(key)]
-                            dr_txn.remaining_quantity += value[0]
+                            dr_txn.remaining_quantity += Decimal(value[0])
                             updated_txns.append(dr_txn)
                         txn.consumption_data = {}
                         updated_txns.append(txn)
@@ -1386,7 +1386,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                                 tx_next.remaining_quantity -= req_qty
                                 updated_txns.append(tx_next)
                                 transaction.consumption_data[tx_next.id] = [
-                                    req_qty,
+                                    str(req_qty),
                                     str(tx_next.rate),
                                 ]
                             else:
@@ -1394,7 +1394,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
                         for txn in txn_qs:
                             transaction.consumption_data[txn.id] = [
-                                txn.remaining_quantity,
+                                str(txn.remaining_quantity),
                                 str(txn.rate),
                             ]
 
@@ -1414,7 +1414,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                             tx_next.remaining_quantity -= req_qty
                             tx_next.save()
                             transaction.consumption_data[tx_next.id] = [
-                                req_qty,
+                                str(req_qty),
                                 str(tx_next.rate),
                             ]
                         else:
