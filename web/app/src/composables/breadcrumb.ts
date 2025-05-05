@@ -52,9 +52,11 @@ export const useBreadcrumbItems = () => {
     return segments
       .filter(Boolean)
       .map((item) => {
-        const route = router.resolve(item.to)?.matched?.[0] || router.currentRoute.value // fallback to current route
+        const resolved = router.resolve(item.to)
+        const matchedLast = resolved?.matched?.[resolved?.matched?.length - 1]
+        const route = matchedLast || router.currentRoute.value // fallback to current route
         const routeMeta = (route?.meta || {}) as RouteMeta & { title?: string, breadcrumbLabel: string }
-        const routeName = route.name.toString()
+        const routeName = route.name?.toString()
         const fallbackLabel = titleCase(routeName === 'index' ? 'Home' : (item.to || '').split('/').pop() || '') // fallback to last path segment
 
         // merge with the route meta
@@ -64,6 +66,7 @@ export const useBreadcrumbItems = () => {
             ...routeMeta.breadcrumb,
           }
         }
+
         // allow opt-out of label normalise with `false` value
         // @ts-expect-error untyped
         item.label = item.label || routeMeta.title || routeMeta.breadcrumbTitle || fallbackLabel
