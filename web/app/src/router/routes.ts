@@ -1,6 +1,13 @@
-import type { RouteRecordRaw } from 'vue-router'
+import type { RouteLocationNormalized, RouteRecordRaw } from 'vue-router'
 
 const companyRoutes: RouteRecordRaw[] = [
+  {
+    path: '',
+    name: 'company-index',
+    redirect: (to: RouteLocationNormalized) => {
+      return { name: 'company-dashboard', params: { company: to.params.company } }
+    },
+  },
   {
     path: 'dashboard',
     name: 'company-dashboard',
