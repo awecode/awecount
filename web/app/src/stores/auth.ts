@@ -335,7 +335,7 @@ export const useAuthStore = defineStore(
         return res
       } catch (error) {
         if (error.response?.status === 404 && !['onboarding', 'invitations', 'create-company'].includes(companySlug)) {
-          switchCompany(user.value?.redirect, { router, route })
+          return switchCompany(user.value?.redirect, { router, route })
         }
         throw error
       }
