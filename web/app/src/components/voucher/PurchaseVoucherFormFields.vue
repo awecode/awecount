@@ -157,14 +157,6 @@ const landedCostColumns = [
     style: 'width: 150px',
   },
   {
-    name: 'amount',
-    label: 'Amount',
-    field: 'amount',
-    align: 'right',
-    sortable: true,
-    style: 'width: 200px',
-  },
-  {
     name: 'is_percentage',
     label: 'Amount Type',
     field: 'is_percentage',
@@ -177,6 +169,28 @@ const landedCostColumns = [
     field: 'currency',
     align: 'center',
     style: 'width: 100px',
+  },
+  {
+    name: 'amount',
+    label: 'Amount',
+    field: 'amount',
+    align: 'right',
+    sortable: true,
+    style: 'width: 200px',
+  },
+  {
+    name: 'tax_scheme',
+    label: 'Tax Scheme',
+    field: 'tax_scheme',
+    align: 'left',
+    style: 'width: 150px',
+  },
+  {
+    name: 'credit_account',
+    label: 'Credit Account',
+    field: 'credit_account',
+    align: 'left',
+    style: 'width: 150px',
   },
   {
     name: 'description',
@@ -206,6 +220,8 @@ const addLandedCostRow = () => {
     description: '',
     is_percentage: false,
     currency: loginStore.companyInfo.currency_code || 'USD',
+    tax_scheme: null,
+    credit_account: null,
   })
 }
 
@@ -635,7 +651,7 @@ onMounted(() => {
     @delete-row-err="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)"
   />
   <q-card v-if="formDefaults.options?.enable_landed_costs" class="q-mx-lg q-mt-md">
-    <q-card-section>
+    <q-card-section :style="{ paddingLeft: '0px', paddingRight: '0px' }">
       <div class="row items-center q-mb-md">
         <q-checkbox v-model="showLandedCosts" label="Landed Costs" />
       </div>
@@ -728,6 +744,52 @@ onMounted(() => {
               />
             </q-td>
           </template>
+          <template #body-cell-tax_scheme="cellProps">
+            <q-td :props="cellProps">
+              <n-auto-complete-v2
+                v-model="cellProps.row.tax_scheme_id"
+                dense
+                emit-value
+                map-options
+                option-label="name"
+                option-value="id"
+                :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/tax_schemes`"
+                :options="formDefaults.collections?.tax_schemes"
+              >
+                <template #append>
+                  <q-icon
+                    v-if="cellProps.row.tax_scheme_id"
+                    class="cursor-pointer"
+                    name="close"
+                    @click.stop.prevent="cellProps.row.tax_scheme_id = null"
+                  />
+                </template>
+              </n-auto-complete-v2>
+            </q-td>
+          </template>
+          <template #body-cell-credit_account="cellProps">
+            <q-td :props="cellProps">
+              <n-auto-complete-v2
+                v-model="cellProps.row.credit_account_id"
+                dense
+                emit-value
+                map-options
+                option-label="name"
+                option-value="id"
+                :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/landed_cost_credit_accounts`"
+                :options="formDefaults.collections?.landed_cost_credit_accounts"
+              >
+                <template #append>
+                  <q-icon
+                    v-if="cellProps.row.credit_account_id"
+                    class="cursor-pointer"
+                    name="close"
+                    @click.stop.prevent="cellProps.row.credit_account_id = null"
+                  />
+                </template>
+              </n-auto-complete-v2>
+            </q-td>
+          </template>
           <template #body-cell-description="cellProps">
             <q-td :props="cellProps">
               <q-input
@@ -740,10 +802,10 @@ onMounted(() => {
           </template>
           <template #bottom-row>
             <q-tr>
-              <q-td class="text-right" colspan="5">
+              <q-td class="text-right" colspan="6">
                 Average rate per item:
               </q-td>
-              <q-td class="text-right text-bold" colspan="1">
+              <q-td class="text-left text-bold" colspan="2">
                 <FormattedNumber
                   type="currency"
                   :currency="loginStore.companyInfo.currency_code"

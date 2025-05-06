@@ -1061,6 +1061,13 @@ class PurchaseVoucherViewSet(
             True,
             ["name"],
         ),
+        (
+            "landed_cost_credit_accounts",
+            Account.objects.filter(category__name__in=["Cash Accounts", "Bank Accounts", "Account Payables"]),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
     )
 
     def create(self, request, *args, **kwargs):

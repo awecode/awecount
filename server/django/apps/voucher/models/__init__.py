@@ -49,6 +49,7 @@ from awecount.libs.helpers import (
     merge_dicts,
     use_miti,
 )
+from apps.ledger.models.base import Account
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -1352,6 +1353,32 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
 
             set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
+        if self.company.purchase_setting.enable_landed_cost:
+            account_map = {}
+            landed_cost_accounts = self.company.purchase_setting.landed_cost_accounts
+            for landed_cost in self.landed_cost_rows.all():
+
+                entries = []
+                account = account_map.get(landed_cost.type, None)
+                if not account:
+                    account = Account.objects.get(id=landed_cost_accounts[landed_cost.type.lower().replace(' ', '_')])
+                    account_map[landed_cost.type] = account
+
+                entries.append(["dr", account, landed_cost.amount])
+
+                row_tax_amount = Decimal("0.00")
+
+                if landed_cost.tax_scheme:
+                    row_tax_amount = (
+                        landed_cost.tax_scheme.rate * landed_cost.amount / Decimal(100)
+                    )
+                    if row_tax_amount:
+                        entries.append(["dr", landed_cost.tax_scheme.receivable, row_tax_amount])
+
+                entries.append(["cr", landed_cost.credit_account, landed_cost.amount + row_tax_amount])
+
+                set_ledger_transactions(self, self.date, *entries, clear=True)
+
         self.apply_inventory_transaction()
 
 
@@ -2158,8 +2185,34 @@ class LandedCostRow(models.Model):
         on_delete=models.CASCADE,
         related_name="landed_cost_rows",
     )
+    tax_scheme = models.ForeignKey(
+        TaxScheme,
+        on_delete=models.CASCADE,
+        related_name="landed_cost_rows",
+        null=True,
+        blank=True,
+    )
+    credit_account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name="landed_cost_rows",
+        help_text="Account to which the landed cost will be credited",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    tax_amount = models.DecimalField(max_digits=24, decimal_places=6, default=Decimal("0"))
+    total_amount = models.DecimalField(max_digits=24, decimal_places=6, default=Decimal("0"))
+
+    def save(self, *args, **kwargs):
+        if not self.tax_scheme:
+            self.tax_amount = Decimal("0")
+            self.total_amount = self.amount
+        else:
+            self.tax_amount = self.tax_scheme.rate * self.amount / Decimal("100")
+            self.total_amount = self.amount + self.tax_amount
+
+        super().save(*args, **kwargs)
 
 
 # class LandingCostDistribution(models.Model):
