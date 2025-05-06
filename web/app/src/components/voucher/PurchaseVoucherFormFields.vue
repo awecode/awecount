@@ -92,7 +92,7 @@ const landedCostTypes = [
   { label: 'Unloading', value: 'Unloading' },
   { label: 'Regulatory Fee', value: 'Regulatory Fee' },
   { label: 'Customs Declaration', value: 'Customs Declaration' },
-  { label: 'Other', value: 'Other' },
+  { label: 'Other Charges', value: 'Other Charges' },
 ]
 
 // Presets for landed cost types
@@ -141,7 +141,7 @@ const LANDED_COST_PRESETS = {
     is_percentage: false,
     default_currency: loginStore.companyInfo.currency_code || 'USD',
   },
-  'Other': {
+  'Other Charges': {
     is_percentage: false,
     default_currency: loginStore.companyInfo.currency_code || 'USD',
   },
@@ -625,8 +625,8 @@ onMounted(() => {
     :missing-fields-config="{
       enabled: true,
       fields: {
-        code: formDefaults?.fields?.require_item_code,
-        hs_code: formDefaults?.fields?.require_item_hs_code,
+        code: formDefaults?.options?.require_item_code,
+        hs_code: formDefaults?.options?.require_item_hs_code,
       },
     }"
     :show-row-trade-discount="formDefaults.options?.show_trade_discount_in_row"
@@ -634,7 +634,7 @@ onMounted(() => {
     :unit-options="formDefaults.collections ? formDefaults.collections.units : null"
     @delete-row-err="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)"
   />
-  <q-card class="q-mx-lg q-mt-md">
+  <q-card v-if="formDefaults.options?.enable_landed_costs" class="q-mx-lg q-mt-md">
     <q-card-section>
       <div class="row items-center q-mb-md">
         <q-checkbox v-model="showLandedCosts" label="Landed Costs" />

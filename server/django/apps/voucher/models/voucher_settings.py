@@ -115,6 +115,9 @@ class PurchaseSetting(models.Model):
     enable_item_rate_change_alert = models.BooleanField(default=False)
     rate_change_alert_emails = ArrayField(models.EmailField(), default=list, blank=True)
 
+    enable_landed_cost = models.BooleanField(default=False)
+    landed_cost_accounts = models.JSONField(default=dict, blank=True)
+
     def update(self, update_data):
         bank_account_id = update_data.get("bank_account")
         payment_mode_id = update_data.get("payment_mode")
@@ -156,6 +159,8 @@ class PurchaseSetting(models.Model):
             "enable_purchase_order_import": self.enable_purchase_order_import,
             "require_item_code": self.require_item_code,
             "require_item_hs_code": self.require_item_hs_code,
+            "enable_landed_costs": self.enable_landed_cost,
+            "landed_cost_accounts": self.landed_cost_accounts,
         }
 
     def __str__(self):

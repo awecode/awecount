@@ -2146,7 +2146,7 @@ class LandedCostRowType(models.TextChoices):
     UNLOADING = "Unloading"
     REGULATORY_FEE = "Regulatory Fee"
     CUSTOMS_DECLARATION = "Customs Declaration"
-    OTHER = "Other"
+    OTHER_CHARGES = "Other Charges"
 
 
 class LandedCostRow(models.Model):
