@@ -160,10 +160,10 @@ export default {
               class="text-white text-subtitle row items-center justify-center"
               style="border-radius: 8px; padding: 2px 10px"
               :class="
-                props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
-                : props.row.status == 'Cleared' ? 'bg-green-2 text-green-10'
-                  : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
-                    : props.row.status == 'Cancelled' ? 'bg-red-2 text-red-10'
+                props.row.status === 'Issued' ? 'bg-blue-2 text-blue-10'
+                : props.row.status === 'Cleared' ? 'bg-green-2 text-green-10'
+                  : props.row.status === 'Draft' ? 'bg-orange-2 text-orange-10'
+                    : props.row.status === 'Cancelled' ? 'bg-red-2 text-red-10'
                       : 'bg-blue-2 text-blue-10'
               "
             >
@@ -201,14 +201,21 @@ export default {
           </div>
         </q-td>
       </template>
-      <template #body-cell-tds_amount="props">
-        <q-td :props="props">
-          <span>{{ $nf(props.row.tds_amount) }}</span>
-        </q-td>
-      </template>
       <template #body-cell-amount="props">
         <q-td :props="props">
-          <span>{{ $nf(props.row.amount) }}</span>
+          <FormattedNumber
+            type="currency"
+            :value="props.row.amount"
+          />
+        </q-td>
+      </template>
+      <template #body-cell-tds_amount="props">
+        <q-td :props="props">
+          <FormattedNumber
+            type="currency"
+            zero-value="-"
+            :value="props.row.tds_amount"
+          />
         </q-td>
       </template>
       <template #body-cell-actions="props">
