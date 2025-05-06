@@ -1149,6 +1149,11 @@ const companyRoutes: RouteRecordRaw[] = [
     component: () => import('pages/journal-entry/[slugUrl].vue'),
   },
   {
+    path: ':slug+/:id/journal-entries',
+    name: 'company-journal-entries-2',
+    component: () => import('pages/journal-entry/[slugUrl].vue'),
+  },
+  {
     path: 'crm',
     name: 'company-crm',
     meta: {

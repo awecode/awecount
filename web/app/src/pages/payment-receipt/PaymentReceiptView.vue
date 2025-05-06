@@ -372,7 +372,7 @@ export default {
             color="blue-7"
             icon="books"
             label="Journal Entries"
-            :to="`/${$route.params.company}/journal-entries/payment-receipt/${fields.id}`"
+            :to="`/${$route.params.company}/payment-receipts/${fields.id}/journal-entries`"
           />
         </div>
         <q-dialog v-model="isDeleteOpen">

@@ -351,7 +351,7 @@ export default {
             color="blue-7"
             icon="books"
             label="Journal Entries"
-            :to="`/${$route.params.company}/journal-entries/sales-voucher/${fields.id}`"
+            :to="`/${$route.params.company}/sales/vouchers/${fields.id}/journal-entries`"
           />
         </div>
         <q-dialog v-model="isDeleteOpen" class="overflow-visible" @before-hide="errors = {}">
