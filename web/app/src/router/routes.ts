@@ -650,6 +650,14 @@ const companyRoutes: RouteRecordRaw[] = [
           breadcrumbs: ['Sales', 'Sales Vouchers', 'Recurring Templates', 'Edit'],
         },
       },
+      {
+        path: 'quotations',
+        name: 'company-quotations',
+        component: () => import('pages/sales/quotation/QuotationList.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Quotations'],
+        },
+      },
     ],
   },
   {

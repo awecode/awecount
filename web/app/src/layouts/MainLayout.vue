@@ -145,6 +145,12 @@ const essentialLinks = computed(() => [
         link: `/${activeCompany.value}/sales/vouchers/recurring-templates`,
         hide: !hasPermission('sales'),
       },
+      {
+        title: 'Quotations',
+        icon: 'mdi-clipboard-text',
+        link: `/${activeCompany.value}/sales/quotations`,
+        hide: !hasPermission('quotations'),
+      },
     ],
   },
   {
