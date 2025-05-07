@@ -78,9 +78,6 @@ class Quotation(CompanyBaseModel):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="quotations"
     )
-    fiscal_year = models.ForeignKey(
-        FiscalYear, on_delete=models.CASCADE, related_name="quotations"
-    )
     sales_agent = models.ForeignKey(
         SalesAgent,
         blank=True,
