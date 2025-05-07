@@ -7,7 +7,16 @@ const metaData = {
 useMeta(metaData)
 const route = useRoute()
 const endpoint = `/api/company/${route.params.company}/quotation/`
-const { pagination, rows } = useList(endpoint)
+const {
+  rows,
+  resetFilters,
+  onFilterUpdate,
+  filters,
+  loading,
+  searchQuery,
+  pagination,
+  onRequest,
+} = useList(endpoint)
 const newColumn = [
   {
     name: 'number',
@@ -50,7 +59,7 @@ const newColumn = [
         color="green"
         icon-right="add"
         label="New Quotation"
-        :to="`/${$route.params.company}/sales/quotation/create`"
+        :to="`/${$route.params.company}/sales/quotations/create`"
       />
     </div>
     <q-table
@@ -127,10 +136,10 @@ const newColumn = [
               class="text-white text-subtitle row items-center justify-center"
               style="border-radius: 8px; padding: 2px 10px"
               :class="
-                props.row.status === 'Issued' ? 'bg-blue-2 text-blue-10'
-                : props.row.status === 'Paid' ? 'bg-green-2 text-green-10'
-                  : props.row.status === 'Draft' ? 'bg-orange-2 text-orange-10'
-                    : props.row.status === 'Partially Paid' ? 'bg-green-1 text-green-6'
+                props.row.status === 'Draft' ? 'bg-orange-2 text-orange-10'
+                : props.row.status === 'Generated' ? 'bg-blue-2 text-blue-10'
+                  : props.row.status === 'Sent' ? 'bg-green-2 text-green-10'
+                    : props.row.status === 'Converted' ? 'bg-green-1 text-green-6'
                       : 'bg-red-2 text-red-10'
               "
             >
@@ -170,7 +179,7 @@ const newColumn = [
               data-testid="view-btn"
               label="View"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/sales/quotation/${props.row.id}`"
+              :to="`/${$route.params.company}/sales/quotations/${props.row.id}`"
             />
           </div>
         </q-td>
