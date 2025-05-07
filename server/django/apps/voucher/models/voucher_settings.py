@@ -7,6 +7,7 @@ from apps.company.models import Company
 from apps.product.models import InventorySetting
 from apps.company.signals import company_created
 from apps.voucher.models import PaymentMode
+from apps.quotation.models import QuotationSetting
 
 class SalesSetting(models.Model):
     company = models.OneToOneField(
@@ -160,5 +161,6 @@ class PurchaseSetting(models.Model):
 def handle_company_creation(sender, **kwargs):
     company = kwargs.get("company")
     SalesSetting.objects.create(company=company)
+    QuotationSetting.objects.create(company=company)
     PurchaseSetting.objects.create(company=company)
     InventorySetting.objects.create(company=company)

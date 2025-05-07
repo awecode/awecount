@@ -188,7 +188,7 @@ class QuotationRow(CompanyBaseModel):
 
 class QuotationSetting(models.Model):
     company = models.OneToOneField(
-        Company, on_delete=models.CASCADE, related_name="quotation_setting"
+        Company, on_delete=models.CASCADE, related_name="quotation_settings"
     )
     body_text = models.TextField(null=True, blank=True)
     footer_text = models.TextField(null=True, blank=True)
