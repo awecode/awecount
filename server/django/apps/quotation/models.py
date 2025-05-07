@@ -184,3 +184,28 @@ class QuotationRow(CompanyBaseModel):
             - (self.tax_amount or Decimal("0.0"))
             + (self.discount_amount or Decimal("0.0"))
         )
+
+
+class QuotationSetting(models.Model):
+    company = models.OneToOneField(
+        Company, on_delete=models.CASCADE, related_name="quotation_setting"
+    )
+    body_text = models.TextField(null=True, blank=True)
+    footer_text = models.TextField(null=True, blank=True)
+
+    @property
+    def fields(self):
+        return {
+            "body_text": self.body_text,
+            "footer_text": self.footer_text,
+        }
+
+    @property
+    def options(self):
+        return {
+            "body_text": self.body_text,
+            "footer_text": self.footer_text,
+        }
+
+    def __str__(self):
+        return "Quotation Setting - {}".format(self.company.name)
