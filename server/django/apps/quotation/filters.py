@@ -17,7 +17,7 @@ class QuotationFilterSet(DateFilterSet):
 
     def is_expired_filter(self, queryset, name, value):
         today = date.today()
-        return queryset.filter(due_date__lt=today).exclude(status="Converted")
+        return queryset.filter(expiry_date__lt=today).exclude(status="Converted")
 
     class Meta:
         model = Quotation

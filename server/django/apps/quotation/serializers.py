@@ -78,6 +78,7 @@ class QuotationCreateSerializer(
 ):
     number = serializers.ReadOnlyField()
     rows = QuotationRowSerializer(many=True)
+    quotation_meta = serializers.ReadOnlyField()
 
     selected_party_obj = PartyMinSerializer(source="party", read_only=True)
     selected_sales_agent_obj = GenericSerializer(source="sales_agent", read_only=True)
@@ -88,7 +89,7 @@ class QuotationCreateSerializer(
         if validated_data.get("status") == "Draft":
             return
         next_quotation_no = get_next_quotation_no(
-            QuotationRow, self.context["request"].company.id
+            Quotation, self.context["request"].company.id
         )
         validated_data["number"] = next_quotation_no
 
@@ -122,12 +123,15 @@ class QuotationCreateSerializer(
         self.assign_discount_obj(validated_data)
         validated_data["company_id"] = request.company.id
         validated_data["user_id"] = request.user.id
-        instance = QuotationRow.objects.create(**validated_data)
+        instance = Quotation.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             if row.get("id"):
                 row.pop("id")
-            QuotationRow.objects.create(voucher=instance, **row)
+            QuotationRow.objects.create(quotation=instance, **row)
+        quotation_meta = instance.generate_quotation_meta(update_row_data=True)
+        instance.total_amount = quotation_meta["grand_total"]
+        instance.save()
         return instance
 
     def update(self, instance, validated_data):
@@ -144,10 +148,16 @@ class QuotationCreateSerializer(
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             QuotationRow.objects.update_or_create(
-                voucher=instance, pk=row.get("id"), defaults=row
+                quotation=instance, pk=row.get("id"), defaults=row
             )
 
         instance.refresh_from_db()
+        quotation_meta = instance.generate_quotation_meta(update_row_data=True)
+        instance.total_amount = quotation_meta["grand_total"]
+        instance.save()
+        if instance.total_amount != quotation_meta["grand_total"]:
+            instance.total_amount = quotation_meta["grand_total"]
+            instance.save()
         return instance
 
     class Meta:
@@ -196,6 +206,12 @@ class QuotationDetailSerializer(BaseModelSerializer):
             "company",
             "user",
         )
+
+
+class QuotationCreateSettingSerializer(BaseModelSerializer):
+    class Meta:
+        model = QuotationSetting
+        fields = ("fields", "options")
 
 
 class QuotationSettingCreateSerializer(BaseModelSerializer):

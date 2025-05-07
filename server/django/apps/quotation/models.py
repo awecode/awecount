@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from apps.company.models import Company, CompanyBaseModel, FiscalYear
+from apps.company.models import Company, CompanyBaseModel
 from apps.ledger.models import (
     Party,
 )
@@ -12,6 +12,7 @@ from apps.product.models import Item, Unit
 from apps.tax.models import TaxScheme
 from apps.voucher.models.agent import SalesAgent
 from apps.voucher.models.discounts import SalesDiscount
+from apps.quotation.base_models import QuotationRowModel
 
 STATUSES = (
     ("Draft", "Draft"),
@@ -91,8 +92,103 @@ class Quotation(CompanyBaseModel):
     class Meta:
         unique_together = ("company", "number")
 
+    @property
+    def quotation_meta(self):
+        return self.generate_quotation_meta()
 
-class QuotationRow(CompanyBaseModel):
+    def get_quotation_discount_data(self):
+        if self.discount_obj_id:
+            discount_obj = self.discount_obj
+            return {"type": discount_obj.type, "value": discount_obj.value}
+        else:
+            return {"type": self.discount_type, "value": self.discount}
+
+    def generate_quotation_meta(
+        self, update_row_data=False, prefetched_rows=False, save=True
+    ):
+        dct = {
+            "sub_total": 0,
+            "sub_total_after_row_discounts": 0,
+            "discount": 0,
+            "non_taxable": 0,
+            "taxable": 0,
+            "tax": 0,
+        }
+        rows_data = []
+        row_objs = {}
+        # bypass prefetch cache using filter
+        rows = self.rows.all() if prefetched_rows else self.rows.filter()
+        for row in rows:
+            row_data = dict(
+                id=row.id,
+                quantity=row.quantity,
+                rate=row.rate,
+                total=row.rate * row.quantity,
+                row_discount=row.get_discount()[0] if row.has_discount() else 0,
+            )
+            row_data["gross_total"] = row_data["total"] - row_data["row_discount"]
+            row_data["tax_rate"] = row.tax_scheme.rate if row.tax_scheme else 0
+            dct["sub_total_after_row_discounts"] += row_data["gross_total"]
+            dct["sub_total"] += row_data["total"]
+            rows_data.append(row_data)
+            row_objs[row.id] = row
+
+        quotation_discount_data = self.get_quotation_discount_data()
+
+        for row_data in rows_data:
+            if quotation_discount_data["type"] == "Percent":
+                dividend_discount = (
+                    row_data["gross_total"] * quotation_discount_data["value"] / 100
+                )
+            elif quotation_discount_data["type"] == "Amount":
+                dividend_discount = (
+                    row_data["gross_total"]
+                    * quotation_discount_data["value"]
+                    / dct["sub_total_after_row_discounts"]
+                )
+            else:
+                dividend_discount = 0
+            row_data["dividend_discount"] = dividend_discount
+            row_data["pure_total"] = row_data["gross_total"] - dividend_discount
+            row_data["tax_amount"] = row_data["tax_rate"] * row_data["pure_total"] / 100
+            total_row_discount = (
+                row_data["row_discount"] + row_data["dividend_discount"]
+            )
+            dct["discount"] += total_row_discount
+            dct["tax"] += row_data["tax_amount"]
+
+            if row_data["tax_amount"]:
+                dct["taxable"] += row_data["pure_total"]
+            else:
+                dct["non_taxable"] += row_data["pure_total"]
+
+            if update_row_data:
+                row_obj = row_objs[row_data["id"]]
+                row_obj.discount_amount = total_row_discount
+                row_obj.tax_amount = row_data["tax_amount"]
+                row_obj.net_amount = row_data["pure_total"] + row_data["tax_amount"]
+                row_obj.save()
+
+        dct["grand_total"] = dct["sub_total"] - dct["discount"] + dct["tax"]
+
+        for key, val in dct.items():
+            dct[key] = round(val, 2)
+
+        if save:
+            self.meta_sub_total = dct["sub_total"]
+            self.meta_sub_total_after_row_discounts = dct[
+                "sub_total_after_row_discounts"
+            ]
+            self.meta_discount = dct["discount"]
+            self.meta_non_taxable = dct["non_taxable"]
+            self.meta_taxable = dct["taxable"]
+            self.meta_tax = dct["tax"]
+            self.save()
+
+        return dct
+
+
+class QuotationRow(QuotationRowModel, CompanyBaseModel):
     quotation = models.ForeignKey(
         Quotation, on_delete=models.CASCADE, related_name="rows"
     )

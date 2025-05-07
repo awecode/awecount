@@ -44,6 +44,7 @@ from apps.quotation.models import Quotation, QuotationRow
 from apps.quotation.serializers import (
     QuotationChoiceSerializer,
     QuotationCreateSerializer,
+    QuotationCreateSettingSerializer,
     QuotationSettingCreateSerializer,
     QuotationDetailSerializer,
     QuotationListSerializer,
@@ -109,13 +110,7 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if self.action == "retrieve":
             qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
-            qs = qs.select_related("party").prefetch_related(
-                Prefetch(
-                    "payment_receipts",
-                    PaymentReceipt.objects.exclude(status="Cancelled"),
-                    to_attr="receipts",
-                )
-            )
+            qs = qs.select_related("party")
         return qs.order_by("-date", "-number")
 
     def get_serializer_class(self):
@@ -172,7 +167,7 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         }
 
     def get_create_defaults(self, request=None, *args, **kwargs):
-        data = QuotationSettingCreateSerializer(request.company.quotation_settings).data
+        data = QuotationCreateSettingSerializer(request.company.quotation_settings).data
         data["options"]["number"] = get_next_quotation_no(Quotation, request.company.id)
         return data
 
