@@ -702,6 +702,11 @@ const companyRoutes: RouteRecordRaw[] = [
         component: () => import('pages/settings/SalesSetting.vue'),
       },
       {
+        path: 'quotation',
+        name: 'company-settings-quotation-settings',
+        component: () => import('pages/settings/QuotationSettings.vue'),
+      },
+      {
         path: 'inventory',
         name: 'company-settings-inventory-settings',
         component: () => import('pages/settings/InventorySettings.vue'),
@@ -1415,7 +1420,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/signup',
     name: 'signup-page',
-    component: () => import.meta.env.ALLOW_SIGNUP ? import('pages/SignupPage.vue') : import('pages/LoginPage.vue'),
+    component: () => (import.meta.env.ALLOW_SIGNUP ? import('pages/SignupPage.vue') : import('pages/LoginPage.vue')),
     meta: {
       auth: {
         redirectIfLoggedIn: '/',
@@ -1467,7 +1472,6 @@ const routes: RouteRecordRaw[] = [
         required: true,
       },
     },
-
   },
   {
     path: '/profile',

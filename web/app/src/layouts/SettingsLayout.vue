@@ -47,6 +47,11 @@ const menuItems = computed(() => [
         to: `/${activeCompany.value}/settings/sales`,
       },
       {
+        icon: 'receipt_long',
+        label: 'Quotation Settings',
+        to: `/${activeCompany.value}/settings/quotation`,
+      },
+      {
         icon: 'receipt',
         label: 'Invoice Settings',
         to: `/${activeCompany.value}/settings/invoice`,
