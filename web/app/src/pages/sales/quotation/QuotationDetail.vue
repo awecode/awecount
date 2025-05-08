@@ -4,7 +4,8 @@ import checkPermissions from 'src/composables/checkPermissions'
 import useApi from 'src/composables/useApi'
 import { useLoginStore } from 'src/stores/login-info'
 import { parseErrors } from 'src/utils/helpers'
-import { onMounted, ref } from 'vue'
+import { generateQuotationPDF } from 'src/utils/pdf'
+import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 interface Fields {
@@ -101,24 +102,27 @@ function emailInvoice() {
     })
 }
 
-onMounted(() => {
-  const endpoint = `/api/company/${route.params.company}/quotation/${route.params.id}/details/`
-  useApi(endpoint, { method: 'GET' }, false, true)
-    .then((data) => {
-      fields.value = data
-      fields.value.voucher_meta = fields.value.quotation_meta
-      paymentModeOptions.value = data.available_payment_modes
-      resetEmailInvoicePayload()
-      if (triggerPrint) {
-        onPrintclick(false, data?.status === 'Draft')
-      }
-    })
-    .catch((error) => {
-      if (error.response && error.response.status === 404) {
-        router.replace({ path: '/ErrorNotFound' })
-      }
-    })
-})
+const print = (bodyOnly: boolean) => {
+  const printData = generateQuotationPDF(bodyOnly, fields.value, isLoggedIn ? null : fields.value.company)
+  usePrintPdfWindow(printData)
+}
+
+const endpoint = `/api/company/${route.params.company}/quotation/${route.params.id}/details/`
+useApi(endpoint, { method: 'GET' }, false, true)
+  .then((data) => {
+    fields.value = data
+    fields.value.voucher_meta = fields.value.quotation_meta
+    paymentModeOptions.value = data.available_payment_modes
+    resetEmailInvoicePayload()
+    if (triggerPrint) {
+      print(false)
+    }
+  })
+  .catch((error) => {
+    if (error.response && error.response.status === 404) {
+      router.replace({ path: '/ErrorNotFound' })
+    }
+  })
 </script>
 
 <template>
@@ -248,8 +252,8 @@ onMounted(() => {
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn icon="print" label="Print" @click="() => onPrintclick(false, fields?.status === 'Draft')" />
-          <q-btn icon="print" label="Print Body" @click="() => onPrintclick(true, fields?.status === 'Draft')" />
+          <q-btn icon="print" label="Print" @click="() => print(false)" />
+          <q-btn icon="print" label="Print Body" @click="() => print(true)" />
           <q-btn
             v-if="isLoggedIn && fields.status !== 'Draft'"
             data-testid="send-email"
