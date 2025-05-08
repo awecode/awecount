@@ -39,7 +39,7 @@ watch(date, (val) => {
 watch(
   () => props.modelValue,
   (val) => {
-    date.value = val
+    date.value = val ?? undefined
   },
 )
 
