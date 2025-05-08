@@ -27,6 +27,7 @@ from django.db.models import Prefetch, Q
 
 from apps.voucher.serializers.sales import (
     SalesDiscountMinSerializer,
+    SalesVoucherCreateSerializer,
 )
 
 
@@ -191,6 +192,33 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Quotation, request.company.id
             )
         return data
+
+    @action(detail=True, methods=["post"], url_path="convert")
+    def convert_to_sales_voucher(self, request, *args, **kwargs):
+        """
+        Convert Quotation to Sales Voucher
+        """
+        obj = self.get_object()
+        if obj.status == "Draft":
+            return Response({"details": "Quotation is in draft state"}, status=400)
+        if obj.status == "Converted":
+            return Response({"details": "Quotation already converted"}, status=400)
+
+        quotation_data = QuotationDetailSerializer(obj).data
+
+        validated_data = SalesVoucherCreateSerializer(
+            data={
+                **quotation_data,
+                "status": "Draft",
+            },
+            context={"request": request},
+        )
+        if validated_data.is_valid():
+            validated_data.save()
+            obj.status = "Converted"
+            obj.save()
+            return Response(validated_data.data, status=201)
+        return Response(validated_data.errors, status=400)
 
 
 class QuotationSettingsViewSet(CRULViewSet):
