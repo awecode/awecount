@@ -667,6 +667,14 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'quotations/:id',
+        name: 'company-quotations-id',
+        component: () => import('pages/sales/quotation/QuotationDetail.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Quotations', 'Detail'],
+        },
+      },
+      {
         path: 'quotations/:id/edit',
         name: 'company-quotations-id-edit',
         component: () => import('pages/sales/quotation/QuotationForm.vue'),
