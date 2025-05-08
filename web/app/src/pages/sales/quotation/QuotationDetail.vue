@@ -10,7 +10,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 interface Fields {
   status: string
-  voucher_no: string
+  number: string
   remarks: string
   print_count: number
   id: number
@@ -57,11 +57,11 @@ function resetEmailInvoicePayload() {
     attach_pdf: true,
     attachments: fields.value?.options?.default_email_attachments || [],
     to: [fields.value?.email, fields.value?.party_email].filter(Boolean),
-    subject: `Quotation #${fields.value?.voucher_no}`,
+    subject: `Quotation #${fields.value?.number}`,
     message: `
       <p>Hello <b>${fields.value?.customer_name || fields.value?.party_name}</b>,</p>
       <p>I hope this message finds you well.</p>
-      <p>Please find attached the quotation <b>#${fields.value?.voucher_no}</b></p>
+      <p>Please find attached the quotation <b>#${fields.value?.number}</b></p>
       <p>You can view and download the quotation using the following link: <a href="${`${window.location.protocol}//${window.location.host}${window.location.pathname}`}?hash=${fields.value?.hash}">View Quotation</a>.</p>
       <p>If you have any questions or require further assistance, feel free to contact us at <b>${loginStore.companyInfo?.contact_no || '[]'}</b>.</p>
       <p>Best Regards,<br>
@@ -71,7 +71,7 @@ function resetEmailInvoicePayload() {
 }
 
 function emailInvoice() {
-  const endpoint = `api/company/${route.params.company}/quotation/${fields.value?.id}/email-invoice/`
+  const endpoint = `api/company/${route.params.company}/quotation/${fields.value?.id}/email/`
   const formData = new FormData()
   formData.append('attach_pdf', emailInvoicePayload.value.attach_pdf ? 'true' : 'false')
   emailInvoicePayload.value.attachments.forEach((file: File) => {
@@ -133,7 +133,7 @@ useApi(endpoint, { method: 'GET' }, false, true)
           <div class="text-h6 d-print-none">
             <span>
               Quotation | {{ fields?.status }}
-              <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no }}</span>
+              <span v-if="fields?.number">| # {{ fields?.number }}</span>
             </span>
           </div>
         </q-card-section>
@@ -208,7 +208,7 @@ useApi(endpoint, { method: 'GET' }, false, true)
               </div>
             </div>
           </div>
-          <div class="col-12 col-md-6 q-gutter-y-lg">
+          <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
             <div class="col-12 col-md-6 row">
               <div class="col-6">
                 Date
@@ -217,7 +217,7 @@ useApi(endpoint, { method: 'GET' }, false, true)
                 {{ fields?.date }}
               </div>
             </div>
-            <div class="col-12 col-md-6 row">
+            <div v-if="fields?.expiry_date" class="col-12 col-md-6 row">
               <div class="col-6">
                 Expiry Date
               </div>
@@ -268,7 +268,7 @@ useApi(endpoint, { method: 'GET' }, false, true)
       <q-card style="min-width: min(60vw, 800px)">
         <q-card-section class="bg-primary text-white">
           <div class="text-h6 flex justify-between">
-            <span class="q-mx-md">Send invoice in email</span>
+            <span class="q-mx-md">Send quotation in email</span>
             <q-btn
               v-close-popup
               dense
