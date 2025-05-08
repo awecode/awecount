@@ -143,65 +143,6 @@ watch(
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <div v-if="formDefaults.options?.enable_import_challan" class="col-md-6 col-12">
-              <q-btn
-                color="blue"
-                data-testid="import-challan-btn"
-                label="Import challan(s)"
-                @click="importChallanModal = true"
-              />
-              <div v-if="fields.challans && fields.challans.length > 0">
-                <q-input
-                  v-model="fields.challan_numbers"
-                  dense
-                  disable
-                  label="Import challan(s)"
-                />
-              </div>
-              <q-dialog v-model="importChallanModal" @before-hide="errors && delete errors?.fiscal_year && delete errors?.invoice_no">
-                <q-card style="min-width: min(60vw, 400px)">
-                  <q-card-section class="bg-grey-4">
-                    <div class="text-h6">
-                      <span>Add Reference Challan(s)</span>
-                    </div>
-                  </q-card-section>
-
-                  <q-card-section class="q-mx-lg">
-                    <q-input
-                      v-model.number="referenceFormData.invoice_no"
-                      autofocus
-                      data-testid="challan-no-input"
-                      label="Challan No.*"
-                      type="number"
-                      :error="errors?.invoice_no ?? null"
-                      :error-message="errors?.invoice_no"
-                    />
-                    <q-select
-                      v-model="referenceFormData.fiscal_year"
-                      emit-value
-                      map-options
-                      class="q-mt-md"
-                      data-testid="fiscal-year-select"
-                      label="Fiscal Year"
-                      option-label="name"
-                      option-value="id"
-                      :error="errors?.fiscal_year ?? null"
-                      :error-message="errors?.fiscal_year"
-                      :options="formDefaults.options?.fiscal_years"
-                    />
-                    <div class="row justify-end q-mt-lg">
-                      <q-btn
-                        color="green"
-                        data-testid="add-reference-btn"
-                        label="Add"
-                        size="md"
-                        @click="fetchInvoice(fields)"
-                      />
-                    </div>
-                  </q-card-section>
-                </q-card>
-              </q-dialog>
-            </div>
             <div class="col-md-6 col-12">
               <div class="row">
                 <div class="col-12">
@@ -275,16 +216,6 @@ watch(
               :error="!!errors?.address"
               :error-message="errors?.address"
             />
-            <date-picker
-              v-if="formDefaults.options?.enable_due_date_in_voucher"
-              v-model="fields.due_date"
-              class="col-md-6 col-12"
-              data-testid="due-date"
-              label="Due Date"
-              :error="errors?.due_date ? errors.due_date : null"
-              :error-message="errors?.due_date"
-              :to-limit="fields.date"
-            />
             <div class="col-md-6 col-12 row q-col-gutter-md">
               <div data-testid="overall-discount-type-div" :class="['Percent', 'Amount'].includes(fields.discount_type) ? 'col-6' : 'col-12'">
                 <n-auto-complete
@@ -345,11 +276,8 @@ watch(
         v-model="fields.rows"
         used-in="sales"
         :discount-options="staticOptions.discount_types.concat(formDefaults.collections?.discounts)"
-        :enable-row-description="formDefaults.options?.enable_row_description"
         :errors="errors?.rows ? errors.rows : null"
-        :has-challan="!!(fields.challans && fields.challans.length > 0)"
-        :input-amount="formDefaults.options?.enable_amount_entry"
-        :is-fifo="formDefaults.options?.enable_fifo"
+        :has-challan="false"
         :item-options="formDefaults.collections ? formDefaults.collections.items : null"
         :main-discount="{
           discount_type: fields.discount_type,
@@ -393,7 +321,6 @@ watch(
           </div>
           <div class="col-9">
             <n-auto-complete-v2
-              v-if="loginStore.companyInfo.enable_sales_agents"
               v-model="fields.sales_agent"
               class="col-8"
               data-testid="sales-agent-select"
