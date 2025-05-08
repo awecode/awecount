@@ -197,6 +197,9 @@ class QuotationDetailSerializer(BaseModelSerializer):
     discount_obj = SalesDiscountSerializer()
     quotation_meta = serializers.ReadOnlyField(source="get_quotation_meta")
     sales_agent = SalesAgentSerializer()
+    sales_invoice_id = serializers.ReadOnlyField(
+        source="sales_invoice.id", allow_null=True
+    )
 
     rows = SalesVoucherRowDetailSerializer(many=True)
     tax_identification_number = serializers.ReadOnlyField(
