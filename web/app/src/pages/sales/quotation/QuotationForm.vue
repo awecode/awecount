@@ -123,9 +123,9 @@ watch(
   },
 )
 
-const switchMode = () => {
-  customerMode.value = !customerMode.value
-}
+// const switchMode = () => {
+//   // customerMode.value = !customerMode.value
+// }
 </script>
 
 <template>
@@ -204,7 +204,7 @@ const switchMode = () => {
             </div>
             <div class="col-md-6 col-12">
               <div class="row">
-                <div class="col-10">
+                <div class="col-12">
                   <q-input
                     v-if="customerMode"
                     v-model="fields.customer_name"
@@ -227,7 +227,7 @@ const switchMode = () => {
                   />
                 </div>
 
-                <div class="col-2 row justify-center q-py-md">
+                <!-- <div class="col-2 row justify-center q-py-md">
                   <q-btn
                     flat
                     data-testid="switch-account-group-btn"
@@ -236,7 +236,7 @@ const switchMode = () => {
                   >
                     <q-icon name="mdi-account-group" />
                   </q-btn>
-                </div>
+                </div> -->
               </div>
               <div>
                 <n-auto-complete
