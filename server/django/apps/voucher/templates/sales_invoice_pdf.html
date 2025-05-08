@@ -250,6 +250,9 @@
                     </td>
                     <td>
                         <strong>INV No.:</strong> {{ invoice.fiscal_year }}-<strong>{{ invoice.voucher_no }}</strong><br>
+                        {% if invoice.reference %}
+                            <strong>Reference:</strong> {{ invoice.reference }}<br>
+                        {% endif %}
                         <strong>Date:</strong> {{ invoice.date }}<br>
                          {% if invoice.miti %}
                             <strong>Miti:</strong> {{ invoice.miti }}<br>
