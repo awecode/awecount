@@ -18,6 +18,7 @@ from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.generics import get_object_or_404
 
 from django.db.models import Prefetch, Q
 
@@ -126,7 +127,7 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
-    def get_voucher_details(self, pk):
+    def get_quotation_details(self, pk):
         qs = (
             super()
             .get_queryset()
@@ -140,13 +141,6 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     .order_by("pk"),
                 )
             )
-            .prefetch_related(
-                Prefetch(
-                    "payment_receipts",
-                    PaymentReceipt.objects.exclude(status="Cancelled"),
-                    to_attr="receipts",
-                )
-            )
             .select_related("discount_obj", "company__sales_setting", "party")
         )
         data = QuotationDetailSerializer(
@@ -156,7 +150,7 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=True)
     def details(self, request, pk, *args, **kwargs):
-        details = self.get_voucher_details(pk)
+        details = self.get_quotation_details(pk)
         return Response(details)
 
     def get_defaults(self, request=None, *args, **kwargs):
