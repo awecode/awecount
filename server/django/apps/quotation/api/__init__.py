@@ -210,6 +210,7 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             data={
                 **quotation_data,
                 "status": "Draft",
+                "quotation": obj.id,
             },
             context={"request": request},
         )
