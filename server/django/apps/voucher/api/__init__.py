@@ -483,6 +483,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         "voucher_no",
         "party__name",
         "remarks",
+        "reference",
         "total_amount",
         "party__tax_identification_number",
         "customer_name",

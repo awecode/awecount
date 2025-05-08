@@ -499,6 +499,7 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     challans = models.ManyToManyField(Challan, related_name="sales", blank=True)
 
     remarks = models.TextField(blank=True, null=True)
+    reference = models.CharField(max_length=255, blank=True, null=True)
     is_export = models.BooleanField(default=False)
 
     total_amount = models.DecimalField(
@@ -788,6 +789,7 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                         "in_words": self.amount_in_words,
                         "voucher_meta": self.get_voucher_meta(),
                         "voucher_no": self.voucher_no,
+                        "reference": self.reference,
                         "remarks": self.remarks,
                     }
                 },

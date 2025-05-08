@@ -199,6 +199,14 @@ export default {
           {{ fields.challan_numbers.join(',') }}
         </div>
       </div>
+      <div v-if="fields?.reference" class="col-12 col-md-6 row">
+        <div class="col-6">
+          Reference
+        </div>
+        <div class="col-6">
+          {{ fields?.reference }}
+        </div>
+      </div>
     </div>
     <q-dialog v-model="isChangeOpen">
       <q-card style="min-width: min(40vw, 500px)">

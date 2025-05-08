@@ -413,7 +413,10 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
           :error-message="errors?.due_date"
           :to-limit="fields.date"
         />
-        <div class="col-md-6 col-12 row q-col-gutter-md">
+        <div
+          v-if="formDefaults.options?.enable_discount_in_voucher && !isTemplate"
+          class="col-md-6 col-12 row q-col-gutter-md"
+        >
           <div data-testid="overall-discount-type-div" :class="['Percent', 'Amount'].includes(fields.discount_type) ? 'col-6' : 'col-12'">
             <n-auto-complete
               v-model="fields.discount_type"
@@ -474,6 +477,23 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
             :options="taxTypes"
           />
         </div>
+        <div
+          v-if="
+            formDefaults.options?.enable_reference_in_voucher
+              && !isTemplate"
+          class="col-12 col-md-6"
+        >
+          <q-input
+            v-model="fields.reference"
+            autogrow
+            class="col-12 col-md-10"
+            data-testid="reference-input"
+            label="Reference"
+            type="textarea"
+            :error="!!errors?.reference"
+            :error-message="errors?.reference"
+          />
+        </div>
       </div>
     </q-card-section>
   </q-card>
@@ -507,7 +527,7 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
     @delete-row-err="deleteRowErr"
   />
   <div class="row q-px-lg">
-    <div class="col-12 col-md-6 row">
+    <div class="col-12 col-md-4 row">
       <q-input
         v-model="fields.remarks"
         autogrow
@@ -519,28 +539,27 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
         :error-message="errors?.remarks"
       />
     </div>
-    <div class="col-12 col-md-6 row justify-between">
-      <div class="col-3">
-        <q-checkbox
-          v-model="fields.is_export"
-          class="q-mt-md col-3"
-          data-testid="export-checkbox"
-          label="Export?"
-        />
-      </div>
-      <div class="col-9">
-        <n-auto-complete-v2
-          v-if="loginStore.companyInfo.enable_sales_agents"
-          v-model="fields.sales_agent"
-          class="col-8"
-          data-testid="sales-agent-select"
-          label="Sales Agent"
-          :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/sales_agents`"
-          :error="errors?.sales_agent"
-          :options="formDefaults.collections?.sales_agents"
-          :static-option="fields.selected_sales_agent_obj"
-        />
-      </div>
+
+    <div class="col-12 col-md-4 row">
+      <n-auto-complete-v2
+        v-if="loginStore.companyInfo.enable_sales_agents"
+        v-model="fields.sales_agent"
+        class="col-12"
+        data-testid="sales-agent-select"
+        label="Sales Agent"
+        :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/sales_agents`"
+        :error="errors?.sales_agent"
+        :options="formDefaults.collections?.sales_agents"
+        :static-option="fields.selected_sales_agent_obj"
+      />
+    </div>
+    <div class="col-12 col-md-1 row"></div>
+    <div class="col-12 col-md-3 row">
+      <q-checkbox
+        v-model="fields.is_export"
+        data-testid="export-checkbox"
+        label="Export?"
+      />
     </div>
   </div>
 </template>

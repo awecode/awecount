@@ -26,6 +26,7 @@ useApi(`/api/company/${route.params.company}/sales-settings/`).then((data) => {
 
 const data = {
   party_name: 'Random Party Name',
+  reference: 'REF12345',
   party_contact_no: 'jkjrkgjjr84787847',
   voucher_meta: {
     sub_total: 500.0,

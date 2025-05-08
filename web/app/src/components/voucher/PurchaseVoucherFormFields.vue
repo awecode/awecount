@@ -537,7 +537,10 @@ onMounted(() => {
           :error="!!errors.voucher_no"
           :error-message="errors.voucher_no"
         />
-        <div class="col-md-6 col-12 row q-col-gutter-md">
+        <div
+          v-if="formDefaults.options?.enable_discount_in_voucher && !isTemplate"
+          class="col-md-6 col-12 row q-col-gutter-md"
+        >
           <div :class="['Percent', 'Amount'].includes(fields.discount_type) ? 'col-6' : 'col-12'">
             <n-auto-complete
               v-model="fields.discount_type"
@@ -570,9 +573,7 @@ onMounted(() => {
             :error-message="errors.date"
           />
         </div>
-      </div>
 
-      <div class="row q-col-gutter-md">
         <div class="col-md-6 col-12">
           <n-auto-complete-v2
             v-model="fields.payment_mode"
@@ -607,7 +608,6 @@ onMounted(() => {
           :to-limit="fields.date"
         />
       </div>
-      <!-- {{ fields.date }} -->
     </q-card-section>
   </q-card>
   <InvoiceTable
