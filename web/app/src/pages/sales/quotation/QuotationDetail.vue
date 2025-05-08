@@ -248,12 +248,12 @@ useApi(endpoint, { method: 'GET' }, false, true)
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
           <q-btn icon="print" label="Print" @click="() => print(false)" />
           <q-btn icon="print" label="Print Body" @click="() => print(true)" />
-          <q-btn
+          <!-- <q-btn
             v-if="isLoggedIn && fields.status !== 'Draft'"
             data-testid="send-email"
             label="Send email"
             @click="isEmailInvoiceModalOpen = true"
-          />
+          /> -->
         </div>
       </div>
     </div>
