@@ -14,6 +14,7 @@ interface Fields {
   remarks: string
   id: number
   email: string
+  sales_invoice_id: number | null
   party_email: string
   customer_name: string
   party_name: string
@@ -252,7 +253,7 @@ const convertToInvoice = () => {
       </q-card>
       <q-card v-if="fields?.remarks" class="q-mx-lg q-my-md">
         <q-card-section>
-          <span class="text-subtitle2 text-grey-9">Remarks:</span>
+          <span class="text-subtitle2 text-grey-9">Remarks: </span>
           <span class="text-grey-9">{{ fields?.remarks }}</span>
         </q-card-section>
       </q-card>
@@ -285,6 +286,15 @@ const convertToInvoice = () => {
             data-testid="convert-to-invoice"
             label="Convert"
             @click="isConvertModalOpen = true"
+          />
+          <q-btn
+            v-if="
+              isLoggedIn && fields.sales_invoice_id
+                && checkPermissions('sales.view')
+            "
+            data-testid="view-sales"
+            label="View Sales Invoice"
+            :to="`/${$route.params.company}/sales/vouchers/${fields?.sales_invoice_id}`"
           />
         </div>
       </div>
