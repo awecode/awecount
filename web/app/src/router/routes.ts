@@ -658,6 +658,38 @@ const companyRoutes: RouteRecordRaw[] = [
           breadcrumbs: ['Sales', 'Sales Vouchers', 'Recurring Templates', 'Edit'],
         },
       },
+      {
+        path: 'quotations',
+        name: 'company-quotations',
+        component: () => import('pages/sales/quotation/QuotationList.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Quotations'],
+        },
+      },
+      {
+        path: 'quotations/create',
+        name: 'company-quotations-create',
+        component: () => import('pages/sales/quotation/QuotationForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Quotations', 'Create'],
+        },
+      },
+      {
+        path: 'quotations/:id',
+        name: 'company-quotations-id',
+        component: () => import('pages/sales/quotation/QuotationDetail.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Quotations', 'Detail'],
+        },
+      },
+      {
+        path: 'quotations/:id/edit',
+        name: 'company-quotations-id-edit',
+        component: () => import('pages/sales/quotation/QuotationForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Quotations', 'Edit'],
+        },
+      },
     ],
   },
   {
@@ -708,6 +740,11 @@ const companyRoutes: RouteRecordRaw[] = [
         path: 'sales',
         name: 'company-settings-sales-settings',
         component: () => import('pages/settings/SalesSetting.vue'),
+      },
+      {
+        path: 'quotation',
+        name: 'company-settings-quotation-settings',
+        component: () => import('pages/settings/QuotationSettings.vue'),
       },
       {
         path: 'inventory',
@@ -1428,7 +1465,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/signup',
     name: 'signup-page',
-    component: () => import.meta.env.ALLOW_SIGNUP ? import('pages/SignupPage.vue') : import('pages/LoginPage.vue'),
+    component: () => (import.meta.env.ALLOW_SIGNUP ? import('pages/SignupPage.vue') : import('pages/LoginPage.vue')),
     meta: {
       auth: {
         redirectIfLoggedIn: '/',
@@ -1480,7 +1517,6 @@ const routes: RouteRecordRaw[] = [
         required: true,
       },
     },
-
   },
   {
     path: '/profile',

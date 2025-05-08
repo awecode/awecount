@@ -78,11 +78,22 @@ router.register(
     "purchase-order", voucher.PurchaseOrderViewSet, basename="purchase-order"
 )
 
-router.register("recurring-voucher-template", voucher.RecurringVoucherTemplateViewSet, basename="recurring-voucher-template")
+router.register(
+    "recurring-voucher-template",
+    voucher.RecurringVoucherTemplateViewSet,
+    basename="recurring-voucher-template",
+)
 
 
 urlpatterns = [
     re_path(r"^api/company/(?P<company_slug>[-\w]+)/", include(router.urls)),
-    re_path(r"^api/company/(?P<company_slug>[-\w]+)/upload-file/$", views.FileUploadView.as_view(), name="upload-file"),
-    re_path(r"^api/company/(?P<company_slug>[-\w]+)/invoice-setting-update/$", views.InvoiceSettingUpdateView.as_view()),
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/upload-file/$",
+        views.FileUploadView.as_view(),
+        name="upload-file",
+    ),
+    re_path(
+        r"^api/company/(?P<company_slug>[-\w]+)/invoice-setting-update/$",
+        views.InvoiceSettingUpdateView.as_view(),
+    ),
 ]

@@ -20,6 +20,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django_q.models import Schedule
 from django_q.tasks import schedule
+from apps.quotation.models import Quotation
 from weasyprint import HTML
 
 from apps.bank.models import BankAccount, ChequeDeposit
@@ -525,6 +526,13 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
         null=True,
         related_name="sales_invoices",
         on_delete=models.SET_NULL,
+    )
+    quotation = models.OneToOneField(
+        Quotation,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="sales_invoice",
     )
     # Model key for module based permission
     key = "Sales"
@@ -1059,7 +1067,11 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         related_name="sales_rows",
     )
     tax_scheme = models.ForeignKey(
-        TaxScheme, on_delete=models.CASCADE, related_name="sales_rows", blank=True, null=True
+        TaxScheme,
+        on_delete=models.CASCADE,
+        related_name="sales_rows",
+        blank=True,
+        null=True,
     )
 
     # Computed values

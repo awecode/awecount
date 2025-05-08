@@ -3,14 +3,11 @@
  Stripped down for Indian System Only, Several other fixes
  */
 
-export default function numberToText(num: number, isCurrency?: boolean) {
-  if (isNaN(num)) return '-'
+export default function numberToText(num: number, isCurrency: boolean = true) {
+  if (Number.isNaN(num)) return '-'
 
   // num = Math.round(num * 100) / 100
   num = Math.round((num + Number.EPSILON) * 100) / 100
-  if (typeof isCurrency == 'undefined') {
-    isCurrency = true
-  }
   if (num >= 0) {
     return toText(num, isCurrency)
   } else {

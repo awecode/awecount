@@ -7,6 +7,7 @@ from apps.company.models import Company
 from apps.company.signals import company_created
 from apps.product.models import InventorySetting
 from apps.voucher.models import PaymentMode
+from apps.quotation.models import QuotationSetting
 
 
 class SalesSetting(models.Model):
@@ -171,6 +172,7 @@ class PurchaseSetting(models.Model):
 @receiver(company_created)
 def handle_company_creation(sender, **kwargs):
     company = kwargs.get("company")
-    SalesSetting.objects.get_or_create(company=company)
-    PurchaseSetting.objects.get_or_create(company=company)
-    InventorySetting.objects.get_or_create(company=company)
+    SalesSetting.objects.create(company=company)
+    QuotationSetting.objects.create(company=company)
+    PurchaseSetting.objects.create(company=company)
+    InventorySetting.objects.create(company=company)
