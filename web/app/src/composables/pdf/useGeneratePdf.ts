@@ -20,7 +20,7 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
   const tableRow = (rows: Array<object>): string => {
     let isTaxSame: number | boolean | null = null
     const htmlRows = rows.map((row: Record<string, number | string | object>, index: number) => {
-      if (isTaxSame !== false && row.tax_scheme.rate != 0) {
+      if (isTaxSame !== false && row.tax_scheme && row.tax_scheme.rate != 0) {
         if (isTaxSame === null) {
           isTaxSame = row.tax_scheme.id
           taxIndex = index
@@ -169,7 +169,13 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
           <span style="font-weight: 600; color: lightgray;">DISCOUNT</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.discount)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
-          <span style="font-weight: 600; color: lightgray;">${sameTax ? ([2, 3].includes(invoice_template) ? `${invoiceInfo.rows[taxIndex].tax_scheme.rate} % ` + `${invoiceInfo.rows[taxIndex].tax_scheme.name}` : `${invoiceInfo.rows[taxIndex].tax_scheme.name} ` + `${invoiceInfo.rows[taxIndex].tax_scheme.rate} %`) : 'TAX'}</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax)}</span>
+          <span style="font-weight: 600; color: lightgray;">${
+            sameTax && invoiceInfo.rows[taxIndex] && invoiceInfo.rows[taxIndex].tax_scheme
+              ? [2, 3].includes(invoice_template)
+                  ? `${invoiceInfo.rows[taxIndex].tax_scheme.rate} % ` + `${invoiceInfo.rows[taxIndex].tax_scheme.name}`
+                  : `${invoiceInfo.rows[taxIndex].tax_scheme.name} ` + `${invoiceInfo.rows[taxIndex].tax_scheme.rate} %`
+              : 'TAX'
+          }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.grand_total)}</span>
