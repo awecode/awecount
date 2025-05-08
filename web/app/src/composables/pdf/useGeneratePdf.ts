@@ -34,7 +34,7 @@ export default function useGeneratePdf(voucherType: VoucherType, onlyBody: boole
       <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px;">${row.item_name}<br><div style="font-size: 12px; ${row.description ? '' : 'display: none;'}" class="text-grey-8; padding:5px">${row.description ? formatRowDescription(row.description) : ''}</div></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${hideRowQuantity ? 'display: none' : ''}">${`${row.quantity}<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name}</span>`}</span></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${hideRowQuantity ? 'display: none' : ''}">${$nf(row.rate)}</span></th>
-      ${invoice_template === 4 ? `<th style="width: 20%; text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;">${row.tax_scheme ? `${row.tax_scheme.name} ` + `${row.tax_scheme.rate} %` : ''}</th>` : ''}
+      ${invoice_template === 4 ? `<th style="width: 20%; text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;">${row.tax_scheme ? `${row.tax_scheme.name}` : ''}</th>` : ''}
       <th style="text-align: right; font-weight: 400; padding:5px;">${formatNumberWithComma(row.quantity * row.rate)}</th>
     </tr>
     `
