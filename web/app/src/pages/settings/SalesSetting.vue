@@ -142,6 +142,12 @@ export default {
               <q-checkbox v-model="fields.enable_due_date_in_voucher" label="Enable Due date in voucher?" />
             </div>
             <div>
+              <q-checkbox v-model="fields.enable_reference_in_voucher" label="Enable Reference in voucher?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.enable_discount_in_voucher" label="Enable Discount in voucher?" />
+            </div>
+            <div>
               <q-checkbox v-model="fields.enable_import_challan" label="Enable Challans Import?" />
             </div>
             <div>
