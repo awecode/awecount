@@ -231,7 +231,7 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
           <div style="margin-bottom: 5px">
             <img
               v-if="store?.companyInfo.logo_url"
-              alt="Compony Logo"
+              alt="Company Logo"
               style="height: 70px; max-width: 200px; object-fit: contain"
               :src="store?.companyInfo.logo_url"
             />
