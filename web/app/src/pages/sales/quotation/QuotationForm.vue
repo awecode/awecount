@@ -8,7 +8,7 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const endpoint = `/api/company/${route.params.company}/quotation/`
 
-const { fields, formDefaults, errors, isEdit, loading, submitForm } = useForm(endpoint, {
+const { fields, formDefaults, errors, isEdit, loading, today, submitForm } = useForm(endpoint, {
   getDefaults: true,
   successRoute: `/${route.params.company}/sales/quotations`,
 })
@@ -117,7 +117,7 @@ watch(
     if (isEdit.value) {
       if (fields.value.customer_name) customerMode.value = true
     } else {
-      fields.value.is_export = false
+      fields.value.date = today
     }
     fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
   },
@@ -311,15 +311,7 @@ watch(
           />
         </div>
         <div class="col-12 col-md-6 row justify-between">
-          <div class="col-3">
-            <q-checkbox
-              v-model="fields.is_export"
-              class="q-mt-md col-3"
-              data-testid="export-checkbox"
-              label="Export?"
-            />
-          </div>
-          <div class="col-9">
+          <div class="col-12">
             <n-auto-complete-v2
               v-model="fields.sales_agent"
               class="col-8"

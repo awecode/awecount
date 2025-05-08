@@ -10,7 +10,7 @@ const store = useLoginStore()
       <div style="position: relative; margin-bottom: 10px">
         <img
           v-if="store.companyInfo.logo_url"
-          alt="Compony Logo"
+          alt="Company Logo"
           style="height: 110px; object-fit: contain; max-width: 160px; position: absolute"
           :src="store.companyInfo.logo_url"
         />
@@ -71,7 +71,7 @@ const store = useLoginStore()
 
         <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end">
           <div style="margin-bottom: 5px">
-            <img alt="Compony Logo" style="height: 70px; max-width: 200px; object-fit: contain" :src="store.companyInfo.logo_url" />
+            <img alt="Company Logo" style="height: 70px; max-width: 200px; object-fit: contain" :src="store.companyInfo.logo_url" />
           </div>
           <div style="display: flex; align-items: center">
             <img alt="Telephone" src="/icons/telephone-fill.svg" style="margin-right: 10px; width: 14px" />

@@ -114,7 +114,7 @@ export default {
         <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end">
           <div style="margin-bottom: 5px">
             <img
-              alt="Compony Logo"
+              alt="Company Logo"
               style="height: 70px"
               :class="loginStore.companyInfo.logo_url ? '' : 'hidden'"
               :src="loginStore.companyInfo.logo_url"

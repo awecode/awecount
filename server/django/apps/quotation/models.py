@@ -67,7 +67,6 @@ class Quotation(CompanyBaseModel):
 
     remarks = models.TextField(blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
-    is_export = models.BooleanField(default=False)
 
     total_amount = models.DecimalField(
         max_digits=24,

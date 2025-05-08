@@ -125,7 +125,7 @@ const convertToInvoice = () => {
   useApi(endpoint, { method: 'POST' }, false, true)
     .then((res) => {
       isConvertModalOpen.value = false
-      router.push({ path: `/${route.params.company}/sales/vouchers/${res?.id}` })
+      router.push({ path: `/${route.params.company}/sales/vouchers/${res?.id}/edit` })
     })
     .catch((error) => {
       if (error.response && error.response.status === 404) {
@@ -137,10 +137,10 @@ const convertToInvoice = () => {
 
 <template>
   <div v-if="fields" class="quotation">
-    <div class="d-print-none">
+    <div class="">
       <q-card class="q-ma-lg q-mb-sm">
         <q-card-section class="bg-green text-white">
-          <div class="text-h6 d-print-none">
+          <div class="text-h6">
             <span>
               Quotation | {{ fields?.status }}
               <span v-if="fields?.number">| # {{ fields?.number }}</span>
@@ -284,7 +284,7 @@ const convertToInvoice = () => {
                 && checkPermissions('quotations.update')
             "
             data-testid="convert-to-invoice"
-            label="Convert"
+            label="Create Sales Invoice"
             @click="isConvertModalOpen = true"
           />
           <q-btn
