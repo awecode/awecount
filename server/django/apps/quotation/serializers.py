@@ -129,7 +129,7 @@ class QuotationCreateSerializer(
             if row.get("id"):
                 row.pop("id")
             QuotationRow.objects.create(quotation=instance, **row)
-        quotation_meta = instance.generate_quotation_meta(update_row_data=True)
+        quotation_meta = instance.get_quotation_meta(update_row_data=True)
         instance.total_amount = quotation_meta["grand_total"]
         instance.save()
         return instance
@@ -152,7 +152,7 @@ class QuotationCreateSerializer(
             )
 
         instance.refresh_from_db()
-        quotation_meta = instance.generate_quotation_meta(update_row_data=True)
+        quotation_meta = instance.get_quotation_meta(update_row_data=True)
         instance.total_amount = quotation_meta["grand_total"]
         instance.save()
         if instance.total_amount != quotation_meta["grand_total"]:
@@ -191,6 +191,7 @@ class QuotationDetailSerializer(BaseModelSerializer):
     party_contact_no = serializers.ReadOnlyField(source="party.contact_no")
     party_email = serializers.ReadOnlyField(source="party.email")
     discount_obj = SalesDiscountSerializer()
+    quotation_meta = serializers.ReadOnlyField(source="get_quotation_meta")
     sales_agent = SalesAgentSerializer()
 
     rows = SalesVoucherRowDetailSerializer(many=True)

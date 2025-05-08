@@ -94,7 +94,7 @@ class Quotation(CompanyBaseModel):
 
     @property
     def quotation_meta(self):
-        return self.generate_quotation_meta()
+        return self.get_quotation_meta()
 
     def get_quotation_discount_data(self):
         if self.discount_obj_id:
@@ -103,7 +103,7 @@ class Quotation(CompanyBaseModel):
         else:
             return {"type": self.discount_type, "value": self.discount}
 
-    def generate_quotation_meta(
+    def get_quotation_meta(
         self, update_row_data=False, prefetched_rows=False, save=True
     ):
         dct = {
