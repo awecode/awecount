@@ -219,6 +219,14 @@ useApi(endpoint, { method: 'GET' }, false, true)
                 {{ fields?.expiry_date }}
               </div>
             </div>
+            <div v-if="fields?.reference" class="col-12 col-md-6 row">
+              <div class="col-6">
+                Reference
+              </div>
+              <div class="col-6">
+                {{ fields?.reference }}
+              </div>
+            </div>
           </div>
         </q-card>
       </q-card>

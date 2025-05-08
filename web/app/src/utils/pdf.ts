@@ -87,6 +87,7 @@ export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<st
       </div>
       <div style="text-align: right;">
         ${quotationInfo.number ? `<p><strong>QT No.:</strong> ${quotationInfo.number}</p>` : ''}
+        ${quotationInfo.reference ? `<p><strong>Reference:</strong> ${quotationInfo.reference}</p>` : ''}
         <p><strong>Date:</strong> ${quotationInfo.date}</p>
         <p><strong>Miti:</strong> ${DateConverter.getRepresentation(quotationInfo.date, 'bs')}</p>
         ${quotationInfo.expiry_date ? `<p><strong>Expiry Date:</strong> ${quotationInfo.expiry_date}</p>` : ''}

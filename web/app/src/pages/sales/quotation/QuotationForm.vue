@@ -324,6 +324,19 @@ const switchMode = () => {
                 :options="taxTypes"
               />
             </div>
+
+            <div class="col-12 col-md-6">
+              <q-input
+                v-model="fields.reference"
+                autogrow
+                class="col-12 col-md-10"
+                data-testid="reference-input"
+                label="Reference"
+                type="textarea"
+                :error="!!errors?.reference"
+                :error-message="errors?.reference"
+              />
+            </div>
           </div>
         </q-card-section>
       </q-card>
