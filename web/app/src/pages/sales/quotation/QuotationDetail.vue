@@ -12,12 +12,7 @@ interface Fields {
   status: string
   number: string
   remarks: string
-  print_count: number
   id: number
-  payment_mode: number
-  options: {
-    default_email_attachments: File[]
-  }
   email: string
   party_email: string
   customer_name: string
@@ -55,7 +50,7 @@ function resetEmailInvoicePayload() {
   emailInvoiceErrors.value = {}
   emailInvoicePayload.value = {
     attach_pdf: true,
-    attachments: fields.value?.options?.default_email_attachments || [],
+    attachments: [],
     to: [fields.value?.email, fields.value?.party_email].filter(Boolean),
     subject: `Quotation #${fields.value?.number}`,
     message: `
@@ -112,7 +107,6 @@ useApi(endpoint, { method: 'GET' }, false, true)
   .then((data) => {
     fields.value = data
     fields.value.voucher_meta = fields.value.quotation_meta
-    paymentModeOptions.value = data.available_payment_modes
     resetEmailInvoicePayload()
     if (triggerPrint) {
       print(false)
