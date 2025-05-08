@@ -51,6 +51,10 @@ const $q = useQuasar()
 const route = useRoute()
 const store = useLoginStore()
 
+const slug = computed(() => {
+  return Array.isArray(route.params.slug) ? route.params.slug.join('/') : route.params.slug
+})
+
 const fields = ref<Voucher[] | null>(null)
 const separateTransactions = ref(false)
 
@@ -173,14 +177,27 @@ const CONTENT_TYPE_TO_SLUG = {
   'purchase-vouchers': 'purchase/vouchers',
   'sales-vouchers': 'sales/vouchers',
   'sales-voucher': 'sales/vouchers',
+  'debit-note': 'purchase/debit-notes',
   'debit-notes': 'purchase/debit-notes',
+  'credit-note': 'sales/credit-notes',
   'credit-notes': 'sales/credit-notes',
+  'challan': 'sales/challans',
   'challans': 'sales/challans',
+  'payment-receipt': 'payment-receipts',
   'payment-receipts': 'payment-receipts',
 } as const
 
+const SLUG_TO_CONTENT_TYPE = {
+  'purchase/vouchers': 'purchase-vouchers',
+  'sales/vouchers': 'sales-voucher',
+  'purchase/debit-notes': 'debit-note',
+  'sales/credit-notes': 'credit-note',
+  'sales/challans': 'challan',
+  'payment-receipts': 'payment-receipt',
+} as const
+
 // Fetch data on component mount
-useApi(`/api/company/${route.params.company}/${route.params.slug}/${route.params.id}/journal-entries/`)
+useApi(`/api/company/${route.params.company}/${SLUG_TO_CONTENT_TYPE[slug.value] ?? slug.value}/${route.params.id}/journal-entries/`)
   .then((data) => {
     fields.value = data
   })

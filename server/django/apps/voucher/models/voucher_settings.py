@@ -4,10 +4,11 @@ from django.dispatch import receiver
 
 from apps.bank.models import BankAccount
 from apps.company.models import Company
-from apps.product.models import InventorySetting
 from apps.company.signals import company_created
+from apps.product.models import InventorySetting
 from apps.voucher.models import PaymentMode
 from apps.quotation.models import QuotationSetting
+
 
 class SalesSetting(models.Model):
     company = models.OneToOneField(
@@ -45,7 +46,9 @@ class SalesSetting(models.Model):
     invoice_footer_text = models.TextField(null=True, blank=True)
     persist_pos_items = models.BooleanField(default=False)
     enable_sales_date_edit = models.BooleanField(default=False)
-    default_email_attachments = ArrayField(models.CharField(max_length=255), default=list, blank=True)
+    default_email_attachments = ArrayField(
+        models.CharField(max_length=255), default=list, blank=True
+    )
 
     @property
     def fields(self):
@@ -114,20 +117,23 @@ class PurchaseSetting(models.Model):
     rate_change_alert_emails = ArrayField(models.EmailField(), default=list, blank=True)
 
     def update(self, update_data):
+        bank_account_id = update_data.get("bank_account")
+        payment_mode_id = update_data.get("payment_mode")
+
+        if bank_account_id and bank_account_id != self.bank_account_id:
+            self.bank_account_id = BankAccount.objects.get(id=bank_account_id).id
+
+        if payment_mode_id != self.payment_mode_id:
+            self.payment_mode_id = (
+                PaymentMode.objects.get(id=payment_mode_id).id
+                if payment_mode_id
+                else None
+            )
+
         for key, value in update_data.items():
-            if key == "bank_account":
-                if update_data["bank_account"] == self.bank_account_id:
-                    pass
-                else:
-                    self.bank_account_id = BankAccount.objects.get(
-                        id=update_data["bank_account"]
-                    ).id
-            elif key == "payment_mode":
-                self.payment_mode_id = PaymentMode.objects.get(
-                    id=update_data["payment_mode"]
-                ).id
-            else:
+            if key not in ["bank_account", "payment_mode"]:
                 setattr(self, key, value)
+
         self.save()
 
     @property

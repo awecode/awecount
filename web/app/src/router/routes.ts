@@ -338,6 +338,14 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'debit-notes/:id',
+        name: 'company-purchase-debit-notes-id',
+        component: () => import('pages/purchase/debit-notes/DebitNotesDetail.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Debit Notes', 'Detail'],
+        },
+      },
+      {
         path: 'debit-notes/:id/edit',
         name: 'company-purchase-debit-notes-id-edit',
         component: () => import('pages/purchase/debit-notes/DebitNotesForm.vue'),
@@ -1175,6 +1183,11 @@ const companyRoutes: RouteRecordRaw[] = [
   {
     path: 'journal-entries/:slug/:id',
     name: 'company-journal-entries',
+    component: () => import('pages/journal-entry/[slugUrl].vue'),
+  },
+  {
+    path: ':slug+/:id/journal-entries',
+    name: 'company-journal-entries-2',
     component: () => import('pages/journal-entry/[slugUrl].vue'),
   },
   {
