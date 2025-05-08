@@ -117,6 +117,21 @@ useApi(endpoint, { method: 'GET' }, false, true)
       router.replace({ path: '/ErrorNotFound' })
     }
   })
+
+const isConvertModalOpen = ref(false)
+const convertToInvoice = () => {
+  const endpoint = `/api/company/${route.params.company}/quotation/${fields.value?.id}/convert/`
+  useApi(endpoint, { method: 'POST' }, false, true)
+    .then((res) => {
+      isConvertModalOpen.value = false
+      router.push({ path: `/${route.params.company}/sales/vouchers/${res?.id}` })
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 404) {
+        router.replace({ path: '/ErrorNotFound' })
+      }
+    })
+}
 </script>
 
 <template>
@@ -262,6 +277,15 @@ useApi(endpoint, { method: 'GET' }, false, true)
             label="Send email"
             @click="isEmailInvoiceModalOpen = true"
           /> -->
+          <q-btn
+            v-if="
+              isLoggedIn && fields.status !== 'Draft' && fields.status !== 'Converted'
+                && checkPermissions('quotations.update')
+            "
+            data-testid="convert-to-invoice"
+            label="Convert"
+            @click="isConvertModalOpen = true"
+          />
         </div>
       </div>
     </div>
@@ -316,6 +340,38 @@ useApi(endpoint, { method: 'GET' }, false, true)
               color="orange-5"
               label="Send"
               @click="emailInvoice"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="isConvertModalOpen">
+      <q-card style="min-width: min(60vw, 800px)">
+        <q-card-section class="bg-primary text-white">
+          <div class="text-h6 flex justify-between">
+            <span class="q-mx-md">Convert to Sales Voucher?</span>
+            <q-btn
+              v-close-popup
+              dense
+              flat
+              round
+              class="text-white bg-red-500"
+              icon="close"
+            />
+          </div>
+        </q-card-section>
+        <q-card-section class="q-mx-md flex flex-col gap-4">
+          <!-- message -->
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">
+            Are you sure you want to convert this quotation to a sales voucher?
+          </div>
+          <div class="row justify-end">
+            <q-btn
+              class="q-mt-md"
+              color="orange-5"
+              label="Convert"
+              @click="convertToInvoice"
             />
           </div>
         </q-card-section>
