@@ -198,7 +198,8 @@ class QuotationDetailSerializer(BaseModelSerializer):
     tax_identification_number = serializers.ReadOnlyField(
         source="party.tax_identification_number"
     )
-
+    footer_text = serializers.ReadOnlyField(source="company.quotation_settings.footer_text")
+    body_text = serializers.ReadOnlyField(source="company.quotation_settings.body_text")
     # TODO: quotation footer texts
 
     class Meta:
