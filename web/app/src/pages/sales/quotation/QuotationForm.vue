@@ -8,7 +8,7 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const endpoint = `/api/company/${route.params.company}/quotation/`
 
-const { fields, formDefaults, errors, isEdit, loading, submitForm } = useForm(endpoint, {
+const { fields, formDefaults, errors, isEdit, loading, today, submitForm } = useForm(endpoint, {
   getDefaults: true,
   successRoute: `/${route.params.company}/sales/quotations`,
 })
@@ -116,6 +116,8 @@ watch(
     }
     if (isEdit.value) {
       if (fields.value.customer_name) customerMode.value = true
+    } else {
+      fields.value.date = today
     }
     fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
   },
