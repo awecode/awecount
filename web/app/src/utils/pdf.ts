@@ -95,6 +95,15 @@ export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<st
     </div>
   </div>`
 
+  let body = ''
+
+  if (quotationInfo.body_text) {
+    body += `
+    <div style="margin: 20px 0; font-family: Arial, sans-serif;">
+      <p>${quotationInfo.body_text}</p>
+    </div>`
+  }
+
   const tableHeader = `
   <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 14px;">
     <thead>
@@ -152,5 +161,5 @@ export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<st
     </div>
   </div>`
 
-  return html + customerSection + tableHeader + totals + footer
+  return html + customerSection + body + tableHeader + totals + footer
 }
