@@ -91,6 +91,7 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         "number",
         "party__name",
         "remarks",
+        "reference",
         "total_amount",
         "party__tax_identification_number",
         "customer_name",
