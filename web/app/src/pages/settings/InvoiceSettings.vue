@@ -141,6 +141,7 @@ const templateOptions = ref([
   { label: 'Template 1', value: 1, html: '' },
   { label: 'Template 2', value: 2, html: '' },
   { label: 'Template 3', value: 3, html: '' },
+  { label: 'Template 4', value: 4, html: '' },
 ])
 
 watch(() => salesSettings.value, (val) => {
