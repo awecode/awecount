@@ -94,6 +94,9 @@ class QuotationCreateSerializer(
         validated_data["number"] = next_quotation_no
 
     def validate(self, data):
+        if not data.get("party"):
+            raise ValidationError({"party": ["Party is required."]})
+
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
 
@@ -166,6 +169,7 @@ class QuotationCreateSerializer(
             "company",
             "user",
             "discount_obj",
+            "customer_name",
         )
 
 
@@ -198,7 +202,9 @@ class QuotationDetailSerializer(BaseModelSerializer):
     tax_identification_number = serializers.ReadOnlyField(
         source="party.tax_identification_number"
     )
-    footer_text = serializers.ReadOnlyField(source="company.quotation_settings.footer_text")
+    footer_text = serializers.ReadOnlyField(
+        source="company.quotation_settings.footer_text"
+    )
     body_text = serializers.ReadOnlyField(source="company.quotation_settings.body_text")
     # TODO: quotation footer texts
 
