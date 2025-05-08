@@ -263,7 +263,7 @@ const switchMode = () => {
             <date-picker
               v-model="fields.expiry_date"
               class="col-md-6 col-12"
-              label="Expiry Date*"
+              label="Expiry Date"
               :error="errors?.expiry_date ? errors?.expiry_date : null"
               :error-message="errors?.expiry_date"
             />
