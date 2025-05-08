@@ -10,7 +10,6 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 
 from apps.voucher.models import (
-    PaymentReceipt,
     SalesAgent,
 )
 
@@ -19,6 +18,9 @@ from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
+from rest_framework.exceptions import AuthenticationFailed
+
+from apps.users.serializers import CompanySerializer
 
 from django.db.models import Prefetch, Q
 
@@ -35,6 +37,7 @@ from awecount.libs.CustomViewSet import (
 )
 from awecount.libs.helpers import (
     get_verification_hash,
+    check_verification_hash,
 )
 from awecount.libs.mixins import (
     DeleteRows,
@@ -151,7 +154,21 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     @action(detail=True)
     def details(self, request, pk, *args, **kwargs):
         details = self.get_quotation_details(pk)
-        return Response(details)
+        hash = get_verification_hash("quotation-{}".format(pk))
+        return Response({**details, "hash": hash})
+
+    @action(detail=True, permission_classes=[], url_path="details-by-hash")
+    def details_by_hash(self, request, pk):
+        hash = request.GET.get("hash")
+        if not hash:
+            raise AuthenticationFailed("No hash provided")
+        if check_verification_hash(hash, "quotation-{}".format(pk)) is False:
+            raise AuthenticationFailed("Invalid hash")
+        obj = Quotation.objects.get(pk=pk)
+        self.request.company = obj.company
+        self.request.company_id = obj.company_id
+        details = self.get_voucher_details(pk)
+        return Response({**details, "company": CompanySerializer(obj.company).data})
 
     def get_defaults(self, request=None, *args, **kwargs):
         return {
