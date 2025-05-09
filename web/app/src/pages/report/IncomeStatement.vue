@@ -475,7 +475,20 @@ if (route.query.start_date && route.query.end_date) {
           <template v-if="!isLoading && categoryTree">
             <template v-if="categoryTree?.revenue">
               <AccountBalanceTableNode
-                v-for="category in categoryTree.revenue"
+                v-for="category in [
+                  {
+                    id: 9999999,
+                    name: 'Revenue',
+                    children: categoryTree.revenue,
+                    accounts: [],
+                    total: [...categoryTree.revenue.map((data, index) => {
+                      return {
+                        closing_dr: data.total[index].closing_dr,
+                        closing_cr: data.total[index].closing_cr,
+                      }
+                    })],
+                  },
+                ]"
                 :key="category.id"
                 name="Revenue"
                 :config="config"
@@ -485,7 +498,10 @@ if (route.query.start_date && route.query.end_date) {
               />
             </template>
 
-            <template v-if="categoryTree?.direct_expense">
+            <template
+              v-if="
+                categoryTree?.direct_expense"
+            >
               <AccountBalanceTableNode
                 v-for="category in [
                   { id: 1,
@@ -497,6 +513,7 @@ if (route.query.start_date && route.query.end_date) {
                     total: [
                       ...extraData.closing_stock.map((data, index) => {
                         return {
+                          // TODO: verify
                           closing_dr: categoryTree.purchase[0].total[index].closing_dr + categoryTree.direct_expense[0].total[index].closing_dr - (categoryTree.purchase[0].total[index].closing_cr + categoryTree.direct_expense[0].total[index].closing_cr) + extraData.opening_stock[0] - extraData.closing_stock[0] + categoryTree.direct_expense[0].total[index].closing_dr,
                           closing_cr: categoryTree.direct_expense[0].total[index].closing_cr,
                         }
@@ -530,19 +547,90 @@ if (route.query.start_date && route.query.end_date) {
               </AccountBalanceTableNode>
             </template>
 
-            <!-- Closing Stock -->
+            <!-- Gross Profit -->
+            <tr>
+              <td class="text-weight-medium">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>Gross Profit</span>
+              </td>
+              <td
+                v-for="(data, index) in extraData.closing_stock"
+                :key="data"
+                class="text-left"
+              >
+                {{ ((categoryTree.purchase[0].total[index].closing_dr + categoryTree.direct_expense[0].total[index].closing_dr - (categoryTree.purchase[0].total[index].closing_cr + categoryTree.direct_expense[0].total[index].closing_cr) + extraData.opening_stock[0] - extraData.closing_stock[0] + categoryTree.direct_expense[0].total[index].closing_dr) - categoryTree.direct_expense[0].total[index].closing_cr).toFixed(2) }}
+              </td>
+            </tr>
 
-            <template v-if="categoryTree?.indirect_expense">
+            <!-- Other Income -->
+            <template v-if="categoryTree?.other_income">
               <AccountBalanceTableNode
-                v-for="category in categoryTree.indirect_expense"
+                v-for="category in [
+                  {
+                    id: 999999,
+                    name: 'Other Income',
+                    children: categoryTree.other_income,
+                    accounts: [],
+                    total: [...categoryTree.other_income.map((data, index) => {
+                      return {
+                        closing_dr: data.total[index].closing_dr,
+                        closing_cr: data.total[index].closing_cr,
+                      }
+                    })],
+                  },
+                ]"
                 :key="category.id"
-                name="Indirect Expense"
+                name="Other Income"
                 :config="config"
                 :hide-empty-categories="false"
                 :item="category"
                 :root="true"
               />
             </template>
+
+            <!-- Operating Expense -->
+            <template v-if="categoryTree?.operating_expense">
+              <AccountBalanceTableNode
+                v-for="category in [
+                  {
+                    id: 99999999,
+                    name: 'Operating Expense',
+                    children: categoryTree.operating_expense,
+                    accounts: [],
+                    total: [...categoryTree.operating_expense.map((data, index) => {
+                      return {
+                        closing_dr: data.total[index].closing_dr,
+                        closing_cr: data.total[index].closing_cr,
+                      }
+                    })],
+                  },
+                ]"
+                :key="category.id"
+                name="Operating Expense"
+                :config="config"
+                :hide-empty-categories="false"
+                :item="category"
+                :root="true"
+              />
+            </template>
+
+            <!-- Operating Profit (EBITA) = 3 + 4 - 5 -->
+            <tr>
+              <td class="text-weight-medium">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>Operating Profit (EBITA)</span>
+              </td>
+              <td
+                v-for="(data, index) in extraData.closing_stock"
+                :key="data"
+                class="text-left"
+              >
+                <!-- 3 + 4 - 5 -->
+                {{ (((categoryTree.purchase[0].total[index].closing_dr + categoryTree.direct_expense[0].total[index].closing_dr - (categoryTree.purchase[0].total[index].closing_cr + categoryTree.direct_expense[0].total[index].closing_cr) + extraData.opening_stock[0] - extraData.closing_stock[0] + categoryTree.direct_expense[0].total[index].closing_dr) - categoryTree.direct_expense[0].total[index].closing_cr) + (categoryTree.other_income[0].total[index].closing_dr - categoryTree.other_income[0].total[index].closing_cr) - (categoryTree.operating_expense[0].total[index].closing_dr - categoryTree.operating_expense[0].total[index].closing_cr)).toFixed(2) }}
+              </td>
+            </tr>
+
+            <!-- Interest Income -->
           </template>
           <!-- Show loading -->
           <template v-else>

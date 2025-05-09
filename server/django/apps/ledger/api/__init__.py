@@ -884,14 +884,25 @@ class IncomeStatementView(APIView):
         income_categories = []
         expense = []
         accounts_ids = []
+        direct_income_category = []
+        indirect_income_category = []
         direct_expense_category = []
         indirect_expense_category = []
         purchase_category = []
 
         for category in serializer.data:
             if category.get("system_code") == "INCOME":
-                income_categories.append(category)
-                accounts_ids.extend(get_all_ids(category))
+                # income_categories.append(category)
+                # accounts_ids.extend(get_all_ids(category))
+                for child in category.get("children", []):
+                    if child.get("system_code") == "DIR-INCOME":
+                        direct_income_category.append(child)
+                        accounts_ids.extend(get_all_ids(child))
+
+                    if child.get("system_code") == "IND-INCOME":
+                        indirect_income_category.append(child)
+                        accounts_ids.extend(get_all_ids(child))
+                    
             elif category.get("system_code") == "EXPENSES":
                 expense.append(category)
                 for child in category.get("children", []):
@@ -1056,17 +1067,18 @@ class IncomeStatementView(APIView):
             row = cursor.fetchone()
             opening_stock = row[0] or 0
             closing_stock = row[1] or 0
-
         return Response(
             {
                 "accounts": accounts,
                 "opening_stock": opening_stock,
                 "closing_stock": closing_stock,
                 "category_tree": {
-                    "net_sales": income_categories,
+                    'revenue': direct_income_category,
                     "direct_expense": direct_expense_category,
+                    "net_sales": income_categories,
+                    'other_income': indirect_income_category,
                     "purchase": purchase_category,
-                    "indirect_expense": indirect_expense_category,
+                    "operating_expense": indirect_expense_category,
                 },
             }
         )
