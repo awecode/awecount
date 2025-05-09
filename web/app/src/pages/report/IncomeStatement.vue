@@ -44,11 +44,11 @@ const getLocalDate = (date: string | null) => {
 }
 
 const config = ref({
-  hide_accounts: false,
+  hide_accounts: true,
   hide_categories: false,
   hide_sums: false,
   show_opening_closing_dr_cr: false,
-  hide_zero_balance: false,
+  hide_zero_balance: true,
 })
 const isLoading = ref(false)
 const fields = ref<{
