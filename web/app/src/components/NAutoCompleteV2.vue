@@ -24,6 +24,7 @@ interface Props {
   optionValue?: string
   emitValue?: boolean
   optionLabel?: string
+  dense?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -231,6 +232,7 @@ if (props.fetchOnMount && props.endpoint) {
       option-label="name"
       option-value="id"
       :autofocus="focusOnMount"
+      :dense="dense"
       :disable="disabled"
       :error="!!error"
       :error-message="error"
