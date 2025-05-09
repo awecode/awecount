@@ -62,6 +62,7 @@ const state = reactive({
   organization_type: null,
   country: null,
   currency: null,
+  corporate_tax_rate: null,
 })
 
 const loading = ref(false)
@@ -71,6 +72,7 @@ const errors = ref({
   organization_type: null,
   country: null,
   currency: null,
+  corporate_tax_rate: null,
 })
 
 // Company logo handling
@@ -89,6 +91,7 @@ const loadCompanyData = async () => {
     const data = await $api(`/api/company/${router.currentRoute.value.params.company}/`)
     state.name = data.name
     state.taxIdentificationNumber = data.tax_identification_number // Renamed here
+    state.corporate_tax_rate = data.corporate_tax_rate
     state.organization_type = data.organization_type
     state.country = data.country_iso
     state.currency = data.currency_code
@@ -150,6 +153,7 @@ const updateCompany = async () => {
         organization_type: state.organization_type,
         country_iso: state.country,
         currency_code: state.currency,
+        corporate_tax_rate: state.corporate_tax_rate,
       },
     })
 
@@ -328,6 +332,16 @@ onMounted(() => {
           :error="!!errors.currency"
           :error-message="errors.currency"
           :options="currencies"
+        />
+      </div>
+      <div class="col-12">
+        <q-input
+          v-model="state.corporate_tax_rate"
+          dense
+          outlined
+          label="Corporate Tax Rate"
+          :error="!!errors.corporate_tax_rate"
+          :error-message="errors.corporate_tax_rate"
         />
       </div>
     </div>

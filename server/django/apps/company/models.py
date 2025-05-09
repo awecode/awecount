@@ -251,6 +251,9 @@ class Company(BaseModel):
     synchronize_cbms_nepal_live = models.BooleanField(default=False)
     config_template = models.CharField(max_length=255, default="np")
     invoice_template = models.IntegerField(choices=INVOICE_TEMPLATE_CHOICES, default=1)
+    corporate_tax_rate = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
 
     current_fiscal_year = models.ForeignKey(
         FiscalYear,
