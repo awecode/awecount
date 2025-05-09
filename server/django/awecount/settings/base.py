@@ -460,6 +460,10 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Liabilities": "LIABILITIES",
     "Equity": "EQUITY",
     "Opening Balance Difference": "OPEN-BAL-DIFF",
+    "Direct Income": "DIR-INCOME",
+    "Indirect Income": "IND-INCOME",
+    "Interest Income": "INT-INCOME",
+    "Interest Expenses": "INT-EXP",
 }
 
 # Bank reconciliation settings
