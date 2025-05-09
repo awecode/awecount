@@ -154,6 +154,8 @@ const expandStatus = computed(() => {
       </td>
     </tr>
   </template>
+  <slot v-if="expandAccountsProps && expandStatus" name="custom"></slot>
+
   <template v-if="item.accounts && item.accounts.length && !props.config.hide_accounts && (!props.config.hide_zero_balance || !hasZeroBalance())">
     <template v-for="account in item.accounts" :key="account.id">
       <tr v-if="!(props.config.hide_zero_balance && hasNoBalance(account))" :class="expandAccountsProps && expandStatus ? '' : 'hidden'">

@@ -473,72 +473,62 @@ if (route.query.start_date && route.query.end_date) {
         </thead>
         <tbody>
           <template v-if="!isLoading && categoryTree">
-            <template v-if="categoryTree?.net_sales">
+            <template v-if="categoryTree?.revenue">
               <AccountBalanceTableNode
-                v-for="category in categoryTree.net_sales"
+                v-for="category in categoryTree.revenue"
                 :key="category.id"
-                name="Net Sales"
+                name="Revenue"
                 :config="config"
                 :hide-empty-categories="false"
                 :item="category"
                 :root="true"
               />
             </template>
+
             <template v-if="categoryTree?.direct_expense">
               <AccountBalanceTableNode
-                v-for="category in categoryTree.direct_expense"
+                v-for="category in [
+                  { id: 1,
+                    name: 'Cost of Sales',
+                    children: [
+                      ...categoryTree.direct_expense,
+                    ],
+                    accounts: [],
+                    total: [
+                      ...extraData.closing_stock.map((data, index) => {
+                        return {
+                          closing_dr: categoryTree.purchase[0].total[index].closing_dr + categoryTree.direct_expense[0].total[index].closing_dr - (categoryTree.purchase[0].total[index].closing_cr + categoryTree.direct_expense[0].total[index].closing_cr) + extraData.opening_stock[0] - extraData.closing_stock[0] + categoryTree.direct_expense[0].total[index].closing_dr,
+                          closing_cr: categoryTree.direct_expense[0].total[index].closing_cr,
+                        }
+                      }),
+                    ],
+                  },
+                ]
+                "
                 :key="category.id"
-                name="Direct Expense"
+                name="Cost of Sales"
                 :config="config"
                 :hide-empty-categories="false"
                 :item="category"
                 :root="true"
-              />
-            </template>
-            <template v-if="categoryTree?.purchase">
-              <AccountBalanceTableNode
-                v-for="category in categoryTree.purchase"
-                :key="category.id"
-                name="Purchase"
-                :config="config"
-                :hide-empty-categories="false"
-                :item="category"
-                :root="true"
-              />
-            </template>
-            <!-- Opening Stock -->
-            <tr>
-              <td class="text-weight-medium">
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <span>Opening Stock</span>
-              </td>
-              <td v-for="data in extraData.opening_stock" :key="data" class="text-left">
-                {{ data?.toFixed(2) }}
-              </td>
-            </tr>
-            <tr>
-              <td class="text-weight-medium">
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <span>Closing Stock</span>
-              </td>
-              <td v-for="data in extraData.closing_stock" :key="data" class="text-left">
-                {{ data?.toFixed(2) }}
-              </td>
-            </tr>
-            <tr>
-              <td class="text-weight-medium" style="border-top: 1px solid gray">
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <span>COGS</span>
-              </td>
-              <td
-                v-for="(data, index) in extraData.closing_stock"
-                :key="data"
-                class="text-left"
-                style="border-top: 1px solid gray"
               >
-                {{ (categoryTree.purchase[0].total[index].closing_dr + categoryTree.direct_expense[0].total[index].closing_dr - (categoryTree.purchase[0].total[index].closing_cr + categoryTree.direct_expense[0].total[index].closing_cr) + extraData.opening_stock[0] - extraData.closing_stock[0]).toFixed(2) }}
-              </td>
-            </tr>
+                <template #custom>
+                  <tr>
+                    <td class="text-weight-medium">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <span>COGS</span>
+                    </td>
+                    <td
+                      v-for="(data, index) in extraData.closing_stock"
+                      :key="data"
+                      class="text-left"
+                    >
+                      {{ (categoryTree.purchase[0].total[index].closing_dr + categoryTree.direct_expense[0].total[index].closing_dr - (categoryTree.purchase[0].total[index].closing_cr + categoryTree.direct_expense[0].total[index].closing_cr) + extraData.opening_stock[0] - extraData.closing_stock[0]).toFixed(2) }}
+                    </td>
+                  </tr>
+                </template>
+              </AccountBalanceTableNode>
+            </template>
 
             <!-- Closing Stock -->
 
