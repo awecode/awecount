@@ -1103,13 +1103,22 @@ def handle_company_creation(sender, **kwargs):
         system_code=acc_system_codes["Discount Income"],
     )
 
-    Category.objects.create(
+    interest_income_category = Category.objects.create(
         name="Interest Income",
         code="I-I-II",
         parent=indirect_income,
         company=company,
         default=True,
         system_code=acc_cat_system_codes["Interest Income"],
+    )
+
+    Account.objects.create(
+        name="Interest Income",
+        code="I-I-II-II",
+        category=interest_income_category,
+        company=company,
+        default=True,
+        system_code=acc_system_codes["Interest Income"],
     )
 
     # CREATE DEFAULT CATEGORIES FOR EXPENSES
@@ -1244,13 +1253,21 @@ def handle_company_creation(sender, **kwargs):
         system_code=acc_system_codes["Discount Expenses"],
     )
 
-    Category.objects.create(
+    interest_expense_category = Category.objects.create(
         name="Interest Expenses",
         code="E-I-IE",
         parent=indirect_expenses,
         company=company,
         default=True,
         system_code=acc_cat_system_codes["Interest Expenses"],
+    )
+    Account.objects.create(
+        name="Interest Expenses",
+        category=interest_expense_category,
+        code="E-I-IE-IE",
+        company=company,
+        default=True,
+        system_code=acc_system_codes["Interest Expenses"],
     )
 
     # Opening Balance Difference
