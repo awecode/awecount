@@ -70,7 +70,7 @@ interface Transaction {
   closing_dr: number
 }
 const calculateBalance = (obj: Transaction) => {
-  let net = obj.closing_cr - obj.closing_dr
+  const net = obj.closing_cr - obj.closing_dr
   if (net === 0) {
     return 0
   } else if (net > 0) {
