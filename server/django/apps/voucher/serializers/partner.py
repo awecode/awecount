@@ -274,11 +274,14 @@ class PartnerPurchaseVoucherCreateSerializer(
         voucher_no = data.get("voucher_no")
 
         if not company.purchase_setting.enable_empty_voucher_no:
-            if not voucher_no:
+            if not voucher_no and data.get("status") != "Draft":
                 raise ValidationError({"voucher_no": ["This field cannot be empty."]})
-            if self.Meta.model.objects.filter(
-                voucher_no=voucher_no, party=party, fiscal_year=fiscal_year
-            ).exists():
+            if (
+                voucher_no
+                and self.Meta.model.objects.filter(
+                    voucher_no=voucher_no, party=party, fiscal_year=fiscal_year
+                ).exists()
+            ):
                 raise ValidationError(
                     {
                         "voucher_no": [
