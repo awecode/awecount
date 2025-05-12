@@ -2,6 +2,7 @@
 import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
 import useApi from 'src/composables/useApi'
+import { useAuthStore } from 'src/stores/auth'
 import { useLoginStore } from 'src/stores/login-info'
 import { parseErrors } from 'src/utils/helpers'
 import { generateQuotationPDF } from 'src/utils/pdf'
@@ -106,11 +107,17 @@ const print = (bodyOnly: boolean) => {
   usePrintPdfWindow(printData)
 }
 
-const endpoint = `/api/company/${route.params.company}/quotation/${route.params.id}/details/`
+let endpoint = `/api/company/${route.params.company}/quotation/${route.params.id}/details/`
+if (!isLoggedIn && route.query.hash) {
+  endpoint = `/api/company/${route.params.company}/quotation/${route.params?.id}/details-by-hash/?hash=${route.query.hash}`
+}
 useApi(endpoint, { method: 'GET' }, false, true)
   .then((data) => {
     fields.value = data
     fields.value.voucher_meta = fields.value.quotation_meta
+    if(!isLoggedIn && route.query.hash){
+      useAuthStore().company = data.company
+    }
     resetEmailQuotationPayload()
     if (triggerPrint) {
       print(false)
