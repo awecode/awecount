@@ -101,6 +101,17 @@ class QuotationCreateSerializer(
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
 
+        if data.get("expiry_date") is not None and data["expiry_date"] < data.get(
+            "date"
+        ):
+            raise ValidationError(
+                {
+                    "expiry_date": [
+                        "Expiry date cannot be earlier than the quotation date."
+                    ]
+                }
+            )
+
         return data
 
     def validate_rows(self, rows):
