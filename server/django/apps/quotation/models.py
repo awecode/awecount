@@ -223,10 +223,10 @@ class Quotation(CompanyBaseModel):
                         "address": self.address,
                         "date": self.date,
                         "expiry_date": self.expiry_date,
-                        "myad_sakine_miti": nepdate.string_from_tuple(
+                        "myad_sakine_miti":  nepdate.string_from_tuple(
                             nepdate.ad2bs(str(self.expiry_date))
                         )
-                        if use_miti(self.company)
+                        if self.expiry_date and use_miti(self.company)
                         else "",
                         "miti": nepdate.string_from_tuple(nepdate.ad2bs(str(self.date)))
                         if use_miti(self.company)
