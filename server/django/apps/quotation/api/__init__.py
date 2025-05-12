@@ -13,6 +13,7 @@ from apps.voucher.models import (
     SalesAgent,
 )
 
+from django_q.tasks import async_task
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
@@ -47,6 +48,7 @@ from awecount.libs.mixins import (
 from apps.quotation.filters import QuotationFilterSet
 from apps.quotation.models import Quotation, QuotationRow
 from apps.quotation.serializers import (
+    EmailQuotationRequestSerializer,
     QuotationChoiceSerializer,
     QuotationCreateSerializer,
     QuotationCreateSettingSerializer,
@@ -160,7 +162,7 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return Response({**details, "hash": hash})
 
     @action(detail=True, permission_classes=[], url_path="details-by-hash")
-    def details_by_hash(self, request, pk):
+    def details_by_hash(self, request, pk, *args, **kwargs):
         hash = request.GET.get("hash")
         if not hash:
             raise AuthenticationFailed("No hash provided")
@@ -169,8 +171,23 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         obj = Quotation.objects.get(pk=pk)
         self.request.company = obj.company
         self.request.company_id = obj.company_id
-        details = self.get_voucher_details(pk)
+        details = self.get_quotation_details(pk)
         return Response({**details, "company": CompanySerializer(obj.company).data})
+
+    @action(detail=True, url_path="email-quotation", methods=["POST"])
+    def email_quotation(self, request, pk, *args, **kwargs):
+        serializer = EmailQuotationRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        obj = self.get_object()
+        async_task(
+            "apps.quotation.models.Quotation.email_quotation",
+            obj,
+            **serializer.validated_data,
+        )
+        if obj.status == "Generated":
+            obj.status = "Sent"
+            obj.save()
+        return Response({})
 
     def get_defaults(self, request=None, *args, **kwargs):
         return {
