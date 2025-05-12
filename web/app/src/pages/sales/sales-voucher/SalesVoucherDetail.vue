@@ -42,6 +42,7 @@ export default {
     const emailInvoiceErrors = ref<Record<string, string>>({})
     const isEmailInvoiceModalOpen: Ref<boolean> = ref(false)
     const loginStore = useLoginStore()
+    const router = useRouter()
 
     const triggerPrint = route.query.print === 'true'
 
@@ -188,6 +189,21 @@ export default {
       }
     }
 
+    const createCopyModalOpen = ref(false)
+    const createCopy = () => {
+      const endpoint = `/api/company/${route.params.company}/sales-voucher/${fields.value?.id}/create-a-copy/`
+      useApi(endpoint, { method: 'POST' }, false, true)
+        .then((res) => {
+          createCopyModalOpen.value = false
+          router.push({ path: `/${route.params.company}/sales/vouchers/${res?.id}/edit` })
+        })
+        .catch((error) => {
+          if (error.response && error.response.status === 404) {
+            router.replace({ path: '/ErrorNotFound' })
+          }
+        })
+    }
+
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -202,6 +218,8 @@ export default {
       updatePaymentMode,
       paymentModeOptions,
       onPrintclick,
+      createCopy,
+      createCopyModalOpen,
       checkPermissions,
       useGeneratePdf,
       loading,
@@ -336,6 +354,12 @@ export default {
           <q-btn icon="print" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`" @click="() => onPrintclick(false, fields?.status === 'Draft')" />
           <q-btn icon="print" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${(fields?.print_count || 0) + 1}`}`" @click="() => onPrintclick(true, fields?.status === 'Draft')" />
           <q-btn
+            v-if="isLoggedIn"
+            data-testid="create-copy"
+            label="Create a copy"
+            @click="createCopyModalOpen = true"
+          />
+          <q-btn
             v-if="isLoggedIn && !['Draft', 'Cancelled'].includes(fields?.status)"
             data-testid="send-email"
             label="Send email"
@@ -439,6 +463,38 @@ export default {
               color="orange-5"
               label="Send"
               @click="emailInvoice"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="createCopyModalOpen">
+      <q-card style="min-width: min(60vw, 800px)">
+        <q-card-section class="bg-primary text-white">
+          <div class="text-h6 flex justify-between">
+            <span class="q-mx-md">Create a copy</span>
+            <q-btn
+              v-close-popup
+              dense
+              flat
+              round
+              class="text-white bg-red-500"
+              icon="close"
+            />
+          </div>
+        </q-card-section>
+        <q-card-section class="q-mx-md flex flex-col gap-4">
+          <!-- message -->
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">
+            Are you sure you want to create a copy of this sales voucher?
+          </div>
+          <div class="row justify-end">
+            <q-btn
+              class="q-mt-md"
+              color="orange-5"
+              label="Create Copy"
+              @click="createCopy"
             />
           </div>
         </q-card-section>

@@ -2,7 +2,6 @@
 import type { Ref } from 'vue'
 import Decimal from 'decimal.js'
 import DateConverter from 'src/components/date/VikramSamvat.js'
-import FormattedNumber from 'src/components/FormattedNumber.vue'
 import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { useLoginStore } from 'src/stores/login-info'
@@ -28,6 +27,7 @@ export default {
       title: 'Purchase/Expenses | Awecount',
     }
     const route = useRoute()
+    const router = useRouter()
     useMeta(metaData)
     const store = useLoginStore()
     const $q = useQuasar()
@@ -123,6 +123,21 @@ export default {
       return totalAmount.add(totalLandedCosts).div(totalQuantity).toNumber()
     })
 
+    const createCopyModalOpen = ref(false)
+    const createCopy = () => {
+      const endpoint = `/api/company/${route.params.company}/purchase-vouchers/${fields.value?.id}/create-a-copy/`
+      useApi(endpoint, { method: 'POST' }, false, true)
+        .then((res) => {
+          createCopyModalOpen.value = false
+          router.push({ path: `/${route.params.company}/purchase/vouchers/${res?.id}/edit` })
+        })
+        .catch((error) => {
+          if (error.response && error.response.status === 404) {
+            router.replace({ path: '/ErrorNotFound' })
+          }
+        })
+    }
+
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -141,6 +156,8 @@ export default {
       isLoading,
       errors,
       averageRate,
+      createCopy,
+      createCopyModalOpen,
     }
   },
   created() {
@@ -306,7 +323,12 @@ export default {
             @click.prevent="() => (isDeleteOpen = true)"
           />
         </div>
-        <div>
+        <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
+          <q-btn
+            data-testid="create-copy"
+            label="Create a copy"
+            @click="createCopyModalOpen = true"
+          />
           <q-btn
             v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
             color="blue-7"
@@ -343,6 +365,37 @@ export default {
             />
             <div class="text-right q-mt-lg">
               <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')" />
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
+      <q-dialog v-model="createCopyModalOpen">
+        <q-card style="min-width: min(60vw, 800px)">
+          <q-card-section class="bg-primary text-white">
+            <div class="text-h6 flex justify-between">
+              <span class="q-mx-md">Create a copy</span>
+              <q-btn
+                v-close-popup
+                dense
+                flat
+                round
+                class="text-white bg-red-500"
+                icon="close"
+              />
+            </div>
+          </q-card-section>
+          <q-card-section class="q-mx-md flex flex-col gap-4">
+            <!-- message -->
+            <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">
+              Are you sure you want to create a copy of this purchase voucher?
+            </div>
+            <div class="row justify-end">
+              <q-btn
+                class="q-mt-md"
+                color="orange-5"
+                label="Create Copy"
+                @click="createCopy"
+              />
             </div>
           </q-card-section>
         </q-card>
