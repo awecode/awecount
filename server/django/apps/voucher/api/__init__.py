@@ -1293,7 +1293,7 @@ class PurchaseVoucherViewSet(
             row.pop("id")
         data["date"] = timezone.now().date()
         if obj.due_date:
-            data["due_date"] = data["date"] + (obj.due_date - obj.date)
+            data["due_date"] = obj.due_date + (obj.date - data["date"])
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
