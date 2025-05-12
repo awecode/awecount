@@ -157,17 +157,24 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return data
 
     @action(detail=True)
-    def details(self, request, pk, *args, **kwargs):
+    def details(self, request, pk, company_slug, *args, **kwargs):
         details = self.get_quotation_details(pk)
-        hash = get_verification_hash("quotation-{}".format(pk))
+        hash = get_verification_hash(
+            "quotation-{}".format("{}-{}".format(pk, company_slug))
+        )
         return Response({**details, "hash": hash})
 
     @action(detail=True, permission_classes=[], url_path="details-by-hash")
-    def details_by_hash(self, request, pk, *args, **kwargs):
+    def details_by_hash(self, request, pk, company_slug, *args, **kwargs):
         hash = request.GET.get("hash")
         if not hash:
             raise AuthenticationFailed("No hash provided")
-        if check_verification_hash(hash, "quotation-{}".format(pk)) is False:
+        if (
+            check_verification_hash(
+                hash, "quotation-{}".format("{}-{}".format(pk, company_slug))
+            )
+            is False
+        ):
             raise AuthenticationFailed("Invalid hash")
         obj = Quotation.objects.get(pk=pk)
         self.request.company = obj.company
