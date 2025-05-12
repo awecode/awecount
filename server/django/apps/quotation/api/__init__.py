@@ -189,6 +189,20 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             obj.save()
         return Response({})
 
+    @action(detail=True, url_path="create-a-copy", methods=["POST"])
+    def create_a_copy(self, request, pk, *args, **kwargs):
+        """
+        Create a copy of the Quotation
+        """
+        obj = self.get_object()
+        data = QuotationCreateSerializer(obj).data
+        data["number"] = None
+        data["status"] = "Draft"
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
     def get_defaults(self, request=None, *args, **kwargs):
         return {
             "options": {
