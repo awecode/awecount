@@ -70,6 +70,10 @@ export const switchCompanyGuard = async (
     return next(resolved)
   }
 
+  if (!user && to.query.hash) {
+    return next()
+  }
+
   // Handle dashboard route
   if (to.params.company === 'dashboard') {
     const resolved = router.resolve(`/${user?.redirect}${to.fullPath}`)
