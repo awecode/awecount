@@ -1,9 +1,9 @@
-<script lang="ts">
+<script setup lang="ts">
 import type { Ref } from 'vue'
 import Decimal from 'decimal.js'
 import DateConverter from 'src/components/date/VikramSamvat.js'
 import useApi from 'src/composables/useApi'
-import { modes } from 'src/helpers/constants/invoice'
+import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from 'src/stores/login-info'
 
 interface Fields {
@@ -21,159 +21,135 @@ interface Fields {
   purchase_order_numbers: Array<number>
   landed_cost_rows: Array<{ type: string, amount: number, is_percentage: boolean, currency: string, description: string }>
 }
-export default {
-  setup() {
-    const metaData = {
-      title: 'Purchase/Expenses | Awecount',
-    }
-    const route = useRoute()
-    const router = useRouter()
-    useMeta(metaData)
-    const store = useLoginStore()
-    const $q = useQuasar()
-    const fields: Ref<Fields | null> = ref(null)
-    const modeOptions: Ref<Array<object> | null> = ref(null)
-    const isDeleteOpen: Ref<boolean> = ref(false)
-    const deleteMsg: Ref<string> = ref('')
-    const isLoading: Ref<boolean> = ref(false)
-    const errors = ref({})
-    const submitChangeStatus = (id: number, status: string) => {
-      isLoading.value = true
-      let endpoint = ''
-      let body: null | object = null
-      if (status === 'Paid') {
-        endpoint = `/api/company/${route.params.company}/purchase-vouchers/${id}/mark_as_paid/`
-        body = { method: 'POST' }
-      } else if (status === 'Cancelled') {
-        endpoint = `/api/company/${route.params.company}/purchase-vouchers/${id}/cancel/`
-        body = { method: 'POST', body: { message: deleteMsg.value } }
-      }
-      useApi(endpoint, body)
-        .then(() => {
-          onStatusChange(status)
-          isLoading.value = false
-        })
-        .catch((data) => {
-          if (data.status === 422) {
-            useHandleCancelInconsistencyError(endpoint, data, body.body, $q)
-              .then(() => {
-                isLoading.value = false
-                onStatusChange(status)
-              })
-              .catch((error) => {
-                if (error.status !== 'cancel') {
-                  $q.notify({
-                    color: 'negative',
-                    message: 'Something went Wrong!',
-                    icon: 'report_problem',
-                  })
-                }
-                isLoading.value = false
-              })
-          } else {
-            const parsedError = useHandleFormError(data)
-            errors.value = parsedError.errors
-            $q.notify({
-              color: 'negative',
-              message: parsedError.message,
-              icon: 'report_problem',
-            })
-            isLoading.value = false
-          }
-        })
-    }
-    const getDate = computed(() => {
-      return DateConverter.getRepresentation(fields.value?.date, store.isCalendarInAD ? 'ad' : 'bs')
-    })
-    const discountComputed = computed(() => {
-      if (fields?.value.discount_obj) {
-        return `${fields.value.discount_obj.value}` + ' ' + `${fields.value.discount_obj.type === 'Amount' ? '-/' : '%'}`
-      } else if (fields?.value.discount) {
-        return `${fields.value.discount}` + ' ' + `${fields.value.discount_type === 'Amount' ? '-/' : '%'}`
-      } else {
-        return false
-      }
-    })
-    const onStatusChange = (status: string) => {
-      if (fields.value) {
-        fields.value.status = status
-        if (status === 'Cancelled') {
-          $q.notify({
-            color: 'green-6',
-            icon: 'check_circle',
-            message: 'Voucher has been cancelled.',
-          })
-          // fields.value.remarks = ('\nReason for cancellation: ' + body?.body.message)
-          isDeleteOpen.value = false
-        } else if (status === 'Paid') {
-          $q.notify({
-            color: 'green-6',
-            icon: 'check_circle',
-            message: 'Voucher Marked as paid.',
-          })
-        }
-      }
-    }
 
-    const averageRate = computed(() => {
-      if (!fields.value.rows || !fields.value.landed_cost_rows) return 0
-      const totalAmount = fields.value.rows.reduce((sum, row) => sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
-      const totalLandedCosts = fields.value.landed_cost_rows.reduce((sum, row) => sum.add(row.amount || '0'), new Decimal('0'))
-      const totalQuantity = fields.value.rows.reduce((sum, row) => sum.add(row.quantity || '0'), new Decimal('0'))
-      return totalAmount.add(totalLandedCosts).div(totalQuantity).toNumber()
-    })
-
-    const createCopyModalOpen = ref(false)
-    const createCopy = () => {
-      const endpoint = `/api/company/${route.params.company}/purchase-vouchers/${fields.value?.id}/create-a-copy/`
-      useApi(endpoint, { method: 'POST' }, false, true)
-        .then((res) => {
-          createCopyModalOpen.value = false
-          router.push({ path: `/${route.params.company}/purchase/vouchers/${res?.id}/edit` })
-        })
-        .catch((error) => {
-          if (error.response && error.response.status === 404) {
-            router.replace({ path: '/ErrorNotFound' })
-          }
-        })
-    }
-
-    return {
-      allowPrint: false,
-      bodyOnly: false,
-      options: {},
-      fields,
-      dialog: false,
-      partyObj: null,
-      modes,
-      submitChangeStatus,
-      modeOptions,
-      discountComputed,
-      isDeleteOpen,
-      deleteMsg,
-      getDate,
-      checkPermissions,
-      isLoading,
-      errors,
-      averageRate,
-      createCopy,
-      createCopyModalOpen,
-    }
-  },
-  created() {
-    const endpoint = `/api/company/${this.$route.params.company}/purchase-vouchers/${this.$route.params.id}/details/`
-    useApi(endpoint, { method: 'GET' }, false, true)
-      .then((data) => {
-        this.fields = data
-        this.modeOptions = data.available_bank_accounts
-      })
-      .catch((error) => {
-        if (error.response && error.response.status == 404) {
-          this.$router.replace({ path: '/ErrorNotFound' })
-        }
-      })
-  },
+const metaData = {
+  title: 'Purchase/Expenses | Awecount',
 }
+const route = useRoute()
+const router = useRouter()
+useMeta(metaData)
+const store = useLoginStore()
+const $q = useQuasar()
+const fields: Ref<Fields | null> = ref(null)
+const modeOptions: Ref<Array<object> | null> = ref(null)
+const isDeleteOpen: Ref<boolean> = ref(false)
+const deleteMsg: Ref<string> = ref('')
+const isLoading: Ref<boolean> = ref(false)
+const errors = ref({})
+const submitChangeStatus = (id: number, status: string) => {
+  isLoading.value = true
+  let endpoint = ''
+  let body: null | object = null
+  if (status === 'Paid') {
+    endpoint = `/api/company/${route.params.company}/purchase-vouchers/${id}/mark_as_paid/`
+    body = { method: 'POST' }
+  } else if (status === 'Cancelled') {
+    endpoint = `/api/company/${route.params.company}/purchase-vouchers/${id}/cancel/`
+    body = { method: 'POST', body: { message: deleteMsg.value } }
+  }
+  useApi(endpoint, body)
+    .then(() => {
+      onStatusChange(status)
+      isLoading.value = false
+    })
+    .catch((data) => {
+      if (data.status === 422) {
+        useHandleCancelInconsistencyError(endpoint, data, body.body, $q)
+          .then(() => {
+            isLoading.value = false
+            onStatusChange(status)
+          })
+          .catch((error) => {
+            if (error.status !== 'cancel') {
+              $q.notify({
+                color: 'negative',
+                message: 'Something went Wrong!',
+                icon: 'report_problem',
+              })
+            }
+            isLoading.value = false
+          })
+      } else {
+        const parsedError = useHandleFormError(data)
+        errors.value = parsedError.errors
+        $q.notify({
+          color: 'negative',
+          message: parsedError.message,
+          icon: 'report_problem',
+        })
+        isLoading.value = false
+      }
+    })
+}
+const getDate = computed(() => {
+  return DateConverter.getRepresentation(fields.value?.date, store.isCalendarInAD ? 'ad' : 'bs')
+})
+const discountComputed = computed(() => {
+  if (fields?.value.discount_obj) {
+    return `${fields.value.discount_obj.value}` + ' ' + `${fields.value.discount_obj.type === 'Amount' ? '-/' : '%'}`
+  } else if (fields?.value.discount) {
+    return `${fields.value.discount}` + ' ' + `${fields.value.discount_type === 'Amount' ? '-/' : '%'}`
+  } else {
+    return false
+  }
+})
+const onStatusChange = (status: string) => {
+  if (fields.value) {
+    fields.value.status = status
+    if (status === 'Cancelled') {
+      $q.notify({
+        color: 'green-6',
+        icon: 'check_circle',
+        message: 'Voucher has been cancelled.',
+      })
+      // fields.value.remarks = ('\nReason for cancellation: ' + body?.body.message)
+      isDeleteOpen.value = false
+    } else if (status === 'Paid') {
+      $q.notify({
+        color: 'green-6',
+        icon: 'check_circle',
+        message: 'Voucher Marked as paid.',
+      })
+    }
+  }
+}
+
+const averageRate = computed(() => {
+  if (!fields.value.rows || !fields.value.landed_cost_rows) return 0
+  const totalAmount = fields.value.rows.reduce((sum, row) => sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
+  const totalLandedCosts = fields.value.landed_cost_rows.reduce((sum, row) => sum.add(row.amount || '0'), new Decimal('0'))
+  const totalQuantity = fields.value.rows.reduce((sum, row) => sum.add(row.quantity || '0'), new Decimal('0'))
+  return totalAmount.add(totalLandedCosts).div(totalQuantity).toNumber()
+})
+
+const createCopyModalOpen = ref(false)
+const createCopy = () => {
+  const endpoint = `/api/company/${route.params.company}/purchase-vouchers/${fields.value?.id}/create-a-copy/`
+  useApi(endpoint, { method: 'POST' }, false, true)
+    .then((res) => {
+      createCopyModalOpen.value = false
+      router.push({ path: `/${route.params.company}/purchase/vouchers/${res?.id}/edit` })
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 404) {
+        router.replace({ path: '/ErrorNotFound' })
+      }
+    })
+}
+
+
+const endpoint = `/api/company/${route.params.company}/purchase-vouchers/${route.params.id}/details/`
+useApi(endpoint, { method: 'GET' }, false, true)
+  .then((data) => {
+    fields.value = data
+    modeOptions.value = data.available_bank_accounts
+  })
+  .catch((error) => {
+    if (error.response && error.response.status == 404) {
+      router.replace({ path: '/ErrorNotFound' })
+    }
+  })
+
 </script>
 
 <template>
