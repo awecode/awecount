@@ -20,6 +20,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework.exceptions import AuthenticationFailed
+from django.utils import timezone
 
 from apps.users.serializers import CompanySerializer
 
@@ -198,6 +199,10 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         data = QuotationCreateSerializer(obj).data
         data["number"] = None
         data["status"] = "Draft"
+        data["date"] = timezone.now().date()
+        data["expiry_date"] = None
+        if obj.expiry_date:
+            data["expiry_date"] = data["date"] + (obj.expiry_date - obj.date)
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
