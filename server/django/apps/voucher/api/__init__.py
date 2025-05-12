@@ -592,7 +592,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         )
 
     @action(detail=True, permission_classes=[], url_path="details-by-hash")
-    def details_by_hash(self, request, pk):
+    def details_by_hash(self, request, pk, *args, **kwargs):
         hash = request.GET.get("hash")
         if not hash:
             raise AuthenticationFailed("No hash provided")
@@ -605,7 +605,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return Response({**details, "company": CompanySerializer(obj.company).data})
 
     @action(detail=True, url_path="email-invoice", methods=["POST"])
-    def email_invoice(self, request, pk):
+    def email_invoice(self, request, pk, *args, **kwargs):
         serializer = EmailInvoiceRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         obj = self.get_object()

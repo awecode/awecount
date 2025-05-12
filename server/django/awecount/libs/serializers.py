@@ -1,6 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.conf import settings
 
 from apps.ledger.models.base import Account, Party
 
@@ -139,3 +141,25 @@ class RoyaltyLedgerInfoSerializer(serializers.Serializer):
             royalty_party["royalty_tds_account"] = party_royalty_tds_account
 
         return royalty_ledger_info
+
+
+class FileOrStringField(serializers.Field):
+    def to_internal_value(self, data):
+        if isinstance(data, InMemoryUploadedFile):
+            max_file_upload_size = settings.MAX_FILE_UPLOAD_SIZE
+            if data.size > max_file_upload_size:
+                max_file_upload_size_mb = max_file_upload_size / (1024 * 1024)
+                raise serializers.ValidationError(
+                    f"File size exceeds the maximum limit of {max_file_upload_size_mb:.2f} MB"
+                )
+            return data
+
+        if isinstance(data, str):
+            return data
+
+        raise serializers.ValidationError(
+            "This field must be either a file or a string."
+        )
+
+    def to_representation(self, value):
+        return value

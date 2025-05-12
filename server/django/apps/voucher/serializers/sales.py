@@ -1,7 +1,6 @@
 import datetime
 
 from django.conf import settings
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import F
 from django.utils import timezone
 from rest_framework import serializers
@@ -19,7 +18,7 @@ from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.helpers import get_full_file_url
-from awecount.libs.serializers import StatusReversionMixin
+from awecount.libs.serializers import FileOrStringField, StatusReversionMixin
 from lib.drf.serializers import BaseModelSerializer
 
 from ..models import (
@@ -631,28 +630,6 @@ class RecurringVoucherTemplateCreateSerializer(BaseModelSerializer):
             "created_at",
             "updated_at",
         )
-
-
-class FileOrStringField(serializers.Field):
-    def to_internal_value(self, data):
-        if isinstance(data, InMemoryUploadedFile):
-            max_file_upload_size = settings.MAX_FILE_UPLOAD_SIZE
-            if data.size > max_file_upload_size:
-                max_file_upload_size_mb = max_file_upload_size / (1024 * 1024)
-                raise serializers.ValidationError(
-                    f"File size exceeds the maximum limit of {max_file_upload_size_mb:.2f} MB"
-                )
-            return data
-
-        if isinstance(data, str):
-            return data
-
-        raise serializers.ValidationError(
-            "This field must be either a file or a string."
-        )
-
-    def to_representation(self, value):
-        return value
 
 
 class EmailInvoiceRequestSerializer(serializers.Serializer):
