@@ -136,6 +136,21 @@ const convertToInvoice = () => {
       }
     })
 }
+
+const createCopyModalOpen = ref(false)
+const createCopy = () => {
+  const endpoint = `/api/company/${route.params.company}/quotation/${fields.value?.id}/create-a-copy/`
+  useApi(endpoint, { method: 'POST' }, false, true)
+    .then((res) => {
+      createCopyModalOpen.value = false
+      router.push({ path: `/${route.params.company}/sales/quotations/${res?.id}/edit` })
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 404) {
+        router.replace({ path: '/ErrorNotFound' })
+      }
+    })
+}
 </script>
 
 <template>
@@ -258,6 +273,12 @@ const convertToInvoice = () => {
           <q-btn icon="print" label="Print" @click="() => print(false)" />
           <q-btn icon="print" label="Print Body" @click="() => print(true)" />
           <q-btn
+            v-if="isLoggedIn"
+            data-testid="create-copy"
+            label="Create a copy"
+            @click="createCopyModalOpen = true"
+          />
+          <q-btn
             v-if="isLoggedIn && fields.status !== 'Draft'"
             data-testid="send-email"
             label="Send email"
@@ -367,6 +388,38 @@ const convertToInvoice = () => {
               color="orange-5"
               label="Convert"
               @click="convertToInvoice"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="createCopyModalOpen">
+      <q-card style="min-width: min(60vw, 800px)">
+        <q-card-section class="bg-primary text-white">
+          <div class="text-h6 flex justify-between">
+            <span class="q-mx-md">Create a copy</span>
+            <q-btn
+              v-close-popup
+              dense
+              flat
+              round
+              class="text-white bg-red-500"
+              icon="close"
+            />
+          </div>
+        </q-card-section>
+        <q-card-section class="q-mx-md flex flex-col gap-4">
+          <!-- message -->
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">
+            Are you sure you want to create a copy of this quotation?
+          </div>
+          <div class="row justify-end">
+            <q-btn
+              class="q-mt-md"
+              color="orange-5"
+              label="Create Copy"
+              @click="createCopy"
             />
           </div>
         </q-card-section>
