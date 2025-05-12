@@ -31,15 +31,14 @@ const route = useRoute()
 const router = useRouter()
 const $q = useQuasar()
 const fields = ref<Fields | null>(null)
-const paymentModeOptions = ref<Array<object> | null>(null)
 const isLoggedIn = useLoginStore().isLoggedIn
-const emailInvoiceErrors = ref<Record<string, string>>({})
-const isEmailInvoiceModalOpen = ref(false)
+const emailQuotationErrors = ref<Record<string, string>>({})
+const isEmailQuotationModalOpen = ref(false)
 const loginStore = useLoginStore()
 
 const triggerPrint = route.query.print === 'true'
 
-const emailInvoicePayload = ref({
+const emailQuotationPayload = ref({
   attach_pdf: true,
   attachments: [],
   to: '',
@@ -47,9 +46,9 @@ const emailInvoicePayload = ref({
   message: '',
 })
 
-function resetEmailInvoicePayload() {
-  emailInvoiceErrors.value = {}
-  emailInvoicePayload.value = {
+function resetEmailQuotationPayload() {
+  emailQuotationErrors.value = {}
+  emailQuotationPayload.value = {
     attach_pdf: true,
     attachments: [],
     to: [fields.value?.email, fields.value?.party_email].filter(Boolean),
@@ -66,34 +65,38 @@ function resetEmailInvoicePayload() {
   }
 }
 
-function emailInvoice() {
-  const endpoint = `api/company/${route.params.company}/quotation/${fields.value?.id}/email/`
+function emailQuotation() {
+  emailQuotationErrors.value = {}
+  const endpoint = `api/company/${route.params.company}/quotation/${fields.value?.id}/email-quotation/`
   const formData = new FormData()
-  formData.append('attach_pdf', emailInvoicePayload.value.attach_pdf ? 'true' : 'false')
-  emailInvoicePayload.value.attachments.forEach((file: File) => {
+  formData.append('attach_pdf', emailQuotationPayload.value.attach_pdf ? 'true' : 'false')
+  emailQuotationPayload.value.attachments.forEach((file: File) => {
     formData.append('attachments', file)
   })
-  emailInvoicePayload.value.to.forEach((email: string) => {
+  emailQuotationPayload.value.to.forEach((email: string) => {
     formData.append('to', email)
   })
-  formData.append('subject', emailInvoicePayload.value.subject)
-  formData.append('message', emailInvoicePayload.value.message)
+  formData.append('subject', emailQuotationPayload.value.subject)
+  formData.append('message', emailQuotationPayload.value.message)
   useApi(endpoint, {
     body: formData,
     method: 'POST',
   })
     .then(() => {
-      isEmailInvoiceModalOpen.value = false
-      if (isLoggedIn) resetEmailInvoicePayload()
+      isEmailQuotationModalOpen.value = false
+      if (fields.value.status === 'Generated') {
+        fields.value.status = 'Sent'
+      }
+      if (isLoggedIn) resetEmailQuotationPayload()
       $q.notify({
         color: 'positive',
-        message: 'Invoice Sent!',
+        message: 'Quoattion Sent!',
         icon: 'check_circle',
       })
     })
     .catch((err) => {
       if (err.response.status === 400) {
-        emailInvoiceErrors.value = parseErrors(err.data)
+        emailQuotationErrors.value = parseErrors(err.data)
       }
     })
 }
@@ -108,7 +111,7 @@ useApi(endpoint, { method: 'GET' }, false, true)
   .then((data) => {
     fields.value = data
     fields.value.voucher_meta = fields.value.quotation_meta
-    resetEmailInvoicePayload()
+    resetEmailQuotationPayload()
     if (triggerPrint) {
       print(false)
     }
@@ -149,30 +152,12 @@ const convertToInvoice = () => {
         </q-card-section>
         <q-card class="q-mx-lg q-pa-lg row text-grey-8 text-body2">
           <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
-            <template v-if="fields?.party_name">
-              <div class="col-12 col-md-6 row">
-                <div class="col-6">
-                  Party
-                </div>
-                <div class="col-6">
-                  {{ fields?.party_name }}
-                </div>
-              </div>
-              <div v-if="fields?.customer_name" class="col-12 col-md-6 row">
-                <div class="col-6">
-                  Name on Invoice
-                </div>
-                <div class="col-6">
-                  {{ fields?.customer_name }}
-                </div>
-              </div>
-            </template>
-            <div v-else class="col-12 col-md-6 row">
+            <div class="col-12 col-md-6 row">
               <div class="col-6">
-                {{ fields?.customer_name ? 'Customer' : '' }}
+                Party
               </div>
               <div class="col-6">
-                {{ fields?.customer_name || '' }}
+                {{ fields?.party_name }}
               </div>
             </div>
             <div class="col-12 col-md-6 row">
@@ -272,12 +257,12 @@ const convertToInvoice = () => {
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
           <q-btn icon="print" label="Print" @click="() => print(false)" />
           <q-btn icon="print" label="Print Body" @click="() => print(true)" />
-          <!-- <q-btn
+          <q-btn
             v-if="isLoggedIn && fields.status !== 'Draft'"
             data-testid="send-email"
             label="Send email"
-            @click="isEmailInvoiceModalOpen = true"
-          /> -->
+            @click="isEmailQuotationModalOpen = true"
+          />
           <q-btn
             v-if="
               isLoggedIn && fields.status !== 'Draft' && fields.status !== 'Converted'
@@ -300,7 +285,7 @@ const convertToInvoice = () => {
       </div>
     </div>
 
-    <q-dialog v-model="isEmailInvoiceModalOpen" @hide="resetEmailInvoicePayload">
+    <q-dialog v-model="isEmailQuotationModalOpen" @hide="resetEmailQuotationPayload">
       <q-card style="min-width: min(60vw, 800px)">
         <q-card-section class="bg-primary text-white">
           <div class="text-h6 flex justify-between">
@@ -317,7 +302,7 @@ const convertToInvoice = () => {
         </q-card-section>
         <q-card-section class="q-mx-md flex flex-col gap-4">
           <q-select
-            v-model="emailInvoicePayload.to"
+            v-model="emailQuotationPayload.to"
             filled
             hide-dropdown-icon
             multiple
@@ -326,30 +311,30 @@ const convertToInvoice = () => {
             input-debounce="0"
             label="To"
             new-value-mode="add-unique"
-            :error="!!emailInvoiceErrors.to"
-            :error-message="typeof emailInvoiceErrors.to === 'string' ? emailInvoiceErrors.to : 'Enter valid email address'"
+            :error="!!emailQuotationErrors.to"
+            :error-message="typeof emailQuotationErrors.to === 'string' ? emailQuotationErrors.to : 'Enter valid email address'"
           />
           <q-input
-            v-model="emailInvoicePayload.subject"
+            v-model="emailQuotationPayload.subject"
             outlined
             label="Subject"
-            :error="!!emailInvoiceErrors.subject"
-            :error-message="emailInvoiceErrors.subject"
+            :error="!!emailQuotationErrors.subject"
+            :error-message="emailQuotationErrors.subject"
           />
-          <q-editor v-model="emailInvoicePayload.message" />
-          <q-checkbox v-model="emailInvoicePayload.attach_pdf" label="Attach PDF" />
+          <q-editor v-model="emailQuotationPayload.message" />
+          <q-checkbox v-model="emailQuotationPayload.attach_pdf" label="Attach PDF" />
           <file-uploader
-            v-model="emailInvoicePayload.attachments"
+            v-model="emailQuotationPayload.attachments"
             multiple
             label="Attachments"
-            :error="emailInvoiceErrors.attachments"
+            :error="emailQuotationErrors.attachments"
           />
           <div class="row justify-end">
             <q-btn
               class="q-mt-md"
               color="orange-5"
               label="Send"
-              @click="emailInvoice"
+              @click="emailQuotation"
             />
           </div>
         </q-card-section>
