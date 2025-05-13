@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Ref } from 'vue'
 import DateConverter from 'src/components/date/VikramSamvat.js'
-import VoucherPDF from 'src/components/voucher/PDF.vue'
+import VoucherPDF from 'src/components/voucher/pdf/PDF.vue'
 import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { useLoginStore } from 'src/stores/login-info'

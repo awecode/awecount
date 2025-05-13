@@ -1,6 +1,6 @@
 <script setup>
 import { useQuasar } from 'quasar'
-import VoucherPDF from 'src/components/voucher/PDF.vue'
+import VoucherPDF from 'src/components/voucher/pdf/PDF.vue'
 import { useAuthStore } from 'src/stores/auth'
 import { useLoginStore } from 'src/stores/login-info'
 import { ref } from 'vue'

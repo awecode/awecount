@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import HeaderOne from 'components/voucher/PDFHeaderOne.vue'
-import HeaderTwo from 'components/voucher/PDFHeaderTwo.vue'
-import InvoiceMetadata from 'components/voucher/PDFInvoiceMetadata.vue'
-import InvoiceTable from 'components/voucher/PDFInvoiceTable.vue'
+import HeaderOne from 'src/components/voucher/pdf/PDFHeaderOne.vue'
+import HeaderTwo from 'src/components/voucher/pdf/PDFHeaderTwo.vue'
+import InvoiceMetadata from 'src/components/voucher/pdf/PDFInvoiceMetadata.vue'
+import InvoiceTable from 'src/components/voucher/pdf/PDFInvoiceTable.vue'
 import { useLoginStore } from 'src/stores/login-info'
 import { computed, defineProps } from 'vue'
 

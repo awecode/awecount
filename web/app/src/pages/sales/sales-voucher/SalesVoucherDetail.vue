@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Ref } from 'vue'
-import VoucherPDF from 'src/components/voucher/PDF.vue'
+import VoucherPDF from 'src/components/voucher/pdf/PDF.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useAuthStore } from 'src/stores/auth'
 import { useLoginStore } from 'src/stores/login-info'

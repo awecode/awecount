@@ -1,7 +1,7 @@
 <script>
 import ViewerHeader from 'src/components/viewer/ViewerHeader.vue'
 import ViewerTable from 'src/components/viewer/ViewerTable.vue'
-import VoucherPDF from 'src/components/voucher/PDF.vue'
+import VoucherPDF from 'src/components/voucher/pdf/PDF.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
