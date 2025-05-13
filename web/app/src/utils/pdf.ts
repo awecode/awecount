@@ -3,12 +3,22 @@ import numberToText from 'src/composables/numToText'
 import { useLoginStore } from 'src/stores/login-info'
 import { createApp } from 'vue'
 
-function formatNumberWithComma(number: number): string {
+export function formatNumberWithComma(number: number): string {
   return Number(number || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })
 }
 
 function $nf(value: number): string {
   return value.toLocaleString('en-IN', { maximumFractionDigits: 2 })
+}
+
+export const formatRowDescription = (str?: string) => {
+  if (!str) return ''
+  const dataArray = str.split('\n')
+  return dataArray.map((data) => `<div>${data}</div>`).join(' ')
+}
+
+export const formatNumber = (num: number): string => {
+  return formatNumberWithComma(Number(Number(num).toFixed(2)))
 }
 
 export function generateHTMLFromVueComponent(component: any, props: Record<string, any>): string {
