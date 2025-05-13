@@ -44,12 +44,7 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.helpers import (
-    deserialize_request,
-    get_relative_file_path,
-    merge_dicts,
-    use_miti,
-)
+
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -764,8 +759,8 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                         "company": {
                             "name": self.company.name,
                             "address": self.company.address,
-                            "contact": self.company.contact_no,
-                            "email": ", ".join(self.company.emails),
+                            "contact": self.company.phone,
+                            "email": self.company.email,
                             "tax_identification_number": self.company.tax_identification_number,
                             "currency_code": self.company.currency_code,
                         },

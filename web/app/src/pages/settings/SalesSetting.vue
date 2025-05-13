@@ -163,7 +163,7 @@ export default {
               <q-checkbox v-model="fields.require_item_hs_code" label="Require Item HS Code in sales invoices?" />
             </div>
             <div class="row q-pl-sm">
-              <div class="col-12 col-sm-6">
+              <div class="col-12">
                 <q-label class="q-mb-md">
                   Invoice Footer Text
                 </q-label>

@@ -43,6 +43,9 @@ export default defineRouter(({ store }) => {
     }
 
     if (!isAuthenticated) {
+      if (to.query.hash) {
+        return
+      }
       return { path: loginRoute, query: { next: to.fullPath } }
     }
 

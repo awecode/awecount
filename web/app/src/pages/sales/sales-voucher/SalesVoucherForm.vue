@@ -80,7 +80,7 @@ const onSubmitClick = async (status, redirect) => {
           label="Save Draft"
           type="submit"
           :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
+          @click.prevent="() => onSubmitClick('Draft')"
         />
 
         <q-btn
@@ -90,7 +90,7 @@ const onSubmitClick = async (status, redirect) => {
           type="submit"
           :label="isEdit ? 'Update Draft' : 'Save Draft'"
           :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
+          @click.prevent="() => onSubmitClick('Draft')"
         />
         <!-- <q-btn
           v-if="checkPermissions('sales.create')"

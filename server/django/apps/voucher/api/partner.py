@@ -32,9 +32,12 @@ class PartnerPurchaseVoucherViewSet(
         voucher_no = request.data.get("voucher_no", None)
         party_id = request.data.get("party", None)
         fiscal_year = request.company.current_fiscal_year
-        if PurchaseVoucher.objects.filter(
-            voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
-        ).exists():
+        if (
+            voucher_no
+            and PurchaseVoucher.objects.filter(
+                voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
+            ).exists()
+        ):
             raise ValidationError(
                 {
                     "voucher_no": [
