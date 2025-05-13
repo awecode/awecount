@@ -106,9 +106,7 @@ const formatNumber = (num: number) => {
 
 <template>
   <div>
-    <!-- Header: Render only if !onlyBody -->
     <template v-if="!onlyBody">
-      <!-- Template 2 or 3 -->
       <div v-if="[2, 3].includes(invoiceTemplate)">
         <div style="position: relative; margin-bottom: 10px;">
           <img
@@ -147,7 +145,6 @@ const formatNumber = (num: number) => {
           </div>
         </div>
       </div>
-      <!-- Default Template (not 2 or 3) -->
       <div v-else style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
         <div>
           <h1 style="margin: 5px 0; font-size: 35px; font-weight: 700;">
@@ -179,7 +176,6 @@ const formatNumber = (num: number) => {
       <hr style="margin: 20px 0;" />
     </template>
 
-    <!-- Body -->
     <div
       :style="{
         'margin-top': onlyBody && voucherType === 'salesVoucher' ? '80px' : onlyBody ? '80px' : '20px',
@@ -187,7 +183,6 @@ const formatNumber = (num: number) => {
         'font-family': 'Arial, Helvetica, sans-serif',
       }"
     >
-      <!-- Sales Voucher -->
       <template v-if="voucherType === 'salesVoucher'">
         <div style="display: flex; align-items: center; gap: 11px; flex-direction: column;">
           <h4 style="margin: 0; font-size: 1.4rem;">
@@ -237,7 +232,6 @@ const formatNumber = (num: number) => {
           </div>
         </div>
       </template>
-      <!-- Credit/Debit Note -->
       <template v-else>
         <div style="display: flex; align-items: center; gap: 11px; flex-direction: column; margin-bottom: 15px;">
           <h4 style="margin: 0; font-size: 1.4rem;">
@@ -279,7 +273,6 @@ const formatNumber = (num: number) => {
         <hr style="border: 0.5px solid #b9b9b9; height: 0; margin: 20px 0;" />
       </template>
 
-      <!-- Table -->
       <div>
         <table style="width: 100%; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9;">
           <tr style="color: grey; font-weight: 500;">
@@ -337,7 +330,6 @@ const formatNumber = (num: number) => {
               {{ formatNumberWithComma(row.quantity * row.rate) }}
             </th>
           </tr>
-          <!-- Empty Rows for Template 2 or 3 -->
           <tr v-if="[2, 3].includes(invoiceTemplate)" style="color: grey; font-weight: 400;">
             <th
               style="width: 20px; padding: 10px 0; font-weight: 400; padding: 5px; border-right: #b9b9b9 solid 2px;"
@@ -394,7 +386,6 @@ const formatNumber = (num: number) => {
       </div>
       <div style="margin-top: 20px;"></div>
 
-      <!-- Footer -->
       <div style="font-size: 14px; text-align: right;">
         <div
           v-if="voucherType === 'salesVoucher' && invoiceInfo.invoice_footer_text"
