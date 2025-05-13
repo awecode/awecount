@@ -116,7 +116,10 @@ const { sameTax, taxIndex } = computed(() => {
         'font-family': 'Arial, Helvetica, sans-serif',
       }"
     >
-      <template v-if="voucherType === 'salesVoucher'">
+      <div
+        v-if="voucherType === 'salesVoucher'"
+        :style="onlyBody ? 'margin-top: 80px; margin-bottom: 20px' : 'margin-top: 20px; margin-bottom: 20px'"
+      >
         <div style="display: flex; align-items: center; gap: 11px; flex-direction: column;">
           <h4 style="margin: 0; font-size: 1.4rem;">
             {{ invoiceInfo.status === 'Issued' || invoiceInfo.status === 'Paid' || invoiceInfo.status === 'Partially Paid' ? 'TAX INVOICE' : invoiceInfo.status === 'Draft' ? 'PRO FORMA INVOICE' : invoiceInfo.status === 'Cancelled' ? 'TAX INVOICE (CANCELLED)' : '' }}
@@ -133,8 +136,11 @@ const { sameTax, taxIndex } = computed(() => {
           :invoice-info="invoiceInfo"
           :show-party-contact-no="[2, 3].includes(invoiceTemplate)"
         />
-      </template>
-      <template v-else>
+      </div>
+      <div
+        v-else
+        :style="`font-family: Arial, Helvetica, sans-serif; ${onlyBody ? 'margin-top: 80px;' : ''}`"
+      >
         <div style="display: flex; align-items: center; gap: 11px; flex-direction: column; margin-bottom: 15px;">
           <h4 style="margin: 0; font-size: 1.4rem;">
             {{ voucherType === 'creditNote' ? 'Credit Note' : 'Debit Note' }}
@@ -173,7 +179,7 @@ const { sameTax, taxIndex } = computed(() => {
           </div>
         </div>
         <hr style="border: 0.5px solid #b9b9b9; height: 0; margin: 20px 0;" />
-      </template>
+      </div>
 
       <InvoiceTable
         :company-info="companyInfo"
