@@ -633,6 +633,10 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         data["voucher_no"] = None
         data["status"] = "Draft"
         data["date"] = timezone.now().date()
+        data["payment_date"] = None
+        data["print_count"] = 0
+        data["user"] = request.user
+        data["quotation"] = None
         if obj.due_date:
             data["due_date"] = data["date"] + (obj.due_date - obj.date)
         serializer = self.get_serializer(data=data)
@@ -1289,6 +1293,7 @@ class PurchaseVoucherViewSet(
         data = PurchaseVoucherCreateSerializer(obj).data
         data["status"] = "Draft"
         data["voucher_no"] = None
+        data["user"] = request.user
         for row in data["rows"]:
             row.pop("id")
         data["date"] = timezone.now().date()

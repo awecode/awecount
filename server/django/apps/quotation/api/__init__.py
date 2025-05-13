@@ -207,6 +207,7 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         data["number"] = None
         data["status"] = "Draft"
         data["date"] = timezone.now().date()
+        data["user"] = request.user
         data["expiry_date"] = None
         if obj.expiry_date:
             data["expiry_date"] = data["date"] + (obj.expiry_date - obj.date)
