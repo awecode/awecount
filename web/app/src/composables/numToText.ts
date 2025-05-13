@@ -3,8 +3,12 @@
  Stripped down for Indian System Only, Several other fixes
  */
 
-export default function numberToText(num: number, isCurrency: boolean = true) {
+export default function numberToText(num: number | string, isCurrency: boolean = true) {
   if (Number.isNaN(num)) return '-'
+
+  if (typeof num === 'string') {
+    num = Number.parseInt(num)
+  }
 
   // num = Math.round(num * 100) / 100
   num = Math.round((num + Number.EPSILON) * 100) / 100

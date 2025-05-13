@@ -446,7 +446,9 @@ const leftDrawerOpen = ref(false)
 // }
 
 onMounted(() => {
-  fetchCompanies()
+  if (user) {
+    fetchCompanies()
+  }
 })
 
 const breadcrumbs = useBreadcrumbItems()
@@ -455,7 +457,7 @@ const breadcrumbs = useBreadcrumbItems()
 <template>
   <q-layout view="lHh Lpr lFf">
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
-    <q-header bordered class="bg-white text-grey-8 d-print-none print-hide q-py-xs">
+    <q-header v-if="user" bordered class="bg-white text-grey-8 d-print-none print-hide q-py-xs">
       <q-toolbar>
         <q-btn dense flat round aria-label="Menu" icon="mdi-menu" @click="miniState = !miniState" />
 
@@ -532,7 +534,7 @@ const breadcrumbs = useBreadcrumbItems()
         </div>
       </q-toolbar>
     </q-header>
-    <q-drawer v-model="leftDrawerOpen" bordered drawer persistent show-if-above :mini="miniState">
+    <q-drawer v-if="user" v-model="leftDrawerOpen" bordered drawer persistent show-if-above :mini="miniState">
       <q-list class="icon-grey d-print-none print-hide">
         <q-btn-dropdown flat class="full-width q-pa-md" style="margin-top: 2px" :disable="miniState"
           :label="companies.find((c) => c.slug === activeCompany)?.name || 'Select Company'">

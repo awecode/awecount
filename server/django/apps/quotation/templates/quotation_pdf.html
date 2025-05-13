@@ -1,0 +1,327 @@
+{% load commafies from filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax quotation</title>
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        @page {
+            margin: 4mm 6mm ;
+            size: A4;
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 9pt;
+            }
+        }
+
+        html {
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+        }
+
+        .quotation-container {
+            max-width: 100%;
+        }
+
+        .header {
+            margin-bottom: 4px;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+
+        .company-info {
+            padding-bottom: 4px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .company-info h1 {
+            margin: 0;
+            padding: 0;
+            color: #2c3e50;
+            font-size: 32px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 20px;
+            margin-top: 4px;
+            margin-bottom: 4dvb;
+            font-weight: bold;
+        }
+
+        .details {
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .details-table td {
+            padding: 2px;
+            vertical-align: top;
+        }
+
+        .details-table td:last-child {
+            text-align: right;
+        }
+
+        /* Items Table Styles */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        .items-table thead {
+            display: table-header-group;
+            background-color: #f8f9fa;
+        }
+
+        .items-table tbody {
+            display: table-row-group;
+        }
+
+        .items-table tr {
+            page-break-inside: avoid;
+        }
+
+        .items-table th,
+        .items-table td {
+            border: 1px solid #ddd;
+            padding: 3px 2px;
+            text-align: left;
+        }
+
+        .items-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .items-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Right align numeric columns */
+        .items-table td:nth-child(4),
+        .items-table td:nth-child(5),
+        .items-table td:nth-child(6) {
+            text-align: right;
+        }
+
+        /* Column widths for items table */
+        .items-table th:nth-child(1),
+        .items-table td:nth-child(1) {
+            width: 5%;
+        }
+
+        .items-table th:nth-child(2),
+        .items-table td:nth-child(2) {
+            width: 15%;
+        }
+
+        .items-table th:nth-child(3),
+        .items-table td:nth-child(3) {
+            width: 40%;
+        }
+
+        .items-table th:nth-child(4),
+        .items-table td:nth-child(4),
+        .items-table th:nth-child(5),
+        .items-table td:nth-child(5),
+        .items-table th:nth-child(6),
+        .items-table td:nth-child(6) {
+            width: 13.33%;
+        }
+
+        /* Totals Section */
+        .totals {
+            display: table;
+            width: 100%;
+            margin-top: 12px;
+            page-break-inside: avoid;
+            page-break-before: auto;
+        }
+
+        .in-words {
+            display: table-cell;
+            width: 55%;
+            padding: 4px;
+            vertical-align: top;
+        }
+
+        .totals-table-container {
+            display: table-cell;
+            width: 40%;
+            padding-left: 5%;
+            vertical-align: top;
+        }
+
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .totals-table th,
+        .totals-table td {
+            padding: 2px;
+            border: 1px solid #ddd;
+        }
+
+        .totals-table th {
+            text-align: left;
+            background-color: #f8f9fa;
+        }
+
+        .totals-table td {
+            text-align: right;
+        }
+
+        .totals-table tr:last-child {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+
+        .footer {
+            margin-top: 12px;
+            padding: 4px;
+            border-top: 1px solid #ddd;
+            font-style: italic;
+            page-break-inside: avoid;
+        }
+
+        .signature-section {
+            margin-top: 14px;
+            display: flex;
+            justify-content: space-between;
+            page-break-inside: avoid;
+        }
+
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 14px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quotation-container">
+        <div class="header">
+            <div class="company-info">
+                <strong><h1>{{ quotation.company.name }}</h1></strong><br>
+                {% if quotation.company.address %}
+                Address: {{ quotation.company.address }}<br>
+                {% endif %}
+                {% if quotation.company.email %}
+                Email: {{ quotation.company.email }}<br>
+                {% endif %}
+                {% if quotation.company.contact %}
+                Contact: {{ quotation.company.contact }}
+                {% endif %}<br>
+                VAT Reg. No.: {{ quotation.company.tax_identification_number }}<br>
+            </div>
+
+            <h2>Quotation</h2>
+        </div>
+
+        <div class="details">
+            <table class="details-table">
+                <tr>
+                    <td>
+                        <strong>To:</strong> {{ quotation.to }}<br>
+                        {% if quotation.address %}
+                            {{ quotation.address }}<br>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>QT No.: {{ quotation.number }}</strong><br>
+                        {% if quotation.reference %}
+                            <strong>Reference:</strong> {{ quotation.reference }}<br>
+                        {% endif %}
+                        <strong>Date:</strong> {{ quotation.date }}<br>
+                        {% if quotation.expiry_date %}
+                            <strong>Expiry Date:</strong> {{ quotation.expiry_date }}</p>
+                            <p><strong>Myad Sakine Miti:</strong> {{ quotation.myad_sakine_miti }}</p>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>SN</th>
+                    <th>H.S. Code</th>
+                    <th>Particular</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Amount({{quotation.company.currency_code}})</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in quotation.rows %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ row.item.hs_code }}</td>
+                        <td>{{ row.item.name }}</td>
+                        <td>{{ row.quantity }} {{ row.unit }}</td>
+                        <td>{{ row.rate }}</td>
+                        <td>{{ row.amount }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="in-words">
+                <strong>In words:</strong><br>
+                {{ quotation.in_words | capfirst }}
+            </div>
+            <table class="totals-table">
+                <tr>
+                    <th>SUB TOTAL</th>
+                    <td>{{ quotation.quotation_meta.sub_total | commafies }}</td>
+                </tr>
+                {% if quotation.quotation_meta.discount %}
+                    <tr>
+                        <th>Discount</th>
+                        <td>{{ quotation.quotation_meta.discount | commafies }}</td>
+                    </tr>
+                {% endif %}
+                {% if quotation.quotation_meta.tax %}
+                    <tr>
+                        <th>TAX</th>
+                        <td>{{ quotation.quotation_meta.tax | commafies }}</td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <th>GRAND TOTAL</th>
+                    <td>{{ quotation.quotation_meta.grand_total | commafies }}</td>
+                </tr>
+            </table>
+        </div>
+
+        {% if quotation.remarks %}
+            <div class="footer">
+                <strong>Remarks:</strong> {{ quotation.remarks }}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
