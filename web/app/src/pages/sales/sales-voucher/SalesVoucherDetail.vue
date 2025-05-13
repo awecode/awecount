@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Ref } from 'vue'
+import VoucherPDF from 'src/components/voucher/PDF.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useAuthStore } from 'src/stores/auth'
 import { useLoginStore } from 'src/stores/login-info'
@@ -105,17 +106,17 @@ function emailInvoice() {
     })
 }
 
-    const print = (bodyOnly: boolean) => {
-      const html = generateHTMLFromVueComponent(VoucherPDF, {
-        voucherType: 'salesVoucher',
-        onlyBody: bodyOnly,
-        invoiceInfo: fields.value,
-        hideRowQuantity: !fields.value.options.show_rate_quantity_in_voucher,
-        companyInfo: isLoggedIn ? null : fields.value.company,
-      })
+const print = (bodyOnly: boolean) => {
+  const html = generateHTMLFromVueComponent(VoucherPDF, {
+    voucherType: 'salesVoucher',
+    onlyBody: bodyOnly,
+    invoiceInfo: fields.value,
+    hideRowQuantity: !fields.value.options.show_rate_quantity_in_voucher,
+    companyInfo: isLoggedIn ? null : fields.value.company,
+  })
 
-      usePrintPdfWindow(html)
-    }
+  usePrintPdfWindow(html)
+}
 
 const submitChangeStatus = (id: number, status: string) => {
   loading.value = true
