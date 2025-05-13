@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from django.conf import settings
 
 from django.utils import timezone
 from apps.ledger.serializers import PartyMinSerializer
 from apps.product.models import Item
 from awecount.libs import get_next_quotation_no
 from awecount.libs.CustomViewSet import GenericSerializer
-from awecount.libs.serializers import StatusReversionMixin
+from awecount.libs.serializers import FileOrStringField, StatusReversionMixin
 from lib.drf.serializers import BaseModelSerializer
 from apps.product.serializers import ItemSalesSerializer
 from apps.quotation.models import Quotation, QuotationRow, QuotationSetting
@@ -99,6 +100,17 @@ class QuotationCreateSerializer(
 
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
+
+        if data.get("expiry_date") is not None and data["expiry_date"] < data.get(
+            "date"
+        ):
+            raise ValidationError(
+                {
+                    "expiry_date": [
+                        "Expiry date cannot be earlier than the quotation date."
+                    ]
+                }
+            )
 
         return data
 
@@ -241,3 +253,20 @@ class QuotationSettingsSerializer(BaseModelSerializer):
     class Meta:
         model = QuotationSetting
         exclude = ("company",)
+
+
+class EmailQuotationRequestSerializer(serializers.Serializer):
+    attachments = serializers.ListField(
+        child=FileOrStringField(),
+        default=list,
+        max_length=settings.MAX_EMAIL_ATTACHMENTS,
+    )
+    attach_pdf = serializers.BooleanField()
+    to = serializers.ListField(child=serializers.EmailField())
+    subject = serializers.CharField()
+    message = serializers.CharField()
+
+    def validate_to(self, value):
+        if not value:
+            raise serializers.ValidationError("To field is required.")
+        return value

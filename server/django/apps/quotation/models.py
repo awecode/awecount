@@ -1,7 +1,18 @@
 from decimal import Decimal
 
 from django.core.validators import MinValueValidator
+from django.conf import settings
 from django.db import models
+from django.core.files.storage import default_storage
+from django.template.loader import render_to_string
+from io import BytesIO
+from weasyprint import HTML
+from django.core.mail import EmailMessage
+from awecount.libs.helpers import (
+    get_relative_file_path,
+    use_miti,
+)
+from awecount.libs import nepdate, wGenerator
 
 from apps.company.models import Company, CompanyBaseModel
 from apps.ledger.models import (
@@ -186,6 +197,98 @@ class Quotation(CompanyBaseModel):
             self.save()
 
         return dct
+
+    @property
+    def amount_in_words(self):
+        return wGenerator.convertNumberToWords(self.get_quotation_meta()["grand_total"])
+
+    def email_quotation(self, to, subject, message, attachments, attach_pdf):
+        if self.status in ["Draft"]:
+            raise Exception("Draft quotation cannot be sent!")
+        pdf_stream = None
+        if attach_pdf:
+            html_template = render_to_string(
+                "quotation_pdf.html",
+                {
+                    "quotation": {
+                        "company": {
+                            "name": self.company.name,
+                            "address": self.company.address,
+                            "contact": self.company.phone,
+                            "email": self.company.email,
+                            "tax_identification_number": self.company.tax_identification_number,
+                            "currency_code": self.company.currency_code,
+                        },
+                        "to": self.party.name,
+                        "address": self.address,
+                        "date": self.date,
+                        "expiry_date": self.expiry_date,
+                        "myad_sakine_miti":  nepdate.string_from_tuple(
+                            nepdate.ad2bs(str(self.expiry_date))
+                        )
+                        if self.expiry_date and use_miti(self.company)
+                        else "",
+                        "miti": nepdate.string_from_tuple(nepdate.ad2bs(str(self.date)))
+                        if use_miti(self.company)
+                        else "",
+                        "rows": [
+                            {
+                                "item": {
+                                    "hs_code": row.item.category.hs_code
+                                    if row.item.category and row.item.category.hs_code
+                                    else "",
+                                    "name": row.item.name,
+                                },
+                                "unit": row.unit.name,
+                                "quantity": row.quantity,
+                                "rate": row.rate,
+                                "amount": row.quantity * row.rate,
+                            }
+                            for row in self.rows.all()
+                        ],
+                        "in_words": self.amount_in_words,
+                        "quotation_meta": self.get_quotation_meta(),
+                        "number": self.number,
+                        "reference": self.reference,
+                        "remarks": self.remarks,
+                    }
+                },
+            )
+
+            pdf_stream = BytesIO()
+            HTML(string=html_template).write_pdf(pdf_stream)
+            pdf_stream.seek(0)
+
+        email = EmailMessage(
+            subject=subject,
+            body=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=to,
+        )
+        if attach_pdf:
+            email.attach(
+                f"Quotation {self.number}.pdf",
+                pdf_stream.getvalue(),
+                "application/pdf",
+            )
+
+        for attachment in attachments:
+            if isinstance(attachment, str):
+                file_path = get_relative_file_path(attachment)
+                if default_storage.exists(file_path):
+                    with default_storage.open(file_path, "rb") as file:
+                        email.attach(
+                            file_path.split("/")[-1], file.read(), "application/pdf"
+                        )
+                else:
+                    raise ValueError(f"Failed to fetch attachment from {file_path}")
+            else:
+                email.attach(
+                    attachment.name, attachment.file.read(), attachment.content_type
+                )
+
+        email.content_subtype = "html"
+        email.send()
 
 
 class QuotationRow(QuotationRowModel, CompanyBaseModel):

@@ -1,7 +1,8 @@
-<script lang="ts">
+<script setup lang="ts">
 import type { Ref } from 'vue'
+import checkPermissions from 'src/composables/checkPermissions'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
-import { modes } from 'src/helpers/constants/invoice'
+import { useAuthStore } from 'src/stores/auth'
 import { useLoginStore } from 'src/stores/login-info'
 import { parseErrors } from 'src/utils/helpers'
 
@@ -24,43 +25,43 @@ interface Fields {
   hash: string
   company: any
 }
-export default {
-  setup() {
-    const metaData = {
-      title: 'Sales Invoices | Awecount',
-    }
-    const route = useRoute()
-    useMeta(metaData)
-    const $q = useQuasar()
-    const fields: Ref<Fields | null> = ref(null)
-    const loading: Ref<boolean> = ref(false)
-    const paymentModeOptions: Ref<Array<object> | null> = ref(null)
-    const isDeleteOpen: Ref<boolean> = ref(false)
-    const deleteMsg: Ref<string> = ref('')
-    const errors = ref({})
-    const isLoggedIn = useLoginStore().isLoggedIn
-    const emailInvoiceErrors = ref<Record<string, string>>({})
-    const isEmailInvoiceModalOpen: Ref<boolean> = ref(false)
-    const loginStore = useLoginStore()
 
-    const triggerPrint = route.query.print === 'true'
+const metaData = {
+  title: 'Sales Invoices | Awecount',
+}
+const route = useRoute()
+useMeta(metaData)
+const $q = useQuasar()
+const fields: Ref<Fields | null> = ref(null)
+const loading: Ref<boolean> = ref(false)
+const paymentModeOptions: Ref<Array<object> | null> = ref(null)
+const isDeleteOpen: Ref<boolean> = ref(false)
+const deleteMsg: Ref<string> = ref('')
+const errors = ref({})
+const isLoggedIn = useLoginStore().isLoggedIn
+const emailInvoiceErrors = ref<Record<string, string>>({})
+const isEmailInvoiceModalOpen: Ref<boolean> = ref(false)
+const loginStore = useLoginStore()
+const router = useRouter()
 
-    const emailInvoicePayload = ref({
-      attach_pdf: true,
-      attachments: [],
-      to: '',
-      subject: '',
-      message: '',
-    })
+const triggerPrint = route.query.print === 'true'
 
-    function resetEmailInvoicePayload() {
-      emailInvoiceErrors.value = {}
-      emailInvoicePayload.value = {
-        attach_pdf: true,
-        attachments: fields.value?.options?.default_email_attachments || [],
-        to: [fields.value.email, fields.value.party_email].filter(Boolean),
-        subject: `Sales Invoice #${fields.value.voucher_no}`,
-        message: `
+const emailInvoicePayload = ref({
+  attach_pdf: true,
+  attachments: [],
+  to: '',
+  subject: '',
+  message: '',
+})
+
+function resetEmailInvoicePayload() {
+  emailInvoiceErrors.value = {}
+  emailInvoicePayload.value = {
+    attach_pdf: true,
+    attachments: fields.value?.options?.default_email_attachments || [],
+    to: [fields.value.email, fields.value.party_email].filter(Boolean),
+    subject: `Sales Invoice #${fields.value.voucher_no}`,
+    message: `
           <p>Hello <b>${fields.value.customer_name || fields.value.party_name}</b>,</p>
           <p>I hope this message finds you well.</p>
           <p>Please find attached the invoice <b>#${fields.value?.voucher_no}</b></p>
@@ -69,173 +70,169 @@ export default {
           <p>Best Regards,<br>
           <b>${loginStore.companyInfo?.name || '[]'}</b></p>
         `,
+  }
+}
+
+function emailInvoice() {
+  const endpoint = `api/company/${route.params.company}/sales-voucher/${fields.value?.id}/email-invoice/`
+  const formData = new FormData()
+  formData.append('attach_pdf', emailInvoicePayload.value.attach_pdf ? 'true' : 'false')
+  emailInvoicePayload.value.attachments.forEach((file: File) => {
+    formData.append('attachments', file)
+  })
+  emailInvoicePayload.value.to.forEach((email: string) => {
+    formData.append('to', email)
+  })
+  formData.append('subject', emailInvoicePayload.value.subject)
+  formData.append('message', emailInvoicePayload.value.message)
+  useApi(endpoint, {
+    body: formData,
+    method: 'POST',
+  })
+    .then(() => {
+      isEmailInvoiceModalOpen.value = false
+      if (isLoggedIn) resetEmailInvoicePayload()
+      $q.notify({
+        color: 'positive',
+        message: 'Invoice Sent!',
+        icon: 'check_circle',
+      })
+    })
+    .catch((err) => {
+      if (err.response.status === 400) {
+        emailInvoiceErrors.value = parseErrors(err.data)
       }
-    }
+    })
+}
 
-    function emailInvoice() {
-      const endpoint = `api/company/${route.params.company}/sales-voucher/${fields.value?.id}/email-invoice/`
-      const formData = new FormData()
-      formData.append('attach_pdf', emailInvoicePayload.value.attach_pdf ? 'true' : 'false')
-      emailInvoicePayload.value.attachments.forEach((file: File) => {
-        formData.append('attachments', file)
-      })
-      emailInvoicePayload.value.to.forEach((email: string) => {
-        formData.append('to', email)
-      })
-      formData.append('subject', emailInvoicePayload.value.subject)
-      formData.append('message', emailInvoicePayload.value.message)
-      useApi(endpoint, {
-        body: formData,
-        method: 'POST',
-      })
-        .then(() => {
-          isEmailInvoiceModalOpen.value = false
-          if (isLoggedIn) resetEmailInvoicePayload()
-          $q.notify({
-            color: 'positive',
-            message: 'Invoice Sent!',
-            icon: 'check_circle',
-          })
-        })
-        .catch((err) => {
-          if (err.response.status === 400) {
-            emailInvoiceErrors.value = parseErrors(err.data)
-          }
-        })
-    }
+const print = (bodyOnly: boolean) => {
+  const printData = useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher, isLoggedIn ? null : fields.value.company)
+  usePrintPdfWindow(printData)
+}
 
-    const print = (bodyOnly: boolean) => {
-      const printData = useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher, isLoggedIn ? null : fields.value.company)
-      usePrintPdfWindow(printData)
-    }
-
-    const submitChangeStatus = (id: number, status: string) => {
-      loading.value = true
-      let endpoint = ''
-      let body: null | object = null
-      if (status === 'Paid') {
-        endpoint = `/api/company/${route.params.company}/sales-voucher/${id}/mark_as_paid/`
-        body = { method: 'POST' }
-      } else if (status === 'Cancelled') {
-        endpoint = `/api/company/${route.params.company}/sales-voucher/${id}/cancel/`
-        body = { method: 'POST', body: { message: deleteMsg.value } }
-      }
-      useApi(endpoint, body)
-        .then(() => {
-          if (fields.value) {
-            fields.value.status = status
-          }
-          if (status === 'Cancelled') {
-            isDeleteOpen.value = false
-            fields.value.remarks = `\nReason for cancellation: ${body?.body.message}`
-          }
-          loading.value = false
-        })
-        .catch((data) => {
-          if (data.status === 422) {
-            useHandleCancelInconsistencyError(endpoint, data, body.body, $q)
-              .then(() => {
-                if (fields.value) {
-                  fields.value.status = status
-                }
-                if (status === 'Cancelled') {
-                  isDeleteOpen.value = false
-                  fields.value.remarks = `\nReason for cancellation: ${body?.body.message}`
-                }
-                loading.value = false
-              })
-              .catch((error) => {
-                if (error.status !== 'cancel') {
-                  $q.notify({
-                    color: 'negative',
-                    message: 'Something went Wrong!',
-                    icon: 'report_problem',
-                  })
-                }
-                loading.value = false
-              })
-          } else {
-            const parsedError = useHandleFormError(data)
-            errors.value = parsedError.errors
-            $q.notify({
-              color: 'negative',
-              message: parsedError.message,
-              icon: 'report_problem',
-            })
-            loading.value = false
-          }
-        })
-    }
-    const updatePaymentMode = (newValue: number) => {
+const submitChangeStatus = (id: number, status: string) => {
+  loading.value = true
+  let endpoint = ''
+  let body: null | object = null
+  if (status === 'Paid') {
+    endpoint = `/api/company/${route.params.company}/sales-voucher/${id}/mark_as_paid/`
+    body = { method: 'POST' }
+  } else if (status === 'Cancelled') {
+    endpoint = `/api/company/${route.params.company}/sales-voucher/${id}/cancel/`
+    body = { method: 'POST', body: { message: deleteMsg.value } }
+  }
+  useApi(endpoint, body)
+    .then(() => {
       if (fields.value) {
-        fields.value.payment_mode = newValue
+        fields.value.status = status
       }
-    }
-
-    const onPrintclick = (bodyOnly: boolean, noApiCall = false) => {
-      if (!noApiCall) {
-        const endpoint = `/api/company/${route.params.company}/sales-voucher/${fields.value.id}/log-print/`
-        useApi(endpoint, { method: 'POST' })
+      if (status === 'Cancelled') {
+        isDeleteOpen.value = false
+        fields.value.remarks = `\nReason for cancellation: ${body?.body.message}`
+      }
+      loading.value = false
+    })
+    .catch((data) => {
+      if (data.status === 422) {
+        useHandleCancelInconsistencyError(endpoint, data, body.body, $q)
           .then(() => {
             if (fields.value) {
-              fields.value.print_count = fields.value?.print_count + 1
+              fields.value.status = status
             }
-            print(bodyOnly)
+            if (status === 'Cancelled') {
+              isDeleteOpen.value = false
+              fields.value.remarks = `\nReason for cancellation: ${body?.body.message}`
+            }
+            loading.value = false
           })
-          .catch(err => console.log('err from the api', err))
+          .catch((error) => {
+            if (error.status !== 'cancel') {
+              $q.notify({
+                color: 'negative',
+                message: 'Something went Wrong!',
+                icon: 'report_problem',
+              })
+            }
+            loading.value = false
+          })
       } else {
-        print(bodyOnly)
+        const parsedError = useHandleFormError(data)
+        errors.value = parsedError.errors
+        $q.notify({
+          color: 'negative',
+          message: parsedError.message,
+          icon: 'report_problem',
+        })
+        loading.value = false
       }
-    }
-
-    return {
-      allowPrint: false,
-      bodyOnly: false,
-      options: {},
-      fields,
-      dialog: false,
-      partyObj: null,
-      modes,
-      submitChangeStatus,
-      isDeleteOpen,
-      deleteMsg,
-      updatePaymentMode,
-      paymentModeOptions,
-      onPrintclick,
-      checkPermissions,
-      useGeneratePdf,
-      loading,
-      errors,
-      isLoggedIn,
-      isEmailInvoiceModalOpen,
-      emailInvoicePayload,
-      emailInvoice,
-      resetEmailInvoicePayload,
-      emailInvoiceErrors,
-      triggerPrint,
-    }
-  },
-  created() {
-    let endpoint = `/api/company/${this.$route.params.company}/sales-voucher/${this.$route.params.id}/details/`
-    if (!this.isLoggedIn && this.$route.query.hash) {
-      endpoint = `/api/company/${this.$route.params.company}/sales-voucher/${this.$route.params.id}/details-by-hash/?hash=${this.$route.query.hash}`
-    }
-    useApi(endpoint, { method: 'GET' }, false, true)
-      .then((data) => {
-        this.fields = data
-        this.paymentModeOptions = data.available_payment_modes
-        this.resetEmailInvoicePayload()
-        if (this.triggerPrint) {
-          this.onPrintclick(false, data?.status === 'Draft')
-        }
-      })
-      .catch((error) => {
-        if (error.response && error.response.status == 404) {
-          this.$router.replace({ path: '/ErrorNotFound' })
-        }
-      })
-  },
+    })
 }
+const updatePaymentMode = (newValue: number) => {
+  if (fields.value) {
+    fields.value.payment_mode = newValue
+  }
+}
+
+const onPrintClick = (bodyOnly: boolean, noApiCall = false) => {
+  if (!noApiCall) {
+    const endpoint = `/api/company/${route.params.company}/sales-voucher/${fields.value.id}/log-print/`
+    useApi(endpoint, { method: 'POST' })
+      .then(() => {
+        if (fields.value) {
+          fields.value.print_count = fields.value?.print_count + 1
+        }
+        print(bodyOnly)
+      })
+      .catch(err => console.log('err from the api', err))
+  } else {
+    print(bodyOnly)
+  }
+}
+
+const createCopyModalOpen = ref(false)
+
+const createCopy = () => {
+  const endpoint = `/api/company/${route.params.company}/sales-voucher/${fields.value?.id}/create-a-copy/`
+  useApi(endpoint, { method: 'POST' }, false, true)
+    .then((res) => {
+      createCopyModalOpen.value = false
+      router.push({ path: `/${route.params.company}/sales/vouchers/${res?.id}/edit` })
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 404) {
+        router.replace({ path: '/ErrorNotFound' })
+      }
+    })
+}
+
+const needToLogPrint = computed(() => {
+  return !!(fields.value?.status === 'Draft'
+    || (!isLoggedIn && route.query.hash))
+})
+
+let endpoint = `/api/company/${route.params.company}/sales-voucher/${route.params.id}/details/`
+if (!isLoggedIn && route.query.hash) {
+  endpoint = `/api/company/${route.params.company}/sales-voucher/${route.params.id}/details-by-hash/?hash=${route.query.hash}`
+}
+useApi(endpoint, { method: 'GET' }, false, true)
+  .then((data) => {
+    fields.value = data
+    if (!isLoggedIn && route.query.hash) {
+      useAuthStore().company = data.company
+    }
+    paymentModeOptions.value = data.available_payment_modes
+    resetEmailInvoicePayload()
+    if (triggerPrint) {
+      onPrintClick(false, !!(data?.status === 'Draft' || (
+        !isLoggedIn && route.query.hash
+      )))
+    }
+  })
+  .catch((error) => {
+    if (error.response && error.response.status === 404) {
+      router.replace({ path: '/ErrorNotFound' })
+    }
+  })
 </script>
 
 <template>
@@ -333,8 +330,23 @@ export default {
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn icon="print" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`" @click="() => onPrintclick(false, fields?.status === 'Draft')" />
-          <q-btn icon="print" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${(fields?.print_count || 0) + 1}`}`" @click="() => onPrintclick(true, fields?.status === 'Draft')" />
+          <q-btn
+            icon="print"
+            :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`"
+            @click="() => onPrintClick(
+              false, needToLogPrint)"
+          />
+          <q-btn
+            icon="print"
+            :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${(fields?.print_count || 0) + 1}`}`"
+            @click="() => onPrintClick(true, needToLogPrint)"
+          />
+          <q-btn
+            v-if="isLoggedIn"
+            data-testid="create-copy"
+            label="Create a copy"
+            @click="createCopyModalOpen = true"
+          />
           <q-btn
             v-if="isLoggedIn && !['Draft', 'Cancelled'].includes(fields?.status)"
             data-testid="send-email"
@@ -342,13 +354,14 @@ export default {
             @click="isEmailInvoiceModalOpen = true"
           />
           <q-btn
+            v-if="isLoggedIn"
             color="blue-7"
             icon="mdi-table"
             label="Materialized View"
             :to="`/${$route.params.company}/sales/vouchers/${fields?.id}/materialized-view`"
           />
           <q-btn
-            v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
+            v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft' && isLoggedIn"
             color="blue-7"
             icon="books"
             label="Journal Entries"
@@ -439,6 +452,38 @@ export default {
               color="orange-5"
               label="Send"
               @click="emailInvoice"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="createCopyModalOpen">
+      <q-card style="min-width: min(60vw, 800px)">
+        <q-card-section class="bg-primary text-white">
+          <div class="text-h6 flex justify-between">
+            <span class="q-mx-md">Create a copy</span>
+            <q-btn
+              v-close-popup
+              dense
+              flat
+              round
+              class="text-white bg-red-500"
+              icon="close"
+            />
+          </div>
+        </q-card-section>
+        <q-card-section class="q-mx-md flex flex-col gap-4">
+          <!-- message -->
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">
+            Are you sure you want to create a copy of this sales voucher?
+          </div>
+          <div class="row justify-end">
+            <q-btn
+              class="q-mt-md"
+              color="orange-5"
+              label="Create Copy"
+              @click="createCopy"
             />
           </div>
         </q-card-section>
