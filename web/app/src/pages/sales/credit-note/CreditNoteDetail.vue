@@ -1,10 +1,11 @@
 <script>
 import ViewerHeader from 'src/components/viewer/ViewerHeader.vue'
 import ViewerTable from 'src/components/viewer/ViewerTable.vue'
+import VoucherPDF from 'src/components/voucher/PDF.vue'
 import checkPermissions from 'src/composables/checkPermissions'
-import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
+import { generateHTMLFromVueComponent } from 'src/utils/pdf'
 
 export default {
   setup() {
@@ -65,7 +66,14 @@ export default {
         })
     }
     const print = (bodyOnly) => {
-      const printData = useGeneratePdf('creditNote', bodyOnly, fields.value)
+      const printData = generateHTMLFromVueComponent(
+        VoucherPDF,
+        {
+          voucherType: 'creditNote',
+          onlyBody: bodyOnly,
+          invoiceInfo: fields.value,
+        },
+      )
       usePrintPdfWindow(printData)
     }
     const onPrintclick = (noApiCall = false) => {

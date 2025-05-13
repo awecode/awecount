@@ -1,9 +1,10 @@
 <script lang="ts">
 import type { Ref } from 'vue'
-import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
+import VoucherPDF from 'src/components/voucher/PDF.vue'
 import { modes } from 'src/helpers/constants/invoice'
 import { useLoginStore } from 'src/stores/login-info'
 import { parseErrors } from 'src/utils/helpers'
+import { generateHTMLFromVueComponent } from 'src/utils/pdf'
 
 interface Fields {
   status: string
@@ -105,8 +106,15 @@ export default {
     }
 
     const print = (bodyOnly: boolean) => {
-      const printData = useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher, isLoggedIn ? null : fields.value.company)
-      usePrintPdfWindow(printData)
+      const html = generateHTMLFromVueComponent(VoucherPDF, {
+        voucherType: 'salesVoucher',
+        onlyBody: bodyOnly,
+        invoiceInfo: fields.value,
+        hideRowQuantity: !fields.value.options.show_rate_quantity_in_voucher,
+        companyInfo: isLoggedIn ? null : fields.value.company,
+      })
+
+      usePrintPdfWindow(html)
     }
 
     const submitChangeStatus = (id: number, status: string) => {
@@ -203,7 +211,6 @@ export default {
       paymentModeOptions,
       onPrintclick,
       checkPermissions,
-      useGeneratePdf,
       loading,
       errors,
       isLoggedIn,

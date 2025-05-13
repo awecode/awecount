@@ -1,6 +1,7 @@
 import DateConverter from 'src/components/date/VikramSamvat.js'
 import numberToText from 'src/composables/numToText'
 import { useLoginStore } from 'src/stores/login-info'
+import { createApp } from 'vue'
 
 function formatNumberWithComma(number: number): string {
   return Number(number || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })
@@ -8,6 +9,18 @@ function formatNumberWithComma(number: number): string {
 
 function $nf(value: number): string {
   return value.toLocaleString('en-IN', { maximumFractionDigits: 2 })
+}
+
+export function generateHTMLFromVueComponent(component: any, props: Record<string, any>): string {
+  const container = document.createElement('div')
+
+  const app = createApp(component, props)
+  const vm = app.mount(container)
+
+  const html = vm.$el.innerHTML
+  app.unmount()
+
+  return html
 }
 
 export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<string, any>, companyInfo?: Record<string, any>): string {

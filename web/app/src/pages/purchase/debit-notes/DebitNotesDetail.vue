@@ -1,10 +1,11 @@
 <script lang="ts">
 import type { Ref } from 'vue'
 import DateConverter from 'src/components/date/VikramSamvat.js'
-import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
+import VoucherPDF from 'src/components/voucher/PDF.vue'
 import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { useLoginStore } from 'src/stores/login-info'
+import { generateHTMLFromVueComponent } from 'src/utils/pdf'
 
 interface Fields {
   status: string
@@ -84,7 +85,14 @@ export default {
       return DateConverter.getRepresentation(fields.value?.date, store.isCalendarInAD ? 'ad' : 'bs')
     })
     const print = (bodyOnly: boolean) => {
-      const printData = useGeneratePdf('debitNote', bodyOnly, fields.value)
+      const printData = generateHTMLFromVueComponent(
+        VoucherPDF,
+        {
+          voucherType: 'debitNote',
+          onlyBody: bodyOnly,
+          invoiceInfo: fields.value,
+        },
+      )
       usePrintPdfWindow(printData)
     }
     const onPrintclick = (noApiCall) => {
