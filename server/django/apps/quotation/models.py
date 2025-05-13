@@ -304,7 +304,7 @@ class QuotationRow(QuotationRowModel, CompanyBaseModel):
         max_digits=24,
         decimal_places=6,
         default=Decimal("1.000000"),
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(
         Unit,

@@ -2035,7 +2035,7 @@ class BillOfMaterial(CompanyBaseModel):
     quantity = models.DecimalField(
         max_digits=24,
         decimal_places=6,
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
     rate = models.DecimalField(
@@ -2061,7 +2061,7 @@ class BillOfMaterialRow(CompanyBaseModel):
     quantity = models.DecimalField(
         max_digits=24,
         decimal_places=6,
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
 
