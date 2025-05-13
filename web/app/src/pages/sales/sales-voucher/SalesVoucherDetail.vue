@@ -206,7 +206,7 @@ const createCopy = () => {
 }
 
 const needToLogPrint = computed(() => {
-  return !!(fields.value?.status !== 'Draft'
+  return !!(fields.value?.status === 'Draft'
     || (!isLoggedIn && route.query.hash))
 })
 
