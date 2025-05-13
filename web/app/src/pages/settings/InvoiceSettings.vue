@@ -1,6 +1,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
+import { useAuthStore } from 'src/stores/auth'
 import { useLoginStore } from 'src/stores/login-info'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
@@ -174,7 +175,7 @@ const onUpdateClick = async (fields) => {
         message: 'Saved!',
         icon: 'check',
       })
-      loginStore.companyInfo.invoice_template = fields.invoice_template
+      useAuthStore().company.invoice_template = fields.invoice_template
     })
     .catch(() => {
       $q.notify({
