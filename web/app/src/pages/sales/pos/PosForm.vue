@@ -3,7 +3,9 @@ import checkPermissions from 'src/composables/checkPermissions'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
 import useForm from 'src/composables/useForm'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
+import PartyForm from 'src/pages/party/PartyForm.vue'
 import { useLoginStore } from 'src/stores/login-info'
+import SalesDiscountForm from '../discount/SalesDiscountForm.vue'
 
 const metaData = {
   title: 'POS | Awecount',
@@ -391,7 +393,7 @@ const modeOptionsComputed = computed(() => {
                       label="Payment Mode"
                       option-label="name"
                       option-value="id"
-                      :error="!!errors?.payment_mode"
+                      :error="errors?.payment_mode"
                       :error-message="errors?.payment_mode ? errors.payment_mode[0] : null"
                       :options="modeOptionsComputed"
                     >
