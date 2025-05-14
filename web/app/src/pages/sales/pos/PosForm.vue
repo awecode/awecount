@@ -97,6 +97,8 @@ const handleSubmitSuccess = (data, noPrint) => {
   delete fields.value.remarks
 }
 
+const showingCustomerModal = ref(false)
+
 const onSubmitClick = (status, noPrint) => {
   if (!fields.value?.rows || !(fields.value.rows.length > 0)) return
 
@@ -112,6 +114,9 @@ const onSubmitClick = (status, noPrint) => {
         delete fields.value.status
         delete fields.value.noPrint
         errors.value = err.data
+        if (errors.value.party || errors.value.customer_name) {
+          showingCustomerModal.value = true
+        }
         $q.notify({
           color: 'negative',
           message: 'Please fill out the form correctly.',
@@ -417,7 +422,7 @@ const modeOptionsComputed = computed(() => {
                   </div>
                   <div class="flex items-center gap-x-8 gap-y-4">
                     <q-btn class="f-open-btn" icon="mdi-menu">
-                      <q-menu>
+                      <q-menu v-model="showingCustomerModal">
                         <div class="q-ma-lg config-options">
                           <div class="row -mt-4">
                             <div class="col-12">
