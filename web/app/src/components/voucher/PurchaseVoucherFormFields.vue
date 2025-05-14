@@ -438,10 +438,10 @@ watch(
       } else {
         fields.value.mode = 'Credit'
       }
-    }
-
-    if (Object.hasOwn(props.formDefaults.fields, 'trade_discount')) {
-      fields.value.trade_discount = props.formDefaults.fields?.trade_discount
+    } else {
+      if (Object.hasOwn(props.formDefaults.fields, 'trade_discount')) {
+        fields.value.trade_discount = props.formDefaults.fields?.trade_discount
+      }
     }
   },
 )
@@ -533,7 +533,7 @@ onMounted(() => {
           v-if="!isTemplate"
           v-model="fields.voucher_no"
           class="col-md-6 col-12"
-          label="Bill No.*"
+          label="Bill No."
           :error="!!errors.voucher_no"
           :error-message="errors.voucher_no"
         />

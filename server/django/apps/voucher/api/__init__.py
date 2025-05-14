@@ -37,6 +37,7 @@ from apps.product.serializers import (
     ItemPOSSerializer,
     ItemPurchaseSerializer,
     ItemSalesSerializer,
+    UnitSerializer,
 )
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
@@ -443,7 +444,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     row = SalesVoucherRow
     collections = [
         ("parties", Party, PartyMinSerializer, True, ["name"]),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         ("discounts", SalesDiscount, SalesDiscountMinSerializer, False),
         (
             "bank_accounts",
@@ -581,9 +582,11 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return data
 
     @action(detail=True)
-    def details(self, request, pk, *args, **kwargs):
+    def details(self, request, pk, company_slug, *args, **kwargs):
         details = self.get_voucher_details(pk)
-        hash = get_verification_hash("sales-invoice-{}".format(pk))
+        hash = get_verification_hash(
+            "sales-invoice-{}".format({"{}-{}".format(pk, company_slug)})
+        )
         return Response(
             {
                 **details,
@@ -592,11 +595,16 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         )
 
     @action(detail=True, permission_classes=[], url_path="details-by-hash")
-    def details_by_hash(self, request, pk):
+    def details_by_hash(self, request, pk, company_slug, *args, **kwargs):
         hash = request.GET.get("hash")
         if not hash:
             raise AuthenticationFailed("No hash provided")
-        if check_verification_hash(hash, "sales-invoice-{}".format(pk)) is False:
+        if (
+            check_verification_hash(
+                hash, "sales-invoice-{}".format("{}-{}".format(pk, company_slug))
+            )
+            is False
+        ):
             raise AuthenticationFailed("Invalid hash")
         obj = SalesVoucher.objects.get(pk=pk)
         self.request.company = obj.company
@@ -605,7 +613,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return Response({**details, "company": CompanySerializer(obj.company).data})
 
     @action(detail=True, url_path="email-invoice", methods=["POST"])
-    def email_invoice(self, request, pk):
+    def email_invoice(self, request, pk, *args, **kwargs):
         serializer = EmailInvoiceRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         obj = self.get_object()
@@ -615,6 +623,27 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             **serializer.validated_data,
         )
         return Response({})
+
+    @action(detail=True, url_path="create-a-copy", methods=["POST"])
+    def create_a_copy(self, request, pk, *args, **kwargs):
+        """
+        Create a copy of the Sales Voucher
+        """
+        obj = self.get_object()
+        data = SalesVoucherCreateSerializer(obj).data
+        data["voucher_no"] = None
+        data["status"] = "Draft"
+        data["date"] = timezone.now().date()
+        data["payment_date"] = None
+        data["print_count"] = 0
+        data["user"] = request.user
+        data["quotation"] = None
+        if obj.due_date:
+            data["due_date"] = data["date"] + (obj.due_date - obj.date)
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     def get_defaults(self, request=None, *args, **kwargs):
         return {
@@ -808,7 +837,7 @@ class RecurringVoucherTemplateViewSet(CRULViewSet):
 
     collections = [
         ("parties", Party, PartyMinSerializer, True, ["name"]),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "bank_accounts",
             BankAccount,
@@ -1027,7 +1056,7 @@ class PurchaseVoucherViewSet(
     collections = (
         ("parties", Party, PartyMinSerializer, True, ["name"]),
         ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "bank_accounts",
             BankAccount,
@@ -1068,9 +1097,12 @@ class PurchaseVoucherViewSet(
         voucher_no = request.data.get("voucher_no", None)
         party_id = request.data.get("party", None)
         fiscal_year = request.company.current_fiscal_year
-        if self.model.objects.filter(
-            voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
-        ).exists():
+        if (
+            voucher_no
+            and self.model.objects.filter(
+                voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
+            ).exists()
+        ):
             raise ValidationError(
                 {
                     "voucher_no": [
@@ -1085,7 +1117,8 @@ class PurchaseVoucherViewSet(
         voucher_no = request.data.get("voucher_no", None)
         party_id = request.data.get("party", None)
         fiscal_year = request.company.current_fiscal_year
-        if (
+
+        if voucher_no and (
             self.model.objects.filter(
                 voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
             )
@@ -1252,6 +1285,26 @@ class PurchaseVoucherViewSet(
 
         return Response({})
 
+    @action(detail=True, url_path="create-a-copy", methods=["POST"])
+    def create_a_copy(self, request, pk, *args, **kwargs):
+        """
+        Create a copy of the Purchase Voucher
+        """
+        obj = self.get_object()
+        data = PurchaseVoucherCreateSerializer(obj).data
+        data["status"] = "Draft"
+        data["voucher_no"] = None
+        data["user"] = request.user
+        for row in data["rows"]:
+            row.pop("id")
+        data["date"] = timezone.now().date()
+        if obj.due_date:
+            data["due_date"] = obj.due_date + (obj.date - data["date"])
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
 
 class CreditNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
     serializer_class = CreditNoteCreateSerializer
@@ -1275,7 +1328,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
 
     collections = (
         ("discounts", SalesDiscount, SalesDiscountSerializer, False),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "bank_accounts",
             BankAccount,
@@ -1440,7 +1493,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
 
     collections = (
         ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
-        ("units", Unit),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         ("bank_accounts", BankAccount),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         ("bank_accounts", BankAccount, BankAccountSerializer),
@@ -2348,7 +2401,7 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     row = ChallanRow
     collections = [
         ("parties", Party, PartyMinSerializer),
-        ("units", Unit),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "items",
             Item.objects.filter(can_be_sold=True, track_inventory=True).select_related(
@@ -2537,7 +2590,7 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     collections = [
         ("parties", Party, PartyMinSerializer),
-        ("units", Unit),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "items",
             Item.objects.filter(

@@ -3,7 +3,9 @@ import checkPermissions from 'src/composables/checkPermissions'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
 import useForm from 'src/composables/useForm'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
+import PartyForm from 'src/pages/party/PartyForm.vue'
 import { useLoginStore } from 'src/stores/login-info'
+import SalesDiscountForm from '../discount/SalesDiscountForm.vue'
 
 const metaData = {
   title: 'POS | Awecount',
@@ -27,7 +29,7 @@ const searchTerm = ref(null)
 const searchResults = ref(null)
 const enterClicked = ref(false)
 const currentPage = ref(null)
-const partyMode = ref(false)
+const partyMode = ref(true)
 const staticOptions = {
   discount_types,
   modes,
@@ -40,15 +42,17 @@ const partyChoices = ref([])
 useApi(`/api/company/${route.params.company}/parties/choices/`).then((choices) => {
   partyChoices.value = choices
 })
+
 const switchMode = (fields) => {
-  if (fields.mode !== 'Credit') {
-    partyMode.value = !partyMode.value
-  } else {
+  if (partyMode.value && !fields.payment_mode) {
     $q.notify({
       color: 'orange-4',
       message: 'Credit customer must be a party!',
     })
+    return
   }
+
+  partyMode.value = !partyMode.value
 }
 const deleteRowErr = (index, errors, deleteObj) => {
   if (deleteObj) {
@@ -61,6 +65,40 @@ const deleteRowErr = (index, errors, deleteObj) => {
     errors.rows.splice(index, 1)
   }
 }
+
+const getPartyObj = () => {
+  if (fields.value.party && !partyMode.value) {
+    const index = partyChoices.value.findIndex(item => item.id === fields.value.party)
+    return partyChoices.value[index]
+  } else {
+    return null
+  }
+}
+
+const handleSubmitSuccess = (data, noPrint) => {
+  errors.value = {}
+  $q.notify({
+    color: 'green',
+    message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
+    icon: 'check',
+  })
+  if (data.status !== 'Draft' && !noPrint) {
+    const printData = useGeneratePosPdf(data, getPartyObj(), !formDefaults.value.options.show_rate_quantity_in_voucher, formDefaults.value.collections.tax_schemes)
+    usePrintPdfWindow(printData)
+  }
+  fields.value.rows = []
+  partyMode.value = false
+  fields.value.party = ''
+  delete fields.value.status
+  delete fields.value.noPrint
+  delete fields.value.customer_name
+  delete fields.value.discount_type
+  delete fields.value.discount
+  delete fields.value.remarks
+}
+
+const showingCustomerModal = ref(false)
+
 const onSubmitClick = (status, noPrint) => {
   if (!fields.value?.rows || !(fields.value.rows.length > 0)) return
 
@@ -76,6 +114,9 @@ const onSubmitClick = (status, noPrint) => {
         delete fields.value.status
         delete fields.value.noPrint
         errors.value = err.data
+        if (errors.value.party || errors.value.customer_name) {
+          showingCustomerModal.value = true
+        }
         $q.notify({
           color: 'negative',
           message: 'Please fill out the form correctly.',
@@ -106,53 +147,7 @@ fields.value.mode = 'Cash'
 fields.value.party = ''
 fields.value.rows = []
 fields.value.due_date = today
-// handle Search
-const fetchResults = async () => {
-  useApi(`/api/company/${route.params.company}/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}${`&page=${currentPage.value || 1}`}`)
-    .then((data) => {
-      searchResults.value = data
-      if (enterClicked.value) {
-        const obj = data.results.find((item) => {
-          if (item.code === searchTerm.value) {
-            return item
-          }
-        })
-        if (obj) {
-          onAddItem(obj)
-          searchTerm.value = ''
-        }
-      }
-      enterClicked.value = false
-    })
-    .catch(() => {
-      enterClicked.value = false
-    })
-}
-watch(
-  [searchTerm, currentPage],
-  (newVal, oldVal) => {
-    if (newVal[0] !== oldVal[0]) {
-      {
-        currentPage.value = 1
-        fetchResults()
-      }
-    } else {
-      fetchResults()
-    }
-  },
-  { deep: true },
-)
-watch(
-  () => fields.value.rows,
-  (newVal) => {
-    if (formDefaults.value.options.persist_pos_items) {
-      store.posData = newVal
-    }
-  },
-  {
-    deep: true,
-  },
-)
+
 // handle Search
 const onAddItem = (itemInfo) => {
   const index = fields.value.rows.findIndex(item => item.item_id === itemInfo.id)
@@ -174,14 +169,50 @@ const onAddItem = (itemInfo) => {
   }
   searchTerm.value = null
 }
-const getPartyObj = () => {
-  if (fields.value.party && !partyMode.value) {
-    const index = partyChoices.value.findIndex(item => item.id === fields.value.party)
-    return partyChoices.value[index]
-  } else {
-    return null
-  }
+
+// handle Search
+const fetchResults = async () => {
+  useApi(`/api/company/${route.params.company}/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}${`&page=${currentPage.value || 1}`}`)
+    .then((data) => {
+      searchResults.value = data
+      if (enterClicked.value) {
+        const obj = data.results.find((item) => {
+          return item.code === searchTerm.value
+        })
+        if (obj) {
+          onAddItem(obj)
+          searchTerm.value = ''
+        }
+      }
+      enterClicked.value = false
+    })
+    .catch(() => {
+      enterClicked.value = false
+    })
 }
+watch(
+  [searchTerm, currentPage],
+  (newVal, oldVal) => {
+    if (newVal[0] !== oldVal[0]) {
+      currentPage.value = 1
+      fetchResults()
+    } else {
+      fetchResults()
+    }
+  },
+  { deep: true },
+)
+watch(
+  () => fields.value.rows,
+  (newVal) => {
+    if (formDefaults.value.options.persist_pos_items) {
+      store.posData = newVal
+    }
+  },
+  {
+    deep: true,
+  },
+)
 
 const hasItemModifyAccess = computed(() => {
   return checkPermissions('item.update')
@@ -201,28 +232,6 @@ const discountOptionsComputed = computed(() => {
     return staticOptions.discount_types
   }
 })
-
-const handleSubmitSuccess = (data, noPrint) => {
-  errors.value = {}
-  $q.notify({
-    color: 'green',
-    message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
-    icon: 'check',
-  })
-  if (data.status !== 'Draft' && !noPrint) {
-    const printData = useGeneratePosPdf(data, getPartyObj(), !formDefaults.value.options.show_rate_quantity_in_voucher, formDefaults.value.collections.tax_schemes)
-    usePrintPdfWindow(printData)
-  }
-  fields.value.rows = []
-  partyMode.value = false
-  fields.value.party = ''
-  delete fields.value.status
-  delete fields.value.noPrint
-  delete fields.value.customer_name
-  delete fields.value.discount_type
-  delete fields.value.discount
-  delete fields.value.remarks
-}
 
 const handleKeyDown = (event) => {
   if (event.ctrlKey && event.keyCode === 68) {
@@ -391,9 +400,15 @@ const modeOptionsComputed = computed(() => {
                       label="Payment Mode"
                       option-label="name"
                       option-value="id"
-                      :error="!!errors?.payment_mode"
+                      :error="errors?.payment_mode"
                       :error-message="errors?.payment_mode ? errors.payment_mode[0] : null"
                       :options="modeOptionsComputed"
+                      @update:model-value="
+                        (val) => {
+                          if (!val) {
+                            partyMode = true
+                          }
+                        }"
                     >
                       <template #append>
                         <q-icon
@@ -407,14 +422,14 @@ const modeOptionsComputed = computed(() => {
                   </div>
                   <div class="flex items-center gap-x-8 gap-y-4">
                     <q-btn class="f-open-btn" icon="mdi-menu">
-                      <q-menu>
+                      <q-menu v-model="showingCustomerModal">
                         <div class="q-ma-lg config-options">
                           <div class="row -mt-4">
                             <div class="col-12">
                               <div class="row">
                                 <div class="col-10">
                                   <q-input
-                                    v-if="partyMode && fields.payment_mode"
+                                    v-if="!partyMode"
                                     v-model="fields.customer_name"
                                     label="Customer Name"
                                     :error="!!errors?.customer_name"

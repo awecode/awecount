@@ -157,7 +157,7 @@ const newColumn = [
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/${type}/vouchers/recurring-templates/${props.row.id}`"
+            :to="`/${$route.params.company}/${type}/vouchers/recurring-templates/${props.row.id}/edit`"
           />
         </q-td>
       </template>

@@ -6,9 +6,9 @@ import CategoryForm from 'src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 
-const route = useRoute()
 export default {
   setup() {
+    const route = useRoute()
     const endpoint = `/api/company/${route.params.company}/purchase-order/`
     const openDatePicker = ref(false)
     const $q = useQuasar()

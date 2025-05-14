@@ -44,12 +44,7 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.helpers import (
-    deserialize_request,
-    get_relative_file_path,
-    merge_dicts,
-    use_miti,
-)
+
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -436,7 +431,7 @@ class ChallanRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         max_digits=24,
         decimal_places=6,
         default=Decimal("1.000000"),
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
 
@@ -764,8 +759,8 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                         "company": {
                             "name": self.company.name,
                             "address": self.company.address,
-                            "contact": self.company.contact_no,
-                            "email": ", ".join(self.company.emails),
+                            "contact": self.company.phone,
+                            "email": self.company.email,
                             "tax_identification_number": self.company.tax_identification_number,
                             "currency_code": self.company.currency_code,
                         },
@@ -1035,7 +1030,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         max_digits=24,
         decimal_places=6,
         default=Decimal("1.000000"),
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(
         Unit,
@@ -1149,7 +1144,7 @@ class PurchaseOrderRow(TransactionModel, InvoiceRowModel):
         max_digits=24,
         decimal_places=6,
         default=Decimal("1.000000"),
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
 
@@ -1380,7 +1375,7 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     quantity = models.DecimalField(
         max_digits=24,
         decimal_places=6,
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(
         Unit,

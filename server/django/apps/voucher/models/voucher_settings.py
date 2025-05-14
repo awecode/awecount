@@ -173,6 +173,10 @@ class PurchaseSetting(models.Model):
 def handle_company_creation(sender, **kwargs):
     company = kwargs.get("company")
     SalesSetting.objects.create(company=company)
-    QuotationSetting.objects.create(company=company)
+    QuotationSetting.objects.create(
+        company=company,
+        body_text="We are pleased to provide you with the following quotation for the listed items.",
+        footer_text="<div>Terms and conditions apply.</div><div>We look forward to working with you.</div>",
+    )
     PurchaseSetting.objects.create(company=company)
     InventorySetting.objects.create(company=company)
