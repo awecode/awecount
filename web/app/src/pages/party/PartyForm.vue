@@ -108,8 +108,8 @@ function onDeletClick() {
               :error-message="errors.tax_identification_number"
             />
           </div>
-          <PartyRepresentative v-model="fields.representative" index="1" :errors="errors?.representative" />
-          <PartyAlias v-model="fields.aliases" index="1" :errors="errors?.aliases" />
+          <PartyRepresentative v-model="fields.representative" :errors="errors?.representative" :index="1" />
+          <PartyAlias v-model="fields.aliases" :errors="errors?.aliases" :index="1" />
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn
