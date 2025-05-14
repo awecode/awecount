@@ -61,6 +61,38 @@ const deleteRowErr = (index, errors, deleteObj) => {
     errors.rows.splice(index, 1)
   }
 }
+
+const getPartyObj = () => {
+  if (fields.value.party && !partyMode.value) {
+    const index = partyChoices.value.findIndex(item => item.id === fields.value.party)
+    return partyChoices.value[index]
+  } else {
+    return null
+  }
+}
+
+const handleSubmitSuccess = (data, noPrint) => {
+  errors.value = {}
+  $q.notify({
+    color: 'green',
+    message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
+    icon: 'check',
+  })
+  if (data.status !== 'Draft' && !noPrint) {
+    const printData = useGeneratePosPdf(data, getPartyObj(), !formDefaults.value.options.show_rate_quantity_in_voucher, formDefaults.value.collections.tax_schemes)
+    usePrintPdfWindow(printData)
+  }
+  fields.value.rows = []
+  partyMode.value = false
+  fields.value.party = ''
+  delete fields.value.status
+  delete fields.value.noPrint
+  delete fields.value.customer_name
+  delete fields.value.discount_type
+  delete fields.value.discount
+  delete fields.value.remarks
+}
+
 const onSubmitClick = (status, noPrint) => {
   if (!fields.value?.rows || !(fields.value.rows.length > 0)) return
 
@@ -106,53 +138,7 @@ fields.value.mode = 'Cash'
 fields.value.party = ''
 fields.value.rows = []
 fields.value.due_date = today
-// handle Search
-const fetchResults = async () => {
-  useApi(`/api/company/${route.params.company}/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}${`&page=${currentPage.value || 1}`}`)
-    .then((data) => {
-      searchResults.value = data
-      if (enterClicked.value) {
-        const obj = data.results.find((item) => {
-          if (item.code === searchTerm.value) {
-            return item
-          }
-        })
-        if (obj) {
-          onAddItem(obj)
-          searchTerm.value = ''
-        }
-      }
-      enterClicked.value = false
-    })
-    .catch(() => {
-      enterClicked.value = false
-    })
-}
-watch(
-  [searchTerm, currentPage],
-  (newVal, oldVal) => {
-    if (newVal[0] !== oldVal[0]) {
-      {
-        currentPage.value = 1
-        fetchResults()
-      }
-    } else {
-      fetchResults()
-    }
-  },
-  { deep: true },
-)
-watch(
-  () => fields.value.rows,
-  (newVal) => {
-    if (formDefaults.value.options.persist_pos_items) {
-      store.posData = newVal
-    }
-  },
-  {
-    deep: true,
-  },
-)
+
 // handle Search
 const onAddItem = (itemInfo) => {
   const index = fields.value.rows.findIndex(item => item.item_id === itemInfo.id)
@@ -174,14 +160,50 @@ const onAddItem = (itemInfo) => {
   }
   searchTerm.value = null
 }
-const getPartyObj = () => {
-  if (fields.value.party && !partyMode.value) {
-    const index = partyChoices.value.findIndex(item => item.id === fields.value.party)
-    return partyChoices.value[index]
-  } else {
-    return null
-  }
+
+// handle Search
+const fetchResults = async () => {
+  useApi(`/api/company/${route.params.company}/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}${`&page=${currentPage.value || 1}`}`)
+    .then((data) => {
+      searchResults.value = data
+      if (enterClicked.value) {
+        const obj = data.results.find((item) => {
+          return item.code === searchTerm.value
+        })
+        if (obj) {
+          onAddItem(obj)
+          searchTerm.value = ''
+        }
+      }
+      enterClicked.value = false
+    })
+    .catch(() => {
+      enterClicked.value = false
+    })
 }
+watch(
+  [searchTerm, currentPage],
+  (newVal, oldVal) => {
+    if (newVal[0] !== oldVal[0]) {
+      currentPage.value = 1
+      fetchResults()
+    } else {
+      fetchResults()
+    }
+  },
+  { deep: true },
+)
+watch(
+  () => fields.value.rows,
+  (newVal) => {
+    if (formDefaults.value.options.persist_pos_items) {
+      store.posData = newVal
+    }
+  },
+  {
+    deep: true,
+  },
+)
 
 const hasItemModifyAccess = computed(() => {
   return checkPermissions('item.update')
@@ -201,28 +223,6 @@ const discountOptionsComputed = computed(() => {
     return staticOptions.discount_types
   }
 })
-
-const handleSubmitSuccess = (data, noPrint) => {
-  errors.value = {}
-  $q.notify({
-    color: 'green',
-    message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
-    icon: 'check',
-  })
-  if (data.status !== 'Draft' && !noPrint) {
-    const printData = useGeneratePosPdf(data, getPartyObj(), !formDefaults.value.options.show_rate_quantity_in_voucher, formDefaults.value.collections.tax_schemes)
-    usePrintPdfWindow(printData)
-  }
-  fields.value.rows = []
-  partyMode.value = false
-  fields.value.party = ''
-  delete fields.value.status
-  delete fields.value.noPrint
-  delete fields.value.customer_name
-  delete fields.value.discount_type
-  delete fields.value.discount
-  delete fields.value.remarks
-}
 
 const handleKeyDown = (event) => {
   if (event.ctrlKey && event.keyCode === 68) {
