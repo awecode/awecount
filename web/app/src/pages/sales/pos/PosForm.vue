@@ -29,7 +29,7 @@ const searchTerm = ref(null)
 const searchResults = ref(null)
 const enterClicked = ref(false)
 const currentPage = ref(null)
-const partyMode = ref(false)
+const partyMode = ref(true)
 const staticOptions = {
   discount_types,
   modes,
@@ -42,15 +42,17 @@ const partyChoices = ref([])
 useApi(`/api/company/${route.params.company}/parties/choices/`).then((choices) => {
   partyChoices.value = choices
 })
+
 const switchMode = (fields) => {
-  if (fields.mode !== 'Credit') {
-    partyMode.value = !partyMode.value
-  } else {
+  if (partyMode.value && !fields.payment_mode) {
     $q.notify({
       color: 'orange-4',
       message: 'Credit customer must be a party!',
     })
+    return
   }
+
+  partyMode.value = !partyMode.value
 }
 const deleteRowErr = (index, errors, deleteObj) => {
   if (deleteObj) {
@@ -396,6 +398,12 @@ const modeOptionsComputed = computed(() => {
                       :error="errors?.payment_mode"
                       :error-message="errors?.payment_mode ? errors.payment_mode[0] : null"
                       :options="modeOptionsComputed"
+                      @update:model-value="
+                        (val) => {
+                          if (!val) {
+                            partyMode = true
+                          }
+                        }"
                     >
                       <template #append>
                         <q-icon
@@ -416,7 +424,7 @@ const modeOptionsComputed = computed(() => {
                               <div class="row">
                                 <div class="col-10">
                                   <q-input
-                                    v-if="partyMode && fields.payment_mode"
+                                    v-if="!partyMode"
                                     v-model="fields.customer_name"
                                     label="Customer Name"
                                     :error="!!errors?.customer_name"
