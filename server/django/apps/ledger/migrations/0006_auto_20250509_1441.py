@@ -2,6 +2,8 @@
 
 from django.db import migrations
 from django.conf import settings
+from apps.ledger.models import Category, Account
+from apps.company.models import Company
 
 
 class Migration(migrations.Migration):
@@ -20,9 +22,6 @@ class Migration(migrations.Migration):
 
     def migrate_interest_income_expense_category(apps, schema_editor):
         # Get required models
-        Company = apps.get_model("company", "Company")
-        Category = apps.get_model("ledger", "Category")
-        Account = apps.get_model("ledger", "Account")
 
         # Update system codes for income categories
         Category.objects.filter(code="I-D").update(
@@ -73,23 +72,8 @@ class Migration(migrations.Migration):
                 company_id,
                 settings.ACCOUNT_CATEGORY_SYSTEM_CODES["Interest Income"],
             ) not in existing_interest_categories:
-                # Get the rightmost node of the parent to calculate lft/rgt values
-                rightmost_sibling = (
-                    Category.objects.filter(parent=indirect_income)
-                    .order_by("-rght")
-                    .first()
-                )
 
-                # Calculate new lft/rgt values
-                if rightmost_sibling:
-                    lft = rightmost_sibling.rght + 1
-                else:
-                    lft = indirect_income.lft + 1
-                rght = lft + 1
-                level = indirect_income.level + 1
-                tree_id = indirect_income.tree_id
-
-                interest_income_category = Category(
+                interest_income_category = Category.objects.create(
                     name="Interest Income",
                     code="I-I-II",
                     parent=indirect_income,
@@ -98,10 +82,6 @@ class Migration(migrations.Migration):
                     system_code=settings.ACCOUNT_CATEGORY_SYSTEM_CODES[
                         "Interest Income"
                     ],
-                    lft=lft,
-                    rght=rght,
-                    level=level,
-                    tree_id=tree_id,
                 )
                 interest_income_category.save()
                 account = Account(
@@ -145,23 +125,8 @@ class Migration(migrations.Migration):
                 company_id,
                 settings.ACCOUNT_CATEGORY_SYSTEM_CODES["Interest Expenses"],
             ) not in existing_interest_categories:
-                # Get the rightmost node of the parent to calculate lft/rgt values
-                rightmost_sibling = (
-                    Category.objects.filter(parent=indirect_expenses)
-                    .order_by("-rght")
-                    .first()
-                )
 
-                # Calculate new lft/rgt values
-                if rightmost_sibling:
-                    lft = rightmost_sibling.rght + 1
-                else:
-                    lft = indirect_expenses.lft + 1
-                rght = lft + 1
-                level = indirect_expenses.level + 1
-                tree_id = indirect_expenses.tree_id
-
-                interest_expense_category = Category(
+                interest_expense_category = Category.objects.create(
                     name="Interest Expenses",
                     code="E-I-IE",
                     parent=indirect_expenses,
@@ -170,10 +135,6 @@ class Migration(migrations.Migration):
                     system_code=settings.ACCOUNT_CATEGORY_SYSTEM_CODES[
                         "Interest Expenses"
                     ],
-                    lft=lft,
-                    rght=rght,
-                    level=level,
-                    tree_id=tree_id,
                 )
                 interest_expense_category.save()
                 account = Account(
