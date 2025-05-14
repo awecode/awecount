@@ -1405,7 +1405,7 @@ class UnitViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewSet):
 class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewSet):
     serializer_class = InventoryCategorySerializer
     collections = (
-        ("units", Unit, UnitSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         ("accounts", Account, AccountMinSerializer, True, ["name"]),
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),

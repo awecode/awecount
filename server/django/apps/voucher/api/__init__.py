@@ -37,6 +37,7 @@ from apps.product.serializers import (
     ItemPOSSerializer,
     ItemPurchaseSerializer,
     ItemSalesSerializer,
+    UnitSerializer,
 )
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
@@ -443,7 +444,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     row = SalesVoucherRow
     collections = [
         ("parties", Party, PartyMinSerializer, True, ["name"]),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         ("discounts", SalesDiscount, SalesDiscountMinSerializer, False),
         (
             "bank_accounts",
@@ -836,7 +837,7 @@ class RecurringVoucherTemplateViewSet(CRULViewSet):
 
     collections = [
         ("parties", Party, PartyMinSerializer, True, ["name"]),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "bank_accounts",
             BankAccount,
@@ -1055,7 +1056,7 @@ class PurchaseVoucherViewSet(
     collections = (
         ("parties", Party, PartyMinSerializer, True, ["name"]),
         ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "bank_accounts",
             BankAccount,
@@ -1327,7 +1328,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
 
     collections = (
         ("discounts", SalesDiscount, SalesDiscountSerializer, False),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "bank_accounts",
             BankAccount,
@@ -1492,7 +1493,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
 
     collections = (
         ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
-        ("units", Unit),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         ("bank_accounts", BankAccount),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         ("bank_accounts", BankAccount, BankAccountSerializer),
@@ -2400,7 +2401,7 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     row = ChallanRow
     collections = [
         ("parties", Party, PartyMinSerializer),
-        ("units", Unit),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "items",
             Item.objects.filter(can_be_sold=True, track_inventory=True).select_related(
@@ -2589,7 +2590,7 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     collections = [
         ("parties", Party, PartyMinSerializer),
-        ("units", Unit),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "items",
             Item.objects.filter(
