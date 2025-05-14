@@ -47,7 +47,7 @@ const importChallanModal = ref(false)
 
 const loginStore = useLoginStore()
 
-const { $q } = useQuasar()
+const $q = useQuasar()
 
 const fields = defineModel('fields')
 
