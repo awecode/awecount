@@ -125,7 +125,7 @@ export default {
                     />
                   </div>
                   <div class="q-ma-sm">
-                    <MultiSelectChip v-model="filters.status" :options="['Issued', 'Cleared']" />
+                    <MultiSelectChip v-model="filters.status" :options="['Issued', 'Cancelled']" />
                   </div>
                 </div>
                 <div class="q-mx-md">
