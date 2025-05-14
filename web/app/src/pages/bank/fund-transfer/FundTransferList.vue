@@ -172,7 +172,7 @@ export default {
             color="orange-6"
             label="Edit"
             style="font-size: 12px"
-            :to="`/${$route.params.company}/fund-transfer/${props.row.id}`"
+            :to="`/${$route.params.company}/banking/fund-transfers/${props.row.id}/edit`"
           />
         </q-td>
       </template>

@@ -14,7 +14,7 @@ const endpoint = `/api/company/${route.params.company}/parties/`
 
 const { fields, errors, loading, isEdit, submitForm } = useForm(endpoint, {
   getDefaults: false,
-  successRoute: `/${route.params.company}/crm/parties/list`,
+  successRoute: `/${route.params.company}/crm/parties`,
 })
 
 useMeta(() => ({
