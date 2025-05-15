@@ -1128,6 +1128,131 @@ def handle_company_creation(sender, **kwargs):
         default=True,
         system_code=acc_cat_system_codes["Direct Expenses"],
     )
+
+    landed_cost_category = Category.objects.create(
+        name="Landed Cost",
+        code="E-D-LC",
+        parent=direct_expenses,
+        company=company,
+        default=True,
+        system_code=acc_cat_system_codes["Landed Cost"],
+    )
+
+    duty_account = Account.objects.create(
+        name="Duty",
+        code="E-D-LC-DTY",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+    )
+
+    labor_account = Account.objects.create(
+        name="Labor",
+        code="E-D-LC-LBR",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+    )
+
+    freight_account = Account.objects.create(
+        name="Freight",
+        code="E-D-LC-FR",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+    )
+
+    insurance_account = Account.objects.create(
+        name="Insurance",
+        code="E-D-LC-INS",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+    )
+
+    brokerage_account = Account.objects.create(
+        name="Brokerage",
+        code="E-D-LC-BRK",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+    )
+
+    storage_account = Account.objects.create(
+        name="Storage",
+        code="E-D-LC-STO",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+        system_code="LC-STORAGE",
+    )
+
+    packaging_account = Account.objects.create(
+        name="Packaging",
+        code="E-D-LC-PKG",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+    )
+
+    loading_account = Account.objects.create(
+        name="Loading",
+        code="E-D-LC-LOD",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+    )
+
+    unloading_account = Account.objects.create(
+        name="Unloading",
+        code="E-D-LC-ULD",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+    )
+
+    regulatory_fee_account = Account.objects.create(
+        name="Regulatory Fee",
+        code="E-D-LC-REG",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+    )
+
+    customs_declaration_account = Account.objects.create(
+        name="Customs Declaration",
+        code="E-D-LC-CD",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+    )
+
+    other_charges_account = Account.objects.create(
+        name="Other Charges",
+        code="E-D-LC-OTH",
+        category=landed_cost_category,
+        company=company,
+        default=True,
+    )
+
+    PurchaseSetting = apps.get_model("voucher", "PurchaseSetting")
+    purchase_setting, _ = PurchaseSetting.objects.get_or_create(company=company)
+    purchase_setting.landed_cost_accounts = {
+        "duty": duty_account.id,
+        "labor": labor_account.id,
+        "freight": freight_account.id,
+        "insurance": insurance_account.id,
+        "brokerage": brokerage_account.id,
+        "storage": storage_account.id,
+        "packaging": packaging_account.id,
+        "loading": loading_account.id,
+        "unloading": unloading_account.id,
+        "regulatory_fee": regulatory_fee_account.id,
+        "customs_declaration": customs_declaration_account.id,
+        "other_charges": other_charges_account.id,
+    }
+    purchase_setting.save()
+
     Category.objects.create(
         name="Purchase Expenses",
         code="E-D-PE",
