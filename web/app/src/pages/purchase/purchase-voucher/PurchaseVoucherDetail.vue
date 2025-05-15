@@ -245,16 +245,52 @@ export default {
             hide-pagination
             :columns="[
               { name: 'type', label: 'Cost Type', field: 'type', align: 'left', style: 'width: 20%' },
-              { name: 'amount', label: 'Amount', field: 'amount', align: 'right', style: 'width: 25%' },
               { name: 'description', label: 'Description', field: 'description', align: 'left', style: 'width: 50%' },
+              { name: 'credit_account', label: 'Credit Account', field: 'credit_account', align: 'left', style: 'width: 25%' },
+              { name: 'amount', label: 'Amount', field: 'amount', align: 'right', style: 'width: 25%' },
+              { name: 'tax_scheme', label: 'Tax Scheme', field: 'tax_scheme', align: 'left', style: 'width: 25%' },
+              { name: 'tax_amount', label: 'Tax Amount', field: 'tax_amount', align: 'right', style: 'width: 25%' },
+              { name: 'total_amount', label: 'Total Amount', field: 'total_amount', align: 'right', style: 'width: 25%' },
             ]"
             :rows="fields.landed_cost_rows"
           >
+            <template #body-cell-credit_account="props">
+              <q-td :props="props">
+                <RouterLink :to="`/${$route.params.company}/account/ledgers/${props.row.credit_account.id}`">
+                  {{ props.row.credit_account.name }}
+                </RouterLink>
+              </q-td>
+            </template>
             <template #body-cell-amount="props">
               <q-td :props="props">
                 <FormattedNumber
                   type="currency"
                   :value="props.row.amount"
+                />
+              </q-td>
+            </template>
+            <template #body-cell-tax_scheme="props">
+              <q-td :props="props">
+                <FormattedNumber
+                  type="unit"
+                  unit="percent"
+                  :value="props.row.tax_scheme.rate"
+                /> {{ ' ' }} ({{ props.row.tax_scheme.short_name || props.row.tax_scheme.name }})
+              </q-td>
+            </template>
+            <template #body-cell-tax_amount="props">
+              <q-td :props="props">
+                <FormattedNumber
+                  type="currency"
+                  :value="props.row.tax_amount"
+                />
+              </q-td>
+            </template>
+            <template #body-cell-total_amount="props">
+              <q-td :props="props">
+                <FormattedNumber
+                  type="currency"
+                  :value="props.row.total_amount"
                 />
               </q-td>
             </template>

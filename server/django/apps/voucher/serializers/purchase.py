@@ -12,15 +12,15 @@ from awecount.libs.serializers import StatusReversionMixin
 from lib.drf.serializers import BaseModelSerializer
 
 from ..models import (
+    LandedCostRow,
     PurchaseDiscount,
     PurchaseOrder,
     PurchaseOrderRow,
     PurchaseVoucher,
     PurchaseVoucherRow,
-    LandedCostRow,
 )
-from .mixins import DiscountObjectTypeSerializerMixin
 from .landed_cost import LandedCostRowSerializer
+from .mixins import DiscountObjectTypeSerializerMixin
 
 
 class PurchaseDiscountSerializer(BaseModelSerializer):
@@ -196,11 +196,8 @@ class PurchaseVoucherCreateSerializer(
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
 
         # Create landed cost if rows exist
-        if landed_cost_rows_data:
-            LandedCostRow.objects.bulk_create([
-                LandedCostRow(invoice=instance, **row_data)
-                for row_data in landed_cost_rows_data
-            ])
+        for row_data in landed_cost_rows_data:
+            LandedCostRow.objects.create(invoice=instance, **row_data)
 
         if purchase_orders:
             instance.purchase_orders.clear()
@@ -231,10 +228,8 @@ class PurchaseVoucherCreateSerializer(
             # Delete existing rows
             instance.landed_cost_rows.all().delete()
             # Create new rows
-            LandedCostRow.objects.bulk_create([
-                LandedCostRow(invoice=instance, **row_data)
-                for row_data in landed_cost_rows_data
-            ])
+            for row_data in landed_cost_rows_data:
+                LandedCostRow.objects.create(invoice=instance, **row_data)
 
         if purchase_orders:
             instance.purchase_orders.clear()
