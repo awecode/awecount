@@ -97,8 +97,8 @@ const modeOptionsComputed = computed(() => {
 
       <q-card-section>
         <div class="row q-pl-sm">
-          <div class="col-12 col-sm-6">
-            <q-label class="q-mb-md">
+          <div class="col-12">
+            <q-label class="q-mb-lg">
               Quotation Body Text
             </q-label>
             <q-editor
@@ -111,7 +111,7 @@ const modeOptionsComputed = computed(() => {
 
       <q-card-section>
         <div class="row q-pl-sm">
-          <div class="col-12 col-sm-6">
+          <div class="col-12">
             <q-label class="q-mb-md">
               Quotation Footer Text
             </q-label>
