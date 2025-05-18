@@ -2188,6 +2188,7 @@ class LandedCostRowType(models.TextChoices):
     REGULATORY_FEE = "Regulatory Fee"
     CUSTOMS_DECLARATION = "Customs Declaration"
     OTHER_CHARGES = "Other Charges"
+    TAX_ON_PURCHASE = "Tax on Purchase"
 
 
 class LandedCostRow(models.Model):
