@@ -2189,6 +2189,7 @@ class LandedCostRowType(models.TextChoices):
     CUSTOMS_DECLARATION = "Customs Declaration"
     OTHER_CHARGES = "Other Charges"
     TAX_ON_PURCHASE = "Tax on Purchase"
+    CUSTOMS_VALUATION_UPLIFT = "Customs Valuation Uplift"
 
 
 class LandedCostRow(models.Model):

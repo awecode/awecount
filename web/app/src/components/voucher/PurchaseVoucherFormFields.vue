@@ -81,9 +81,11 @@ if (!fields.value.landed_cost_rows) {
   fields.value.landed_cost_rows = []
 }
 const landedCostTypes = [
+  { label: 'Tax on Purchase', value: 'Tax on Purchase' },
+  { label: 'Freight', value: 'Freight' },
+  { label: 'Customs Valuation Uplift', value: 'Customs Valuation Uplift' },
   { label: 'Duty', value: 'Duty' },
   { label: 'Labor', value: 'Labor' },
-  { label: 'Freight', value: 'Freight' },
   { label: 'Insurance', value: 'Insurance' },
   { label: 'Brokerage', value: 'Brokerage' },
   { label: 'Storage', value: 'Storage' },
@@ -192,14 +194,14 @@ const landedCostColumns = [
     align: 'left',
     style: 'width: 150px',
   },
-  {
-    name: 'description',
-    label: 'Description',
-    field: 'description',
-    align: 'left',
-    sortable: true,
-    style: 'width: 200px',
-  },
+  // {
+  //   name: 'description',
+  //   label: 'Description',
+  //   field: 'description',
+  //   align: 'left',
+  //   sortable: true,
+  //   style: 'width: 200px',
+  // },
   {
     name: 'actions',
     label: 'Actions',
@@ -243,10 +245,21 @@ const convertPercentagesToFixedAmounts = () => {
 
   const targetCurrency = loginStore.companyInfo.currency_code || 'USD'
 
-  fields.value.landed_cost_rows.forEach((row) => {
+  fields.value.landed_cost_rows.forEach((row, index) => {
     if (row.is_percentage && row.value) {
-      // For percentage-based costs, just calculate the amount without currency conversion
-      row.amount = invoiceTotal.mul(row.value).div('100')
+      // Calculate base amount including invoice total and previous landed costs
+      let baseAmount = invoiceTotal
+
+      // Add amounts from previous landed cost rows
+      for (let i = 0; i < index; i++) {
+        const prevRow = fields.value.landed_cost_rows[i]
+        if (prevRow.amount) {
+          baseAmount = baseAmount.add(prevRow.amount)
+        }
+      }
+
+      // Calculate percentage amount based on total base amount
+      row.amount = baseAmount.mul(row.value).div('100')
     } else {
       // For fixed amounts, convert to target currency if needed
       row.amount = convertCurrency(row.value, row.currency, targetCurrency)
@@ -260,6 +273,46 @@ const averageRate = computed(() => {
   const totalLandedCosts = fields.value.landed_cost_rows.reduce((sum, row) => sum.add(row.amount || '0'), new Decimal('0'))
   const totalQuantity = fields.value.rows.reduce((sum, row) => sum.add(row.quantity || '0'), new Decimal('0'))
   return totalAmount.add(totalLandedCosts).div(totalQuantity).toNumber()
+})
+
+const duty = computed(() => {
+  const includedTypes = ['Duty']
+  return fields.value.landed_cost_rows.reduce((sum, row) => {
+    if (includedTypes.includes(row.type)) {
+      return sum.add(new Decimal(row.value || '0'))
+    }
+    return sum
+  }, new Decimal('0'))
+})
+
+const taxBeforeDeclaration = computed(() => {
+  const includedTypes = ['Tax on Purchase']
+  return fields.value.landed_cost_rows.reduce((sum, row) => {
+    if (includedTypes.includes(row.type)) {
+      return sum.add(new Decimal(row.value || '0'))
+    }
+    return sum
+  }, new Decimal('0'))
+})
+
+const declarationFees = computed(() => {
+  const includedTypes = ['Customs Declaration']
+  return fields.value.landed_cost_rows.reduce((sum, row) => {
+    if (includedTypes.includes(row.type)) {
+      return sum.add(new Decimal(row.total_amount || '0'))
+    }
+    return sum
+  }, new Decimal('0'))
+})
+
+const totalOnDeclaration = computed(() => {
+  return duty.value.add(taxBeforeDeclaration.value).add(declarationFees.value)
+})
+
+const totalTax = computed(() => {
+  return fields.value.landed_cost_rows.reduce((sum, row) => {
+    return sum.add(new Decimal(row.tax_amount || '0'))
+  }, new Decimal('0'))
 })
 
 // Watch for initial data to copy amount to value
@@ -817,6 +870,40 @@ onMounted(() => {
         </q-table>
       </div>
     </q-card-section>
+    <q-card-section>
+      <div class="text-h6">
+        Declaration Summary
+      </div>
+      <q-table
+        bordered
+        dense
+        flat
+        hide-bottom
+        hide-header
+        style="max-width: 400px"
+        :columns="[
+          { name: 'particular', label: 'Particular', field: 'particular', align: 'left' },
+          { name: 'value', label: 'Value', field: 'value', align: 'right' },
+        ]"
+        :rows="[
+          { particular: 'Duty', value: duty },
+          { particular: 'Tax before declaration', value: taxBeforeDeclaration },
+          { particular: 'Declaration Fees (incl. tax)', value: declarationFees },
+          { particular: 'Total on Declaration', value: totalOnDeclaration },
+          { particular: 'Total Tax', value: totalTax },
+        ]"
+      >
+        <template #body-cell-value="cellProps">
+          <q-td :props="cellProps">
+            <FormattedNumber
+              type="currency"
+              :currency="loginStore.companyInfo.currency_code"
+              :value="cellProps.row.value"
+            />
+          </q-td>
+        </template>
+      </q-table>
+    </q-card-section>
   </q-card>
   <div class="row q-px-lg">
     <div class="col-12 col-md-6 row">
@@ -839,7 +926,6 @@ onMounted(() => {
       <div>
         <q-checkbox v-model="fields.is_import" class="q-mt-md col-3" label="Import?" />
       </div>
-      <!-- TODO: add sales agent form -->
     </div>
   </div>
 </template>
