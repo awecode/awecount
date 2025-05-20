@@ -39,6 +39,7 @@ const {
   declarationFees,
   totalOnDeclaration,
   totalTax,
+  landedCostRows,
 } = useLandedCosts(fieldsValue)
 </script>
 
@@ -60,13 +61,13 @@ const {
           </div>
         </div>
         <q-table
-          v-if="fields.landed_cost_rows?.length"
+          v-if="landedCostRows.length"
           bordered
           flat
           hide-pagination
           row-key="type"
           :columns="landedCostColumns"
-          :rows="fields.landed_cost_rows"
+          :rows="landedCostRows"
         >
           <template #body-cell-actions="cellProps">
             <q-td :props="cellProps">
@@ -236,4 +237,4 @@ const {
       </q-table>
     </q-card-section>
   </q-card>
-</template> 
+</template>

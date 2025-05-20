@@ -43,12 +43,137 @@ export const useLandedCosts = (fields) => {
   const loginStore = useLoginStore()
   const showLandedCosts = ref(false)
 
-  // Initialize landed costs if not present
+  // Create a reactive reference to landed_cost_rows
+  const landedCostRows = computed({
+    get: () => fields.value?.landed_cost_rows || [],
+    set: (value) => {
+      if (fields.value) {
+        fields.value.landed_cost_rows = value
+      }
+    },
+  })
+
+  // Watch for changes in individual row values
   watch(
-    () => fields.value,
-    (newFields) => {
-      if (newFields && !newFields.landed_cost_rows) {
-        newFields.landed_cost_rows = []
+    () => landedCostRows.value.map(row => ({
+      value: row.value,
+      is_percentage: row.is_percentage,
+      currency: row.currency,
+      type: row.type,
+    })),
+    (newRows, oldRows) => {
+      if (!newRows || !oldRows) return
+
+      // Find which row changed
+      const changedIndex = newRows.findIndex((row, index) =>
+        JSON.stringify(row) !== JSON.stringify(oldRows[index]),
+      )
+
+      if (changedIndex === -1) return
+
+      const changedRow = landedCostRows.value[changedIndex]
+      const updatedRows = [...landedCostRows.value]
+
+      if (changedRow.is_percentage && changedRow.value) {
+        // Calculate base amount including invoice total and previous landed costs
+        let baseAmount = fields.value.rows?.reduce((sum, row) =>
+          sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+
+        // Add amounts from previous landed cost rows
+        for (let i = 0; i < changedIndex; i++) {
+          const prevRow = updatedRows[i]
+          if (prevRow.amount) {
+            baseAmount = baseAmount.add(new Decimal(prevRow.amount))
+          }
+        }
+
+        // Calculate percentage amount based on total base amount
+        const newAmount = baseAmount.mul(changedRow.value).div('100')
+        updatedRows[changedIndex] = { ...changedRow, amount: newAmount }
+      } else if (changedRow.value) {
+        // For fixed amounts, convert to target currency if needed
+        const newAmount = convertCurrency(changedRow.value, changedRow.currency, loginStore.companyInfo.currency_code || 'USD')
+        updatedRows[changedIndex] = { ...changedRow, amount: newAmount }
+      }
+
+      // Update subsequent rows if they are percentages
+      for (let i = changedIndex + 1; i < updatedRows.length; i++) {
+        const row = updatedRows[i]
+        if (row.is_percentage && row.value) {
+          let baseAmount = fields.value.rows?.reduce((sum, row) =>
+            sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+
+          // Add amounts from all previous rows
+          for (let j = 0; j < i; j++) {
+            const prevRow = updatedRows[j]
+            if (prevRow.amount) {
+              baseAmount = baseAmount.add(new Decimal(prevRow.amount))
+            }
+          }
+
+          const newAmount = baseAmount.mul(row.value).div('100')
+          updatedRows[i] = { ...row, amount: newAmount }
+        }
+      }
+
+      fields.value.landed_cost_rows = updatedRows
+    },
+    { deep: true },
+  )
+
+  // Watch for changes in invoice rows
+  watch(
+    () => fields.value.rows,
+    () => {
+      if (!landedCostRows.value.length) return
+
+      const updatedRows = landedCostRows.value.map((row, index) => {
+        if (row.is_percentage && row.value) {
+          let baseAmount = fields.value.rows?.reduce((sum, row) =>
+            sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+
+          // Add amounts from previous landed cost rows
+          for (let i = 0; i < index; i++) {
+            const prevRow = landedCostRows.value[i]
+            if (prevRow.amount) {
+              baseAmount = baseAmount.add(new Decimal(prevRow.amount))
+            }
+          }
+
+          const newAmount = baseAmount.mul(row.value).div('100')
+          return { ...row, amount: newAmount }
+        } else if (row.value) {
+          const newAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
+          return { ...row, amount: newAmount }
+        }
+        return row
+      })
+
+      fields.value.landed_cost_rows = updatedRows
+    },
+    { deep: true },
+  )
+
+  // Watch for initial data to copy amount to value
+  watch(
+    () => fields.value?.landed_cost_rows,
+    (newRows) => {
+      if (newRows?.length) {
+        const updatedRows = newRows.map((row) => {
+          if (row.amount && !row.value) {
+            return {
+              ...row,
+              value: row.amount,
+              is_percentage: false,
+              currency: loginStore.companyInfo.currency_code || 'USD',
+            }
+          }
+          return row
+        })
+        if (JSON.stringify(updatedRows) !== JSON.stringify(newRows)) {
+          fields.value.landed_cost_rows = updatedRows
+        }
+        showLandedCosts.value = true
       }
     },
     { immediate: true },
@@ -178,10 +303,7 @@ export const useLandedCosts = (fields) => {
   ]
 
   const addLandedCostRow = () => {
-    if (!fields.value.landed_cost_rows) {
-      fields.value.landed_cost_rows = []
-    }
-    fields.value.landed_cost_rows.push({
+    const newRow = {
       type: '',
       value: 0,
       amount: 0,
@@ -190,7 +312,8 @@ export const useLandedCosts = (fields) => {
       currency: loginStore.companyInfo.currency_code || 'USD',
       tax_scheme: null,
       credit_account: null,
-    })
+    }
+    landedCostRows.value = [...landedCostRows.value, newRow]
   }
 
   // Handle type selection to apply presets
@@ -202,50 +325,61 @@ export const useLandedCosts = (fields) => {
     }
   }
 
-  // Function to convert percentage amounts to fixed amounts based on invoice total
-  const convertPercentagesToFixedAmounts = () => {
-    if (!fields.value.landed_cost_rows) return
+  const averageRate = computed(() => {
+    if (!fields.value.rows || !landedCostRows.value.length) return 0
 
-    // Calculate invoice total (sum of all row amounts)
-    const invoiceTotal = fields.value.rows?.reduce((sum, row) => sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+    // Calculate invoice total
+    const totalAmount = fields.value.rows.reduce((sum, row) =>
+      sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
 
-    const targetCurrency = loginStore.companyInfo.currency_code || 'USD'
-
-    fields.value.landed_cost_rows.forEach((row, index) => {
+    // Calculate landed costs total
+    const totalLandedCosts = landedCostRows.value.reduce((sum, row) => {
+      let rowAmount = new Decimal('0')
       if (row.is_percentage && row.value) {
-        // Calculate base amount including invoice total and previous landed costs
-        let baseAmount = invoiceTotal
-
-        // Add amounts from previous landed cost rows
-        for (let i = 0; i < index; i++) {
-          const prevRow = fields.value.landed_cost_rows[i]
-          if (prevRow.amount) {
-            baseAmount = baseAmount.add(prevRow.amount)
+        // For percentage rows, calculate based on current value
+        let baseAmount = totalAmount
+        // Add previous fixed amounts
+        for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
+          const prevRow = landedCostRows.value[i]
+          if (!prevRow.is_percentage && prevRow.value) {
+            baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
           }
         }
-
-        // Calculate percentage amount based on total base amount
-        row.amount = baseAmount.mul(row.value).div('100')
-      } else {
-        // For fixed amounts, convert to target currency if needed
-        row.amount = convertCurrency(row.value, row.currency, targetCurrency)
+        rowAmount = baseAmount.mul(row.value).div('100')
+      } else if (row.value) {
+        // For fixed amounts, convert to target currency
+        rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
       }
-    })
-  }
+      return sum.add(rowAmount)
+    }, new Decimal('0'))
 
-  const averageRate = computed(() => {
-    if (!fields.value.rows || !fields.value.landed_cost_rows) return 0
-    const totalAmount = fields.value.rows.reduce((sum, row) => sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
-    const totalLandedCosts = fields.value.landed_cost_rows.reduce((sum, row) => sum.add(row.amount || '0'), new Decimal('0'))
-    const totalQuantity = fields.value.rows.reduce((sum, row) => sum.add(row.quantity || '0'), new Decimal('0'))
+    const totalQuantity = fields.value.rows.reduce((sum, row) =>
+      sum.add(new Decimal(row.quantity || '0')), new Decimal('0'))
+
     return totalAmount.add(totalLandedCosts).div(totalQuantity).toNumber()
   })
 
   const duty = computed(() => {
     const includedTypes = ['Duty']
-    return fields.value.landed_cost_rows.reduce((sum, row) => {
+    return landedCostRows.value.reduce((sum, row) => {
       if (includedTypes.includes(row.type)) {
-        return sum.add(new Decimal(row.value || '0'))
+        let rowAmount = new Decimal('0')
+        if (row.is_percentage && row.value) {
+          // For percentage rows, calculate based on current value
+          let baseAmount = fields.value.rows?.reduce((sum, row) =>
+            sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+          // Add previous fixed amounts
+          for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
+            const prevRow = landedCostRows.value[i]
+            if (!prevRow.is_percentage && prevRow.value) {
+              baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
+            }
+          }
+          rowAmount = baseAmount.mul(row.value).div('100')
+        } else if (row.value) {
+          rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
+        }
+        return sum.add(rowAmount)
       }
       return sum
     }, new Decimal('0'))
@@ -253,9 +387,25 @@ export const useLandedCosts = (fields) => {
 
   const taxBeforeDeclaration = computed(() => {
     const includedTypes = ['Tax on Purchase']
-    return fields.value.landed_cost_rows.reduce((sum, row) => {
+    return landedCostRows.value.reduce((sum, row) => {
       if (includedTypes.includes(row.type)) {
-        return sum.add(new Decimal(row.value || '0'))
+        let rowAmount = new Decimal('0')
+        if (row.is_percentage && row.value) {
+          // For percentage rows, calculate based on current value
+          let baseAmount = fields.value.rows?.reduce((sum, row) =>
+            sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+          // Add previous fixed amounts
+          for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
+            const prevRow = landedCostRows.value[i]
+            if (!prevRow.is_percentage && prevRow.value) {
+              baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
+            }
+          }
+          rowAmount = baseAmount.mul(row.value).div('100')
+        } else if (row.value) {
+          rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
+        }
+        return sum.add(rowAmount)
       }
       return sum
     }, new Decimal('0'))
@@ -263,9 +413,25 @@ export const useLandedCosts = (fields) => {
 
   const declarationFees = computed(() => {
     const includedTypes = ['Customs Declaration']
-    return fields.value.landed_cost_rows.reduce((sum, row) => {
+    return landedCostRows.value.reduce((sum, row) => {
       if (includedTypes.includes(row.type)) {
-        return sum.add(new Decimal(row.total_amount || '0'))
+        let rowAmount = new Decimal('0')
+        if (row.is_percentage && row.value) {
+          // For percentage rows, calculate based on current value
+          let baseAmount = fields.value.rows?.reduce((sum, row) =>
+            sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+          // Add previous fixed amounts
+          for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
+            const prevRow = landedCostRows.value[i]
+            if (!prevRow.is_percentage && prevRow.value) {
+              baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
+            }
+          }
+          rowAmount = baseAmount.mul(row.value).div('100')
+        } else if (row.value) {
+          rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
+        }
+        return sum.add(rowAmount)
       }
       return sum
     }, new Decimal('0'))
@@ -276,56 +442,29 @@ export const useLandedCosts = (fields) => {
   })
 
   const totalTax = computed(() => {
-    return fields.value.landed_cost_rows.reduce((sum, row) => {
-      return sum.add(new Decimal(row.tax_amount || '0'))
+    return landedCostRows.value.reduce((sum, row) => {
+      let rowAmount = new Decimal('0')
+      if (row.is_percentage && row.value) {
+        // For percentage rows, calculate based on current value
+        let baseAmount = fields.value.rows?.reduce((sum, row) =>
+          sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+        // Add previous fixed amounts
+        for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
+          const prevRow = landedCostRows.value[i]
+          if (!prevRow.is_percentage && prevRow.value) {
+            baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
+          }
+        }
+        rowAmount = baseAmount.mul(row.value).div('100')
+      } else if (row.value) {
+        rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
+      }
+      return sum.add(rowAmount)
     }, new Decimal('0'))
   })
 
-  // Watch for initial data to copy amount to value
-  watch(
-    () => fields.value.landed_cost_rows,
-    (newRows) => {
-      if (newRows?.length) {
-        newRows.forEach((row) => {
-          if (row.amount && !row.value) {
-            row.value = row.amount
-            row.is_percentage = false
-            row.currency = loginStore.companyInfo.currency_code || 'USD'
-          }
-        })
-        showLandedCosts.value = true
-      }
-    },
-    { immediate: true },
-  )
-
-  // Watch for changes in rows to update fixed amounts
-  watch(
-    () => fields.value.rows,
-    () => {
-      // Only update if there are landed cost rows with percentage values
-      if (fields.value.landed_cost_rows?.some(row => row.is_percentage && row.value)) {
-        convertPercentagesToFixedAmounts()
-      }
-    },
-    { deep: true },
-  )
-
-  // Watch for changes in landed cost rows to update fixed amounts
-  watch(
-    () => fields.value.landed_cost_rows?.map(row => ({
-      is_percentage: row.is_percentage,
-      value: row.value,
-      currency: row.currency,
-    })),
-    () => {
-      convertPercentagesToFixedAmounts()
-    },
-    { deep: true },
-  )
-
   const removeLandedCostRow = (index) => {
-    fields.value.landed_cost_rows.splice(index, 1)
+    landedCostRows.value = landedCostRows.value.filter((_, i) => i !== index)
   }
 
   return {
@@ -342,5 +481,6 @@ export const useLandedCosts = (fields) => {
     declarationFees,
     totalOnDeclaration,
     totalTax,
+    landedCostRows,
   }
 }
