@@ -68,6 +68,7 @@ const {
           row-key="type"
           :columns="landedCostColumns"
           :rows="landedCostRows"
+          :rows-per-page-options="[0]"
         >
           <template #body-cell-actions="cellProps">
             <q-td :props="cellProps">
