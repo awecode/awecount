@@ -431,6 +431,11 @@ export const useLandedCosts = (fields) => {
         } else if (row.value) {
           rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
         }
+        // Add tax if present
+        if (row.tax_scheme && row.tax_scheme.rate) {
+          const taxAmount = rowAmount.mul(row.tax_scheme.rate).div('100')
+          rowAmount = rowAmount.add(taxAmount)
+        }
         return sum.add(rowAmount)
       }
       return sum
