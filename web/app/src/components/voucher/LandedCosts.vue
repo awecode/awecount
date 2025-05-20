@@ -2,7 +2,7 @@
 import FormattedNumber from 'src/components/FormattedNumber.vue'
 import { useLandedCosts } from 'src/composables/useLandedCosts'
 import { useLoginStore } from 'src/stores/login-info'
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   fields: {
@@ -22,19 +22,11 @@ const props = defineProps({
 
 const loginStore = useLoginStore()
 
-// Create a computed property to ensure we're working with the reactive value
 const fieldsValue = computed(() => props.fields)
-
-// Calculate total amount from purchase voucher rows
-const totalPurchaseAmount = computed(() => {
-  if (!fieldsValue.value.rows) return 0
-  return fieldsValue.value.rows.reduce((sum, row) => sum + (row.amount || 0), 0)
-})
 
 const {
   showLandedCosts,
   landedCostTypes,
-  landedCostColumns,
   AVAILABLE_CURRENCIES,
   addLandedCostRow,
   handleTypeChange,

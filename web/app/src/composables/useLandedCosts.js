@@ -336,22 +336,14 @@ export const useLandedCosts = (fields) => {
       sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
   })
 
-  const getRowAmount = (row) => {
-    let rowAmount = new Decimal('0')
-    if (row.is_percentage && row.value) {
-      let baseAmount = invoiceTotal.value
-      // Add previous fixed amounts
-      for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
-        const prevRow = landedCostRows.value[i]
-        if (!prevRow.is_percentage && prevRow.value) {
-          baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
-        }
-      }
-      rowAmount = baseAmount.mul(row.value).div('100')
-    } else if (row.value) {
-      rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
+  const getRowTaxAmount = (row) => {
+    if (row.type === 'Tax on Purchase') {
+      return row.amount
+    } else if (row.tax_scheme && row.tax_scheme.rate) {
+      const rowAmount = new Decimal(row.amount)
+      return rowAmount.mul(row.tax_scheme.rate).div('100')
     }
-    return rowAmount
+    return new Decimal('0')
   }
 
   const averageRate = computed(() => {
@@ -359,7 +351,7 @@ export const useLandedCosts = (fields) => {
 
     // Calculate landed costs total
     const totalLandedCosts = landedCostRows.value.reduce((sum, row) => {
-      return sum.add(getRowAmount(row))
+      return sum.add(row.amount)
     }, new Decimal('0'))
 
     const totalQuantity = fields.value.rows.reduce((sum, row) =>
@@ -372,8 +364,7 @@ export const useLandedCosts = (fields) => {
     const includedTypes = ['Duty']
     return landedCostRows.value.reduce((sum, row) => {
       if (includedTypes.includes(row.type)) {
-        const rowAmount = getRowAmount(row)
-        return sum.add(rowAmount)
+        return sum.add(row.amount)
       }
       return sum
     }, new Decimal('0'))
@@ -455,23 +446,7 @@ export const useLandedCosts = (fields) => {
 
   const totalTax = computed(() => {
     return landedCostRows.value.reduce((sum, row) => {
-      let rowAmount = new Decimal('0')
-      if (row.is_percentage && row.value) {
-        // For percentage rows, calculate based on current value
-        let baseAmount = fields.value.rows?.reduce((sum, row) =>
-          sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
-        // Add previous fixed amounts
-        for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
-          const prevRow = landedCostRows.value[i]
-          if (!prevRow.is_percentage && prevRow.value) {
-            baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
-          }
-        }
-        rowAmount = baseAmount.mul(row.value).div('100')
-      } else if (row.value) {
-        rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
-      }
-      return sum.add(rowAmount)
+      return sum.add(getRowTaxAmount(row))
     }, new Decimal('0'))
   })
 
