@@ -391,30 +391,42 @@ export const useLandedCosts = (fields) => {
     }, new Decimal('0'))
   })
 
-  const taxBeforeDeclaration = computed(() => {
-    const includedTypes = ['Tax on Purchase']
+  const taxOnPurchase = computed(() => {
     return landedCostRows.value.reduce((sum, row) => {
-      if (includedTypes.includes(row.type)) {
-        let rowAmount = new Decimal('0')
-        if (row.is_percentage && row.value) {
-          // For percentage rows, calculate based on current value
-          let baseAmount = fields.value.rows?.reduce((sum, row) =>
-            sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
-          // Add previous fixed amounts
-          for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
-            const prevRow = landedCostRows.value[i]
-            if (!prevRow.is_percentage && prevRow.value) {
-              baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
-            }
-          }
-          rowAmount = baseAmount.mul(row.value).div('100')
-        } else if (row.value) {
-          rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
-        }
-        return sum.add(rowAmount)
+      if (row.type === 'Tax on Purchase' && row.amount) {
+        return sum.add(new Decimal(row.amount))
       }
       return sum
     }, new Decimal('0'))
+  })
+
+  const taxBeforeDeclaration = computed(() => {
+    let declarationFound = false
+    const taxesExceptPurchaseBeforeDeclaration = landedCostRows.value.reduce((sum, row) => {
+      if (row.type === 'Customs Declaration') {
+        declarationFound = true
+        return sum
+      }
+
+      if (declarationFound) {
+        return sum
+      }
+
+      // For Tax on Purchase rows, skip because they will be added differently
+      if (row.type === 'Tax on Purchase' && row.amount) {
+        return sum
+      }
+
+      // For other rows, compute tax if they have a tax scheme
+      if (row.tax_scheme?.rate && row.value) {
+        const rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
+        const taxAmount = rowAmount.mul(row.tax_scheme.rate).div('100')
+        return sum.add(taxAmount)
+      }
+
+      return sum
+    }, new Decimal('0'))
+    return taxesExceptPurchaseBeforeDeclaration.add(taxOnPurchase.value)
   })
 
   const declarationFees = computed(() => {
