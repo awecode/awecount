@@ -80,10 +80,12 @@ export const useLandedCosts = (fields) => {
           sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
 
         // Add amounts from previous landed cost rows
-        for (let i = 0; i < changedIndex; i++) {
-          const prevRow = updatedRows[i]
-          if (prevRow.amount) {
-            baseAmount = baseAmount.add(new Decimal(prevRow.amount))
+        if (changedRow.type !== 'Tax on Purchase') {
+          for (let i = 0; i < changedIndex; i++) {
+            const prevRow = updatedRows[i]
+            if (prevRow.amount) {
+              baseAmount = baseAmount.add(new Decimal(prevRow.amount))
+            }
           }
         }
 
@@ -99,7 +101,7 @@ export const useLandedCosts = (fields) => {
       // Update subsequent rows if they are percentages
       for (let i = changedIndex + 1; i < updatedRows.length; i++) {
         const row = updatedRows[i]
-        if (row.is_percentage && row.value) {
+        if (row.is_percentage && row.value && row.type !== 'Tax on Purchase') {
           let baseAmount = fields.value.rows?.reduce((sum, row) =>
             sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
 
@@ -199,6 +201,10 @@ export const useLandedCosts = (fields) => {
   // Presets for landed cost types
   const LANDED_COST_PRESETS = {
     'Duty': {
+      is_percentage: true,
+      default_currency: loginStore.companyInfo.currency_code || 'USD',
+    },
+    'Tax on Purchase': {
       is_percentage: true,
       default_currency: loginStore.companyInfo.currency_code || 'USD',
     },

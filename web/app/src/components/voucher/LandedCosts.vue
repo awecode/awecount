@@ -2,7 +2,7 @@
 import FormattedNumber from 'src/components/FormattedNumber.vue'
 import { useLandedCosts } from 'src/composables/useLandedCosts'
 import { useLoginStore } from 'src/stores/login-info'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 
 const props = defineProps({
   fields: {
@@ -25,6 +25,12 @@ const loginStore = useLoginStore()
 // Create a computed property to ensure we're working with the reactive value
 const fieldsValue = computed(() => props.fields)
 
+// Calculate total amount from purchase voucher rows
+const totalPurchaseAmount = computed(() => {
+  if (!fieldsValue.value.rows) return 0
+  return fieldsValue.value.rows.reduce((sum, row) => sum + (row.amount || 0), 0)
+})
+
 const {
   showLandedCosts,
   landedCostTypes,
@@ -41,6 +47,20 @@ const {
   totalTax,
   landedCostRows,
 } = useLandedCosts(fieldsValue)
+
+// Handle tax scheme change for Tax on Purchase type
+const handleTaxSchemeChange = (row) => {
+  if (row.type === 'Tax on Purchase' && row.tax_scheme_id) {
+    const taxScheme = props.formDefaults.collections?.tax_schemes?.results?.find(
+      scheme => scheme.id === row.tax_scheme_id,
+    )
+    if (taxScheme) {
+      row.value = taxScheme.rate
+      row.is_percentage = true
+      row.currency = loginStore.companyInfo.currency_code
+    }
+  }
+}
 </script>
 
 <template>
@@ -84,6 +104,7 @@ const {
                       <q-toggle
                         v-model="row.is_percentage"
                         class="full-width"
+                        :disable="row.type === 'Tax on Purchase'"
                         :label="row.is_percentage ? 'Percentage' : 'Fixed'"
                       />
                     </div>
@@ -101,6 +122,7 @@ const {
                         type="number"
                         :error="!!errors?.landed_cost_rows?.[index]?.value"
                         :error-message="errors?.landed_cost_rows?.[index]?.value"
+                        :readonly="row.type === 'Tax on Purchase'"
                       >
                         <template #append>
                           <span>{{ row.is_percentage ? '%' : row.currency }}</span>
@@ -115,7 +137,7 @@ const {
                         map-options
                         options-dense
                         label="Currency"
-                        :disable="row.is_percentage"
+                        :disable="row.is_percentage || row.type === 'Tax on Purchase'"
                         :options="AVAILABLE_CURRENCIES"
                       />
                     </div>
@@ -134,6 +156,7 @@ const {
                     option-value="id"
                     :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/tax_schemes`"
                     :options="formDefaults.collections?.tax_schemes"
+                    @update:model-value="handleTaxSchemeChange(row)"
                   >
                     <template #append>
                       <q-icon
