@@ -83,7 +83,7 @@ export const useLandedCosts = (fields) => {
         if (changedRow.type !== 'Tax on Purchase') {
           for (let i = 0; i < changedIndex; i++) {
             const prevRow = updatedRows[i]
-            if (prevRow.amount) {
+            if (prevRow.amount && prevRow.type !== 'Tax on Purchase') {
               baseAmount = baseAmount.add(new Decimal(prevRow.amount))
             }
           }
