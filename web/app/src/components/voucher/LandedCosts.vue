@@ -46,196 +46,286 @@ const {
 <template>
   <q-card v-if="formDefaults.options?.enable_landed_costs" class="q-mx-lg q-mt-md">
     <q-card-section :style="{ paddingLeft: '0px', paddingRight: '0px' }">
-      <div class="row items-center q-mb-md">
+      <div class="row items-center q-mb-sm">
         <q-checkbox v-model="showLandedCosts" label="Landed Costs" />
       </div>
       <div v-if="showLandedCosts">
-        <div class="row q-col-gutter-md q-mb-md">
+        <div class="row q-col-gutter-sm q-mb-sm">
           <div class="col-12">
             <q-btn
               color="primary"
               icon="add"
               label="Add Cost"
+              size="sm"
               @click="addLandedCostRow"
             />
           </div>
         </div>
-        <q-table
-          v-if="landedCostRows.length"
-          bordered
-          flat
-          hide-pagination
-          row-key="type"
-          :columns="landedCostColumns"
-          :rows="landedCostRows"
-          :rows-per-page-options="[0]"
-        >
-          <template #body-cell-actions="cellProps">
-            <q-td :props="cellProps">
-              <q-btn
-                flat
-                round
-                color="negative"
-                icon="delete"
-                @click="removeLandedCostRow(cellProps.rowIndex)"
-              />
-            </q-td>
-          </template>
-          <template #body-cell-type="cellProps">
-            <q-td :props="cellProps">
-              <q-select
-                v-model="cellProps.row.type"
-                dense
-                emit-value
-                map-options
-                options-dense
-                :options="landedCostTypes"
-                @update:model-value="handleTypeChange(cellProps.row)"
-              />
-            </q-td>
-          </template>
-          <template #body-cell-is_percentage="cellProps">
-            <q-td :props="cellProps">
-              <q-toggle
-                v-model="cellProps.row.is_percentage"
-                class="full-width"
-                :label="cellProps.row.is_percentage ? 'Percentage' : 'Fixed'"
-              />
-            </q-td>
-          </template>
-          <template #body-cell-amount="cellProps">
-            <q-td :props="cellProps">
-              <div class="row items-center no-wrap">
-                <q-input
-                  v-model="cellProps.row.value"
-                  dense
-                  class="col"
-                  type="number"
-                  :error="!!errors?.landed_cost_rows?.[cellProps.rowIndex]?.value"
-                  :error-message="errors?.landed_cost_rows?.[cellProps.rowIndex]?.value"
-                  :value="cellProps.row.amount"
-                />
-                <span class="q-ml-sm text-no-wrap">{{ cellProps.row.is_percentage ? '%' : cellProps.row.currency }}</span>
-                <div v-if="cellProps.row.amount" class="q-ml-sm text-grey-6 text-no-wrap">
-                  (<FormattedNumber
-                    type="currency"
-                    :currency="loginStore.companyInfo.currency_code"
-                    :value="cellProps.row.amount"
-                  />)
+        <div v-if="landedCostRows.length" class="landed-costs-rows">
+          <q-card v-for="(row, index) in landedCostRows" :key="index" class="landed-cost-row q-mb-sm">
+            <q-card-section class="q-pa-sm">
+              <div class="row q-col-gutter-sm">
+                <!-- Type and Percentage -->
+                <div class="col-12 col-md-6">
+                  <div class="row q-col-gutter-sm">
+                    <div class="col-8">
+                      <q-select
+                        v-model="row.type"
+                        dense
+                        emit-value
+                        map-options
+                        options-dense
+                        label="Type"
+                        :options="landedCostTypes"
+                        @update:model-value="handleTypeChange(row)"
+                      />
+                    </div>
+                    <div class="col-4">
+                      <q-toggle
+                        v-model="row.is_percentage"
+                        class="full-width"
+                        :label="row.is_percentage ? 'Percentage' : 'Fixed'"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Amount and Currency -->
+                <div class="col-12 col-md-6">
+                  <div class="row q-col-gutter-sm">
+                    <div class="col-8">
+                      <q-input
+                        v-model="row.value"
+                        dense
+                        label="Value"
+                        type="number"
+                        :error="!!errors?.landed_cost_rows?.[index]?.value"
+                        :error-message="errors?.landed_cost_rows?.[index]?.value"
+                      >
+                        <template #append>
+                          <span>{{ row.is_percentage ? '%' : row.currency }}</span>
+                        </template>
+                      </q-input>
+                    </div>
+                    <div class="col-4">
+                      <q-select
+                        v-model="row.currency"
+                        dense
+                        emit-value
+                        map-options
+                        options-dense
+                        label="Currency"
+                        :disable="row.is_percentage"
+                        :options="AVAILABLE_CURRENCIES"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tax Scheme and Credit Account -->
+                <div class="col-12 col-md-6">
+                  <n-auto-complete-v2
+                    v-model="row.tax_scheme_id"
+                    dense
+                    emit-value
+                    map-options
+                    label="Tax Scheme"
+                    option-label="name"
+                    option-value="id"
+                    :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/tax_schemes`"
+                    :options="formDefaults.collections?.tax_schemes"
+                  >
+                    <template #append>
+                      <q-icon
+                        v-if="row.tax_scheme_id"
+                        class="cursor-pointer"
+                        name="close"
+                        @click.stop.prevent="row.tax_scheme_id = null"
+                      />
+                    </template>
+                  </n-auto-complete-v2>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <n-auto-complete-v2
+                    v-if="row.type !== 'Customs Valuation Uplift'"
+                    v-model="row.credit_account_id"
+                    dense
+                    emit-value
+                    map-options
+                    label="Credit Account"
+                    option-label="name"
+                    option-value="id"
+                    :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/landed_cost_credit_accounts`"
+                    :options="formDefaults.collections?.landed_cost_credit_accounts"
+                  >
+                    <template #append>
+                      <q-icon
+                        v-if="row.credit_account_id"
+                        class="cursor-pointer"
+                        name="close"
+                        @click.stop.prevent="row.credit_account_id = null"
+                      />
+                    </template>
+                  </n-auto-complete-v2>
+                </div>
+
+                <!-- Amount Display and Delete Button -->
+                <div class="col-12">
+                  <div class="row items-center justify-between">
+                    <div class="col">
+                      <div v-if="row.amount" class="text-grey-6 text-caption">
+                        Amount: <FormattedNumber
+                          type="currency"
+                          :currency="loginStore.companyInfo.currency_code"
+                          :value="row.amount"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <q-btn
+                        dense
+                        flat
+                        round
+                        color="negative"
+                        icon="delete"
+                        @click="removeLandedCostRow(index)"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </q-td>
-          </template>
-          <template #body-cell-currency="cellProps">
-            <q-td :props="cellProps">
-              <q-select
-                v-model="cellProps.row.currency"
-                dense
-                emit-value
-                map-options
-                options-dense
-                :disable="cellProps.row.is_percentage"
-                :options="AVAILABLE_CURRENCIES"
-              />
-            </q-td>
-          </template>
-          <template #body-cell-tax_scheme="cellProps">
-            <q-td :props="cellProps">
-              <n-auto-complete-v2
-                v-model="cellProps.row.tax_scheme_id"
-                dense
-                emit-value
-                map-options
-                option-label="name"
-                option-value="id"
-                :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/tax_schemes`"
-                :options="formDefaults.collections?.tax_schemes"
-              >
-                <template #append>
-                  <q-icon
-                    v-if="cellProps.row.tax_scheme_id"
-                    class="cursor-pointer"
-                    name="close"
-                    @click.stop.prevent="cellProps.row.tax_scheme_id = null"
+            </q-card-section>
+          </q-card>
+
+          <!-- Average Rate Summary -->
+          <q-card class="q-mt-sm">
+            <q-card-section class="q-pa-sm">
+              <div class="row items-center justify-between">
+                <div class="text-weight-medium">
+                  Average rate per item:
+                </div>
+                <div class="text-weight-bold">
+                  <FormattedNumber
+                    type="currency"
+                    :currency="loginStore.companyInfo.currency_code"
+                    :value="averageRate"
                   />
-                </template>
-              </n-auto-complete-v2>
-            </q-td>
-          </template>
-          <template #body-cell-credit_account="cellProps">
-            <q-td :props="cellProps">
-              <n-auto-complete-v2
-                v-if="cellProps.row.type !== 'Customs Valuation Uplift'"
-                v-model="cellProps.row.credit_account_id"
-                dense
-                emit-value
-                map-options
-                option-label="name"
-                option-value="id"
-                :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/landed_cost_credit_accounts`"
-                :options="formDefaults.collections?.landed_cost_credit_accounts"
-              >
-                <template #append>
-                  <q-icon
-                    v-if="cellProps.row.credit_account_id"
-                    class="cursor-pointer"
-                    name="close"
-                    @click.stop.prevent="cellProps.row.credit_account_id = null"
-                  />
-                </template>
-              </n-auto-complete-v2>
-            </q-td>
-          </template>
-          <template #bottom-row>
-            <q-tr>
-              <q-td class="text-right" colspan="6">
-                Average rate per item:
-              </q-td>
-              <q-td class="text-left text-bold" colspan="2">
-                <FormattedNumber
-                  type="currency"
-                  :currency="loginStore.companyInfo.currency_code"
-                  :value="averageRate"
-                />
-              </q-td>
-            </q-tr>
-          </template>
-        </q-table>
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
       </div>
     </q-card-section>
-    <q-card-section>
-      <div class="text-h6">
+
+    <!-- Declaration Summary -->
+    <q-card-section class="q-pa-sm">
+      <div class="text-h6 q-mb-sm">
         Declaration Summary
       </div>
-      <q-table
-        bordered
-        dense
-        flat
-        hide-bottom
-        hide-header
-        style="max-width: 400px"
-        :columns="[
-          { name: 'particular', label: 'Particular', field: 'particular', align: 'left' },
-          { name: 'value', label: 'Value', field: 'value', align: 'right' },
-        ]"
-        :rows="[
-          { particular: 'Duty', value: duty },
-          { particular: 'Tax before declaration', value: taxBeforeDeclaration },
-          { particular: 'Declaration Fees (incl. tax)', value: declarationFees },
-          { particular: 'Total on Declaration', value: totalOnDeclaration },
-          { particular: 'Total Tax', value: totalTax },
-        ]"
-      >
-        <template #body-cell-value="cellProps">
-          <q-td :props="cellProps">
-            <FormattedNumber
-              type="currency"
-              :currency="loginStore.companyInfo.currency_code"
-              :value="cellProps.row.value"
-            />
-          </q-td>
-        </template>
-      </q-table>
+      <q-card>
+        <q-card-section class="q-pa-sm">
+          <div class="row q-col-gutter-sm">
+            <div class="col-12 col-md-6">
+              <div class="declaration-summary-item">
+                <span class="label">Duty:</span>
+                <span class="value">
+                  <FormattedNumber
+                    type="currency"
+                    :currency="loginStore.companyInfo.currency_code"
+                    :value="duty"
+                  />
+                </span>
+              </div>
+              <div class="declaration-summary-item">
+                <span class="label">Tax before declaration:</span>
+                <span class="value">
+                  <FormattedNumber
+                    type="currency"
+                    :currency="loginStore.companyInfo.currency_code"
+                    :value="taxBeforeDeclaration"
+                  />
+                </span>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="declaration-summary-item">
+                <span class="label">Declaration Fees (incl. tax):</span>
+                <span class="value">
+                  <FormattedNumber
+                    type="currency"
+                    :currency="loginStore.companyInfo.currency_code"
+                    :value="declarationFees"
+                  />
+                </span>
+              </div>
+              <div class="declaration-summary-item">
+                <span class="label">Total on Declaration:</span>
+                <span class="value">
+                  <FormattedNumber
+                    type="currency"
+                    :currency="loginStore.companyInfo.currency_code"
+                    :value="totalOnDeclaration"
+                  />
+                </span>
+              </div>
+              <div class="declaration-summary-item">
+                <span class="label">Total Tax:</span>
+                <span class="value">
+                  <FormattedNumber
+                    type="currency"
+                    :currency="loginStore.companyInfo.currency_code"
+                    :value="totalTax"
+                  />
+                </span>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
     </q-card-section>
   </q-card>
 </template>
+
+<style scoped>
+.landed-costs-rows {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.landed-cost-row {
+  background-color: #f8f9fa;
+}
+
+.landed-cost-row .q-card-section {
+  padding: 8px;
+}
+
+.declaration-summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.declaration-summary-item:last-child {
+  border-bottom: none;
+}
+
+.declaration-summary-item .label {
+  color: #666;
+  font-weight: 500;
+}
+
+.declaration-summary-item .value {
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .landed-costs-rows {
+    max-width: 100%;
+  }
+}
+</style>
