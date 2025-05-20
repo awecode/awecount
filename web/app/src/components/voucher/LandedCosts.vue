@@ -218,6 +218,7 @@ const handleTaxSchemeChange = (row) => {
                   </div>
                 </div>
               </div>
+              {{ row.amount }}
             </q-card-section>
           </q-card>
 

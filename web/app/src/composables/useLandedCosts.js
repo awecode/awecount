@@ -331,60 +331,48 @@ export const useLandedCosts = (fields) => {
     }
   }
 
+  const invoiceTotal = computed(() => {
+    return fields.value.rows.reduce((sum, row) =>
+      sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
+  })
+
+  const getRowAmount = (row) => {
+    let rowAmount = new Decimal('0')
+    if (row.is_percentage && row.value) {
+      let baseAmount = invoiceTotal.value
+      // Add previous fixed amounts
+      for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
+        const prevRow = landedCostRows.value[i]
+        if (!prevRow.is_percentage && prevRow.value) {
+          baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
+        }
+      }
+      rowAmount = baseAmount.mul(row.value).div('100')
+    } else if (row.value) {
+      rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
+    }
+    return rowAmount
+  }
+
   const averageRate = computed(() => {
     if (!fields.value.rows || !landedCostRows.value.length) return 0
 
-    // Calculate invoice total
-    const totalAmount = fields.value.rows.reduce((sum, row) =>
-      sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
-
     // Calculate landed costs total
     const totalLandedCosts = landedCostRows.value.reduce((sum, row) => {
-      let rowAmount = new Decimal('0')
-      if (row.is_percentage && row.value) {
-        // For percentage rows, calculate based on current value
-        let baseAmount = totalAmount
-        // Add previous fixed amounts
-        for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
-          const prevRow = landedCostRows.value[i]
-          if (!prevRow.is_percentage && prevRow.value) {
-            baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
-          }
-        }
-        rowAmount = baseAmount.mul(row.value).div('100')
-      } else if (row.value) {
-        // For fixed amounts, convert to target currency
-        rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
-      }
-      return sum.add(rowAmount)
+      return sum.add(getRowAmount(row))
     }, new Decimal('0'))
 
     const totalQuantity = fields.value.rows.reduce((sum, row) =>
       sum.add(new Decimal(row.quantity || '0')), new Decimal('0'))
 
-    return totalAmount.add(totalLandedCosts).div(totalQuantity).toNumber()
+    return invoiceTotal.value.add(totalLandedCosts).div(totalQuantity).toNumber()
   })
 
   const duty = computed(() => {
     const includedTypes = ['Duty']
     return landedCostRows.value.reduce((sum, row) => {
       if (includedTypes.includes(row.type)) {
-        let rowAmount = new Decimal('0')
-        if (row.is_percentage && row.value) {
-          // For percentage rows, calculate based on current value
-          let baseAmount = fields.value.rows?.reduce((sum, row) =>
-            sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
-          // Add previous fixed amounts
-          for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
-            const prevRow = landedCostRows.value[i]
-            if (!prevRow.is_percentage && prevRow.value) {
-              baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
-            }
-          }
-          rowAmount = baseAmount.mul(row.value).div('100')
-        } else if (row.value) {
-          rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
-        }
+        const rowAmount = getRowAmount(row)
         return sum.add(rowAmount)
       }
       return sum
@@ -401,6 +389,7 @@ export const useLandedCosts = (fields) => {
   })
 
   const taxBeforeDeclaration = computed(() => {
+    // Calculate taxes for all rows above customs declaration, except tax on purchase which will be added separately
     let declarationFound = false
     const taxesExceptPurchaseBeforeDeclaration = landedCostRows.value.reduce((sum, row) => {
       if (row.type === 'Customs Declaration') {
