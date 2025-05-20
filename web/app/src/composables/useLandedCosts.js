@@ -1,6 +1,6 @@
-import { ref, computed, watch } from 'vue'
 import Decimal from 'decimal.js'
 import { useLoginStore } from 'src/stores/login-info'
+import { computed, ref, watch } from 'vue'
 
 // Currency conversion matrix for USD, INR, and NPR
 const EXCHANGE_RATES = {
@@ -51,7 +51,7 @@ export const useLandedCosts = (fields) => {
         newFields.landed_cost_rows = []
       }
     },
-    { immediate: true }
+    { immediate: true },
   )
 
   const landedCostTypes = [
@@ -343,4 +343,4 @@ export const useLandedCosts = (fields) => {
     totalOnDeclaration,
     totalTax,
   }
-} 
+}

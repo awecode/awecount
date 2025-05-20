@@ -1,6 +1,6 @@
 <script setup>
-import { useLandedCosts } from 'src/composables/useLandedCosts'
 import FormattedNumber from 'src/components/FormattedNumber.vue'
+import { useLandedCosts } from 'src/composables/useLandedCosts'
 import { useLoginStore } from 'src/stores/login-info'
 import { computed } from 'vue'
 

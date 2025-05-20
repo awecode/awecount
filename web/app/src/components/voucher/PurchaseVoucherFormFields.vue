@@ -1,5 +1,4 @@
 <script setup>
-import FormattedNumber from 'src/components/FormattedNumber.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import PartyForm from 'src/pages/party/PartyForm.vue'
