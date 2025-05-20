@@ -42,15 +42,20 @@ const {
 
 // Handle tax scheme change for Tax on Purchase type
 const handleTaxSchemeChange = (row) => {
-  if (row.type === 'Tax on Purchase' && row.tax_scheme_id) {
+  if (row.tax_scheme_id) {
     const taxScheme = props.formDefaults.collections?.tax_schemes?.results?.find(
       scheme => scheme.id === row.tax_scheme_id,
     )
     if (taxScheme) {
-      row.value = taxScheme.rate
-      row.is_percentage = true
-      row.currency = loginStore.companyInfo.currency_code
+      if (row.type === 'Tax on Purchase') {
+        row.value = taxScheme.rate
+        row.is_percentage = true
+        row.currency = loginStore.companyInfo.currency_code
+      }
+      row.tax_scheme = taxScheme
     }
+  } else {
+    row.tax_scheme = null
   }
 }
 </script>
@@ -210,7 +215,7 @@ const handleTaxSchemeChange = (row) => {
                   </div>
                 </div>
               </div>
-              {{ row.amount }}
+              {{ row }}
             </q-card-section>
           </q-card>
 
