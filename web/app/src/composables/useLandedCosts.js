@@ -44,9 +44,15 @@ export const useLandedCosts = (fields) => {
   const showLandedCosts = ref(false)
 
   // Initialize landed costs if not present
-  if (!fields.value.landed_cost_rows) {
-    fields.value.landed_cost_rows = []
-  }
+  watch(
+    () => fields.value,
+    (newFields) => {
+      if (newFields && !newFields.landed_cost_rows) {
+        newFields.landed_cost_rows = []
+      }
+    },
+    { immediate: true }
+  )
 
   const landedCostTypes = [
     { label: 'Tax on Purchase', value: 'Tax on Purchase' },
