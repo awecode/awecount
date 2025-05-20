@@ -823,6 +823,7 @@ onMounted(() => {
           <template #body-cell-credit_account="cellProps">
             <q-td :props="cellProps">
               <n-auto-complete-v2
+                v-if="cellProps.row.type !== 'Customs Valuation Uplift'"
                 v-model="cellProps.row.credit_account_id"
                 dense
                 emit-value

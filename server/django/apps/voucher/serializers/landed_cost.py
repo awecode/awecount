@@ -35,6 +35,8 @@ class LandedCostRowSerializer(BaseModelSerializer):
     credit_account_id = serializers.PrimaryKeyRelatedField(
         source="credit_account",
         queryset=Account.objects.all(),
+        required=False,
+        allow_null=True,
     )
 
     class Meta:

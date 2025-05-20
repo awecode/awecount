@@ -2212,6 +2212,8 @@ class LandedCostRow(models.Model):
         Account,
         on_delete=models.CASCADE,
         related_name="landed_cost_rows",
+        blank=True,
+        null=True,
         help_text="Account to which the landed cost will be credited",
     )
     created_at = models.DateTimeField(auto_now_add=True)

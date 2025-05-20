@@ -256,7 +256,7 @@ export default {
           >
             <template #body-cell-credit_account="props">
               <q-td :props="props">
-                <RouterLink :to="`/${$route.params.company}/account/ledgers/${props.row.credit_account.id}`">
+                <RouterLink v-if="props.row.credit_account" :to="`/${$route.params.company}/account/ledgers/${props.row.credit_account.id}`">
                   {{ props.row.credit_account.name }}
                 </RouterLink>
               </q-td>
