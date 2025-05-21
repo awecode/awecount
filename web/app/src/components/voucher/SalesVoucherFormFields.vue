@@ -26,20 +26,7 @@ const props = defineProps({
   },
 })
 
-const taxTypes = [
-  {
-    label: 'No Tax',
-    value: 'no_tax',
-  },
-  {
-    label: 'Tax Exclusive',
-    value: 'tax_exclusive',
-  },
-  {
-    label: 'Tax Inclusive',
-    value: 'tax_inclusive',
-  },
-]
+const taxTypes = ['No Tax', 'Tax Exclusive', 'Tax Inclusive']
 
 const route = useRoute()
 
@@ -263,7 +250,7 @@ watch(
   },
 )
 
-fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
+fields.value.tax_type = fields.value.tax_type || 'Tax Exclusive'
 </script>
 
 <template>
@@ -472,8 +459,6 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
             map-options
             class="w-full"
             label="Tax Type"
-            option-label="label"
-            option-value="value"
             :options="taxTypes"
           />
         </div>
