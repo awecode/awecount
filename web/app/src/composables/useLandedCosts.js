@@ -58,6 +58,8 @@ export const useLandedCosts = (fields) => {
       sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
   })
 
+  // TODO Refactor, make DRY
+
   // Watch for changes in individual row values
   watch(
     () => landedCostRows.value.map(row => ({
@@ -396,7 +398,7 @@ export const useLandedCosts = (fields) => {
 
       // For other rows, compute tax if they have a tax scheme
       if (row.tax_scheme?.rate && row.value) {
-        const rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
+        const rowAmount = convertCurrency(row.amount, row.currency, loginStore.companyInfo.currency_code || 'USD')
         const taxAmount = rowAmount.mul(row.tax_scheme.rate).div('100')
         return sum.add(taxAmount)
       }
@@ -410,22 +412,7 @@ export const useLandedCosts = (fields) => {
     const includedTypes = ['Customs Declaration']
     return landedCostRows.value.reduce((sum, row) => {
       if (includedTypes.includes(row.type)) {
-        let rowAmount = new Decimal('0')
-        if (row.is_percentage && row.value) {
-          // For percentage rows, calculate based on current value
-          let baseAmount = fields.value.rows?.reduce((sum, row) =>
-            sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
-          // Add previous fixed amounts
-          for (let i = 0; i < landedCostRows.value.indexOf(row); i++) {
-            const prevRow = landedCostRows.value[i]
-            if (!prevRow.is_percentage && prevRow.value) {
-              baseAmount = baseAmount.add(convertCurrency(prevRow.value, prevRow.currency, loginStore.companyInfo.currency_code || 'USD'))
-            }
-          }
-          rowAmount = baseAmount.mul(row.value).div('100')
-        } else if (row.value) {
-          rowAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
-        }
+        let rowAmount = new Decimal(row.amount)
         // Add tax if present
         if (row.tax_scheme && row.tax_scheme.rate) {
           const taxAmount = rowAmount.mul(row.tax_scheme.rate).div('100')
