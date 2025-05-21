@@ -38,6 +38,7 @@ const {
   totalOnDeclaration,
   totalTax,
   landedCostRows,
+  averageRatePerItem,
 } = useLandedCosts(fieldsValue)
 
 // Handle tax scheme change for Tax on Purchase type
@@ -211,92 +212,146 @@ const handleTaxSchemeChange = (row) => {
             />
           </div>
         </div>
-        <!-- Average Rate Summary -->
-        <q-card class="q-mt-sm">
-          <q-card-section class="q-pa-sm">
-            <div class="row items-center justify-between">
-              <div class="text-weight-medium">
-                Average rate per item:
-              </div>
-              <div class="text-weight-bold">
-                <FormattedNumber
-                  type="currency"
-                  :currency="loginStore.companyInfo.currency_code"
-                  :value="averageRate"
-                />
-              </div>
-            </div>
-          </q-card-section>
-        </q-card>
       </div>
     </q-card-section>
 
-    <!-- Declaration Summary -->
-    <q-card-section v-if="showLandedCosts" class="q-pa-sm">
+    <!-- Additional Costs Summary -->
+    <q-card-section v-if="showLandedCosts" class="q-pa-md">
       <div class="text-h6 q-mb-sm">
         Additional Costs Summary
       </div>
-      <q-card>
-        <q-card-section class="q-pa-sm">
-          <div class="row q-col-gutter-sm">
-            <div class="col-12 col-md-6">
-              <div class="declaration-summary-item">
-                <span class="label">Duty:</span>
-                <span class="value">
-                  <FormattedNumber
-                    type="currency"
-                    :currency="loginStore.companyInfo.currency_code"
-                    :value="duty"
-                  />
-                </span>
-              </div>
-              <div class="declaration-summary-item">
-                <span class="label">Tax before declaration:</span>
-                <span class="value">
-                  <FormattedNumber
-                    type="currency"
-                    :currency="loginStore.companyInfo.currency_code"
-                    :value="taxBeforeDeclaration"
-                  />
-                </span>
-              </div>
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="declaration-summary-item">
-                <span class="label">Declaration Fees (incl. tax):</span>
-                <span class="value">
-                  <FormattedNumber
-                    type="currency"
-                    :currency="loginStore.companyInfo.currency_code"
-                    :value="declarationFees"
-                  />
-                </span>
-              </div>
-              <div class="declaration-summary-item">
-                <span class="label">Total on Declaration:</span>
-                <span class="value">
-                  <FormattedNumber
-                    type="currency"
-                    :currency="loginStore.companyInfo.currency_code"
-                    :value="totalOnDeclaration"
-                  />
-                </span>
-              </div>
-              <div class="declaration-summary-item">
-                <span class="label">Total Tax:</span>
-                <span class="value">
-                  <FormattedNumber
-                    type="currency"
-                    :currency="loginStore.companyInfo.currency_code"
-                    :value="totalTax"
-                  />
-                </span>
-              </div>
-            </div>
+      <div class="row q-col-gutter-sm">
+        <div class="col-12 col-md-6">
+          <div class="declaration-summary-item">
+            <span class="label">Duty:</span>
+            <span class="value">
+              <FormattedNumber
+                type="currency"
+                :currency="loginStore.companyInfo.currency_code"
+                :value="duty"
+              />
+            </span>
           </div>
-        </q-card-section>
-      </q-card>
+          <div class="declaration-summary-item">
+            <span class="label">Tax before declaration:</span>
+            <span class="value">
+              <FormattedNumber
+                type="currency"
+                :currency="loginStore.companyInfo.currency_code"
+                :value="taxBeforeDeclaration"
+              />
+            </span>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="declaration-summary-item">
+            <span class="label">Declaration Fees (incl. tax):</span>
+            <span class="value">
+              <FormattedNumber
+                type="currency"
+                :currency="loginStore.companyInfo.currency_code"
+                :value="declarationFees"
+              />
+            </span>
+          </div>
+          <div class="declaration-summary-item">
+            <span class="label">Total on Declaration:</span>
+            <span class="value">
+              <FormattedNumber
+                type="currency"
+                :currency="loginStore.companyInfo.currency_code"
+                :value="totalOnDeclaration"
+              />
+            </span>
+          </div>
+          <div class="declaration-summary-item">
+            <span class="label">Total Tax:</span>
+            <span class="value">
+              <FormattedNumber
+                type="currency"
+                :currency="loginStore.companyInfo.currency_code"
+                :value="totalTax"
+              />
+            </span>
+          </div>
+        </div>
+      </div>
     </q-card-section>
+    <!-- Average Rate Summary -->
+
+    <div class="text-h6 q-mb-md q-px-md">
+      Average Rate Per Item
+    </div>
+    <q-table
+      bordered
+      flat
+      hide-bottom
+      :columns="[
+        {
+          name: 'item',
+          label: 'Item Name',
+          field: row => row.itemObj.name,
+          align: 'left',
+          style: 'width: 40%',
+        },
+        {
+          name: 'base',
+          label: 'Base Rate',
+          field: 'rate',
+          align: 'right',
+          style: 'width: 20%',
+          format: (val) => val,
+        },
+        {
+          name: 'additional',
+          label: 'Additional',
+          field: 'additionalCost',
+          align: 'right',
+          style: 'width: 20%',
+          format: (val) => val,
+        },
+        {
+          name: 'total',
+          label: 'Total',
+          field: 'totalCost',
+          align: 'right',
+          style: 'width: 20%',
+          format: (val) => val,
+        },
+      ]"
+      :pagination="{ rowsPerPage: 0 }"
+      :rows="averageRatePerItem"
+      :rows-per-page-options="[0]"
+    >
+      <template #body="props">
+        <q-tr :props="props">
+          <q-td key="item" :props="props">
+            {{ props.row.itemObj.name }}
+          </q-td>
+          <q-td key="base" :props="props">
+            <FormattedNumber
+              type="currency"
+              :currency="loginStore.companyInfo.currency_code"
+              :value="props.row.rate"
+            />
+          </q-td>
+          <q-td key="additional" :props="props">
+            <FormattedNumber
+              type="currency"
+              :currency="loginStore.companyInfo.currency_code"
+              :value="props.row.additionalCost"
+            />
+          </q-td>
+          <q-td key="total" :props="props">
+            <FormattedNumber
+              type="currency"
+              :currency="loginStore.companyInfo.currency_code"
+              :value="props.row.totalCost"
+            />
+          </q-td>
+        </q-tr>
+      </template>
+    </q-table>
   </q-card>
 </template>
 

@@ -435,6 +435,25 @@ export const useLandedCosts = (fields) => {
     }, new Decimal('0'))
   })
 
+  const totalAdditionalCost = computed(() => {
+    return landedCostRows.value.reduce((sum, row) => {
+      return sum.add(row.amount)
+    }, new Decimal('0'))
+  })
+
+  const averageRatePerItem = computed(() => {
+    return fields.value.rows.map((row) => {
+      const rowAmount = new Decimal(row.rate || '0').mul(row.quantity || '1')
+      const additionalCost = totalAdditionalCost.value.div(invoiceTotal.value).mul(rowAmount)
+      const totalCost = rowAmount.add(additionalCost)
+      return {
+        ...row,
+        additionalCost,
+        totalCost,
+      }
+    })
+  })
+
   const removeLandedCostRow = (index) => {
     landedCostRows.value = landedCostRows.value.filter((_, i) => i !== index)
   }
@@ -454,5 +473,6 @@ export const useLandedCosts = (fields) => {
     totalOnDeclaration,
     totalTax,
     landedCostRows,
+    averageRatePerItem,
   }
 }
