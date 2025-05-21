@@ -1129,19 +1129,19 @@ def handle_company_creation(sender, **kwargs):
         system_code=acc_cat_system_codes["Direct Expenses"],
     )
 
-    landed_cost_category = Category.objects.create(
-        name="Landed Cost",
-        code="E-D-LC",
+    additional_cost_category = Category.objects.create(
+        name="Additional Cost",
+        code="E-D-AC",
         parent=direct_expenses,
         company=company,
         default=True,
-        system_code=acc_cat_system_codes["Landed Cost"],
+        system_code=acc_cat_system_codes["Additional Cost"],
     )
 
     duty_account = Account.objects.create(
         name="Duty",
         code="E-D-LC-DTY",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
     )
@@ -1149,7 +1149,7 @@ def handle_company_creation(sender, **kwargs):
     labor_account = Account.objects.create(
         name="Labor",
         code="E-D-LC-LBR",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
     )
@@ -1157,7 +1157,7 @@ def handle_company_creation(sender, **kwargs):
     freight_account = Account.objects.create(
         name="Freight",
         code="E-D-LC-FR",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
     )
@@ -1165,7 +1165,7 @@ def handle_company_creation(sender, **kwargs):
     insurance_account = Account.objects.create(
         name="Insurance",
         code="E-D-LC-INS",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
     )
@@ -1173,7 +1173,7 @@ def handle_company_creation(sender, **kwargs):
     brokerage_account = Account.objects.create(
         name="Brokerage",
         code="E-D-LC-BRK",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
     )
@@ -1181,7 +1181,7 @@ def handle_company_creation(sender, **kwargs):
     storage_account = Account.objects.create(
         name="Storage",
         code="E-D-LC-STO",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
         system_code="LC-STORAGE",
@@ -1190,7 +1190,7 @@ def handle_company_creation(sender, **kwargs):
     packaging_account = Account.objects.create(
         name="Packaging",
         code="E-D-LC-PKG",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
     )
@@ -1198,7 +1198,7 @@ def handle_company_creation(sender, **kwargs):
     loading_account = Account.objects.create(
         name="Loading",
         code="E-D-LC-LOD",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
     )
@@ -1206,7 +1206,7 @@ def handle_company_creation(sender, **kwargs):
     unloading_account = Account.objects.create(
         name="Unloading",
         code="E-D-LC-ULD",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
     )
@@ -1214,7 +1214,7 @@ def handle_company_creation(sender, **kwargs):
     regulatory_fee_account = Account.objects.create(
         name="Regulatory Fee",
         code="E-D-LC-REG",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
     )
@@ -1222,7 +1222,7 @@ def handle_company_creation(sender, **kwargs):
     customs_declaration_account = Account.objects.create(
         name="Customs Declaration",
         code="E-D-LC-CD",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
     )
@@ -1230,7 +1230,7 @@ def handle_company_creation(sender, **kwargs):
     other_charges_account = Account.objects.create(
         name="Other Charges",
         code="E-D-LC-OTH",
-        category=landed_cost_category,
+        category=additional_cost_category,
         company=company,
         default=True,
     )
