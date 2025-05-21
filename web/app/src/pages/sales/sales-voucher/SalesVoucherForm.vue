@@ -15,6 +15,15 @@ useMeta(() => ({
   title: `${isEdit.value ? 'Sales Invoice Update' : 'Sales Invoice Add'} | Awecount`,
 }))
 
+watch(() => formDefaults.value, () => {
+  if (fields.value?.rows && fields.value?.tax_type === 'Tax Inclusive') {
+    fields.value.rows.forEach((row) => {
+      const taxObj = formDefaults.value.collections.tax_schemes.results.find(tax => tax.id === row.tax_scheme_id)
+      row.rate = Number((row.rate * (1 + taxObj.rate / 100)).toFixed(6))
+    })
+  }
+})
+
 const router = useRouter()
 
 const onSubmitClick = async (status, redirect) => {
