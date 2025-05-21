@@ -7,7 +7,7 @@ class PartnerItemSerializer(ModelSerializer):
     current_balance = SerializerMethodField()
 
     def get_current_balance(self, obj):
-        return obj.account.current_balance if obj.account else None
+        return (obj.account.current_dr - obj.account.current_cr) if obj.account else None
 
     class Meta:
         model = Item
