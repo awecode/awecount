@@ -55,6 +55,10 @@ const props = defineProps({
       return {}
     },
   },
+  unlinkParent: {
+    type: Boolean,
+    default: () => false,
+  },
   name: {
     type: String,
     default: () => '',
@@ -138,13 +142,17 @@ const expandStatus = computed(() => {
           </q-btn>
         </span>
         <RouterLink
+          v-if="!unlinkParent"
           class="text-blue-6"
           style="text-decoration: none"
           target="_blank"
-          :to="`/account/?has_balance=true&category=${item.id}`"
+          :to="`/${$route.params.company}/account/ledgers/?has_balance=true&category=${item.id}`"
         >
           {{ name || item.name }}
         </RouterLink>
+        <span v-else class="text-gray-800">
+          {{ name || item.name }}
+        </span>
       </td>
 
       <td v-for="(transaction, index) in item.total" :key="index">
