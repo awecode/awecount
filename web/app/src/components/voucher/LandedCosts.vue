@@ -215,7 +215,6 @@ const handleTaxSchemeChange = (row) => {
                   </div>
                 </div>
               </div>
-              {{ row }}
             </q-card-section>
           </q-card>
 

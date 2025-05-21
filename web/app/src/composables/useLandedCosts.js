@@ -53,6 +53,11 @@ export const useLandedCosts = (fields) => {
     },
   })
 
+  const invoiceTotal = computed(() => {
+    return fields.value.rows.reduce((sum, row) =>
+      sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
+  })
+
   // Watch for changes in individual row values
   watch(
     () => landedCostRows.value.map(row => ({
@@ -76,8 +81,7 @@ export const useLandedCosts = (fields) => {
 
       if (changedRow.is_percentage && changedRow.value) {
         // Calculate base amount including invoice total and previous landed costs
-        let baseAmount = fields.value.rows?.reduce((sum, row) =>
-          sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+        let baseAmount = invoiceTotal.value
 
         // Add amounts from previous landed cost rows
         if (changedRow.type !== 'Tax on Purchase') {
@@ -102,13 +106,12 @@ export const useLandedCosts = (fields) => {
       for (let i = changedIndex + 1; i < updatedRows.length; i++) {
         const row = updatedRows[i]
         if (row.is_percentage && row.value && row.type !== 'Tax on Purchase') {
-          let baseAmount = fields.value.rows?.reduce((sum, row) =>
-            sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+          let baseAmount = invoiceTotal.value
 
           // Add amounts from all previous rows
           for (let j = 0; j < i; j++) {
             const prevRow = updatedRows[j]
-            if (prevRow.amount) {
+            if (prevRow.amount && prevRow.type !== 'Tax on Purchase') {
               baseAmount = baseAmount.add(new Decimal(prevRow.amount))
             }
           }
@@ -131,13 +134,12 @@ export const useLandedCosts = (fields) => {
 
       const updatedRows = landedCostRows.value.map((row, index) => {
         if (row.is_percentage && row.value) {
-          let baseAmount = fields.value.rows?.reduce((sum, row) =>
-            sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0')) || new Decimal('0')
+          let baseAmount = invoiceTotal.value
 
           // Add amounts from previous landed cost rows
           for (let i = 0; i < index; i++) {
             const prevRow = landedCostRows.value[i]
-            if (prevRow.amount) {
+            if (prevRow.amount && prevRow.type !== 'Tax on Purchase') {
               baseAmount = baseAmount.add(new Decimal(prevRow.amount))
             }
           }
@@ -330,11 +332,6 @@ export const useLandedCosts = (fields) => {
       row.currency = preset.default_currency
     }
   }
-
-  const invoiceTotal = computed(() => {
-    return fields.value.rows.reduce((sum, row) =>
-      sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
-  })
 
   const getRowTaxAmount = (row) => {
     if (row.type === 'Tax on Purchase') {
