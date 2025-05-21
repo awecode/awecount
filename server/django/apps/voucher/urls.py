@@ -36,6 +36,12 @@ router.register(
     basename="partner-debit-note",
 )
 
+router.register(
+    "partner/payment-mode",
+    partner_voucher.PartnerPaymentModeViewSet,
+    basename="partner-payment-mode",
+)
+
 
 # voucher
 router.register("sales-voucher", voucher.SalesVoucherViewSet)
