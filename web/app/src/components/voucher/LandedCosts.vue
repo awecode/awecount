@@ -61,25 +61,14 @@ const handleTaxSchemeChange = (row) => {
 </script>
 
 <template>
-  <q-card v-if="formDefaults.options?.enable_landed_costs" class="q-mx-lg q-mt-md">
-    <q-card-section :style="{ paddingLeft: '0px', paddingRight: '0px' }">
+  <q-card v-if="formDefaults.options?.enable_landed_costs">
+    <q-card-section>
       <div class="row items-center q-mb-sm">
-        <q-checkbox v-model="showLandedCosts" label="Landed Costs" />
+        <q-checkbox v-model="showLandedCosts" label="Additional Costs" />
       </div>
       <div v-if="showLandedCosts">
-        <div class="row q-col-gutter-sm q-mb-sm">
-          <div class="col-12">
-            <q-btn
-              color="primary"
-              icon="add"
-              label="Add Cost"
-              size="sm"
-              @click="addLandedCostRow"
-            />
-          </div>
-        </div>
         <div v-if="landedCostRows.length" class="landed-costs-rows">
-          <q-card v-for="(row, index) in landedCostRows" :key="index" class="landed-cost-row q-mb-sm">
+          <q-card v-for="(row, index) in landedCostRows" :key="index" class="landed-cost-row mb-4 px-4">
             <q-card-section class="q-pa-sm">
               <div class="row q-col-gutter-sm">
                 <!-- Type and Percentage -->
@@ -210,32 +199,42 @@ const handleTaxSchemeChange = (row) => {
               </div>
             </q-card-section>
           </q-card>
-
-          <!-- Average Rate Summary -->
-          <q-card class="q-mt-sm">
-            <q-card-section class="q-pa-sm">
-              <div class="row items-center justify-between">
-                <div class="text-weight-medium">
-                  Average rate per item:
-                </div>
-                <div class="text-weight-bold">
-                  <FormattedNumber
-                    type="currency"
-                    :currency="loginStore.companyInfo.currency_code"
-                    :value="averageRate"
-                  />
-                </div>
-              </div>
-            </q-card-section>
-          </q-card>
         </div>
+        <div class="row q-col-gutter-sm q-mb-sm">
+          <div class="col-12">
+            <q-btn
+              color="primary"
+              icon="add"
+              label="Add Cost"
+              size="sm"
+              @click="addLandedCostRow"
+            />
+          </div>
+        </div>
+        <!-- Average Rate Summary -->
+        <q-card class="q-mt-sm">
+          <q-card-section class="q-pa-sm">
+            <div class="row items-center justify-between">
+              <div class="text-weight-medium">
+                Average rate per item:
+              </div>
+              <div class="text-weight-bold">
+                <FormattedNumber
+                  type="currency"
+                  :currency="loginStore.companyInfo.currency_code"
+                  :value="averageRate"
+                />
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
       </div>
     </q-card-section>
 
     <!-- Declaration Summary -->
-    <q-card-section class="q-pa-sm">
+    <q-card-section v-if="showLandedCosts" class="q-pa-sm">
       <div class="text-h6 q-mb-sm">
-        Declaration Summary
+        Additional Costs Summary
       </div>
       <q-card>
         <q-card-section class="q-pa-sm">
