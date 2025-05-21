@@ -122,20 +122,26 @@ const handleTaxSchemeChange = (row) => {
                         :readonly="row.type === 'Tax on Purchase'"
                       >
                         <template #append>
-                          <span>{{ row.is_percentage ? '%' : row.currency }}</span>
+                          <q-select
+                            v-if="!row.is_percentage && row.type !== 'Tax on Purchase'"
+                            v-model="row.currency"
+                            borderless
+                            dense
+                            emit-value
+                            map-options
+                            options-dense
+                            style="min-width: 80px"
+                            :options="AVAILABLE_CURRENCIES"
+                          />
+                          <span v-else>{{ row.is_percentage ? '%' : row.currency }}</span>
                         </template>
                       </q-input>
                     </div>
-                    <div class="col-4">
-                      <q-select
-                        v-model="row.currency"
-                        dense
-                        emit-value
-                        map-options
-                        options-dense
-                        label="Currency"
-                        :disable="row.is_percentage || row.type === 'Tax on Purchase'"
-                        :options="AVAILABLE_CURRENCIES"
+                    <div v-if="row.amount && row.is_percentage" class="text-grey-6 col-4 flex justify-end items-center">
+                      <FormattedNumber
+                        type="currency"
+                        :currency="loginStore.companyInfo.currency_code"
+                        :value="row.amount"
                       />
                     </div>
                   </div>
@@ -166,7 +172,7 @@ const handleTaxSchemeChange = (row) => {
                   </n-auto-complete-v2>
                 </div>
 
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-5">
                   <n-auto-complete-v2
                     v-if="row.type !== 'Customs Valuation Uplift'"
                     v-model="row.credit_account_id"
@@ -190,29 +196,16 @@ const handleTaxSchemeChange = (row) => {
                   </n-auto-complete-v2>
                 </div>
 
-                <!-- Amount Display and Delete Button -->
-                <div class="col-12">
-                  <div class="row items-center justify-between">
-                    <div class="col">
-                      <div v-if="row.amount" class="text-grey-6 text-caption">
-                        Amount: <FormattedNumber
-                          type="currency"
-                          :currency="loginStore.companyInfo.currency_code"
-                          :value="row.amount"
-                        />
-                      </div>
-                    </div>
-                    <div class="col-auto">
-                      <q-btn
-                        dense
-                        flat
-                        round
-                        color="negative"
-                        icon="delete"
-                        @click="removeLandedCostRow(index)"
-                      />
-                    </div>
-                  </div>
+                <div class="col-1">
+                  <q-btn
+                    dense
+                    flat
+                    round
+                    class="flex items-end justify-center"
+                    color="negative"
+                    icon="delete"
+                    @click="removeLandedCostRow(index)"
+                  />
                 </div>
               </div>
             </q-card-section>
