@@ -1371,11 +1371,13 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
             account_map = {}
             landed_cost_accounts = self.company.purchase_setting.landed_cost_accounts
             for landed_cost in self.landed_cost_rows.all():
+                if landed_cost.type == LandedCostRowType.CUSTOMS_VALUATION_UPLIFT:
+                    continue
 
                 entries = []
                 account = account_map.get(landed_cost.type, None)
                 if not account:
-                    account = Account.objects.get(id=landed_cost_accounts[landed_cost.type.lower().replace(' ', '_')])
+                    account = Account.objects.get(id=landed_cost_accounts[landed_cost.type])
                     account_map[landed_cost.type] = account
 
                 entries.append(["dr", account, landed_cost.amount])
@@ -1589,7 +1591,6 @@ class CreditNote(TransactionModel, InvoiceModel, CompanyBaseModel):
     def apply_transactions(self, extra_entries=None):
         voucher_meta = self.get_voucher_meta()
 
-        # import ipdb; ipdb.set_trace()
         if self.total_amount != voucher_meta["grand_total"]:
             self.total_amount = voucher_meta["grand_total"]
             self.save()
