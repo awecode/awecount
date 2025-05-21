@@ -279,79 +279,81 @@ const handleTaxSchemeChange = (row) => {
     </q-card-section>
     <!-- Average Rate Summary -->
 
-    <div class="text-h6 q-mb-md q-px-md">
-      Average Rate Per Item
+    <div v-if="showLandedCosts">
+      <div class="text-h6 q-mb-md q-px-md">
+        Average Rate Per Item
+      </div>
+      <q-table
+        bordered
+        flat
+        hide-bottom
+        :columns="[
+          {
+            name: 'item',
+            label: 'Item Name',
+            field: row => row.itemObj.name,
+            align: 'left',
+            style: 'width: 40%',
+          },
+          {
+            name: 'base',
+            label: 'Base Rate',
+            field: 'rate',
+            align: 'right',
+            style: 'width: 20%',
+            format: (val) => val,
+          },
+          {
+            name: 'additional',
+            label: 'Additional',
+            field: 'additionalCost',
+            align: 'right',
+            style: 'width: 20%',
+            format: (val) => val,
+          },
+          {
+            name: 'total',
+            label: 'Total',
+            field: 'totalCost',
+            align: 'right',
+            style: 'width: 20%',
+            format: (val) => val,
+          },
+        ]"
+        :pagination="{ rowsPerPage: 0 }"
+        :rows="averageRatePerItem"
+        :rows-per-page-options="[0]"
+      >
+        <template #body="props">
+          <q-tr :props="props">
+            <q-td key="item" :props="props">
+              {{ props.row.itemObj.name }}
+            </q-td>
+            <q-td key="base" :props="props">
+              <FormattedNumber
+                type="currency"
+                :currency="loginStore.companyInfo.currency_code"
+                :value="props.row.rate"
+              />
+            </q-td>
+            <q-td key="additional" :props="props">
+              <FormattedNumber
+                type="currency"
+                :currency="loginStore.companyInfo.currency_code"
+                :value="props.row.additionalCost"
+              />
+            </q-td>
+            <q-td key="total" :props="props">
+              <FormattedNumber
+                type="currency"
+                :currency="loginStore.companyInfo.currency_code"
+                :value="props.row.totalCost"
+              />
+            </q-td>
+          </q-tr>
+        </template>
+      </q-table>
     </div>
-    <q-table
-      bordered
-      flat
-      hide-bottom
-      :columns="[
-        {
-          name: 'item',
-          label: 'Item Name',
-          field: row => row.itemObj.name,
-          align: 'left',
-          style: 'width: 40%',
-        },
-        {
-          name: 'base',
-          label: 'Base Rate',
-          field: 'rate',
-          align: 'right',
-          style: 'width: 20%',
-          format: (val) => val,
-        },
-        {
-          name: 'additional',
-          label: 'Additional',
-          field: 'additionalCost',
-          align: 'right',
-          style: 'width: 20%',
-          format: (val) => val,
-        },
-        {
-          name: 'total',
-          label: 'Total',
-          field: 'totalCost',
-          align: 'right',
-          style: 'width: 20%',
-          format: (val) => val,
-        },
-      ]"
-      :pagination="{ rowsPerPage: 0 }"
-      :rows="averageRatePerItem"
-      :rows-per-page-options="[0]"
-    >
-      <template #body="props">
-        <q-tr :props="props">
-          <q-td key="item" :props="props">
-            {{ props.row.itemObj.name }}
-          </q-td>
-          <q-td key="base" :props="props">
-            <FormattedNumber
-              type="currency"
-              :currency="loginStore.companyInfo.currency_code"
-              :value="props.row.rate"
-            />
-          </q-td>
-          <q-td key="additional" :props="props">
-            <FormattedNumber
-              type="currency"
-              :currency="loginStore.companyInfo.currency_code"
-              :value="props.row.additionalCost"
-            />
-          </q-td>
-          <q-td key="total" :props="props">
-            <FormattedNumber
-              type="currency"
-              :currency="loginStore.companyInfo.currency_code"
-              :value="props.row.totalCost"
-            />
-          </q-td>
-        </q-tr>
-      </template>
-    </q-table>
   </q-card>
 </template>
 

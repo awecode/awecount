@@ -442,10 +442,12 @@ export const useLandedCosts = (fields) => {
   })
 
   const averageRatePerItem = computed(() => {
-    return fields.value.rows.map((row) => {
-      const rowAmount = new Decimal(row.rate || '0').mul(row.quantity || '1')
-      const additionalCost = totalAdditionalCost.value.div(invoiceTotal.value).mul(rowAmount)
-      const totalCost = rowAmount.add(additionalCost)
+    if (!fields.value.rows || !landedCostRows.value.length) return []
+    return fields.value.rows?.map((row) => {
+      const rowRate = new Decimal(row.rate || '0')
+      const rowAmount = rowRate.mul(row.quantity || '1')
+      const additionalCost = totalAdditionalCost.value.div(invoiceTotal.value).mul(rowAmount).div(row.quantity || '1')
+      const totalCost = rowRate.add(additionalCost)
       return {
         ...row,
         additionalCost,
