@@ -359,6 +359,7 @@ const replaceHrefAttribute = (element, baseUrl) => {
 
 // Computed properties for calculations
 const grossProfit = computed(() => {
+  // Gross Profit = Revenue - Cost of Sales
   if (!categoryTree.value) return []
 
   return extraData.value.closing_stock.map((_, index) => {
@@ -376,6 +377,7 @@ const grossProfit = computed(() => {
 })
 
 const operatingProfit = computed(() => {
+  // Operating Profit (EBIDTA) = Gross Profit + Other Income - Operating Expense
   if (!categoryTree.value) return []
 
   return grossProfit.value.map((gross, index) => {
@@ -389,6 +391,7 @@ const operatingProfit = computed(() => {
 })
 
 const earningsBeforeTaxes = computed(() => {
+  // Earnings Before Taxes = Operating Profit + Interest Income - Interest Expense
   if (!categoryTree.value) return []
 
   return operatingProfit.value.map((operating, index) => {
@@ -402,6 +405,7 @@ const earningsBeforeTaxes = computed(() => {
 })
 
 const taxes = computed(() => {
+  // Taxes = Earnings Before Taxes * Corporate Tax Rate
   if (!categoryTree.value) return []
 
   return operatingProfit.value.map((operating) => {
@@ -411,6 +415,7 @@ const taxes = computed(() => {
 })
 
 const netIncome = computed(() => {
+  // Net Income = Earnings Before Taxes - Taxes
   return earningsBeforeTaxes.value.map((earnings, index) => {
     return earnings - taxes.value[index]
   })
@@ -690,7 +695,7 @@ const costOfSales = computed(() => {
               </AccountBalanceTableNode>
             </template>
 
-            <!-- Gross Profit -->
+            <!-- Gross Profit = Revenue - Cost of Sales -->
             <tr>
               <td class="text-weight-medium">
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -761,11 +766,11 @@ const costOfSales = computed(() => {
               />
             </template>
 
-            <!-- Operating Profit (EBITA) = 3 + 4 - 5 -->
+            <!-- Operating Profit (EBIDTA) = Gross Profit + Other Income - Operating Expense -->
             <tr>
               <td class="text-weight-medium">
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <span>Operating Profit (EBITA)</span>
+                <span>Operating Profit (EBIDTA)</span>
               </td>
               <td
                 v-for="(profit, index) in operatingProfit"
@@ -832,7 +837,7 @@ const costOfSales = computed(() => {
               />
             </template>
 
-            <!-- 6. Earnings Before Taxes = 6 + 7 - 8 - 9 -->
+            <!-- Earnings Before Taxes = Operating Profit + Interest Income - Interest Expense - Depreciation and Amortization -->
             <tr>
               <td class="text-weight-medium">
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -847,7 +852,7 @@ const costOfSales = computed(() => {
               </td>
             </tr>
 
-            <!-- Taxes -->
+            <!-- Taxes = Earnings Before Taxes * Corporate Tax Rate -->
             <tr>
               <td class="text-weight-medium">
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -861,7 +866,7 @@ const costOfSales = computed(() => {
                 {{ getAmountWithSuffix(tax) }}
               </td>
             </tr>
-            <!-- Net Income = 10 - 11 -->
+            <!-- Net Income = Earnings Before Taxes - Taxes -->
             <tr>
               <td class="text-weight-medium">
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
