@@ -142,11 +142,13 @@ export const useLandedCosts = (fields) => {
         if (row.is_percentage && row.value) {
           let baseAmount = invoiceTotal.value
 
+          if (row.type !== 'Tax on Purchase') {
           // Add amounts from previous landed cost rows
-          for (let i = 0; i < index; i++) {
-            const prevRow = landedCostRows.value[i]
-            if (prevRow.amount && prevRow.type !== 'Tax on Purchase') {
-              baseAmount = baseAmount.add(new Decimal(prevRow.amount))
+            for (let i = 0; i < index; i++) {
+              const prevRow = landedCostRows.value[i]
+              if (prevRow.amount && prevRow.type !== 'Tax on Purchase') {
+                baseAmount = baseAmount.add(new Decimal(prevRow.amount))
+              }
             }
           }
 
