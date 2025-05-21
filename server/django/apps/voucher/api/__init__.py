@@ -2150,7 +2150,7 @@ class PurchaseSettingsViewSet(CRULViewSet):
             "landed_cost_accounts",
             Account.objects.filter(
                 category__system_code=settings.ACCOUNT_CATEGORY_SYSTEM_CODES[
-                    "Landed Cost"
+                    "Additional Cost"
                 ]
             ),
             GenericSerializer,
