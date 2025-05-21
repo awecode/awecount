@@ -2196,6 +2196,8 @@ class LandedCostRow(models.Model):
     type = models.CharField(choices=LandedCostRowType.choices, max_length=25)
     description = models.TextField(blank=True, null=True)
     amount = models.DecimalField(max_digits=24, decimal_places=6)
+    value = models.DecimalField(max_digits=24, decimal_places=6)
+    is_percentage = models.BooleanField(default=False)
     invoice = models.ForeignKey(
         PurchaseVoucher,
         on_delete=models.CASCADE,
