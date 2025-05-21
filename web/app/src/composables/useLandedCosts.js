@@ -437,8 +437,11 @@ export const useLandedCosts = (fields) => {
 
   const totalAdditionalCost = computed(() => {
     return landedCostRows.value.reduce((sum, row) => {
-      return sum.add(row.amount)
-    }, new Decimal('0'))
+      if (!['Tax on Purchase', 'Customs Valuation Uplift'].includes(row.type)) {
+        return sum.add(row.amount)
+      }
+      return sum
+    }, new Decimal('0')).add(totalTax.value)
   })
 
   const averageRatePerItem = computed(() => {

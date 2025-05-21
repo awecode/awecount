@@ -343,7 +343,7 @@ const handleTaxSchemeChange = (row) => {
               <FormattedNumber
                 type="currency"
                 :currency="loginStore.companyInfo.currency_code"
-                :value="props.row.rate"
+                :value="props.row.rate || 0"
               />
             </q-td>
             <q-td key="additional" :props="props">
