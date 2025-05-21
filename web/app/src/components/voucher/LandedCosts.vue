@@ -31,7 +31,7 @@ const {
   addLandedCostRow,
   handleTypeChange,
   removeLandedCostRow,
-  averageRate,
+  totalAdditionalCost,
   duty,
   taxBeforeDeclaration,
   declarationFees,
@@ -242,6 +242,16 @@ const handleTaxSchemeChange = (row) => {
               />
             </span>
           </div>
+          <div class="declaration-summary-item">
+            <span class="label">Total Tax:</span>
+            <span class="value">
+              <FormattedNumber
+                type="currency"
+                :currency="loginStore.companyInfo.currency_code"
+                :value="totalTax"
+              />
+            </span>
+          </div>
         </div>
         <div class="col-12 col-md-6">
           <div class="declaration-summary-item">
@@ -265,12 +275,12 @@ const handleTaxSchemeChange = (row) => {
             </span>
           </div>
           <div class="declaration-summary-item">
-            <span class="label">Total Tax:</span>
+            <span class="label">Total Additional:</span>
             <span class="value">
               <FormattedNumber
                 type="currency"
                 :currency="loginStore.companyInfo.currency_code"
-                :value="totalTax"
+                :value="totalAdditionalCost"
               />
             </span>
           </div>
@@ -327,7 +337,7 @@ const handleTaxSchemeChange = (row) => {
         <template #body="props">
           <q-tr :props="props">
             <q-td key="item" :props="props">
-              {{ props.row.itemObj.name }}
+              {{ props.row.itemObj?.name || props.row.selected_item_obj?.name || props.row.item }}
             </q-td>
             <q-td key="base" :props="props">
               <FormattedNumber

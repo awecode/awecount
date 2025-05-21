@@ -476,5 +476,6 @@ export const useLandedCosts = (fields) => {
     totalTax,
     landedCostRows,
     averageRatePerItem,
+    totalAdditionalCost,
   }
 }
