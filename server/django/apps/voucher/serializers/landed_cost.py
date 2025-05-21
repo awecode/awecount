@@ -46,6 +46,8 @@ class LandedCostRowSerializer(BaseModelSerializer):
             "type",
             "description",
             "amount",
+            "is_percentage",
+            "value",
             "tax_scheme",
             "tax_scheme_id",
             "credit_account",

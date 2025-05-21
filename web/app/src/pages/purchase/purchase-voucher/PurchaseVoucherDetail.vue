@@ -271,11 +271,13 @@ export default {
             </template>
             <template #body-cell-tax_scheme="props">
               <q-td :props="props">
-                <FormattedNumber
-                  type="unit"
-                  unit="percent"
-                  :value="props.row.tax_scheme.rate"
-                /> {{ ' ' }} ({{ props.row.tax_scheme.short_name || props.row.tax_scheme.name }})
+                <span v-if="props.row.tax_scheme">
+                  <FormattedNumber
+                    type="unit"
+                    unit="percent"
+                    :value="props.row.tax_scheme.rate"
+                  /> {{ ' ' }} ({{ props.row.tax_scheme.short_name || props.row.tax_scheme.name }})
+                </span>
               </q-td>
             </template>
             <template #body-cell-tax_amount="props">

@@ -166,15 +166,10 @@ export const useLandedCosts = (fields) => {
     (newRows) => {
       if (newRows?.length) {
         const updatedRows = newRows.map((row) => {
-          if (row.amount && !row.value) {
-            return {
-              ...row,
-              value: row.amount,
-              is_percentage: false,
-              currency: loginStore.companyInfo.currency_code || 'USD',
-            }
+          return {
+            ...row,
+            currency: loginStore.companyInfo.currency_code || 'USD',
           }
-          return row
         })
         if (JSON.stringify(updatedRows) !== JSON.stringify(newRows)) {
           fields.value.landed_cost_rows = updatedRows
