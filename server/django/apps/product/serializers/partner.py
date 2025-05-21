@@ -1,13 +1,10 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework import serializers
 
 from apps.product.models import Item
 
 
-class PartnerItemSerializer(ModelSerializer):
-    current_balance = SerializerMethodField()
-
-    def get_current_balance(self, obj):
-        return (obj.account.current_dr - obj.account.current_cr) if obj.account else None
+class PartnerItemListSerializer(serializers.ModelSerializer):
+    current_balance = serializers.DecimalField(max_digits=24, decimal_places=6)
 
     class Meta:
         model = Item
