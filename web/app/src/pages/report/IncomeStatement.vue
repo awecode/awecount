@@ -67,9 +67,17 @@ const column = ref({
 const columns = ref<(typeof column.value)[]>([])
 
 const extraData = ref({
-  opening_stock: [],
-  closing_stock: [],
+  opening_stock: [] as number[],
+  closing_stock: [] as number[],
 })
+
+// Fix for the new Array() linter error
+const createTransactionData = (currentIndex: number) => {
+  return Array.from({ length: currentIndex }, () => ({
+    closing_dr: 0,
+    closing_cr: 0,
+  }))
+}
 
 const mapAccountsToCategories = (categories: CategoryNode[], accounts: Account[]) => {
   const categoryMap = new Map<number, Account[]>()
@@ -144,6 +152,9 @@ const mapAccountsToCategories = (categories: CategoryNode[], accounts: Account[]
   addAccountsToTree(categories)
 }
 
+const countryIso = ref('')
+const corporateTaxRate = ref(0)
+
 const fetchData = () => {
   isLoading.value = true
   const endpoint = `/api/company/${route.params.company}/income-statement/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
@@ -166,8 +177,10 @@ const fetchData = () => {
           end_date: fields.value.end_date,
         },
       ]
+      countryIso.value = data.country_iso
+      corporateTaxRate.value = data.corporate_tax_rate
     })
-    .catch(err => console.log(err))
+    .catch(err => console.error(err))
     .finally(() => {
       isLoading.value = false
     })
@@ -198,7 +211,7 @@ const updateAccountsAndRecalculateTotals = (categories: CategoryNode[], newAccou
       const matchingNewAccount = newAccountsForCategory.find(newAccount => newAccount.id === account.id)
 
       if (matchingNewAccount) {
-        // Append new transaction data for the current index without altering previous totals
+        // Ensure transaction_data array has enough elements
         while (account.transaction_data.length <= currentIndex) {
           account.transaction_data.push({ closing_dr: 0, closing_cr: 0 })
         }
@@ -217,10 +230,7 @@ const updateAccountsAndRecalculateTotals = (categories: CategoryNode[], newAccou
     // Add new accounts not already in the category
     for (const newAccount of newAccountsForCategory) {
       if (!accounts.some(account => account.id === newAccount.id)) {
-        const newTransactionData = new Array(currentIndex).fill({
-          closing_dr: 0,
-          closing_cr: 0,
-        })
+        const newTransactionData = createTransactionData(currentIndex)
         newTransactionData[currentIndex] = {
           closing_dr: newAccount.cd || 0,
           closing_cr: newAccount.cc || 0,
@@ -275,6 +285,14 @@ const updateAccountsAndRecalculateTotals = (categories: CategoryNode[], newAccou
     for (const node of nodes) {
       node.accounts = categoryMap.get(node.id) || []
       node.total = calculateTotals(node)
+      // if the node total is an empty array, then set have it empty objects of the same length as the columns
+      if (node.total.length === 0) {
+        node.total = Array.from({ length: columns.value.length + 1 }, () => ({
+          closing_dr: 0,
+          closing_cr: 0,
+        }))
+      }
+
       // Recursively process child nodes
       if (node.children.length > 0) {
         updateTree(node.children)
@@ -339,47 +357,117 @@ const replaceHrefAttribute = (element, baseUrl) => {
   }
 }
 
+// Computed properties for calculations
+const grossProfit = computed(() => {
+  if (!categoryTree.value) return []
+
+  return extraData.value.closing_stock.map((_, index) => {
+    const purchase = categoryTree.value?.purchase?.[0]?.total[index] || { closing_dr: 0, closing_cr: 0 }
+    const directExpense = categoryTree.value?.direct_expense?.[0]?.total[index] || { closing_dr: 0, closing_cr: 0 }
+    const openingStock = extraData.value.opening_stock[index] || 0
+    const closingStock = extraData.value.closing_stock[index] || 0
+
+    return (purchase.closing_dr + directExpense.closing_dr
+      - (purchase.closing_cr + directExpense.closing_cr)
+      + openingStock - closingStock
+      + directExpense.closing_dr)
+    - directExpense.closing_cr
+  })
+})
+
+const operatingProfit = computed(() => {
+  if (!categoryTree.value) return []
+
+  return grossProfit.value.map((gross, index) => {
+    const otherIncome = categoryTree.value?.other_income?.[0]?.total[index] || { closing_dr: 0, closing_cr: 0 }
+    const operatingExpense = categoryTree.value?.operating_expense?.[0]?.total[index] || { closing_dr: 0, closing_cr: 0 }
+
+    return gross
+      + (otherIncome.closing_dr - otherIncome.closing_cr)
+      - (operatingExpense.closing_dr - operatingExpense.closing_cr)
+  })
+})
+
+const earningsBeforeTaxes = computed(() => {
+  if (!categoryTree.value) return []
+
+  return operatingProfit.value.map((operating, index) => {
+    const interestIncome = categoryTree.value?.interest_income?.[0]?.total[index] || { closing_dr: 0, closing_cr: 0 }
+    const interestExpense = categoryTree.value?.interest_expense?.[0]?.total[index] || { closing_dr: 0, closing_cr: 0 }
+
+    return operating
+      + (interestIncome.closing_dr - interestIncome.closing_cr)
+      - (interestExpense.closing_dr - interestExpense.closing_cr)
+  })
+})
+
+const taxes = computed(() => {
+  if (!categoryTree.value) return []
+
+  return operatingProfit.value.map((operating) => {
+    const taxRate = corporateTaxRate.value ? corporateTaxRate.value / 100 : 0.25
+    return countryIso.value === 'NP' || corporateTaxRate.value ? operating * taxRate : 0
+  })
+})
+
+const netIncome = computed(() => {
+  return earningsBeforeTaxes.value.map((earnings, index) => {
+    return earnings - taxes.value[index]
+  })
+})
+
+// Fix for the Element.rows type error
+const getTableCell = (element: Element, row: number, col: number): HTMLElement | null => {
+  const table = element as HTMLTableElement
+  return table.rows?.[row]?.cells?.[col] || null
+}
+
 const onDownloadXls = async () => {
   const XLSX = await import('xlsx-js-style')
-  const elt = document.getElementById('tableRef').children[0]
+  const elt = document.getElementById('tableRef') as HTMLTableElement
+  if (!elt) return
+
   const baseUrl = window.location.origin
   replaceHrefAttribute(elt, baseUrl)
-  // adding styles
+
   const worksheet = XLSX.utils.table_to_sheet(elt)
+
   for (const i in worksheet) {
     if (typeof worksheet[i] != 'object') continue
     const cell = XLSX.utils.decode_cell(i)
     worksheet[i].s = {
       font: { name: 'Courier', sz: 12 },
     }
+
     if (cell.r === 0) {
-      // first row
       worksheet[i].s.font.bold = true
     }
+
     if (cell.c === 0) {
-      // first row
-      const td = elt.rows[cell.r].cells[cell.c]
-      worksheet[i].s.font.italic = getComputedStyle(td).fontStyle === 'italic'
-      // get color and apply to excel
-      const hexCode = getComputedStyle(td).color
-      const hexArray = hexCode.slice(4, hexCode.length - 1).split(',')
-      const numsArray = hexArray.map(e => Number(e))
-      const rgbValue = ((1 << 24) | (numsArray[0] << 16) | (numsArray[1] << 8) | numsArray[2]).toString(16).slice(1)
-      worksheet[i].s.font.color = { rgb: `${rgbValue}` }
+      const td = getTableCell(elt, cell.r, cell.c)
+      if (td) {
+        worksheet[i].s.font.italic = getComputedStyle(td).fontStyle === 'italic'
+        const hexCode = getComputedStyle(td).color
+        const hexArray = hexCode.slice(4, hexCode.length - 1).split(',')
+        const numsArray = hexArray.map(e => Number(e))
+        const rgbValue = ((1 << 24) | (numsArray[0] << 16) | (numsArray[1] << 8) | numsArray[2]).toString(16).slice(1)
+        worksheet[i].s.font.color = { rgb: `${rgbValue}` }
+      }
     }
+
     if (cell.r > -1) {
-      const td = elt.rows[cell.r].cells[cell.c]
-      if (td instanceof HTMLElement) worksheet[i].s.font.bold = Number(getComputedStyle(td).fontWeight) >= 500
+      const td = getTableCell(elt, cell.r, cell.c)
+      if (td) {
+        worksheet[i].s.font.bold = Number(getComputedStyle(td).fontWeight) >= 500
+      }
     }
   }
-  worksheet['!cols'] = [{ width: 50 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }]
+
+  worksheet['!cols'] = Array.from({ length: 11 }).fill({ width: 16 })
+  worksheet['!cols'][0] = { width: 50 }
+
   const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'sheet_name_here')
-  // const excelBuffer = XLSX.write(workbook, {
-  //   type: 'buffer',
-  //   cellStyles: true,
-  // });
-  // download Excel
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Income Statement')
   XLSX.writeFileXLSX(workbook, 'IncomeStatement.xls')
 }
 
@@ -393,6 +481,66 @@ if (route.query.start_date && route.query.end_date) {
   fields.value.end_date = route.query.end_date as string
   fetchData()
 }
+
+// Update the calculateCategoryTotals function to handle multiple columns
+const calculateCategoryTotals = (categories: CategoryNode[] | undefined, index: number) => {
+  if (!categories) return { closing_dr: 0, closing_cr: 0 }
+
+  const calculateNodeTotal = (node: CategoryNode): { closing_dr: number, closing_cr: number } => {
+    // Get direct total from the node
+    const nodeTotal = node.total?.[index] || { closing_dr: 0, closing_cr: 0 }
+
+    // Calculate totals from children recursively
+    const childrenTotal = node.children.reduce((acc, child) => {
+      const childTotal = calculateNodeTotal(child)
+      return {
+        closing_dr: acc.closing_dr + (childTotal.closing_dr || 0),
+        closing_cr: acc.closing_cr + (childTotal.closing_cr || 0),
+      }
+    }, { closing_dr: 0, closing_cr: 0 })
+
+    // Combine node total with children total
+    return {
+      closing_dr: (nodeTotal.closing_dr || 0) + childrenTotal.closing_dr,
+      closing_cr: (nodeTotal.closing_cr || 0) + childrenTotal.closing_cr,
+    }
+  }
+
+  // Calculate total for all top-level categories
+  return categories.reduce((acc, category) => {
+    const categoryTotal = calculateNodeTotal(category)
+    return {
+      closing_dr: acc.closing_dr + categoryTotal.closing_dr,
+      closing_cr: acc.closing_cr + categoryTotal.closing_cr,
+    }
+  }, { closing_dr: 0, closing_cr: 0 })
+}
+
+const getAmountWithSuffix = (amount: number) => {
+  if (amount === 0) {
+    return '0'
+  } else if (amount > 0) {
+    return `${amount.toFixed(2)} cr`
+  } else {
+    return `${(amount * -1).toFixed(2)} dr`
+  }
+}
+
+// Add computed property for Cost of Sales
+const costOfSales = computed(() => {
+  if (!categoryTree.value) return []
+
+  return columns.value.map((_, index) => {
+    const purchase = categoryTree.value?.purchase?.[0]?.total[index] || { closing_dr: 0, closing_cr: 0 }
+    const directExpense = categoryTree.value?.direct_expense?.[0]?.total[index] || { closing_dr: 0, closing_cr: 0 }
+    const openingStock = extraData.value.opening_stock[index] || 0
+    const closingStock = extraData.value.closing_stock[index] || 0
+
+    return purchase.closing_dr + directExpense.closing_dr
+      - (purchase.closing_cr + directExpense.closing_cr)
+      + openingStock - closingStock
+  })
+})
 </script>
 
 <template>
@@ -481,12 +629,13 @@ if (route.query.start_date && route.query.end_date) {
                     name: 'Revenue',
                     children: categoryTree.revenue,
                     accounts: [],
-                    total: [...categoryTree.revenue.map((data, index) => {
+                    total: columns.map((_, index) => {
+                      const totals = calculateCategoryTotals(categoryTree.revenue, index)
                       return {
-                        closing_dr: data.total[index].closing_dr,
-                        closing_cr: data.total[index].closing_cr,
+                        closing_dr: totals.closing_dr,
+                        closing_cr: totals.closing_cr,
                       }
-                    })],
+                    }),
                   },
                 ]"
                 :key="category.id"
@@ -495,6 +644,7 @@ if (route.query.start_date && route.query.end_date) {
                 :hide-empty-categories="false"
                 :item="category"
                 :root="true"
+                :unlink-parent="true"
               />
             </template>
 
@@ -504,24 +654,17 @@ if (route.query.start_date && route.query.end_date) {
             >
               <AccountBalanceTableNode
                 v-for="category in [
-                  { id: 1,
+                  {
+                    id: 1,
                     name: 'Cost of Sales',
-                    children: [
-                      ...categoryTree.direct_expense,
-                    ],
+                    children: [...categoryTree.direct_expense],
                     accounts: [],
-                    total: [
-                      ...extraData.closing_stock.map((data, index) => {
-                        return {
-                          // TODO: verify
-                          closing_dr: categoryTree.purchase[0].total[index].closing_dr + categoryTree.direct_expense[0].total[index].closing_dr - (categoryTree.purchase[0].total[index].closing_cr + categoryTree.direct_expense[0].total[index].closing_cr) + extraData.opening_stock[0] - extraData.closing_stock[0] + categoryTree.direct_expense[0].total[index].closing_dr,
-                          closing_cr: categoryTree.direct_expense[0].total[index].closing_cr,
-                        }
-                      }),
-                    ],
+                    total: costOfSales.map(amount => ({
+                      closing_dr: amount < 0 ? Math.abs(amount) : 0,
+                      closing_cr: amount > 0 ? amount : 0,
+                    })),
                   },
-                ]
-                "
+                ]"
                 :key="category.id"
                 name="Cost of Sales"
                 :config="config"
@@ -531,16 +674,16 @@ if (route.query.start_date && route.query.end_date) {
               >
                 <template #custom>
                   <tr>
-                    <td class="text-weight-medium">
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <td>
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                       <span>COGS</span>
                     </td>
                     <td
-                      v-for="(data, index) in extraData.closing_stock"
-                      :key="data"
+                      v-for="(amount, index) in costOfSales"
+                      :key="index"
                       class="text-left"
                     >
-                      {{ (categoryTree.purchase[0].total[index].closing_dr + categoryTree.direct_expense[0].total[index].closing_dr - (categoryTree.purchase[0].total[index].closing_cr + categoryTree.direct_expense[0].total[index].closing_cr) + extraData.opening_stock[0] - extraData.closing_stock[0]).toFixed(2) }}
+                      {{ getAmountWithSuffix(amount) }}
                     </td>
                   </tr>
                 </template>
@@ -554,11 +697,11 @@ if (route.query.start_date && route.query.end_date) {
                 <span>Gross Profit</span>
               </td>
               <td
-                v-for="(data, index) in extraData.closing_stock"
-                :key="data"
+                v-for="(profit, index) in grossProfit"
+                :key="index"
                 class="text-left"
               >
-                {{ ((categoryTree.purchase[0].total[index].closing_dr + categoryTree.direct_expense[0].total[index].closing_dr - (categoryTree.purchase[0].total[index].closing_cr + categoryTree.direct_expense[0].total[index].closing_cr) + extraData.opening_stock[0] - extraData.closing_stock[0] + categoryTree.direct_expense[0].total[index].closing_dr) - categoryTree.direct_expense[0].total[index].closing_cr).toFixed(2) }}
+                {{ getAmountWithSuffix(profit) }}
               </td>
             </tr>
 
@@ -571,12 +714,13 @@ if (route.query.start_date && route.query.end_date) {
                     name: 'Other Income',
                     children: categoryTree.other_income,
                     accounts: [],
-                    total: [...categoryTree.other_income.map((data, index) => {
+                    total: columns.map((_, index) => {
+                      const totals = calculateCategoryTotals(categoryTree.other_income, index)
                       return {
-                        closing_dr: data.total[index].closing_dr,
-                        closing_cr: data.total[index].closing_cr,
+                        closing_dr: totals.closing_dr,
+                        closing_cr: totals.closing_cr,
                       }
-                    })],
+                    }),
                   },
                 ]"
                 :key="category.id"
@@ -585,6 +729,7 @@ if (route.query.start_date && route.query.end_date) {
                 :hide-empty-categories="false"
                 :item="category"
                 :root="true"
+                :unlink-parent="true"
               />
             </template>
 
@@ -597,12 +742,13 @@ if (route.query.start_date && route.query.end_date) {
                     name: 'Operating Expense',
                     children: categoryTree.operating_expense,
                     accounts: [],
-                    total: [...categoryTree.operating_expense.map((data, index) => {
+                    total: columns.map((_, index) => {
+                      const totals = calculateCategoryTotals(categoryTree.operating_expense, index)
                       return {
-                        closing_dr: data.total[index].closing_dr,
-                        closing_cr: data.total[index].closing_cr,
+                        closing_dr: totals.closing_dr,
+                        closing_cr: totals.closing_cr,
                       }
-                    })],
+                    }),
                   },
                 ]"
                 :key="category.id"
@@ -611,6 +757,7 @@ if (route.query.start_date && route.query.end_date) {
                 :hide-empty-categories="false"
                 :item="category"
                 :root="true"
+                :unlink-parent="true"
               />
             </template>
 
@@ -621,16 +768,113 @@ if (route.query.start_date && route.query.end_date) {
                 <span>Operating Profit (EBITA)</span>
               </td>
               <td
-                v-for="(data, index) in extraData.closing_stock"
-                :key="data"
+                v-for="(profit, index) in operatingProfit"
+                :key="index"
                 class="text-left"
               >
-                <!-- 3 + 4 - 5 -->
-                {{ (((categoryTree.purchase[0].total[index].closing_dr + categoryTree.direct_expense[0].total[index].closing_dr - (categoryTree.purchase[0].total[index].closing_cr + categoryTree.direct_expense[0].total[index].closing_cr) + extraData.opening_stock[0] - extraData.closing_stock[0] + categoryTree.direct_expense[0].total[index].closing_dr) - categoryTree.direct_expense[0].total[index].closing_cr) + (categoryTree.other_income[0].total[index].closing_dr - categoryTree.other_income[0].total[index].closing_cr) - (categoryTree.operating_expense[0].total[index].closing_dr - categoryTree.operating_expense[0].total[index].closing_cr)).toFixed(2) }}
+                {{ getAmountWithSuffix(profit) }}
               </td>
             </tr>
 
             <!-- Interest Income -->
+            <template v-if="categoryTree?.interest_income">
+              <AccountBalanceTableNode
+                v-for="category in [
+                  {
+                    id: 9999998,
+                    name: 'Interest Income',
+                    children: categoryTree.interest_income,
+                    accounts: [],
+                    total: columns.map((_, index) => {
+                      const totals = calculateCategoryTotals(categoryTree.interest_income, index)
+                      return {
+                        closing_dr: totals.closing_dr,
+                        closing_cr: totals.closing_cr,
+                      }
+                    }),
+                  },
+                ]"
+                :key="category.id"
+                name="Interest Income"
+                :config="config"
+                :hide-empty-categories="false"
+                :item="category"
+                :root="true"
+                :unlink-parent="true"
+              />
+            </template>
+
+            <!-- Interest Expense -->
+            <template v-if="categoryTree?.interest_expense">
+              <AccountBalanceTableNode
+                v-for="category in [
+                  {
+                    id: 9999997,
+                    name: 'Interest Expense',
+                    children: categoryTree.interest_expense,
+                    accounts: [],
+                    total: columns.map((_, index) => {
+                      const totals = calculateCategoryTotals(categoryTree.interest_expense, index)
+                      return {
+                        closing_dr: totals.closing_dr,
+                        closing_cr: totals.closing_cr,
+                      }
+                    }),
+                  },
+                ]"
+                :key="category.id"
+                name="Interest Expense"
+                :config="config"
+                :hide-empty-categories="false"
+                :item="category"
+                :root="true"
+                :unlink-parent="true"
+              />
+            </template>
+
+            <!-- 6. Earnings Before Taxes = 6 + 7 - 8 - 9 -->
+            <tr>
+              <td class="text-weight-medium">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>Earnings Before Taxes</span>
+              </td>
+              <td
+                v-for="(earnings, index) in earningsBeforeTaxes"
+                :key="index"
+                class="text-left"
+              >
+                {{ getAmountWithSuffix(earnings) }}
+              </td>
+            </tr>
+
+            <!-- Taxes -->
+            <tr>
+              <td class="text-weight-medium">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>Taxes</span>
+              </td>
+              <td
+                v-for="(tax, index) in taxes"
+                :key="index"
+                class="text-left"
+              >
+                {{ getAmountWithSuffix(tax) }}
+              </td>
+            </tr>
+            <!-- Net Income = 10 - 11 -->
+            <tr>
+              <td class="text-weight-medium">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>Net Income</span>
+              </td>
+              <td
+                v-for="(income, index) in netIncome"
+                :key="index"
+                class="text-left"
+              >
+                {{ getAmountWithSuffix(income) }}
+              </td>
+            </tr>
           </template>
           <!-- Show loading -->
           <template v-else>
