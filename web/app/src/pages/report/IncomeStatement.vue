@@ -676,6 +676,7 @@ const costOfSales = computed(() => {
                 :hide-empty-categories="false"
                 :item="category"
                 :root="true"
+                :unlink-parent="true"
               >
                 <template #custom>
                   <tr>
