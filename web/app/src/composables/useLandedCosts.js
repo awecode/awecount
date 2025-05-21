@@ -21,27 +21,31 @@ const EXCHANGE_RATES = {
 // Available currencies
 const AVAILABLE_CURRENCIES = ['USD', 'INR', 'NPR']
 
-// Utility function to convert currency
-const convertCurrency = (amount, fromCurrency, toCurrency) => {
-  if (!amount) return new Decimal(0)
-
-  amount = new Decimal(amount)
-
-  if (fromCurrency === toCurrency) return amount
-
-  // Get exchange rate
-  const rate = new Decimal(EXCHANGE_RATES[fromCurrency]?.[toCurrency] || '0')
-  if (!rate) {
-    console.warn(`Exchange rate not found for ${fromCurrency} to ${toCurrency}`)
-    return amount
-  }
-
-  return amount.mul(rate)
-}
-
 export const useLandedCosts = (fields) => {
   const loginStore = useLoginStore()
   const showLandedCosts = ref(false)
+
+  // Utility function to convert currency
+  const convertCurrency = (amount, fromCurrency, toCurrency) => {
+    if (!amount) return new Decimal(0)
+
+    if (!fromCurrency) {
+      fromCurrency = loginStore.companyInfo.currency_code || 'USD'
+    }
+
+    amount = new Decimal(amount)
+
+    if (fromCurrency === toCurrency) return amount
+
+    // Get exchange rate
+    const rate = new Decimal(EXCHANGE_RATES[fromCurrency]?.[toCurrency] || '0')
+    if (!rate) {
+      console.warn(`Exchange rate not found for ${fromCurrency} to ${toCurrency}`)
+      return amount
+    }
+
+    return amount.mul(rate)
+  }
 
   // Create a reactive reference to landed_cost_rows
   const landedCostRows = computed({
