@@ -483,6 +483,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         "voucher_no",
         "party__name",
         "remarks",
+        "reference",
         "total_amount",
         "party__tax_identification_number",
         "customer_name",
@@ -1058,6 +1059,13 @@ class PurchaseVoucherViewSet(
                 | Q(fixed_asset=True)
             ).select_related("unit"),
             ItemPurchaseSerializer,
+            True,
+            ["name"],
+        ),
+        (
+            "landed_cost_credit_accounts",
+            Account.objects.filter(category__name__in=["Cash Accounts", "Bank Accounts", "Account Payables"]),
+            GenericSerializer,
             True,
             ["name"],
         ),
@@ -2138,7 +2146,19 @@ class PurchaseSettingsViewSet(CRULViewSet):
             True,
             ["name"],
         ),
+        (
+            "landed_cost_accounts",
+            Account.objects.filter(
+                category__system_code=settings.ACCOUNT_CATEGORY_SYSTEM_CODES[
+                    "Landed Cost"
+                ]
+            ),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
     )
+
 
     def get_defaults(self, request=None, *args, **kwargs):
         p_setting = self.request.company.purchase_setting

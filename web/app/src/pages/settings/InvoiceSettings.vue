@@ -26,6 +26,7 @@ useApi(`/api/company/${route.params.company}/sales-settings/`).then((data) => {
 
 const data = {
   party_name: 'Random Party Name',
+  reference: 'REF12345',
   party_contact_no: 'jkjrkgjjr84787847',
   voucher_meta: {
     sub_total: 500.0,
@@ -141,6 +142,7 @@ const templateOptions = ref([
   { label: 'Template 1', value: 1, html: '' },
   { label: 'Template 2', value: 2, html: '' },
   { label: 'Template 3', value: 3, html: '' },
+  { label: 'Template 4', value: 4, html: '' },
 ])
 
 watch(() => salesSettings.value, (val) => {

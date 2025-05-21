@@ -142,6 +142,12 @@ export default {
               <q-checkbox v-model="fields.enable_due_date_in_voucher" label="Enable Due date in voucher?" />
             </div>
             <div>
+              <q-checkbox v-model="fields.enable_reference_in_voucher" label="Enable Reference in voucher?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.enable_discount_in_voucher" label="Enable Discount in voucher?" />
+            </div>
+            <div>
               <q-checkbox v-model="fields.enable_import_challan" label="Enable Challans Import?" />
             </div>
             <div>
@@ -157,7 +163,7 @@ export default {
               <q-checkbox v-model="fields.require_item_hs_code" label="Require Item HS Code in sales invoices?" />
             </div>
             <div class="row q-pl-sm">
-              <div class="col-12 col-sm-6">
+              <div class="col-12">
                 <q-label class="q-mb-md">
                   Invoice Footer Text
                 </q-label>

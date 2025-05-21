@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "apps.product",
     "apps.tax",
     "apps.voucher",
+    "apps.quotation",
     "apps.diagnostic",
     # 3rd party apps
     "allauth",
@@ -464,6 +465,7 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Indirect Income": "IND-INCOME",
     "Interest Income": "INT-INCOME",
     "Interest Expenses": "INT-EXP",
+    "Landed Cost": "LANDED-COST",
 }
 
 # Bank reconciliation settings

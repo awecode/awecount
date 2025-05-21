@@ -4,13 +4,15 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.voucher.models import PurchaseVoucher
+from apps.voucher.models import PaymentMode, PurchaseVoucher
 from apps.voucher.models.discounts import PurchaseDiscount
 from apps.voucher.serializers.partner import (
     PartnerCreditNoteCreateSerializer,
     PartnerDebitNoteCreateSerializer,
+    PartnerPaymentModeSerializer,
     PartnerPurchaseDiscountSerializer,
     PartnerPurchaseVoucherCreateSerializer,
+    PartnerPurchaseVoucherListSerializer,
 )
 from awecount.libs.CustomViewSet import CompanyViewSetMixin
 from awecount.libs.mixins import (
@@ -27,6 +29,11 @@ class PartnerPurchaseVoucherViewSet(
 ):
     serializer_class = PartnerPurchaseVoucherCreateSerializer
     queryset = PartnerPurchaseVoucherCreateSerializer.Meta.model.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "list" or self.action in ("choices",):
+            return PartnerPurchaseVoucherListSerializer
+        return PartnerPurchaseVoucherCreateSerializer
 
     def create(self, request, *args, **kwargs):
         voucher_no = request.data.get("voucher_no", None)
@@ -86,3 +93,19 @@ class PartnerDebitNoteViewSet(
 ):
     serializer_class = PartnerDebitNoteCreateSerializer
     queryset = PartnerDebitNoteCreateSerializer.Meta.model.objects.all()
+
+
+class PartnerPaymentModeViewSet(viewsets.GenericViewSet):
+    queryset = PaymentMode.objects.all()
+
+    @action(detail=False, methods=["get"], url_path="all")
+    def all(self, request, *args, **kwargs):
+        enabled_for_purchase = request.GET.get("enabled_for_purchase", None) == "true"
+        if enabled_for_purchase:
+            self.queryset = self.queryset.filter(enabled_for_purchase=True)
+        payment_modes = (
+            self.queryset.filter(company_id=request.company.id)
+            .order_by("-pk")
+            .only("id", "name")
+        )
+        return Response(PartnerPaymentModeSerializer(payment_modes, many=True).data)

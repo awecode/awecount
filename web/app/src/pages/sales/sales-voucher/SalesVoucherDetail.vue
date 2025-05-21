@@ -9,6 +9,7 @@ interface Fields {
   status: string
   voucher_no: string
   remarks: string
+  reference: string | null
   print_count: number
   id: number
   payment_mode: number
@@ -299,7 +300,7 @@ export default {
       </div>
       <q-card v-if="fields?.remarks" class="q-mx-lg q-my-md">
         <q-card-section>
-          <span class="text-subtitle2 text-grey-9">Remarks:</span>
+          <span class="text-subtitle2 text-grey-9">Remarks: </span>
           <span class="text-grey-9">{{ fields?.remarks }}</span>
         </q-card-section>
       </q-card>

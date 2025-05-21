@@ -30,6 +30,7 @@ urlpatterns += [
     path("", include("apps.tax.urls")),
     path("", include("apps.users.urls")),
     path("", include("apps.voucher.urls")),
+    path("", include("apps.quotation.urls")),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

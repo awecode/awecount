@@ -27,6 +27,20 @@ def get_next_voucher_no(cls, company_id, attr="voucher_no"):
         return 1
 
 
+def get_next_quotation_no(cls, company_id, attr="number"):
+    from django.db.models import Max
+
+    qs = cls.objects.all()
+    if company_id:
+        qs = qs.filter(company_id=company_id)
+
+    max_voucher_no = qs.aggregate(Max(attr))[attr + "__max"]
+    if max_voucher_no:
+        return int(max_voucher_no) + 1
+    else:
+        return 1
+
+
 def zero_for_none(obj):
     if obj is None or obj == "":
         return Decimal("0.000000")

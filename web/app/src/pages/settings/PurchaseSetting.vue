@@ -164,10 +164,10 @@ export default {
               <q-checkbox v-model="fields.enable_due_date_in_voucher" label="Enable Due date in voucher?" />
             </div>
             <div>
-              <q-checkbox v-model="fields.enable_purchase_order_import" label="Enable Purchase Orders Import?" />
+              <q-checkbox v-model="fields.enable_discount_in_voucher" label="Enable Discount in voucher?" />
             </div>
             <div>
-              <q-checkbox v-model="fields.enable_item_rate_change_alert" label="Enable Item Rate Change alert?" />
+              <q-checkbox v-model="fields.enable_purchase_order_import" label="Enable Purchase Orders Import?" />
             </div>
             <div>
               <q-checkbox v-model="fields.require_item_code" label="Require Item Code in purchase invoices?" />
@@ -175,18 +175,82 @@ export default {
             <div>
               <q-checkbox v-model="fields.require_item_hs_code" label="Require Item HS Code in purchase invoices?" />
             </div>
+            <div>
+              <q-checkbox v-model="fields.enable_item_rate_change_alert" label="Enable Item Rate Change alert?" />
+            </div>
+            <q-card v-if="fields.enable_item_rate_change_alert" class="q-mt-lg">
+              <q-card-section>
+                <div class="text-grey-7 q-mb-md">
+                  <q-icon name="info" size="sm" />
+                  List of email address that will receive alert
+                </div>
+                <div class="q-mb-md">
+                  <email-list v-model="fields.rate_change_alert_emails" :errors="emailListErrors" @update-errors="onupdateErrors" />
+                </div>
+              </q-card-section>
+            </q-card>
+            <div>
+              <q-checkbox v-model="fields.enable_landed_cost" label="Enable Landed Cost?" />
+            </div>
+            <q-card v-if="fields.enable_landed_cost" class="q-mt-lg">
+              <q-card-section>
+                <div class="text-grey-7 q-mb-md">
+                  <q-icon name="info" size="sm" />
+                  Landed Cost Type Account Mapping
+                </div>
+                <div class="q-mb-md">
+                  <q-table
+                    bordered
+                    flat
+                    hide-pagination
+                    :columns="[
+                      { name: 'type', label: 'Cost Type', field: 'type', align: 'left', style: 'width: 30%' },
+                      { name: 'account', label: 'Account', field: 'account', align: 'left', style: 'width: 70%' },
+                    ]"
+                    :rows="[
+                      { type: 'Duty', account: fields.landed_cost_accounts?.duty },
+                      { type: 'Labor', account: fields.landed_cost_accounts?.labor },
+                      { type: 'Freight', account: fields.landed_cost_accounts?.freight },
+                      { type: 'Insurance', account: fields.landed_cost_accounts?.insurance },
+                      { type: 'Brokerage', account: fields.landed_cost_accounts?.brokerage },
+                      { type: 'Storage', account: fields.landed_cost_accounts?.storage },
+                      { type: 'Packaging', account: fields.landed_cost_accounts?.packaging },
+                      { type: 'Loading', account: fields.landed_cost_accounts?.loading },
+                      { type: 'Unloading', account: fields.landed_cost_accounts?.unloading },
+                      { type: 'Regulatory Fee', account: fields.landed_cost_accounts?.regulatory_fee },
+                      { type: 'Customs Declaration', account: fields.landed_cost_accounts?.customs_declaration },
+                      { type: 'Other Charges', account: fields.landed_cost_accounts?.other_charges },
+                    ]"
+                    :rows-per-page-options="[0]"
+                  >
+                    <template #body-cell-account="props">
+                      <q-td :props="props">
+                        <n-auto-complete-v2
+                          v-model="fields.landed_cost_accounts[props.row.type.toLowerCase().replace(' ', '_')]"
+                          dense
+                          emit-value
+                          map-options
+                          option-label="name"
+                          option-value="id"
+                          :endpoint="`/api/company/${$route.params.company}/purchase-settings/create-defaults/landed_cost_accounts`"
+                          :options="formDefaults.collections.landed_cost_accounts"
+                        >
+                          <template #append>
+                            <q-icon
+                              v-if="fields.landed_cost_accounts[props.row.type.toLowerCase().replace(' ', '_')]"
+                              class="cursor-pointer"
+                              name="close"
+                              @click.stop.prevent="fields.landed_cost_accounts[props.row.type.toLowerCase().replace(' ', '_')] = null"
+                            />
+                          </template>
+                        </n-auto-complete-v2>
+                      </q-td>
+                    </template>
+                  </q-table>
+                </div>
+              </q-card-section>
+            </q-card>
           </div>
-          <q-card v-if="fields.enable_item_rate_change_alert" class="q-mt-lg">
-            <q-card-section>
-              <div class="text-grey-7 q-mb-md">
-                <q-icon name="info" size="sm" />
-                List of email address that will receive alert
-              </div>
-              <div class="q-mb-md">
-                <email-list v-model="fields.rate_change_alert_emails" :errors="emailListErrors" @update-errors="onupdateErrors" />
-              </div>
-            </q-card-section>
-          </q-card>
         </div>
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">
