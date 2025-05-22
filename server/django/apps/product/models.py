@@ -11,7 +11,6 @@ from django.db.models import F, Func, JSONField, Q, Sum, Value, Window
 from django.db.models.functions import Cast, Coalesce
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-from django.forms.models import model_to_dict
 from django.utils import timezone
 
 from apps.company.models import Company, CompanyBaseModel
@@ -26,6 +25,7 @@ from apps.ledger.models import set_transactions as set_ledger_transactions
 from apps.tax.models import TaxScheme
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import zero_for_none
+from awecount.libs.helpers import jsonify
 
 
 class Unit(models.Model):
@@ -1518,7 +1518,7 @@ def _transaction_delete(sender, instance, **kwargs):
     TransactionRemovalLog.objects.create(
         row_id=instance.id,
         transaction_type="Inventory",
-        row_dump=model_to_dict(instance),
+        row_dump=jsonify(instance),
     )
 
 
