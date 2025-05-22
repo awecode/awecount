@@ -1442,7 +1442,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
             obsolete_transactions.delete()
 
 
-class TransatcionRemovalLog(models.Model):
+class TransactionRemovalLog(models.Model):
     deleted_at = models.DateTimeField(auto_now_add=True)
     row_id = models.PositiveIntegerField(primary_key=True)
     transaction_type = models.CharField(
@@ -1515,7 +1515,7 @@ def _transaction_delete(sender, instance, **kwargs):
             ],
         )
 
-    TransatcionRemovalLog.objects.create(
+    TransactionRemovalLog.objects.create(
         row_id=instance.id,
         transaction_type="Inventory",
         row_dump=model_to_dict(instance),
