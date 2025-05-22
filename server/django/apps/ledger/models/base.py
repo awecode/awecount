@@ -546,6 +546,7 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
     :type clear: object
     Clears all transactions not accounted here
     """
+    # TODO: Security: Validate company. At least make sure all accounts are from the same company. Also validate against the source or submodel company.
     if isinstance(date, str):
         date = datetime.strptime(date, "%Y-%m-%d")
 

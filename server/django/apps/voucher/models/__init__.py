@@ -1368,40 +1368,62 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
             set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
         if self.company.purchase_setting.enable_landed_cost:
+            # TODO Optmiziation: Create account map outside the loop
             account_map = {}
             landed_cost_accounts = self.company.purchase_setting.landed_cost_accounts
             for landed_cost in self.landed_cost_rows.all():
-                if landed_cost.type == LandedCostRowType.CUSTOMS_VALUATION_UPLIFT:
-                    continue
-
                 entries = []
-                account = account_map.get(landed_cost.type, None)
-                if not account:
-                    account = Account.objects.get(
-                        id=landed_cost_accounts[landed_cost.type]
+                if landed_cost.type == LandedCostRowType.CUSTOMS_VALUATION_UPLIFT:
+                    # Only account tax amount of uplifted value
+                    account = landed_cost.tax_scheme.receivable
+                    entries.append(["dr", account, landed_cost.tax_amount])
+                    entries.append(
+                        [
+                            "cr",
+                            landed_cost.credit_account,
+                            landed_cost.tax_amount,
+                        ]
                     )
-                    account_map[landed_cost.type] = account
 
-                entries.append(["dr", account, landed_cost.amount])
-
-                row_tax_amount = Decimal("0.00")
-
-                if landed_cost.tax_scheme:
-                    row_tax_amount = (
-                        landed_cost.tax_scheme.rate * landed_cost.amount / Decimal(100)
+                if landed_cost.type == LandedCostRowType.TAX_ON_PURCHASE:
+                    account = landed_cost.tax_scheme.receivable
+                    entries.append(["dr", account, landed_cost.amount])
+                    entries.append(
+                        [
+                            "cr",
+                            landed_cost.credit_account,
+                            landed_cost.amount,
+                        ]
                     )
-                    if row_tax_amount:
-                        entries.append(
-                            ["dr", landed_cost.tax_scheme.receivable, row_tax_amount]
+                else:
+                    account = account_map.get(landed_cost.type, None)
+                    if not account:
+                        account = Account.objects.get(
+                            id=landed_cost_accounts[landed_cost.type],
+                            company_id=self.company_id,
                         )
+                        account_map[landed_cost.type] = account
 
-                entries.append(
-                    [
-                        "cr",
-                        landed_cost.credit_account,
-                        landed_cost.amount + row_tax_amount,
-                    ]
-                )
+                    entries.append(["dr", account, landed_cost.amount])
+
+                    row_tax_amount = Decimal("0.00")
+
+                    if landed_cost.tax_scheme:
+                        row_tax_amount = (
+                            landed_cost.tax_scheme.rate * landed_cost.amount / Decimal(100)
+                        )
+                        if row_tax_amount:
+                            entries.append(
+                                ["dr", landed_cost.tax_scheme.receivable, row_tax_amount]
+                            )
+
+                    entries.append(
+                        [
+                            "cr",
+                            landed_cost.credit_account,
+                            landed_cost.amount + row_tax_amount,
+                        ]
+                    )
                 print(entries)
 
                 set_ledger_transactions(landed_cost, self.date, *entries, clear=True)
