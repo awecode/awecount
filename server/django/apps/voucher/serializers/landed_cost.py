@@ -22,6 +22,7 @@ class CreditAccountSerializer(BaseModelSerializer):
 class LandedCostRowSerializer(BaseModelSerializer):
     """Serializer for LandedCostRow model."""
 
+    id = serializers.IntegerField(required=False)
     type = serializers.ChoiceField(choices=LandedCostRowType.choices)
 
     tax_scheme = TaxSchemeSerializer(read_only=True)

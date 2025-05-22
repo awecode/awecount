@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from apps.ledger.models import JournalEntry
 from apps.ledger.serializers import PartyMinSerializer
 from apps.product.models import Item
 from apps.product.serializers import ItemPurchaseSerializer
@@ -222,11 +223,17 @@ class PurchaseVoucherCreateSerializer(
 
         # Update landed cost rows
         if landed_cost_rows_data:
-            # Delete existing rows
-            instance.landed_cost_rows.all().delete()
-            # Create new rows
+            new_row_ids = []
             for row_data in landed_cost_rows_data:
-                LandedCostRow.objects.create(invoice=instance, **row_data)
+                new_row, __created = LandedCostRow.objects.update_or_create(
+                    invoice=instance, pk=row_data.get("id"), defaults=row_data
+                )
+                new_row_ids.append(new_row.id)
+            instance.landed_cost_rows.exclude(id__in=new_row_ids).delete()
+            JournalEntry.objects.filter(
+                content_type__model="landedcostrow",
+                source_voucher_id=instance.id,
+            ).exclude(object_id__in=new_row_ids).delete()
 
         if purchase_orders:
             instance.purchase_orders.clear()

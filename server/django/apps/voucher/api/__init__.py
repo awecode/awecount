@@ -1671,7 +1671,6 @@ class InvoiceDesignViewSet(CRULViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         request.data._mutable = True
-        design = request.data.pop("design", None)
         serializer = InvoiceDesignSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(**serializer.validated_data)
