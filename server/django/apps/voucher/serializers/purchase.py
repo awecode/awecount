@@ -74,6 +74,16 @@ class PurchaseVoucherCreateSerializer(
     selected_party_obj = PartyMinSerializer(source="party", read_only=True)
     selected_mode_obj = GenericSerializer(source="bank_account", read_only=True)
 
+    def to_representation(self, instance):
+        """
+        Overridden to sort landed_cost_rows by id.
+        """
+        representation = super().to_representation(instance)
+        if 'landed_cost_rows' in representation and representation['landed_cost_rows'] is not None:
+            # Ensure each row has an 'id' before sorting, or handle cases where it might be missing
+            representation['landed_cost_rows'].sort(key=lambda x: x.get('id') if x.get('id') is not None else float('inf'))
+        return representation
+
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
             return
@@ -307,6 +317,16 @@ class PurchaseVoucherDetailSerializer(BaseModelSerializer):
         source="company.purchase_setting.enable_row_description"
     )
     purchase_order_numbers = serializers.ReadOnlyField()
+
+    def to_representation(self, instance):
+        """
+        Overridden to sort landed_cost_rows by id.
+        """
+        representation = super().to_representation(instance)
+        if 'landed_cost_rows' in representation and representation['landed_cost_rows'] is not None:
+            # Ensure each row has an 'id' before sorting, or handle cases where it might be missing
+            representation['landed_cost_rows'].sort(key=lambda x: x.get('id') if x.get('id') is not None else float('inf'))
+        return representation
 
     class Meta:
         model = PurchaseVoucher
