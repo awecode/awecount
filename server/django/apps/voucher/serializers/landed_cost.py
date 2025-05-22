@@ -39,6 +39,24 @@ class LandedCostRowSerializer(BaseModelSerializer):
         allow_null=True,
     )
 
+    def validate(self, data):
+        """
+        Custom validation to ensure credit_account_id is provided
+        unless the type is CUSTOMS_VALUATION_UPLIFT.
+        """
+        landed_cost_type = data.get("type")
+        if (
+            landed_cost_type != LandedCostRowType.CUSTOMS_VALUATION_UPLIFT
+            and data.get("credit_account_id") is None
+            and data.get("credit_account") is None
+        ):
+            raise serializers.ValidationError(
+                {
+                    "credit_account_id": f"Credit account is required for this type of landed cost row: {landed_cost_type}"
+                }
+            )
+        return data
+
     class Meta:
         model = LandedCostRow
         fields = [

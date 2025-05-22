@@ -1064,7 +1064,7 @@ class PurchaseVoucherViewSet(
         ),
         (
             "landed_cost_credit_accounts",
-            Account.objects.filter(category__name__in=["Cash Accounts", "Bank Accounts", "Account Payables"]),
+            Account.objects.filter(category__name__in=["Cash Accounts", "Bank Accounts", "Suppliers"]),
             GenericSerializer,
             True,
             ["name"],
