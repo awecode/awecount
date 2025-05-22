@@ -235,7 +235,14 @@ export const useAuthStore = defineStore(
     }
 
     const resetPassword = async (data: Record<string, any>) => {
-      return await _request(URLs.RESET_PASSWORD, { method: 'POST', body: data })
+      try {
+        return await _request(URLs.RESET_PASSWORD, { method: 'POST', body: data })
+      } catch (error) {
+        if (error.response?.status === 401) {
+          return error.response._data
+        }
+        throw error
+      }
     }
 
     const checkEmail = async (email: string) => {
