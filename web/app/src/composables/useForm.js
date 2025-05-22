@@ -52,6 +52,84 @@ export default (endpoint, config) => {
     return withTrailingSlash(joinURL('/', ...newParts))
   }
 
+  function createErrorMessage(errorData) {
+    const messages = []
+
+    // Handle top-level 'detail' message directly from DRF
+    if (typeof errorData === 'object' && errorData !== null && errorData.detail) {
+      messages.push(errorData.detail)
+      return messages // If a detail message exists, it often overrides other structured errors
+    }
+
+    if (typeof errorData === 'object' && errorData !== null) {
+      for (const field in errorData) {
+        if (Object.prototype.hasOwnProperty.call(errorData, field)) {
+          const errors = errorData[field]
+
+          if (field === 'landed_cost_rows' && Array.isArray(errors)) {
+            errors.forEach((rowErrors, index) => {
+              if (typeof rowErrors === 'object' && rowErrors !== null && Object.keys(rowErrors).length > 0) {
+                for (const subField in rowErrors) {
+                  if (Object.prototype.hasOwnProperty.call(rowErrors, subField)) {
+                    const subFieldMessages = rowErrors[subField]
+                    if (Array.isArray(subFieldMessages)) {
+                      subFieldMessages.forEach((msg) => {
+                        messages.push(`Landed Cost Row #${index + 1}: ${msg}`)
+                      })
+                    } else if (typeof subFieldMessages === 'string') {
+                      const formattedSubField = subField.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                      messages.push(`Landed Cost Row #${index + 1}: ${formattedSubField}: ${subFieldMessages}`)
+                    }
+                  }
+                }
+              } else if (Array.isArray(rowErrors) && rowErrors.length > 0) {
+                rowErrors.forEach((msg) => {
+                  messages.push(`Landed Cost Row #${index + 1}: ${msg}`)
+                })
+              }
+            })
+          } else if (Array.isArray(errors)) {
+            errors.forEach((msg) => {
+              const formattedField = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+              messages.push(`${formattedField}: ${msg}`)
+            })
+          } else if (typeof errors === 'string') {
+            const formattedField = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+            messages.push(`${formattedField}: ${errors}`)
+          }
+        }
+      }
+    } else if (Array.isArray(errorData)) {
+      errorData.forEach((itemError, index) => {
+        if (typeof itemError === 'object' && itemError !== null && Object.keys(itemError).length > 0) {
+          for (const field in itemError) {
+            if (Object.prototype.hasOwnProperty.call(itemError, field)) {
+              const fieldMessages = itemError[field]
+              if (Array.isArray(fieldMessages)) {
+                fieldMessages.forEach((msg) => {
+                  const formattedField = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                  messages.push(`Item #${index + 1} - ${formattedField}: ${msg}`)
+                })
+              } else if (typeof fieldMessages === 'string') {
+                const formattedField = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                messages.push(`Item #${index + 1} - ${formattedField}: ${fieldMessages}`)
+              }
+            }
+          }
+        } else if (typeof itemError === 'string') {
+          messages.push(`Item #${index + 1}: ${itemError}`)
+        }
+      })
+    }
+
+    // Fallback if no specific messages were parsed
+    if (messages.length === 0) {
+      return ['Please fill out the form correctly or check your input.']
+    }
+
+    return messages
+  }
+
   const submitForm = async () => {
     loading.value = true
     errors.value = {}
@@ -90,24 +168,22 @@ export default (endpoint, config) => {
         return data
       })
       .catch((data) => {
-        let message
+        let messages = []
         if (data.status === 400) {
-          message = 'Please fill out the form correctly.'
-          if (data.data?.detail) {
-            message = `${data.data.detail}`
-          }
+          const responseData = data.response._data || data.data
+          messages = createErrorMessage(responseData)
           loading.value = false
-          processErrors(data.response._data)
+          processErrors(responseData)
         }
         if (data.status === 404) {
           if (data.data?.detail) {
-            message = `Not found - ${data.data.detail}`
+            messages = [`Not found - ${data.data.detail}`]
           } else {
-            message = 'Not found!'
+            messages = ['Not found!']
           }
           loading.value = false
         } else if (data.status === 500) {
-          message = 'Server Error! Please contact us with the problem.'
+          messages = ['Server Error! Please contact us with the problem.']
           loading.value = false
         } else if (data.status === 422) {
           $q.dialog({
@@ -152,10 +228,12 @@ export default (endpoint, config) => {
               loading.value = false
             })
         } else {
-          $q.notify({
-            color: 'negative',
-            message,
-            icon: 'report_problem',
+          messages.forEach((msg) => {
+            $q.notify({
+              color: 'negative',
+              message: msg,
+              icon: 'report_problem',
+            })
           })
           loading.value = false
         }
