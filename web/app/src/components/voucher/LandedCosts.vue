@@ -65,7 +65,7 @@ const handleTaxSchemeChange = (row) => {
   <q-card v-if="formDefaults.options?.enable_landed_costs">
     <q-card-section>
       <div class="row items-center q-mb-sm">
-        <q-checkbox v-model="showLandedCosts" label="Additional Costs" />
+        <q-checkbox v-model="showLandedCosts" label="Additional Costs" :disable="!!landedCostRows.length && showLandedCosts" />
       </div>
       <div v-if="showLandedCosts">
         <div v-if="landedCostRows.length" class="landed-costs-rows">
@@ -92,7 +92,7 @@ const handleTaxSchemeChange = (row) => {
                         v-model="row.is_percentage"
                         class="full-width"
                         :disable="row.type === 'Tax on Purchase'"
-                        :label="row.is_percentage ? 'Percentage' : 'Fixed'"
+                        :label="row.is_percentage ? 'Percent' : 'Fixed'"
                       />
                     </div>
                   </div>
