@@ -150,9 +150,6 @@ class PurchaseVoucherCreateSerializer(
         #     return data
 
     def validate_rows(self, rows):
-        request = self.context["request"]
-        purchase_setting = request.company.purchase_setting
-
         # Collect all item IDs and fetch items in a single query
         item_ids = [row.get("item_id") for row in rows]
         items = {item.id: item for item in Item.objects.filter(id__in=item_ids)}
@@ -206,7 +203,7 @@ class PurchaseVoucherCreateSerializer(
         instance.apply_transactions(voucher_meta=meta)
         return instance
 
-    def update(self, instance, validated_data):
+    def update(self, instance: PurchaseVoucher, validated_data):
         rows_data = validated_data.pop("rows")
         landed_cost_rows_data = validated_data.pop("landed_cost_rows", [])
         if validated_data.get("voucher_no") == "":

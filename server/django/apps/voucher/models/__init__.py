@@ -2226,7 +2226,7 @@ class LandedCostRow(models.Model):
     total_amount = models.DecimalField(max_digits=24, decimal_places=6, default=Decimal("0"))
 
     def save(self, *args, **kwargs):
-        if not self.tax_scheme:
+        if self.type == LandedCostRowType.TAX_ON_PURCHASE or not self.tax_scheme:
             self.tax_amount = Decimal("0")
             self.total_amount = self.amount
         else:
