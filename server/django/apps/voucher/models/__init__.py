@@ -1424,8 +1424,6 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                             landed_cost.amount + row_tax_amount,
                         ]
                     )
-                print(entries)
-
                 set_ledger_transactions(landed_cost, self.date, *entries, clear=True)
 
         self.apply_inventory_transaction()

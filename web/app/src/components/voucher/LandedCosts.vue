@@ -164,15 +164,15 @@ const handleTaxSchemeChange = (row) => {
 
                 <div class="col-12 col-md-5">
                   <n-auto-complete-v2
-                    v-if="row.type !== 'Customs Valuation Uplift'"
+                    v-if="!(row.type === 'Customs Valuation Uplift' && (!row.tax_scheme_id || !parseFloat(row.tax_scheme?.rate)))"
                     v-model="row.credit_account_id"
                     dense
                     emit-value
                     map-options
-                    label="Credit Account"
                     option-label="name"
                     option-value="id"
                     :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/landed_cost_credit_accounts`"
+                    :label="`${row.type === 'Customs Valuation Uplift' ? 'Credit Account for Tax' : 'Credit Account'}`"
                     :options="formDefaults.collections?.landed_cost_credit_accounts"
                   >
                     <template #append>
