@@ -461,7 +461,7 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Liabilities": "LIABILITIES",
     "Equity": "EQUITY",
     "Opening Balance Difference": "OPEN-BAL-DIFF",
-    "Landed Cost": "LANDED-COST",
+    "Additional Cost": "ADD-COST",
 }
 
 # Bank reconciliation settings

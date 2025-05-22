@@ -179,5 +179,5 @@ def handle_company_creation(sender, **kwargs):
     company = kwargs.get("company")
     SalesSetting.objects.create(company=company)
     QuotationSetting.objects.create(company=company)
-    PurchaseSetting.objects.create(company=company)
+    PurchaseSetting.objects.get_or_create(company=company)
     InventorySetting.objects.create(company=company)
