@@ -449,7 +449,7 @@ export const useLandedCosts = (fields) => {
     return fields.value.rows?.map((row) => {
       const rowRate = new Decimal(row.rate || '0')
       const rowAmount = rowRate.mul(row.quantity || '1')
-      const additionalCost = totalAdditionalCost.value.div(invoiceTotal.value).mul(rowAmount).div(row.quantity || '1')
+      const additionalCost = totalAdditionalCost.value.sub(totalTax.value).div(invoiceTotal.value).mul(rowAmount).div(row.quantity || '1')
       const totalCost = rowRate.add(additionalCost)
       return {
         ...row,
