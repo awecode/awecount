@@ -26,7 +26,7 @@ const fieldsValue = computed(() => props.fields)
 
 const {
   showLandedCosts,
-  landedCostTypes,
+  LANDED_COST_TYPES,
   AVAILABLE_CURRENCIES,
   addLandedCostRow,
   handleTypeChange,
@@ -83,7 +83,7 @@ const handleTaxSchemeChange = (row) => {
                         map-options
                         options-dense
                         label="Type"
-                        :options="landedCostTypes"
+                        :options="LANDED_COST_TYPES"
                         @update:model-value="handleTypeChange(row)"
                       />
                     </div>

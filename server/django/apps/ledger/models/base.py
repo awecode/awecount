@@ -1144,14 +1144,15 @@ def handle_company_creation(sender, **kwargs):
     from apps.voucher.models import LandedCostRowType
 
     for index, cost_type in enumerate(LandedCostRowType.values):
-        account = Account.objects.create(
-            name=cost_type,
-            code=f"E-D-LC-{cost_type[:3].upper()}{index}",
-            category=additional_cost_category,
-            company=company,
-            default=True,
-        )
-        additional_cost_accounts[cost_type] = account.id
+        if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
+            account = Account.objects.create(
+                name=cost_type,
+                code=f"E-D-LC-{cost_type[:3].upper()}{index}",
+                category=additional_cost_category,
+                company=company,
+                default=True,
+            )
+            additional_cost_accounts[cost_type] = account.id
 
     PurchaseSetting = apps.get_model("voucher", "PurchaseSetting")
     purchase_setting, _ = PurchaseSetting.objects.get_or_create(company=company)

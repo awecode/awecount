@@ -18,6 +18,22 @@ const EXCHANGE_RATES = {
   },
 }
 
+export const LANDED_COST_TYPES = [
+  'Tax on Purchase',
+  'Freight',
+  'Customs Valuation Uplift',
+  'Duty',
+  'Labor',
+  'Insurance',
+  'Brokerage',
+  'Storage',
+  'Packaging',
+  'Loading',
+  'Unloading',
+  'Regulatory Fee',
+  'Customs Declaration',
+  'Other Charges',
+]
 // Available currencies
 const AVAILABLE_CURRENCIES = ['USD', 'INR', 'NPR']
 
@@ -186,23 +202,7 @@ export const useLandedCosts = (fields) => {
     { immediate: true },
   )
 
-  const landedCostTypes = [
-    { label: 'Tax on Purchase', value: 'Tax on Purchase' },
-    { label: 'Freight', value: 'Freight' },
-    { label: 'Customs Valuation Uplift', value: 'Customs Valuation Uplift' },
-    { label: 'Duty', value: 'Duty' },
-    { label: 'Labor', value: 'Labor' },
-    { label: 'Insurance', value: 'Insurance' },
-    { label: 'Brokerage', value: 'Brokerage' },
-    { label: 'Storage', value: 'Storage' },
-    { label: 'Packaging', value: 'Packaging' },
-    { label: 'Loading', value: 'Loading' },
-    { label: 'Unloading', value: 'Unloading' },
-    { label: 'Regulatory Fee', value: 'Regulatory Fee' },
-    { label: 'Customs Declaration', value: 'Customs Declaration' },
-    { label: 'Other Charges', value: 'Other Charges' },
-  ]
-
+  // TODO Only set presets for non-default values, ie. is_percentage:true
   // Presets for landed cost types
   const LANDED_COST_PRESETS = {
     'Duty': {
@@ -465,7 +465,7 @@ export const useLandedCosts = (fields) => {
 
   return {
     showLandedCosts,
-    landedCostTypes,
+    LANDED_COST_TYPES,
     landedCostColumns,
     AVAILABLE_CURRENCIES,
     addLandedCostRow,
