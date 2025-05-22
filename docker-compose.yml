@@ -105,8 +105,8 @@ services:
       USE_WHITENOISE: "True"
 
     depends_on:
-      - awecount-db
-      - awecount-redis
+      - database
+      - redis
 
   worker:
     build:
@@ -121,8 +121,8 @@ services:
       <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
     depends_on:
       - backend
-      - awecount-db
-      - awecount-redis
+      - database
+      - redis
 
   migrator:
     build:
@@ -136,10 +136,10 @@ services:
     environment:
       <<: [ *app-env, *db-env, *redis-env, *sentry-env ]
     depends_on:
-      - awecount-db
-      - awecount-redis
+      - database
+      - redis
 
-  awecount-db:
+  database:
     image: postgres:16-alpine
     deploy:
       replicas: 1
@@ -151,7 +151,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  awecount-redis:
+  redis:
     image: valkey/valkey:7.2-alpine
     deploy:
       replicas: 1
