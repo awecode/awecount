@@ -1141,6 +1141,7 @@ def handle_company_creation(sender, **kwargs):
     additional_cost_accounts = {}
 
     from apps.voucher.models import LandedCostRowType
+
     for index, cost_type in enumerate(LandedCostRowType.values):
         account = Account.objects.create(
             name=cost_type,
@@ -1325,16 +1326,23 @@ class TransactionModel(models.Model):
             return self.voucher_id
         return self.id
 
-    def journal_entries(self):
+    def journal_entries(self, additional_kwargs=None):
         app_label = self._meta.app_label
         model = self.__class__.__name__.lower()
         qs = JournalEntry.objects.filter(content_type__app_label=app_label)
         if hasattr(self, "rows"):
             row_ids = self.rows.values_list("id", flat=True)
-            qs = qs.filter(
-                Q(content_type__model=model + "row", object_id__in=row_ids)
-                | Q(content_type__model=model, object_id=self.id)
-            )
+            if additional_kwargs:
+                qs = qs.filter(
+                    Q(content_type__model=model + "row", object_id__in=row_ids)
+                    | Q(content_type__model=model, object_id=self.id)
+                    | Q(**additional_kwargs)
+                )
+            else:
+                qs = qs.filter(
+                    Q(content_type__model=model + "row", object_id__in=row_ids)
+                    | Q(content_type__model=model, object_id=self.id)
+                )
         else:
             qs = qs.filter(content_type__model=model, object_id=self.id)
         return qs

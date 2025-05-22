@@ -1377,7 +1377,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                 entries = []
                 account = account_map.get(landed_cost.type, None)
                 if not account:
-                    account = Account.objects.get(id=landed_cost_accounts[landed_cost.type])
+                    account = Account.objects.get(
+                        id=landed_cost_accounts[landed_cost.type]
+                    )
                     account_map[landed_cost.type] = account
 
                 entries.append(["dr", account, landed_cost.amount])
@@ -1389,13 +1391,31 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                         landed_cost.tax_scheme.rate * landed_cost.amount / Decimal(100)
                     )
                     if row_tax_amount:
-                        entries.append(["dr", landed_cost.tax_scheme.receivable, row_tax_amount])
+                        entries.append(
+                            ["dr", landed_cost.tax_scheme.receivable, row_tax_amount]
+                        )
 
-                entries.append(["cr", landed_cost.credit_account, landed_cost.amount + row_tax_amount])
+                entries.append(
+                    [
+                        "cr",
+                        landed_cost.credit_account,
+                        landed_cost.amount + row_tax_amount,
+                    ]
+                )
+                print(entries)
 
-                set_ledger_transactions(self, self.date, *entries, clear=True)
+                set_ledger_transactions(landed_cost, self.date, *entries, clear=True)
 
         self.apply_inventory_transaction()
+
+    def journal_entries(self):
+        # Also include landed cost rows in the journal entries
+        landed_cost_ids = self.landed_cost_rows.values_list("id", flat=True)
+        landed_cost_kwargs = {
+            "content_type__model": "landedcostrow",
+            "object_id__in": landed_cost_ids,
+        }
+        return super().journal_entries(additional_kwargs=landed_cost_kwargs)
 
 
 class PurchaseVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
@@ -2222,8 +2242,30 @@ class LandedCostRow(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    tax_amount = models.DecimalField(max_digits=24, decimal_places=6, default=Decimal("0"))
-    total_amount = models.DecimalField(max_digits=24, decimal_places=6, default=Decimal("0"))
+    tax_amount = models.DecimalField(
+        max_digits=24, decimal_places=6, default=Decimal("0")
+    )
+    total_amount = models.DecimalField(
+        max_digits=24, decimal_places=6, default=Decimal("0")
+    )
+
+    def get_voucher_no(self):
+        return self.invoice.voucher_no
+
+    @property
+    def voucher(self):
+        return self.invoice
+
+    @property
+    def voucher_no(self):
+        return self.invoice.voucher_no
+
+    @property
+    def voucher_id(self):
+        return self.invoice.pk
+
+    def get_source_id(self):
+        return self.invoice.pk
 
     def save(self, *args, **kwargs):
         if self.type == LandedCostRowType.TAX_ON_PURCHASE or not self.tax_scheme:

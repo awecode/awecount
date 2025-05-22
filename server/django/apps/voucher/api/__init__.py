@@ -1064,7 +1064,9 @@ class PurchaseVoucherViewSet(
         ),
         (
             "landed_cost_credit_accounts",
-            Account.objects.filter(category__name__in=["Cash Accounts", "Bank Accounts", "Suppliers"]),
+            Account.objects.filter(
+                category__name__in=["Cash Accounts", "Bank Accounts", "Suppliers"]
+            ),
             GenericSerializer,
             True,
             ["name"],
@@ -1180,7 +1182,7 @@ class PurchaseVoucherViewSet(
 
     @action(detail=True, url_path="journal-entries")
     def journal_entries(self, request, pk, *args, **kwargs):
-        purchase_voucher = get_object_or_404(PurchaseVoucher, pk=pk)
+        purchase_voucher: PurchaseVoucher = get_object_or_404(PurchaseVoucher, pk=pk)
         journals = purchase_voucher.journal_entries()
         return Response(SalesJournalEntrySerializer(journals, many=True).data)
 
@@ -2158,7 +2160,6 @@ class PurchaseSettingsViewSet(CRULViewSet):
             ["name"],
         ),
     )
-
 
     def get_defaults(self, request=None, *args, **kwargs):
         p_setting = self.request.company.purchase_setting
