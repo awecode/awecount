@@ -74,28 +74,28 @@ export default (endpoint, config) => {
                     const subFieldMessages = rowErrors[subField]
                     if (Array.isArray(subFieldMessages)) {
                       subFieldMessages.forEach((msg) => {
-                        messages.push(`Landed Cost Row #${index + 1}: ${msg}`)
+                        messages.unshift(`Landed Cost Row #${index + 1}: ${msg}`)
                       })
                     } else if (typeof subFieldMessages === 'string') {
                       const formattedSubField = subField.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-                      messages.push(`Landed Cost Row #${index + 1}: ${formattedSubField}: ${subFieldMessages}`)
+                      messages.unshift(`Landed Cost Row #${index + 1}: ${formattedSubField}: ${subFieldMessages}`)
                     }
                   }
                 }
               } else if (Array.isArray(rowErrors) && rowErrors.length > 0) {
                 rowErrors.forEach((msg) => {
-                  messages.push(`Landed Cost Row #${index + 1}: ${msg}`)
+                  messages.unshift(`Landed Cost Row #${index + 1}: ${msg}`)
                 })
               }
             })
           } else if (Array.isArray(errors)) {
             errors.forEach((msg) => {
               const formattedField = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-              messages.push(`${formattedField}: ${msg}`)
+              messages.unshift(`${formattedField}: ${msg}`)
             })
           } else if (typeof errors === 'string') {
             const formattedField = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-            messages.push(`${formattedField}: ${errors}`)
+            messages.unshift(`${formattedField}: ${errors}`)
           }
         }
       }
@@ -108,16 +108,16 @@ export default (endpoint, config) => {
               if (Array.isArray(fieldMessages)) {
                 fieldMessages.forEach((msg) => {
                   const formattedField = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-                  messages.push(`Item #${index + 1} - ${formattedField}: ${msg}`)
+                  messages.unshift(`Item #${index + 1} - ${formattedField}: ${msg}`)
                 })
               } else if (typeof fieldMessages === 'string') {
                 const formattedField = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-                messages.push(`Item #${index + 1} - ${formattedField}: ${fieldMessages}`)
+                messages.unshift(`Item #${index + 1} - ${formattedField}: ${fieldMessages}`)
               }
             }
           }
         } else if (typeof itemError === 'string') {
-          messages.push(`Item #${index + 1}: ${itemError}`)
+          messages.unshift(`Item #${index + 1}: ${itemError}`)
         }
       })
     }
