@@ -1375,17 +1375,20 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                 entries = []
                 if landed_cost.type == LandedCostRowType.CUSTOMS_VALUATION_UPLIFT:
                     # Only account tax amount of uplifted value
-                    account = landed_cost.tax_scheme.receivable
-                    entries.append(["dr", account, landed_cost.tax_amount])
-                    entries.append(
-                        [
-                            "cr",
-                            landed_cost.credit_account,
-                            landed_cost.tax_amount,
-                        ]
-                    )
-
-                if landed_cost.type == LandedCostRowType.TAX_ON_PURCHASE:
+                    if landed_cost.tax_scheme and landed_cost.tax_scheme.rate:
+                        credit_account = landed_cost.credit_account
+                        if not credit_account:
+                            raise ValidationError("Credit account is required for customs valuation uplift when tax is applied")
+                        account = landed_cost.tax_scheme.receivable
+                        entries.append(["dr", account, landed_cost.tax_amount])
+                        entries.append(
+                            [
+                                "cr",
+                                landed_cost.credit_account,
+                                landed_cost.tax_amount,
+                            ]
+                        )
+                elif landed_cost.type == LandedCostRowType.TAX_ON_PURCHASE:
                     account = landed_cost.tax_scheme.receivable
                     entries.append(["dr", account, landed_cost.amount])
                     entries.append(
