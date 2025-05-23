@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django_q.tasks import async_task
-from rest_framework import mixins, permissions, status, views, viewsets
+from rest_framework import decorators, mixins, permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -448,7 +448,7 @@ class UserCompanyJoinEndpoint(views.APIView):
             status=status.HTTP_200_OK,
         )
 
-    @permission_classes([AllowAny])
+    @decorators.permission_classes([AllowAny])
     def post(self, request):
         token = request.data.get("token")
         accept_or_reject = request.data.get("response")
