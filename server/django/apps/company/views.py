@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django_q.tasks import async_task
 from rest_framework import mixins, permissions, status, views, viewsets
-from rest_framework.decorators import action, permission_classes
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
@@ -350,6 +350,7 @@ class CompanyInvitationViewset(viewsets.ModelViewSet):
 
 class UserCompanyInvitationsEndpoint(views.APIView):
     model = CompanyMemberInvite
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         qs = self.model.objects.filter(
@@ -404,6 +405,7 @@ class UserCompanyInvitationsEndpoint(views.APIView):
 
 class UserCompanyJoinEndpoint(views.APIView):
     model = CompanyMemberInvite
+    permission_classes = [permissions.IsAuthenticated]
 
     def _decode_token(self, token):
         decoded_token = json.loads(urlsafe_base64_decode(token).decode("utf-8"))
@@ -521,6 +523,7 @@ class UserCompanyJoinEndpoint(views.APIView):
 
 class UserCompaniesEndpoint(views.APIView):
     model = Company
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         user_companies = Company.objects.filter(
