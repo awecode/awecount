@@ -536,6 +536,7 @@ class UserCompaniesEndpoint(views.APIView):
 
 class UserCompanySwitchEndpoint(views.APIView):
     model = Company
+    permission_classes = [permissions.IsAuthenticated]
 
     def patch(self, request):
         if not request.data.get("company_slug"):
