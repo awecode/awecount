@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django_q.tasks import async_task
-from rest_framework import mixins, status, views, viewsets
+from rest_framework import mixins, permissions, status, views, viewsets
 from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -44,7 +44,7 @@ class CompanyViewset(
 ):
     model = Company
     serializer_class = CompanySerializer
-    permission_classes = [CompanyBasePermission]
+    permission_classes = [permissions.IsAuthenticated, CompanyBasePermission]
 
     lookup_field = "slug"
     lookup_url_kwarg = "company_slug"
@@ -150,7 +150,7 @@ class CompanyPermissionViewSet(viewsets.ModelViewSet):
     model = Permission
     serializer_class = CompanyPermissionSerializer
 
-    permission_classes = [CompanyAdminPermission]
+    permission_classes = [permissions.IsAuthenticated, CompanyAdminPermission]
 
     def get_queryset(self):
         return self.model.objects.filter(company__slug=self.kwargs.get("company_slug"))
@@ -168,7 +168,7 @@ class CompanyPermissionViewSet(viewsets.ModelViewSet):
 
 class CompanyMemberPermissionEndpoint(views.APIView):
     model = Permission
-    permission_classes = [CompanyMemberPermission]
+    permission_classes = [permissions.IsAuthenticated, CompanyMemberPermission]
 
     def get(self, request, company_slug):
         company_member = CompanyMember.objects.filter(
@@ -196,7 +196,7 @@ class CompanyMemberViewSet(viewsets.ModelViewSet):
     model = CompanyMember
     serializer_class = CompanyMemberSerializer
 
-    permission_classes = [CompanyAdminPermission]
+    permission_classes = [permissions.IsAuthenticated, CompanyAdminPermission]
 
     def get_queryset(self):
         return self.filter_queryset(
@@ -216,7 +216,7 @@ class CompanyInvitationViewset(viewsets.ModelViewSet):
     model = CompanyMemberInvite
     serializer_class = CompanyMemberInviteSerializer
 
-    permission_classes = [CompanyAdminPermission]
+    permission_classes = [permissions.IsAuthenticated, CompanyAdminPermission]
 
     def get_queryset(self):
         return self.model.objects.filter(

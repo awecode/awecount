@@ -1,4 +1,4 @@
-from rest_framework import mixins, status, viewsets
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.response import Response
 
 from apps.api.models import APIKey
@@ -13,7 +13,7 @@ class APIKeyViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = APIKeySerializer
-    permission_classes = [CompanyAdminPermission]
+    permission_classes = [permissions.IsAuthenticated, CompanyAdminPermission]
 
     def get_queryset(self):
         return APIKey.objects.filter(
