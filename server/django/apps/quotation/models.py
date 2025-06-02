@@ -37,6 +37,12 @@ DISCOUNT_TYPES = (
     ("Percent", "Percent"),
 )
 
+TAX_TYPES = (
+    ("Tax Exclusive", "Tax Exclusive"),
+    ("Tax Inclusive", "Tax Inclusive"),
+    ("No Tax", "No Tax"),
+)
+
 
 class Quotation(CompanyBaseModel):
     number = models.PositiveSmallIntegerField(blank=True, null=True)
@@ -96,6 +102,12 @@ class Quotation(CompanyBaseModel):
         null=True,
         related_name="quotations",
         on_delete=models.SET_NULL,
+    )
+
+    tax_type = models.CharField(
+        choices=TAX_TYPES,
+        max_length=15,
+        default=TAX_TYPES[0][0],
     )
     # Model key for module based permission
     key = "Quotations"
