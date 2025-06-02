@@ -179,7 +179,6 @@ export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<st
   const footer = `
   <div style="margin-top: 30px; font-family: Arial, sans-serif;">
     ${quotationInfo.total_amount ? `<p><strong>Total in words:</strong> ${numberToText(Number(quotationInfo.total_amount))}</p>` : ''}
-    ${quotationInfo.remarks ? `<p><strong>Remarks:</strong> ${quotationInfo.remarks}</p>` : ''}
     ${quotationInfo.footer_text ? `<p>${quotationInfo.footer_text}</p>` : ''}
   </div>`
 
