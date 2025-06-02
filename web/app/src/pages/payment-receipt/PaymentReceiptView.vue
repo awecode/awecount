@@ -104,8 +104,10 @@ export default {
             {{ loginStore.companyInfo.name }}
             {{ loginStore.companyInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.' : 'Ltd.' }}
           </h1>
-          <div>{{ loginStore.companyInfo.address }}</div>
-          <div>
+          <div v-if="loginStore.companyInfo.address">
+            {{ loginStore.companyInfo.address }}
+          </div>
+          <div v-if="loginStore.companyInfo.tax_identification_number">
             Tax Reg. No.
             <strong>{{ loginStore.companyInfo.tax_identification_number }}</strong>
           </div>

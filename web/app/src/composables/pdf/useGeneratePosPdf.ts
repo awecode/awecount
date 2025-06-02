@@ -7,7 +7,7 @@ export default function useGeneratePosPdf(
   partyObj: object | null,
   hideRowQuantity: boolean,
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  taxOptions: Array<any>
+  taxOptions: Array<any>,
   /* eslint-disable @typescript-eslint/no-explicit-any */
 ): string {
   const loginStore = useLoginStore()
@@ -17,7 +17,7 @@ export default function useGeneratePosPdf(
   const tableRow = (rows: Array<object>): string => {
     let isTaxSame: number | boolean | null = null
     const htmlRows = rows.map((row: Record<string, number | string | object>, index: number) => {
-      const taxObjindex = taxOptions.findIndex((item) => item.id === row.tax_scheme_id)
+      const taxObjindex = taxOptions.findIndex(item => item.id === row.tax_scheme_id)
       const taxObj = taxOptions[taxObjindex]
       if (isTaxSame !== false && taxObj.rate != 0) {
         if (isTaxSame === null) {
@@ -101,8 +101,8 @@ export default function useGeneratePosPdf(
     header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
     <div>
       <h1 style="margin: 5px 0; font-size: 35px; font-weight: 700;">${companyInfo.name} ${companyInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.' : ['public_limited', 'corporation'].includes(companyInfo.organization_type) ? 'Ltd.' : ''}</h1>
-      <div>${companyInfo.address}</div>
-      <div>Tax Reg. No. <strong>${companyInfo.tax_identification_number}</strong></div>
+       ${companyInfo.address ? `<div>${companyInfo.address}</div>` : ''}
+       ${companyInfo.tax_identification_number ? `<div>Tax Reg. No. <strong>${companyInfo.tax_identification_number}</strong></div>` : ''}
     </div>
 
     <div
