@@ -192,6 +192,13 @@ const { sameTax, taxIndex } = computed(() => {
         :tax-index="taxIndex"
         :voucher-type="props.voucherType"
       />
+
+      <div v-if="invoiceInfo.received_by" style="margin-top: 20px;  white-space:pre; font-size: 14px;">
+        <span style="font-weight: 600;">Received By:</span>
+        <br />
+        <span>{{ invoiceInfo.received_by }}</span>
+      </div>
+
       <div style="margin-top: 20px;"></div>
 
       <div style="font-size: 14px; text-align: right;">

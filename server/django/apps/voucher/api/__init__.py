@@ -1091,6 +1091,15 @@ class PurchaseVoucherViewSet(
             True,
             ["name"],
         ),
+        (
+            "landed_cost_credit_accounts",
+            Account.objects.filter(
+                category__name__in=["Cash Accounts", "Bank Accounts", "Suppliers"]
+            ),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
     )
 
     def create(self, request, *args, **kwargs):
@@ -1206,7 +1215,7 @@ class PurchaseVoucherViewSet(
 
     @action(detail=True, url_path="journal-entries")
     def journal_entries(self, request, pk, *args, **kwargs):
-        purchase_voucher = get_object_or_404(PurchaseVoucher, pk=pk)
+        purchase_voucher: PurchaseVoucher = get_object_or_404(PurchaseVoucher, pk=pk)
         journals = purchase_voucher.journal_entries()
         return Response(SalesJournalEntrySerializer(journals, many=True).data)
 
@@ -1715,7 +1724,6 @@ class InvoiceDesignViewSet(CRULViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         request.data._mutable = True
-        design = request.data.pop("design", None)
         serializer = InvoiceDesignSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(**serializer.validated_data)
@@ -2188,6 +2196,17 @@ class PurchaseSettingsViewSet(CRULViewSet):
         (
             "payment_modes",
             PaymentMode.objects.filter(enabled_for_purchase=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+        (
+            "landed_cost_accounts",
+            Account.objects.filter(
+                category__system_code=settings.ACCOUNT_CATEGORY_SYSTEM_CODES[
+                    "Additional Cost"
+                ]
+            ),
             GenericSerializer,
             True,
             ["name"],

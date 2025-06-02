@@ -21,8 +21,12 @@ defineProps<{
         {{ companyInfo.name }}
         {{ companyInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.' : ['public_limited', 'corporation'].includes(companyInfo.organization_type) ? 'Ltd.' : '' }}
       </h1>
-      <div>{{ companyInfo.address }}</div>
-      <div>Tax Reg. No. <strong>{{ companyInfo.tax_identification_number }}</strong></div>
+      <div v-if="companyInfo.address">
+        {{ companyInfo.address }}
+      </div>
+      <div v-if="companyInfo.tax_identification_number">
+        Tax Reg. No. <strong>{{ companyInfo.tax_identification_number }}</strong>
+      </div>
     </div>
     <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end;">
       <div style="margin-bottom: 5px;">

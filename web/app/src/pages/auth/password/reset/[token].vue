@@ -54,7 +54,7 @@ const handleSubmit = async () => {
     $q.notify({
       position: 'top-right',
       message: 'Reset Failed',
-      caption: err.message || 'Please try again',
+      caption: err.data?.errors[0]?.message || 'Please try again',
       color: 'negative',
       icon: 'fa-solid fa-circle-exclamation',
     })

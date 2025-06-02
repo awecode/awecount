@@ -1,5 +1,6 @@
 <script>
 import useForm from 'src/composables/useForm'
+import { LANDED_COST_TYPES } from 'src/composables/useLandedCosts'
 import { modes } from 'src/helpers/constants/invoice'
 
 export default {
@@ -19,6 +20,7 @@ export default {
     const fields = ref(null)
     const modeErrors = ref(null)
     const emailListErrors = ref(null)
+    const landedCostAccountRows = ref([])
     const onUpdateClick = (fields) => {
       formLoading.value = true
       useApi(`/api/company/${route.params.company}/purchase-settings/${fields.id}/`, {
@@ -69,7 +71,16 @@ export default {
           formLoading.value = false
         })
     }
-    watch(formData.formDefaults, newValue => (fields.value = newValue.fields))
+    watch(formData.formDefaults, (newValue) => {
+      fields.value = newValue.fields
+      landedCostAccountRows.value = LANDED_COST_TYPES.filter(type =>
+        type !== 'Tax on Purchase' && type !== 'Customs Valuation Uplift',
+      ).map(type => ({
+        type,
+        account: newValue.fields?.landed_cost_accounts[type],
+      }))
+    })
+
     const onupdateErrors = () => (emailListErrors.value = null)
     const modeOptionsComputed = computed(() => {
       const obj = {
@@ -92,6 +103,7 @@ export default {
       onupdateErrors,
       formLoading,
       modeOptionsComputed,
+      landedCostAccountRows,
     }
   },
 }
@@ -170,26 +182,74 @@ export default {
               <q-checkbox v-model="fields.enable_purchase_order_import" label="Enable Purchase Orders Import?" />
             </div>
             <div>
-              <q-checkbox v-model="fields.enable_item_rate_change_alert" label="Enable Item Rate Change alert?" />
-            </div>
-            <div>
               <q-checkbox v-model="fields.require_item_code" label="Require Item Code in purchase invoices?" />
             </div>
             <div>
               <q-checkbox v-model="fields.require_item_hs_code" label="Require Item HS Code in purchase invoices?" />
             </div>
+            <div>
+              <q-checkbox v-model="fields.enable_item_rate_change_alert" label="Enable Item Rate Change alert?" />
+            </div>
+            <q-card v-if="fields.enable_item_rate_change_alert" class="q-mt-lg">
+              <q-card-section>
+                <div class="text-grey-7 q-mb-md">
+                  <q-icon name="info" size="sm" />
+                  List of email address that will receive alert
+                </div>
+                <div class="q-mb-md">
+                  <email-list v-model="fields.rate_change_alert_emails" :errors="emailListErrors" @update-errors="onupdateErrors" />
+                </div>
+              </q-card-section>
+            </q-card>
+            <div>
+              <q-checkbox v-model="fields.enable_landed_cost" label="Enable Landed Cost?" />
+            </div>
+            <q-card v-if="fields.enable_landed_cost" class="q-mt-lg">
+              <q-card-section>
+                <div class="text-grey-7 q-mb-md">
+                  <q-icon name="info" size="sm" />
+                  Landed Cost Type Account Mapping
+                </div>
+                <div class="q-mb-md">
+                  <q-table
+                    bordered
+                    flat
+                    hide-pagination
+                    :columns="[
+                      { name: 'type', label: 'Cost Type', field: 'type', align: 'left', style: 'width: 30%' },
+                      { name: 'account', label: 'Account', field: 'account', align: 'left', style: 'width: 70%' },
+                    ]"
+                    :rows="landedCostAccountRows"
+                    :rows-per-page-options="[0]"
+                  >
+                    <template #body-cell-account="props">
+                      <q-td :props="props">
+                        <n-auto-complete-v2
+                          v-model="fields.landed_cost_accounts[props.row.type]"
+                          dense
+                          emit-value
+                          map-options
+                          option-label="name"
+                          option-value="id"
+                          :endpoint="`/api/company/${$route.params.company}/purchase-settings/create-defaults/landed_cost_accounts`"
+                          :options="formDefaults.collections.landed_cost_accounts"
+                        >
+                          <template #append>
+                            <q-icon
+                              v-if="fields.landed_cost_accounts[props.row.type]"
+                              class="cursor-pointer"
+                              name="close"
+                              @click.stop.prevent="fields.landed_cost_accounts[props.row.type] = null"
+                            />
+                          </template>
+                        </n-auto-complete-v2>
+                      </q-td>
+                    </template>
+                  </q-table>
+                </div>
+              </q-card-section>
+            </q-card>
           </div>
-          <q-card v-if="fields.enable_item_rate_change_alert" class="q-mt-lg">
-            <q-card-section>
-              <div class="text-grey-7 q-mb-md">
-                <q-icon name="info" size="sm" />
-                List of email address that will receive alert
-              </div>
-              <div class="q-mb-md">
-                <email-list v-model="fields.rate_change_alert_emails" :errors="emailListErrors" @update-errors="onupdateErrors" />
-              </div>
-            </q-card-section>
-          </q-card>
         </div>
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">

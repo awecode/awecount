@@ -14,7 +14,7 @@ function $nf(value: number): string {
 export const formatRowDescription = (str?: string) => {
   if (!str) return ''
   const dataArray = str.split('\n')
-  return dataArray.map((data) => `<div>${data}</div>`).join(' ')
+  return dataArray.map(data => `<div>${data}</div>`).join(' ')
 }
 
 export const formatNumber = (num: number): string => {
@@ -45,7 +45,7 @@ export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<st
   const formatRowDescription = (str: string) => {
     return str
       .split('\n')
-      .map((line) => `<div>${line}</div>`)
+      .map(line => `<div>${line}</div>`)
       .join(' ')
   }
 
@@ -86,8 +86,12 @@ export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<st
     <div style="display: flex; justify-content: space-between; align-items: flex-start; font-family: Arial, sans-serif;">
       <div>
         <h1 style="margin: 0; font-size: 28px;">${companyInfo.name}${companyInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.' : ''}</h1>
-        <p style="margin: 5px 0;">${companyInfo.address}</p>
-        <p style="margin: 5px 0;">Tax Reg. No.: <strong>${companyInfo.tax_identification_number}</strong></p>
+        ${companyInfo.address ? `<p style="margin: 5px 0;">${companyInfo.address}</p>` : ''}
+        ${
+          companyInfo.tax_identification_number
+            ? `<p style="margin: 5px 0;">Tax Reg. No.: <strong>${companyInfo.tax_identification_number}</strong></p>`
+            : ''
+        }
       </div>
       <div style="text-align: right;">
         ${companyInfo.logo_url ? `<img src="${companyInfo.logo_url}" alt="Logo" style="height: 60px; max-width: 200px; object-fit: contain;" />` : ''}

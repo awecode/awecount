@@ -182,7 +182,7 @@ export default {
             v-if="checkPermissions('fundtransfer.update')"
             class="text-blue text-weight-medium"
             style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px"
-            :to="`/${$route.params.company}/fund-transfer/${props.row.id}`"
+            :to="`/${$route.params.company}/banking/fund-transfers/${props.row.id}/edit`"
           >
             {{ props.row.voucher_no }}
           </router-link>

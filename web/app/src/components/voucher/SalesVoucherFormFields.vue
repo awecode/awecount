@@ -26,20 +26,7 @@ const props = defineProps({
   },
 })
 
-const taxTypes = [
-  {
-    label: 'No Tax',
-    value: 'no_tax',
-  },
-  {
-    label: 'Tax Exclusive',
-    value: 'tax_exclusive',
-  },
-  {
-    label: 'Tax Inclusive',
-    value: 'tax_inclusive',
-  },
-]
+const taxTypes = ['No Tax', 'Tax Exclusive', 'Tax Inclusive']
 
 const route = useRoute()
 
@@ -263,7 +250,7 @@ watch(
   },
 )
 
-fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
+fields.value.tax_type = fields.value.tax_type || 'Tax Exclusive'
 </script>
 
 <template>
@@ -472,8 +459,6 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
             map-options
             class="w-full"
             label="Tax Type"
-            option-label="label"
-            option-value="value"
             :options="taxTypes"
           />
         </div>
@@ -559,6 +544,21 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
         v-model="fields.is_export"
         data-testid="export-checkbox"
         label="Export?"
+      />
+    </div>
+    <div v-if="formDefaults.options?.enable_received_by_in_voucher" class="mt-sm col-12">
+      <q-input
+        v-model="fields.received_by"
+        autogrow
+        class="col-12"
+        data-testid="received-by-input"
+        label="Received By"
+        type="textarea"
+        :error="!!errors?.received_by"
+        :error-message="errors?.received_by"
+        :input-style="{
+          minHeight: '45px',
+        }"
       />
     </div>
   </div>

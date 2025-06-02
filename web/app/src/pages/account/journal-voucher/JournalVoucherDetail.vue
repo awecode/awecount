@@ -220,8 +220,10 @@ const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 
           <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500">
             {{ store?.companyInfo.name }}
           </h1>
-          <div>{{ store?.companyInfo.address }}</div>
-          <div>
+          <div v-if="store?.companyInfo.address">
+            {{ store?.companyInfo.address }}
+          </div>
+          <div v-if="store?.companyInfo.tax_identification_number">
             Tax Reg. No.
             <strong>{{ store.companyInfo.tax_identification_number }}</strong>
           </div>

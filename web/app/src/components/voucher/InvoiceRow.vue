@@ -129,7 +129,7 @@ watch(
 watch(
   () => props.taxType,
   (newTaxType) => {
-    if (newTaxType === 'no_tax') {
+    if (newTaxType === 'No Tax') {
       oldTaxSchemeId.value = modalValue.value.tax_scheme_id
       modalValue.value.tax_scheme_id = null
     } else if (oldTaxSchemeId.value) {
@@ -207,12 +207,12 @@ const updateItem = (itemObject: any) => {
   if (itemObject) {
     modalValue.value.itemObj = itemObject
     modalValue.value.item_id = itemObject.id
-    modalValue.value.description = itemObject.description
-    modalValue.value.rate = itemObject.rate
-    modalValue.value.unit_id = itemObject.unit_id
-    modalValue.value.tax_scheme_id = props.taxType === 'no_tax' ? null : itemObject.tax_scheme_id
-    modalValue.value.selected_unit_obj = itemObject.default_unit_obj
-    modalValue.value.selected_tax_scheme_obj = itemObject.default_tax_scheme_obj
+    modalValue.value.description = modalValue.value.description || itemObject.description
+    modalValue.value.rate = modalValue.value.rate || itemObject.rate
+    modalValue.value.unit_id = modalValue.value.unit_id || itemObject.unit_id
+    modalValue.value.tax_scheme_id = props.taxType === 'No Tax' ? null : (modalValue.value.tax_scheme_id || itemObject.tax_scheme_id)
+    modalValue.value.selected_unit_obj = modalValue.value.selected_unit_obj || itemObject.default_unit_obj
+    modalValue.value.selected_tax_scheme_obj = modalValue.value.selected_tax_scheme_obj || itemObject.default_tax_scheme_obj
 
     // Check for missing fields based on config
     if (props.missingFieldsConfig?.enabled) {
@@ -252,17 +252,31 @@ const choiceEndpointBaseComputed = computed(() => {
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5 row">
         <div data-testid="item" :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
-          <n-auto-complete-v2 v-if="!usedInPos" v-model="modalValue.item_id" label="Item"
-            :disabled="usedInPos || hasChallan" :emit-obj="true"
+          <n-auto-complete-v2
+            v-if="!usedInPos"
+            v-model="modalValue.item_id"
+            label="Item"
+            :disabled="usedInPos || hasChallan"
+            :emit-obj="true"
             :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/items`"
             :error="errors?.item_id ? errors?.item_id[0]
               : rowEmpty ? 'Item is required'
                 : ''
-              " :modal-component="usedInPos || hasChallan ? undefined
-                : checkPermissions('inventoryaccount.create') ? ItemForm
-                  : undefined
-                " :options="itemOptions" :static-option="modelValue.selected_item_obj" @update-obj="updateItem" />
-          <q-input v-else disable :label="usedInPos ? '' : 'Item'" :model-value="modelValue.name" />
+            "
+            :modal-component="usedInPos || hasChallan ? undefined
+              : checkPermissions('inventoryaccount.create') ? ItemForm
+                : undefined
+            "
+            :options="itemOptions"
+            :static-option="modelValue.selected_item_obj"
+            @update-obj="updateItem"
+          />
+          <q-input
+            v-else
+            disable
+            :label="usedInPos ? '' : 'Item'"
+            :model-value="modelValue.name"
+          />
         </div>
         <div v-if="modalValue.missingFields" class="text-orange text-sm -mt-2">
           Item is missing required fields: {{ modalValue.missingFields.join(', ') }}
@@ -273,9 +287,14 @@ const choiceEndpointBaseComputed = computed(() => {
       </div>
       <div class="col-2">
         <span v-if="showRateQuantity" data-testid="quantity-input">
-          <q-input v-model.number="modalValue.quantity" type="number" :disable="hasChallan"
-            :error="errors?.quantity ? true : false" :error-message="errors?.quantity ? errors.quantity[0] : null"
-            :label="usedInPos ? '' : 'Quantity'">
+          <q-input
+            v-model.number="modalValue.quantity"
+            type="number"
+            :disable="hasChallan"
+            :error="errors?.quantity ? true : false"
+            :error-message="errors?.quantity ? errors.quantity[0] : null"
+            :label="usedInPos ? '' : 'Quantity'"
+          >
             <template v-if="isFifo && Object.hasOwn(cogsData, index)" #append>
               <q-icon v-if="cogsData[index].totalCost.status === 'error'" color="orange" name="mdi-alert">
                 <q-tooltip>
@@ -294,13 +313,20 @@ const choiceEndpointBaseComputed = computed(() => {
       </div>
       <div class="col-2">
         <div v-if="showRateQuantity" data-testid="rate-input">
-          <q-input v-model.number="modalValue.rate" type="number" :error="errors?.rate ? true : false"
-            :error-message="errors?.rate ? errors.rate[0] : null" :label="usedInPos ? '' : 'Rate'">
+          <q-input
+            v-model.number="modalValue.rate"
+            type="number"
+            :error="errors?.rate ? true : false"
+            :error-message="errors?.rate ? errors.rate[0] : null"
+            :label="usedInPos ? '' : 'Rate'"
+          >
             <template v-if="isFifo && Object.hasOwn(cogsData, index)" #append>
               <span v-if="cogsData[index].totalCost.status !== 'error'" class="text-sm mt-4 text-blue-400">
                 <q-tooltip>Cost Rate as per Fifo.</q-tooltip>
-                <FormattedNumber type="currency"
-                  :value="new Decimal(cogsData[index].totalCost).div(modalValue.quantity).toNumber()" />
+                <FormattedNumber
+                  type="currency"
+                  :value="new Decimal(cogsData[index].totalCost).div(modalValue.quantity).toNumber()"
+                />
               </span>
             </template>
           </q-input>
@@ -308,8 +334,10 @@ const choiceEndpointBaseComputed = computed(() => {
       </div>
       <div v-if="inputAmount" class="col-2" data-testid="amount-input">
         <q-input v-model="amountComputed" label="Amount" @change="onAmountInput">
-          <template v-if="isFifo && Object.hasOwn(cogsData, index) && cogsData[index].totalCost.status !== 'error'"
-            #append>
+          <template
+            v-if="isFifo && Object.hasOwn(cogsData, index) && cogsData[index].totalCost.status !== 'error'"
+            #append
+          >
             <span class="text-sm mt-4 text-blue-400">
               <q-tooltip>Total Cost Price as per Fifo.</q-tooltip>
               <FormattedNumber type="currency" :value="cogsData[index].totalCost" />
@@ -320,8 +348,10 @@ const choiceEndpointBaseComputed = computed(() => {
       <div v-else class="col-2 row justify-center items-center" data-testid="amount-input">
         <span class="">
           <FormattedNumber type="currency" :value="amountComputed" />
-          <span v-if="isFifo && Object.hasOwn(cogsData, index) && cogsData[index].totalCost.status !== 'error'"
-            class="relative bg-red-200">
+          <span
+            v-if="isFifo && Object.hasOwn(cogsData, index) && cogsData[index].totalCost.status !== 'error'"
+            class="relative bg-red-200"
+          >
             <span class="text-sm ml-2 text-blue-400 absolute top-1/2 -right-0 -translate-y-1/2">
               <q-tooltip>Total Cost Price as per Fifo.</q-tooltip>
               <FormattedNumber type="currency" :value="cogsData[index].totalCost" />
@@ -330,57 +360,106 @@ const choiceEndpointBaseComputed = computed(() => {
         </span>
       </div>
       <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
-        <q-btn flat class="q-pa-sm focus-highLight" color="transparent" data-testid="expand-btn"
-          @click="() => (expandedState = !expandedState)">
-          <q-icon class="cursor-pointer" color="green" name="mdi-arrow-expand" size="20px">
+        <q-btn
+          flat
+          class="q-pa-sm focus-highLight"
+          color="transparent"
+          data-testid="expand-btn"
+          @click="() => (expandedState = !expandedState)"
+        >
+          <q-icon
+            class="cursor-pointer"
+            color="green"
+            name="mdi-arrow-expand"
+            size="20px"
+          >
             <q-tooltip>Expand</q-tooltip>
           </q-icon>
         </q-btn>
-        <q-btn flat class="q-pa-sm focus-highLight" color="transparent" data-testid="row-delete-btn"
-          :disable="hasChallan" @click="() => deleteRow(index)">
-          <q-icon class="cursor-pointer" color="negative" name="delete" size="20px" />
+        <q-btn
+          flat
+          class="q-pa-sm focus-highLight"
+          color="transparent"
+          data-testid="row-delete-btn"
+          :disable="hasChallan"
+          @click="() => deleteRow(index)"
+        >
+          <q-icon
+            class="cursor-pointer"
+            color="negative"
+            name="delete"
+            size="20px"
+          />
         </q-btn>
       </div>
     </div>
     <div v-if="expandedState">
       <div class="row q-col-gutter-md q-px-lg">
         <div class="col-grow" data-testid="unit-select">
-          <n-auto-complete-v2 v-model="modalValue.unit_id" label="Unit" :emit-obj="usedInPos"
+          <n-auto-complete-v2
+            v-model="modalValue.unit_id"
+            label="Unit"
+            :emit-obj="usedInPos"
             :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/units`"
-            :error="errors?.unit_id ? errors?.unit_id[0] : ''" :options="unitOptions"
-            :static-option="modalValue.selected_unit_obj" @update-obj="(val) => (modalValue.selected_unit_obj = val)" />
+            :error="errors?.unit_id ? errors?.unit_id[0] : ''"
+            :options="unitOptions"
+            :static-option="modalValue.selected_unit_obj"
+            @update-obj="(val) => (modalValue.selected_unit_obj = val)"
+          />
         </div>
         <div class="col-5">
           <div class="row q-col-gutter-md">
-            <div data-testid="row-discount-type-div"
-              :class="['Amount', 'Percent'].includes(modalValue.discount_type) ? 'col-5' : 'col-12'">
+            <div
+              data-testid="row-discount-type-div"
+              :class="['Amount', 'Percent'].includes(modalValue.discount_type) ? 'col-5' : 'col-12'"
+            >
               <n-auto-complete v-model="modalValue.discount_type" label="Discount" :options="discountOptions" />
             </div>
-            <div v-if="modalValue.discount_type === 'Amount' || modalValue.discount_type === 'Percent'"
-              :class="showRowTradeDiscount ? 'col-3' : 'col-6'">
-              <q-input v-model.number="modalValue.discount" data-testid="row-discount-input" label="Discount"
+            <div
+              v-if="modalValue.discount_type === 'Amount' || modalValue.discount_type === 'Percent'"
+              :class="showRowTradeDiscount ? 'col-3' : 'col-6'"
+            >
+              <q-input
+                v-model.number="modalValue.discount"
+                data-testid="row-discount-input"
+                label="Discount"
                 :error="errors?.discount ? true : false"
-                :error-message="errors?.discount ? errors.discount[0] : null" />
+                :error-message="errors?.discount ? errors.discount[0] : null"
+              />
             </div>
-            <div v-if="['Amount', 'Percent'].includes(modalValue.discount_type) && showRowTradeDiscount"
-              class="col-3 row">
-              <q-checkbox v-model="modalValue.trade_discount" data-testid="row-trade-discount-checkbox"
-                label="Trade Discount?" />
+            <div
+              v-if="['Amount', 'Percent'].includes(modalValue.discount_type) && showRowTradeDiscount"
+              class="col-3 row"
+            >
+              <q-checkbox
+                v-model="modalValue.trade_discount"
+                data-testid="row-trade-discount-checkbox"
+                label="Trade Discount?"
+              />
             </div>
           </div>
         </div>
-        <div v-if="taxType !== 'no_tax'" class="col-3" data-testid="row-tax-select">
-          <n-auto-complete-v2 v-model="modalValue.tax_scheme_id" label="Tax" :emit-obj="true"
+        <div v-if="taxType !== 'No Tax'" class="col-3" data-testid="row-tax-select">
+          <n-auto-complete-v2
+            v-model="modalValue.tax_scheme_id"
+            label="Tax"
+            :emit-obj="true"
             :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/tax_schemes`"
-            :error="errors?.tax_scheme_id ? 'This field is required' : ''" :options="props.taxOptions"
+            :error="errors?.tax_scheme_id ? 'This field is required' : ''"
+            :options="props.taxOptions"
             :static-option="modalValue.selected_tax_scheme_obj"
-            @update-obj="(val) => (modalValue.selected_tax_scheme_obj = val)" />
+            @update-obj="(val) => (modalValue.selected_tax_scheme_obj = val)"
+          />
         </div>
       </div>
-      <div
-        v-if="$route.params.id ? (!!modalValue.item_id || !!modalValue.itemObj) && enableRowDescription : !!modalValue.itemObj && enableRowDescription">
-        <q-input v-model="modalValue.description" class="q-mb-lg" data-testid="row-description-input"
-          label="Description" type="textarea" />
+      <div v-if="$route.params.id ? (!!modalValue.item_id || !!modalValue.itemObj) && enableRowDescription : !!modalValue.itemObj && enableRowDescription">
+        <q-input
+          v-model="modalValue.description"
+          class="q-mb-lg"
+          data-testid="row-description-input"
+          label="Description"
+          type="textarea"
+        />
       </div>
     </div>
   </div>

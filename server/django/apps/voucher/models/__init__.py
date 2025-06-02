@@ -6,6 +6,7 @@ from decimal import Decimal
 from io import BytesIO
 from typing import Union
 
+from apps.ledger.models.base import Account
 from auditlog.registry import auditlog
 from dateutil.relativedelta import relativedelta
 from django.apps import apps
@@ -44,7 +45,6 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -91,6 +91,12 @@ TRANSACTION_TYPE_CHOICES = [
     ("Cr", "Cr"),
     ("Dr", "Dr"),
 ]
+
+TAX_TYPES = (
+    ("Tax Exclusive", "Tax Exclusive"),
+    ("Tax Inclusive", "Tax Inclusive"),
+    ("No Tax", "No Tax"),
+)
 
 
 class TransactionFeeConfig:
@@ -495,6 +501,7 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     challans = models.ManyToManyField(Challan, related_name="sales", blank=True)
 
     remarks = models.TextField(blank=True, null=True)
+    received_by = models.TextField(blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
     is_export = models.BooleanField(default=False)
 
@@ -528,6 +535,11 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
         null=True,
         on_delete=models.SET_NULL,
         related_name="sales_invoice",
+    )
+    tax_type = models.CharField(
+        choices=TAX_TYPES,
+        max_length=15,
+        default=TAX_TYPES[0][0],
     )
     # Model key for module based permission
     key = "Sales"
@@ -768,18 +780,23 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                         "address": self.address,
                         "fiscal_year": self.fiscal_year.name,
                         "date": self.date,
-                        "miti": nepdate.string_from_tuple(nepdate.ad2bs(str(self.date)))
-                        if use_miti(self.company)
-                        else "",
-                        "payment_mode": self.payment_mode.name
-                        if self.payment_mode
-                        else "Credit",
+                        "miti": (
+                            nepdate.string_from_tuple(nepdate.ad2bs(str(self.date)))
+                            if use_miti(self.company)
+                            else ""
+                        ),
+                        "payment_mode": (
+                            self.payment_mode.name if self.payment_mode else "Credit"
+                        ),
                         "rows": [
                             {
                                 "item": {
-                                    "hs_code": row.item.category.hs_code
-                                    if row.item.category and row.item.category.hs_code
-                                    else "",
+                                    "hs_code": (
+                                        row.item.category.hs_code
+                                        if row.item.category
+                                        and row.item.category.hs_code
+                                        else ""
+                                    ),
                                     "name": row.item.name,
                                 },
                                 "unit": row.unit.name,
@@ -794,6 +811,7 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                         "voucher_no": self.voucher_no,
                         "reference": self.reference,
                         "remarks": self.remarks,
+                        "received_by": self.received_by,
                     }
                 },
             )
@@ -1361,7 +1379,86 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
 
             set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
+        if self.company.purchase_setting.enable_landed_cost:
+            # TODO Optmiziation: Create account map outside the loop
+            account_map = {}
+            landed_cost_accounts = self.company.purchase_setting.landed_cost_accounts
+            for landed_cost in self.landed_cost_rows.all():
+                entries = []
+                if landed_cost.type == LandedCostRowType.CUSTOMS_VALUATION_UPLIFT:
+                    # Only account tax amount of uplifted value
+                    if landed_cost.tax_scheme and landed_cost.tax_scheme.rate:
+                        credit_account = landed_cost.credit_account
+                        if not credit_account:
+                            raise ValidationError(
+                                "Credit account is required for customs valuation uplift when tax is applied"
+                            )
+                        account = landed_cost.tax_scheme.receivable
+                        entries.append(["dr", account, landed_cost.tax_amount])
+                        entries.append(
+                            [
+                                "cr",
+                                landed_cost.credit_account,
+                                landed_cost.tax_amount,
+                            ]
+                        )
+                elif landed_cost.type == LandedCostRowType.TAX_ON_PURCHASE:
+                    account = landed_cost.tax_scheme.receivable
+                    entries.append(["dr", account, landed_cost.amount])
+                    entries.append(
+                        [
+                            "cr",
+                            landed_cost.credit_account,
+                            landed_cost.amount,
+                        ]
+                    )
+                else:
+                    account = account_map.get(landed_cost.type, None)
+                    if not account:
+                        account = Account.objects.get(
+                            id=landed_cost_accounts[landed_cost.type],
+                            company_id=self.company_id,
+                        )
+                        account_map[landed_cost.type] = account
+
+                    entries.append(["dr", account, landed_cost.amount])
+
+                    row_tax_amount = Decimal("0.00")
+
+                    if landed_cost.tax_scheme:
+                        row_tax_amount = (
+                            landed_cost.tax_scheme.rate
+                            * landed_cost.amount
+                            / Decimal(100)
+                        )
+                        if row_tax_amount:
+                            entries.append(
+                                [
+                                    "dr",
+                                    landed_cost.tax_scheme.receivable,
+                                    row_tax_amount,
+                                ]
+                            )
+
+                    entries.append(
+                        [
+                            "cr",
+                            landed_cost.credit_account,
+                            landed_cost.amount + row_tax_amount,
+                        ]
+                    )
+                set_ledger_transactions(landed_cost, self.date, *entries, clear=True)
+
         self.apply_inventory_transaction()
+
+    def journal_entries(self):
+        # Also include landed cost rows in the journal entries
+        landed_cost_ids = self.landed_cost_rows.values_list("id", flat=True)
+        landed_cost_kwargs = {
+            "content_type__model": "landedcostrow",
+            "object_id__in": landed_cost_ids,
+        }
+        return super().journal_entries(additional_kwargs=landed_cost_kwargs)
 
 
 class PurchaseVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
@@ -1557,7 +1654,6 @@ class CreditNote(TransactionModel, InvoiceModel, CompanyBaseModel):
     def apply_transactions(self, extra_entries=None):
         voucher_meta = self.get_voucher_meta()
 
-        # import ipdb; ipdb.set_trace()
         if self.total_amount != voucher_meta["grand_total"]:
             self.total_amount = voucher_meta["grand_total"]
             self.save()
@@ -2155,20 +2251,74 @@ class LandedCostRowType(models.TextChoices):
     UNLOADING = "Unloading"
     REGULATORY_FEE = "Regulatory Fee"
     CUSTOMS_DECLARATION = "Customs Declaration"
-    OTHER = "Other"
+    OTHER_CHARGES = "Other Charges"
+    TAX_ON_PURCHASE = "Tax on Purchase"
+    CUSTOMS_VALUATION_UPLIFT = "Customs Valuation Uplift"
 
 
 class LandedCostRow(models.Model):
     type = models.CharField(choices=LandedCostRowType.choices, max_length=25)
     description = models.TextField(blank=True, null=True)
     amount = models.DecimalField(max_digits=24, decimal_places=6)
+    value = models.DecimalField(max_digits=24, decimal_places=6)
+    is_percentage = models.BooleanField(default=False)
     invoice = models.ForeignKey(
         PurchaseVoucher,
         on_delete=models.CASCADE,
         related_name="landed_cost_rows",
     )
+    tax_scheme = models.ForeignKey(
+        TaxScheme,
+        on_delete=models.CASCADE,
+        related_name="landed_cost_rows",
+        null=True,
+        blank=True,
+    )
+    credit_account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name="landed_cost_rows",
+        blank=True,
+        null=True,
+        help_text="Account to which the landed cost will be credited",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    tax_amount = models.DecimalField(
+        max_digits=24, decimal_places=6, default=Decimal("0")
+    )
+    total_amount = models.DecimalField(
+        max_digits=24, decimal_places=6, default=Decimal("0")
+    )
+
+    def get_voucher_no(self):
+        return self.invoice.voucher_no
+
+    @property
+    def voucher(self):
+        return self.invoice
+
+    @property
+    def voucher_no(self):
+        return self.invoice.voucher_no
+
+    @property
+    def voucher_id(self):
+        return self.invoice.pk
+
+    def get_source_id(self):
+        return self.invoice.pk
+
+    def save(self, *args, **kwargs):
+        if self.type == LandedCostRowType.TAX_ON_PURCHASE or not self.tax_scheme:
+            self.tax_amount = Decimal("0")
+            self.total_amount = self.amount
+        else:
+            self.tax_amount = self.tax_scheme.rate * self.amount / Decimal("100")
+            self.total_amount = self.amount + self.tax_amount
+
+        super().save(*args, **kwargs)
 
 
 # class LandingCostDistribution(models.Model):
