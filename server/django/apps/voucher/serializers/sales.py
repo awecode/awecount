@@ -23,6 +23,7 @@ from awecount.libs.serializers import StatusReversionMixin
 from lib.drf.serializers import BaseModelSerializer
 
 from ..models import (
+    TAX_TYPES,
     PurchaseVoucher,
     RecurringVoucherTemplate,
     SalesDiscount,
@@ -269,6 +270,7 @@ class SalesVoucherCreateSerializer(
     selected_party_obj = PartyMinSerializer(source="party", read_only=True)
     selected_mode_obj = GenericSerializer(source="bank_account", read_only=True)
     selected_sales_agent_obj = GenericSerializer(source="sales_agent", read_only=True)
+    tax_type = serializers.ChoiceField(choices=TAX_TYPES)
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:

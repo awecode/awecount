@@ -98,6 +98,12 @@ TRANSACTION_TYPE_CHOICES = [
     ("Dr", "Dr"),
 ]
 
+TAX_TYPES = (
+    ("Tax Exclusive", "Tax Exclusive"),
+    ("Tax Inclusive", "Tax Inclusive"),
+    ("No Tax", "No Tax"),
+)
+
 
 class TransactionFeeConfig:
     VALID_FEE_TYPES = {"fixed", "percentage", "slab_based", "sliding_scale"}
@@ -536,6 +542,11 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
         on_delete=models.SET_NULL,
         related_name="sales_invoice",
     )
+    tax_type = models.CharField(
+        choices=TAX_TYPES,
+        max_length=15,
+        default=TAX_TYPES[0][0],
+    )
     # Model key for module based permission
     key = "Sales"
 
@@ -775,18 +786,23 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                         "address": self.address,
                         "fiscal_year": self.fiscal_year.name,
                         "date": self.date,
-                        "miti": nepdate.string_from_tuple(nepdate.ad2bs(str(self.date)))
-                        if use_miti(self.company)
-                        else "",
-                        "payment_mode": self.payment_mode.name
-                        if self.payment_mode
-                        else "Credit",
+                        "miti": (
+                            nepdate.string_from_tuple(nepdate.ad2bs(str(self.date)))
+                            if use_miti(self.company)
+                            else ""
+                        ),
+                        "payment_mode": (
+                            self.payment_mode.name if self.payment_mode else "Credit"
+                        ),
                         "rows": [
                             {
                                 "item": {
-                                    "hs_code": row.item.category.hs_code
-                                    if row.item.category and row.item.category.hs_code
-                                    else "",
+                                    "hs_code": (
+                                        row.item.category.hs_code
+                                        if row.item.category
+                                        and row.item.category.hs_code
+                                        else ""
+                                    ),
                                     "name": row.item.name,
                                 },
                                 "unit": row.unit.name,

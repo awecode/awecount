@@ -129,7 +129,7 @@ watch(
 watch(
   () => props.taxType,
   (newTaxType) => {
-    if (newTaxType === 'no_tax') {
+    if (newTaxType === 'No Tax') {
       oldTaxSchemeId.value = modalValue.value.tax_scheme_id
       modalValue.value.tax_scheme_id = null
     } else if (oldTaxSchemeId.value) {
@@ -210,7 +210,7 @@ const updateItem = (itemObject: any) => {
     modalValue.value.description = modalValue.value.description || itemObject.description
     modalValue.value.rate = modalValue.value.rate || itemObject.rate
     modalValue.value.unit_id = modalValue.value.unit_id || itemObject.unit_id
-    modalValue.value.tax_scheme_id = props.taxType === 'no_tax' ? null : (modalValue.value.tax_scheme_id || itemObject.tax_scheme_id)
+    modalValue.value.tax_scheme_id = props.taxType === 'No Tax' ? null : (modalValue.value.tax_scheme_id || itemObject.tax_scheme_id)
     modalValue.value.selected_unit_obj = modalValue.value.selected_unit_obj || itemObject.default_unit_obj
     modalValue.value.selected_tax_scheme_obj = modalValue.value.selected_tax_scheme_obj || itemObject.default_tax_scheme_obj
 
@@ -439,7 +439,7 @@ const choiceEndpointBaseComputed = computed(() => {
             </div>
           </div>
         </div>
-        <div v-if="taxType !== 'no_tax'" class="col-3" data-testid="row-tax-select">
+        <div v-if="taxType !== 'No Tax'" class="col-3" data-testid="row-tax-select">
           <n-auto-complete-v2
             v-model="modalValue.tax_scheme_id"
             label="Tax"
