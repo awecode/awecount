@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
 const router = useRouter()
-const { changePassword: authChangePassword, logout, switchCompany } = useAuthStore()
+const { changePassword: authChangePassword, refreshUser, logout, switchCompany } = useAuthStore()
 
 // User profile state
 const state = reactive({
@@ -93,6 +93,8 @@ const updateProfile = async () => {
       type: 'positive',
       message: 'Profile updated successfully',
     })
+
+    await refreshUser()
   } catch (err: any) {
     if (err.response?.data?.errors) {
       errors.value = err.response.data.errors
