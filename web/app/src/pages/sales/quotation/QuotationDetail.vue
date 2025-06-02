@@ -59,9 +59,12 @@ function resetEmailQuotationPayload() {
       <p>I hope this message finds you well.</p>
       <p>Please find attached the quotation <b>#${fields.value?.number}</b></p>
       <p>You can view and download the quotation using the following link: <a href="${`${window.location.protocol}//${window.location.host}${window.location.pathname}`}?hash=${fields.value?.hash}">View Quotation</a>.</p>
-      <p>If you have any questions or require further assistance, feel free to contact us at <b>${loginStore.companyInfo?.contact_no || '[]'}</b>.</p>
-      <p>Best Regards,<br>
-      <b>${loginStore.companyInfo?.name || '[]'}</b></p>
+      <p>
+        If you have any questions or require further assistance,
+        feel free to contact us${loginStore.companyInfo?.contact_no ? ` at ${loginStore.companyInfo?.contact_no}` : ''}.
+      </p>
+      ${loginStore.companyInfo?.name ? `<p>Best Regards,<br><b>${loginStore.companyInfo.name}</b></p>` : 'Best Regards'}
+
     `,
   }
 }

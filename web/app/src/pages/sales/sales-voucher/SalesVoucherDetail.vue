@@ -67,9 +67,8 @@ function resetEmailInvoicePayload() {
           <p>I hope this message finds you well.</p>
           <p>Please find attached the invoice <b>#${fields.value?.voucher_no}</b></p>
           <p>You can view and download the invoice using the following link: <a href="${`${window.location.protocol}//${window.location.host}${window.location.pathname}`}?hash=${fields.value?.hash}">View Invoice</a>.</p>
-          <p>If you have any questions or require further assistance, feel free to contact us at <b>${loginStore.companyInfo?.contact_no || '[]'}</b>.</p>
-          <p>Best Regards,<br>
-          <b>${loginStore.companyInfo?.name || '[]'}</b></p>
+          <p>If you have any questions or require further assistance, feel free to contact us at${loginStore.companyInfo?.contact_no ? ` <b>${loginStore.companyInfo?.contact_no}</b>` : ''}.</p>
+          ${loginStore.companyInfo?.name ? `<p>Best Regards,<br><b>${loginStore.companyInfo.name}</b></p>` : 'Best Regards'}
         `,
   }
 }
