@@ -556,6 +556,9 @@ fields.value.tax_type = fields.value.tax_type || 'Tax Exclusive'
         type="textarea"
         :error="!!errors?.received_by"
         :error-message="errors?.received_by"
+        :input-style="{
+          minHeight: '45px',
+        }"
       />
     </div>
   </div>
