@@ -23,6 +23,7 @@ class SalesSetting(models.Model):
     is_trade_discount_in_row = models.BooleanField(default=False)
     enable_due_date_in_voucher = models.BooleanField(default=False)
     enable_reference_in_voucher = models.BooleanField(default=False)
+    enable_received_by_in_voucher = models.BooleanField(default=False)
     enable_discount_in_voucher = models.BooleanField(default=True)
 
     # Required fields settings
@@ -72,6 +73,7 @@ class SalesSetting(models.Model):
             "is_trade_discount_in_row": self.is_trade_discount_in_row,
             "enable_due_date_in_voucher": self.enable_due_date_in_voucher,
             "enable_reference_in_voucher": self.enable_reference_in_voucher,
+            "enable_received_by_in_voucher": self.enable_received_by_in_voucher,
             "enable_discount_in_voucher": self.enable_discount_in_voucher,
             "enable_import_challan": self.enable_import_challan,
             "enable_amount_entry": self.enable_amount_entry,
@@ -179,5 +181,5 @@ def handle_company_creation(sender, **kwargs):
     company = kwargs.get("company")
     SalesSetting.objects.create(company=company)
     QuotationSetting.objects.create(company=company)
-    PurchaseSetting.objects.create(company=company)
+    PurchaseSetting.objects.get_or_create(company=company)
     InventorySetting.objects.create(company=company)

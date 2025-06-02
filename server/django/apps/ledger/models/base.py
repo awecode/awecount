@@ -546,6 +546,7 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
     :type clear: object
     Clears all transactions not accounted here
     """
+    # TODO: Security: Validate company. At least make sure all accounts are from the same company. Also validate against the source or submodel company.
     if isinstance(date, str):
         date = datetime.strptime(date, "%Y-%m-%d")
 
@@ -1150,128 +1151,33 @@ def handle_company_creation(sender, **kwargs):
         system_code=acc_cat_system_codes["Direct Expenses"],
     )
 
-    landed_cost_category = Category.objects.create(
-        name="Landed Cost",
-        code="E-D-LC",
+    additional_cost_category = Category.objects.create(
+        name="Additional Cost",
+        code="E-D-AC",
         parent=direct_expenses,
         company=company,
         default=True,
-        system_code=acc_cat_system_codes["Landed Cost"],
+        system_code=acc_cat_system_codes["Additional Cost"],
     )
 
-    duty_account = Account.objects.create(
-        name="Duty",
-        code="E-D-LC-DTY",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-    )
+    additional_cost_accounts = {}
 
-    labor_account = Account.objects.create(
-        name="Labor",
-        code="E-D-LC-LBR",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-    )
+    from apps.voucher.models import LandedCostRowType
 
-    freight_account = Account.objects.create(
-        name="Freight",
-        code="E-D-LC-FR",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-    )
-
-    insurance_account = Account.objects.create(
-        name="Insurance",
-        code="E-D-LC-INS",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-    )
-
-    brokerage_account = Account.objects.create(
-        name="Brokerage",
-        code="E-D-LC-BRK",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-    )
-
-    storage_account = Account.objects.create(
-        name="Storage",
-        code="E-D-LC-STO",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-        system_code="LC-STORAGE",
-    )
-
-    packaging_account = Account.objects.create(
-        name="Packaging",
-        code="E-D-LC-PKG",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-    )
-
-    loading_account = Account.objects.create(
-        name="Loading",
-        code="E-D-LC-LOD",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-    )
-
-    unloading_account = Account.objects.create(
-        name="Unloading",
-        code="E-D-LC-ULD",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-    )
-
-    regulatory_fee_account = Account.objects.create(
-        name="Regulatory Fee",
-        code="E-D-LC-REG",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-    )
-
-    customs_declaration_account = Account.objects.create(
-        name="Customs Declaration",
-        code="E-D-LC-CD",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-    )
-
-    other_charges_account = Account.objects.create(
-        name="Other Charges",
-        code="E-D-LC-OTH",
-        category=landed_cost_category,
-        company=company,
-        default=True,
-    )
+    for index, cost_type in enumerate(LandedCostRowType.values):
+        if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
+            account = Account.objects.create(
+                name=cost_type,
+                code=f"E-D-LC-{cost_type[:3].upper()}{index}",
+                category=additional_cost_category,
+                company=company,
+                default=True,
+            )
+            additional_cost_accounts[cost_type] = account.id
 
     PurchaseSetting = apps.get_model("voucher", "PurchaseSetting")
     purchase_setting, _ = PurchaseSetting.objects.get_or_create(company=company)
-    purchase_setting.landed_cost_accounts = {
-        "duty": duty_account.id,
-        "labor": labor_account.id,
-        "freight": freight_account.id,
-        "insurance": insurance_account.id,
-        "brokerage": brokerage_account.id,
-        "storage": storage_account.id,
-        "packaging": packaging_account.id,
-        "loading": loading_account.id,
-        "unloading": unloading_account.id,
-        "regulatory_fee": regulatory_fee_account.id,
-        "customs_declaration": customs_declaration_account.id,
-        "other_charges": other_charges_account.id,
-    }
+    purchase_setting.landed_cost_accounts = additional_cost_accounts
     purchase_setting.save()
 
     Category.objects.create(
@@ -1460,16 +1366,23 @@ class TransactionModel(models.Model):
             return self.voucher_id
         return self.id
 
-    def journal_entries(self):
+    def journal_entries(self, additional_kwargs=None):
         app_label = self._meta.app_label
         model = self.__class__.__name__.lower()
         qs = JournalEntry.objects.filter(content_type__app_label=app_label)
         if hasattr(self, "rows"):
             row_ids = self.rows.values_list("id", flat=True)
-            qs = qs.filter(
-                Q(content_type__model=model + "row", object_id__in=row_ids)
-                | Q(content_type__model=model, object_id=self.id)
-            )
+            if additional_kwargs:
+                qs = qs.filter(
+                    Q(content_type__model=model + "row", object_id__in=row_ids)
+                    | Q(content_type__model=model, object_id=self.id)
+                    | Q(**additional_kwargs)
+                )
+            else:
+                qs = qs.filter(
+                    Q(content_type__model=model + "row", object_id__in=row_ids)
+                    | Q(content_type__model=model, object_id=self.id)
+                )
         else:
             qs = qs.filter(content_type__model=model, object_id=self.id)
         return qs

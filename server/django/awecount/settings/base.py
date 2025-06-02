@@ -289,6 +289,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
+        "apps.company.permissions.CompanyMemberPermission",
     ],
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
@@ -466,6 +467,7 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Interest Income": "INT-INCOME",
     "Interest Expenses": "INT-EXP",
     "Landed Cost": "LANDED-COST",
+    "Additional Cost": "ADD-COST",
 }
 
 # Bank reconciliation settings

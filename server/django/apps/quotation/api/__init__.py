@@ -1,3 +1,12 @@
+from django.db.models import Prefetch, Q
+from django_filters import rest_framework as filters
+from rest_framework import filters as rf_filters
+from rest_framework.decorators import action
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
 from apps.ledger.models import Party
 from apps.ledger.serializers import (
     PartyMinSerializer,
@@ -6,57 +15,42 @@ from apps.product.models import Item, Unit
 from apps.product.serializers import (
     ItemSalesSerializer,
 )
-from apps.tax.models import TaxScheme
-from apps.tax.serializers import TaxSchemeMinSerializer
-
-from apps.voucher.models import (
-    SalesAgent,
-)
-
-from django_filters import rest_framework as filters
-from rest_framework import filters as rf_filters
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.generics import get_object_or_404
-from rest_framework.exceptions import AuthenticationFailed
-
-from apps.users.serializers import CompanySerializer
-
-from django.db.models import Prefetch, Q
-
-
-from apps.voucher.serializers.sales import (
-    SalesDiscountMinSerializer,
-    SalesVoucherCreateSerializer,
-)
-
-
-from awecount.libs import get_next_quotation_no
-from awecount.libs.CustomViewSet import (
-    CRULViewSet,
-    GenericSerializer,
-)
-from awecount.libs.helpers import (
-    get_verification_hash,
-    check_verification_hash,
-)
-from awecount.libs.mixins import (
-    DeleteRows,
-    InputChoiceMixin,
-)
 from apps.quotation.filters import QuotationFilterSet
 from apps.quotation.models import Quotation, QuotationRow
 from apps.quotation.serializers import (
     QuotationChoiceSerializer,
     QuotationCreateSerializer,
     QuotationCreateSettingSerializer,
-    QuotationSettingCreateSerializer,
     QuotationDetailSerializer,
     QuotationListSerializer,
-    QuotationSettingUpdateSerializer,
+    QuotationSettingCreateSerializer,
     QuotationSettingsSerializer,
+    QuotationSettingUpdateSerializer,
+)
+from apps.tax.models import TaxScheme
+from apps.tax.serializers import TaxSchemeMinSerializer
+from apps.users.serializers import CompanySerializer
+from apps.voucher.models import (
+    SalesAgent,
 )
 from apps.voucher.models.discounts import SalesDiscount
+from apps.voucher.serializers.sales import (
+    SalesDiscountMinSerializer,
+    SalesVoucherCreateSerializer,
+)
+from awecount.libs import get_next_quotation_no
+from awecount.libs.CustomViewSet import (
+    CRULViewSet,
+    GenericSerializer,
+)
+from awecount.libs.helpers import (
+    check_verification_hash,
+    get_verification_hash,
+)
+from awecount.libs.mixins import (
+    DeleteRows,
+    InputChoiceMixin,
+)
 
 
 class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -159,7 +153,7 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         hash = get_verification_hash("quotation-{}".format(pk))
         return Response({**details, "hash": hash})
 
-    @action(detail=True, permission_classes=[], url_path="details-by-hash")
+    @action(detail=True, permission_classes=[AllowAny], url_path="details-by-hash")
     def details_by_hash(self, request, pk):
         hash = request.GET.get("hash")
         if not hash:

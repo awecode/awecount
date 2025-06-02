@@ -6,8 +6,8 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django_q.tasks import async_task
-from rest_framework import mixins, status, views, viewsets
-from rest_framework.decorators import action, permission_classes
+from rest_framework import decorators, mixins, permissions, status, views, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
@@ -44,7 +44,7 @@ class CompanyViewset(
 ):
     model = Company
     serializer_class = CompanySerializer
-    permission_classes = [CompanyBasePermission]
+    permission_classes = [permissions.IsAuthenticated, CompanyBasePermission]
 
     lookup_field = "slug"
     lookup_url_kwarg = "company_slug"
@@ -150,7 +150,7 @@ class CompanyPermissionViewSet(viewsets.ModelViewSet):
     model = Permission
     serializer_class = CompanyPermissionSerializer
 
-    permission_classes = [CompanyAdminPermission]
+    permission_classes = [permissions.IsAuthenticated, CompanyAdminPermission]
 
     def get_queryset(self):
         return self.model.objects.filter(company__slug=self.kwargs.get("company_slug"))
@@ -168,7 +168,7 @@ class CompanyPermissionViewSet(viewsets.ModelViewSet):
 
 class CompanyMemberPermissionEndpoint(views.APIView):
     model = Permission
-    permission_classes = [CompanyMemberPermission]
+    permission_classes = [permissions.IsAuthenticated, CompanyMemberPermission]
 
     def get(self, request, company_slug):
         company_member = CompanyMember.objects.filter(
@@ -196,7 +196,7 @@ class CompanyMemberViewSet(viewsets.ModelViewSet):
     model = CompanyMember
     serializer_class = CompanyMemberSerializer
 
-    permission_classes = [CompanyAdminPermission]
+    permission_classes = [permissions.IsAuthenticated, CompanyAdminPermission]
 
     def get_queryset(self):
         return self.filter_queryset(
@@ -216,7 +216,7 @@ class CompanyInvitationViewset(viewsets.ModelViewSet):
     model = CompanyMemberInvite
     serializer_class = CompanyMemberInviteSerializer
 
-    permission_classes = [CompanyAdminPermission]
+    permission_classes = [permissions.IsAuthenticated, CompanyAdminPermission]
 
     def get_queryset(self):
         return self.model.objects.filter(
@@ -350,6 +350,7 @@ class CompanyInvitationViewset(viewsets.ModelViewSet):
 
 class UserCompanyInvitationsEndpoint(views.APIView):
     model = CompanyMemberInvite
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         qs = self.model.objects.filter(
@@ -404,6 +405,7 @@ class UserCompanyInvitationsEndpoint(views.APIView):
 
 class UserCompanyJoinEndpoint(views.APIView):
     model = CompanyMemberInvite
+    permission_classes = [permissions.IsAuthenticated]
 
     def _decode_token(self, token):
         decoded_token = json.loads(urlsafe_base64_decode(token).decode("utf-8"))
@@ -446,7 +448,7 @@ class UserCompanyJoinEndpoint(views.APIView):
             status=status.HTTP_200_OK,
         )
 
-    @permission_classes([AllowAny])
+    @decorators.permission_classes([AllowAny])
     def post(self, request):
         token = request.data.get("token")
         accept_or_reject = request.data.get("response")
@@ -521,6 +523,7 @@ class UserCompanyJoinEndpoint(views.APIView):
 
 class UserCompaniesEndpoint(views.APIView):
     model = Company
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         user_companies = Company.objects.filter(
@@ -536,6 +539,7 @@ class UserCompaniesEndpoint(views.APIView):
 
 class UserCompanySwitchEndpoint(views.APIView):
     model = Company
+    permission_classes = [permissions.IsAuthenticated]
 
     def patch(self, request):
         if not request.data.get("company_slug"):
