@@ -24,6 +24,7 @@ def get_company(request):
         Company,
         slug=company_slug,
         company_members__member=request.user,
+        company_members__is_active=True,
     )
 
     request._cached_company = company

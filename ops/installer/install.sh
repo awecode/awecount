@@ -374,4 +374,4 @@ EMAIL_HOST_PASSWORD=$(prompt_for_env "EMAIL_HOST_PASSWORD" "Email host password?
 SENTRY_DSN=$(prompt_for_env "SENTRY_DSN" "Sentry DSN? (leave blank if not using Sentry)" "" "text")
 
 # Execute docker compose up --build -d
-docker compose up --build -d
+docker compose -p awecount up --build -d

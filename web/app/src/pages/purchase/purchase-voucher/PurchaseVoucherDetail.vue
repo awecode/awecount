@@ -2,8 +2,8 @@
 import type { Ref } from 'vue'
 import Decimal from 'decimal.js'
 import DateConverter from 'src/components/date/VikramSamvat.js'
-import useApi from 'src/composables/useApi'
 import checkPermissions from 'src/composables/checkPermissions'
+import useApi from 'src/composables/useApi'
 import { useLoginStore } from 'src/stores/login-info'
 
 interface Fields {
@@ -25,6 +25,7 @@ interface Fields {
 const metaData = {
   title: 'Purchase/Expenses | Awecount',
 }
+
 const route = useRoute()
 const router = useRouter()
 useMeta(metaData)
@@ -114,14 +115,6 @@ const onStatusChange = (status: string) => {
   }
 }
 
-const averageRate = computed(() => {
-  if (!fields.value.rows || !fields.value.landed_cost_rows) return 0
-  const totalAmount = fields.value.rows.reduce((sum, row) => sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
-  const totalLandedCosts = fields.value.landed_cost_rows.reduce((sum, row) => sum.add(row.amount || '0'), new Decimal('0'))
-  const totalQuantity = fields.value.rows.reduce((sum, row) => sum.add(row.quantity || '0'), new Decimal('0'))
-  return totalAmount.add(totalLandedCosts).div(totalQuantity).toNumber()
-})
-
 const createCopyModalOpen = ref(false)
 const createCopy = () => {
   const endpoint = `/api/company/${route.params.company}/purchase-vouchers/${fields.value?.id}/create-a-copy/`
@@ -137,7 +130,6 @@ const createCopy = () => {
     })
 }
 
-
 const endpoint = `/api/company/${route.params.company}/purchase-vouchers/${route.params.id}/details/`
 useApi(endpoint, { method: 'GET' }, false, true)
   .then((data) => {
@@ -149,7 +141,6 @@ useApi(endpoint, { method: 'GET' }, false, true)
       router.replace({ path: '/ErrorNotFound' })
     }
   })
-
 </script>
 
 <template>
@@ -230,7 +221,7 @@ useApi(endpoint, { method: 'GET' }, false, true)
       <q-card v-if="fields?.landed_cost_rows?.length" class="q-mx-lg q-my-md">
         <q-card-section>
           <div class="text-subtitle2 text-grey-9 q-mb-md">
-            Landed Costs:
+            Additional Costs
           </div>
           <q-table
             bordered
@@ -238,11 +229,22 @@ useApi(endpoint, { method: 'GET' }, false, true)
             hide-pagination
             :columns="[
               { name: 'type', label: 'Cost Type', field: 'type', align: 'left', style: 'width: 20%' },
-              { name: 'amount', label: 'Amount', field: 'amount', align: 'right', style: 'width: 25%' },
               { name: 'description', label: 'Description', field: 'description', align: 'left', style: 'width: 50%' },
+              { name: 'credit_account', label: 'Credit Account', field: 'credit_account', align: 'left', style: 'width: 25%' },
+              { name: 'amount', label: 'Amount', field: 'amount', align: 'right', style: 'width: 25%' },
+              { name: 'tax_scheme', label: 'Tax Scheme', field: 'tax_scheme', align: 'left', style: 'width: 25%' },
+              { name: 'tax_amount', label: 'Tax Amount', field: 'tax_amount', align: 'right', style: 'width: 25%' },
+              { name: 'total_amount', label: 'Total Amount', field: 'total_amount', align: 'right', style: 'width: 25%' },
             ]"
             :rows="fields.landed_cost_rows"
           >
+            <template #body-cell-credit_account="props">
+              <q-td :props="props">
+                <RouterLink v-if="props.row.credit_account" :to="`/${$route.params.company}/account/ledgers/${props.row.credit_account.id}`">
+                  {{ props.row.credit_account.name }}
+                </RouterLink>
+              </q-td>
+            </template>
             <template #body-cell-amount="props">
               <q-td :props="props">
                 <FormattedNumber
@@ -251,18 +253,32 @@ useApi(endpoint, { method: 'GET' }, false, true)
                 />
               </q-td>
             </template>
-            <template #bottom-row>
-              <q-tr>
-                <q-td colspan="3">
-                  Average rate per item:
-
+            <template #body-cell-tax_scheme="props">
+              <q-td :props="props">
+                <span v-if="props.row.tax_scheme">
                   <FormattedNumber
-                    class="text-bold"
-                    type="currency"
-                    :value="averageRate"
-                  />
-                </q-td>
-              </q-tr>
+                    type="unit"
+                    unit="percent"
+                    :value="props.row.tax_scheme.rate"
+                  /> {{ ' ' }} ({{ props.row.tax_scheme.short_name || props.row.tax_scheme.name }})
+                </span>
+              </q-td>
+            </template>
+            <template #body-cell-tax_amount="props">
+              <q-td :props="props">
+                <FormattedNumber
+                  type="currency"
+                  :value="props.row.tax_amount"
+                />
+              </q-td>
+            </template>
+            <template #body-cell-total_amount="props">
+              <q-td :props="props">
+                <FormattedNumber
+                  type="currency"
+                  :value="props.row.total_amount"
+                />
+              </q-td>
             </template>
           </q-table>
         </q-card-section>

@@ -17,6 +17,7 @@ from apps.voucher.models import (
     SalesDiscount,
     SalesVoucher,
     SalesVoucherRow,
+    LandedCostRow,
 )
 from apps.voucher.models.invoice_design import InvoiceDesign
 from apps.voucher.models.journal_vouchers import JournalVoucher, JournalVoucherRow
@@ -262,3 +263,18 @@ class PurchaseVoucherRowAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PurchaseVoucherRow, PurchaseVoucherRowAdmin)
+
+
+class LandedCostRowAdmin(admin.ModelAdmin):
+    list_display = (
+        "type",
+        "value",
+        "is_percentage",
+        "amount",
+        "tax_amount",
+        "total_amount",
+    )
+    autocomplete_fields = ("credit_account", "tax_scheme", "invoice")
+
+
+admin.site.register(LandedCostRow, LandedCostRowAdmin)

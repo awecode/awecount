@@ -546,6 +546,7 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
     :type clear: object
     Clears all transactions not accounted here
     """
+    # TODO: Security: Validate company. At least make sure all accounts are from the same company. Also validate against the source or submodel company.
     if isinstance(date, str):
         date = datetime.strptime(date, "%Y-%m-%d")
 
@@ -1128,6 +1129,36 @@ def handle_company_creation(sender, **kwargs):
         default=True,
         system_code=acc_cat_system_codes["Direct Expenses"],
     )
+
+    additional_cost_category = Category.objects.create(
+        name="Additional Cost",
+        code="E-D-AC",
+        parent=direct_expenses,
+        company=company,
+        default=True,
+        system_code=acc_cat_system_codes["Additional Cost"],
+    )
+
+    additional_cost_accounts = {}
+
+    from apps.voucher.models import LandedCostRowType
+
+    for index, cost_type in enumerate(LandedCostRowType.values):
+        if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
+            account = Account.objects.create(
+                name=cost_type,
+                code=f"E-D-LC-{cost_type[:3].upper()}{index}",
+                category=additional_cost_category,
+                company=company,
+                default=True,
+            )
+            additional_cost_accounts[cost_type] = account.id
+
+    PurchaseSetting = apps.get_model("voucher", "PurchaseSetting")
+    purchase_setting, _ = PurchaseSetting.objects.get_or_create(company=company)
+    purchase_setting.landed_cost_accounts = additional_cost_accounts
+    purchase_setting.save()
+
     Category.objects.create(
         name="Purchase Expenses",
         code="E-D-PE",
@@ -1297,16 +1328,23 @@ class TransactionModel(models.Model):
             return self.voucher_id
         return self.id
 
-    def journal_entries(self):
+    def journal_entries(self, additional_kwargs=None):
         app_label = self._meta.app_label
         model = self.__class__.__name__.lower()
         qs = JournalEntry.objects.filter(content_type__app_label=app_label)
         if hasattr(self, "rows"):
             row_ids = self.rows.values_list("id", flat=True)
-            qs = qs.filter(
-                Q(content_type__model=model + "row", object_id__in=row_ids)
-                | Q(content_type__model=model, object_id=self.id)
-            )
+            if additional_kwargs:
+                qs = qs.filter(
+                    Q(content_type__model=model + "row", object_id__in=row_ids)
+                    | Q(content_type__model=model, object_id=self.id)
+                    | Q(**additional_kwargs)
+                )
+            else:
+                qs = qs.filter(
+                    Q(content_type__model=model + "row", object_id__in=row_ids)
+                    | Q(content_type__model=model, object_id=self.id)
+                )
         else:
             qs = qs.filter(content_type__model=model, object_id=self.id)
         return qs

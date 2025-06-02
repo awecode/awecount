@@ -6,6 +6,7 @@ from apps.product.serializers import ItemPurchaseSerializer, ItemSerializer
 from apps.voucher.models import (
     CreditNoteRow,
     DebitNoteRow,
+    PaymentMode,
     PurchaseVoucher,
     PurchaseVoucherRow,
 )
@@ -331,6 +332,33 @@ class PartnerPurchaseVoucherCreateSerializer(
         exclude = ("company", "user", "bank_account", "discount_obj", "fiscal_year")
 
 
+class PartnerPurchaseVoucherListSerializer(BaseModelSerializer):
+    party = serializers.ReadOnlyField(source="party.name")
+    name = serializers.SerializerMethodField()
+    payment_mode = serializers.SerializerMethodField()
+
+    def get_name(self, obj):
+        return "{}".format(obj.voucher_no)
+
+    def get_payment_mode(self, obj):
+        if not obj.payment_mode:
+            return "Credit"
+        return obj.payment_mode.name
+
+    class Meta:
+        model = PurchaseVoucher
+        fields = (
+            "id",
+            "voucher_no",
+            "party",
+            "date",
+            "name",
+            "status",
+            "total_amount",
+            "payment_mode",
+        )
+
+
 class PartnerPurchaseDiscountSerializer(BaseModelSerializer):
     class Meta:
         model = PurchaseDiscount
@@ -395,3 +423,12 @@ class PartnerDebitNoteRowSerializer(
 
 class PartnerDebitNoteCreateSerializer(DebitNoteCreateSerializer):
     rows = PartnerDebitNoteRowSerializer(many=True)
+
+
+class PartnerPaymentModeSerializer(BaseModelSerializer):
+    class Meta:
+        model = PaymentMode
+        fields = [
+            "id",
+            "name",
+        ]
