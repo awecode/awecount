@@ -1696,7 +1696,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         ]
         async_task(
             reconcile,
-            request.company_id,
+            request.company.id,
             transactions,
             start_date,
             end_date,

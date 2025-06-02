@@ -1,5 +1,6 @@
 <script>
 import useForm from 'src/composables/useForm'
+import { LANDED_COST_TYPES } from 'src/composables/useLandedCosts'
 import { modes } from 'src/helpers/constants/invoice'
 
 export default {
@@ -19,6 +20,7 @@ export default {
     const fields = ref(null)
     const modeErrors = ref(null)
     const emailListErrors = ref(null)
+    const landedCostAccountRows = ref([])
     const onUpdateClick = (fields) => {
       formLoading.value = true
       useApi(`/api/company/${route.params.company}/purchase-settings/${fields.id}/`, {
@@ -69,7 +71,16 @@ export default {
           formLoading.value = false
         })
     }
-    watch(formData.formDefaults, newValue => (fields.value = newValue.fields))
+    watch(formData.formDefaults, (newValue) => {
+      fields.value = newValue.fields
+      landedCostAccountRows.value = LANDED_COST_TYPES.filter(type =>
+        type !== 'Tax on Purchase' && type !== 'Customs Valuation Uplift',
+      ).map(type => ({
+        type,
+        account: newValue.fields?.landed_cost_accounts[type],
+      }))
+    })
+
     const onupdateErrors = () => (emailListErrors.value = null)
     const modeOptionsComputed = computed(() => {
       const obj = {
@@ -92,6 +103,7 @@ export default {
       onupdateErrors,
       formLoading,
       modeOptionsComputed,
+      landedCostAccountRows,
     }
   },
 }
@@ -207,26 +219,13 @@ export default {
                       { name: 'type', label: 'Cost Type', field: 'type', align: 'left', style: 'width: 30%' },
                       { name: 'account', label: 'Account', field: 'account', align: 'left', style: 'width: 70%' },
                     ]"
-                    :rows="[
-                      { type: 'Duty', account: fields.landed_cost_accounts?.duty },
-                      { type: 'Labor', account: fields.landed_cost_accounts?.labor },
-                      { type: 'Freight', account: fields.landed_cost_accounts?.freight },
-                      { type: 'Insurance', account: fields.landed_cost_accounts?.insurance },
-                      { type: 'Brokerage', account: fields.landed_cost_accounts?.brokerage },
-                      { type: 'Storage', account: fields.landed_cost_accounts?.storage },
-                      { type: 'Packaging', account: fields.landed_cost_accounts?.packaging },
-                      { type: 'Loading', account: fields.landed_cost_accounts?.loading },
-                      { type: 'Unloading', account: fields.landed_cost_accounts?.unloading },
-                      { type: 'Regulatory Fee', account: fields.landed_cost_accounts?.regulatory_fee },
-                      { type: 'Customs Declaration', account: fields.landed_cost_accounts?.customs_declaration },
-                      { type: 'Other Charges', account: fields.landed_cost_accounts?.other_charges },
-                    ]"
+                    :rows="landedCostAccountRows"
                     :rows-per-page-options="[0]"
                   >
                     <template #body-cell-account="props">
                       <q-td :props="props">
                         <n-auto-complete-v2
-                          v-model="fields.landed_cost_accounts[props.row.type.toLowerCase().replace(' ', '_')]"
+                          v-model="fields.landed_cost_accounts[props.row.type]"
                           dense
                           emit-value
                           map-options
@@ -237,10 +236,10 @@ export default {
                         >
                           <template #append>
                             <q-icon
-                              v-if="fields.landed_cost_accounts[props.row.type.toLowerCase().replace(' ', '_')]"
+                              v-if="fields.landed_cost_accounts[props.row.type]"
                               class="cursor-pointer"
                               name="close"
-                              @click.stop.prevent="fields.landed_cost_accounts[props.row.type.toLowerCase().replace(' ', '_')] = null"
+                              @click.stop.prevent="fields.landed_cost_accounts[props.row.type] = null"
                             />
                           </template>
                         </n-auto-complete-v2>

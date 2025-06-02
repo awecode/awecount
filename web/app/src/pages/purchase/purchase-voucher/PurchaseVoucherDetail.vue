@@ -115,14 +115,6 @@ export default {
       }
     }
 
-    const averageRate = computed(() => {
-      if (!fields.value.rows || !fields.value.landed_cost_rows) return 0
-      const totalAmount = fields.value.rows.reduce((sum, row) => sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
-      const totalLandedCosts = fields.value.landed_cost_rows.reduce((sum, row) => sum.add(row.amount || '0'), new Decimal('0'))
-      const totalQuantity = fields.value.rows.reduce((sum, row) => sum.add(row.quantity || '0'), new Decimal('0'))
-      return totalAmount.add(totalLandedCosts).div(totalQuantity).toNumber()
-    })
-
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -140,7 +132,6 @@ export default {
       checkPermissions,
       isLoading,
       errors,
-      averageRate,
     }
   },
   created() {
@@ -237,7 +228,7 @@ export default {
       <q-card v-if="fields?.landed_cost_rows?.length" class="q-mx-lg q-my-md">
         <q-card-section>
           <div class="text-subtitle2 text-grey-9 q-mb-md">
-            Landed Costs:
+            Additional Costs
           </div>
           <q-table
             bordered
@@ -256,7 +247,7 @@ export default {
           >
             <template #body-cell-credit_account="props">
               <q-td :props="props">
-                <RouterLink :to="`/${$route.params.company}/account/ledgers/${props.row.credit_account.id}`">
+                <RouterLink v-if="props.row.credit_account" :to="`/${$route.params.company}/account/ledgers/${props.row.credit_account.id}`">
                   {{ props.row.credit_account.name }}
                 </RouterLink>
               </q-td>
@@ -271,11 +262,13 @@ export default {
             </template>
             <template #body-cell-tax_scheme="props">
               <q-td :props="props">
-                <FormattedNumber
-                  type="unit"
-                  unit="percent"
-                  :value="props.row.tax_scheme.rate"
-                /> {{ ' ' }} ({{ props.row.tax_scheme.short_name || props.row.tax_scheme.name }})
+                <span v-if="props.row.tax_scheme">
+                  <FormattedNumber
+                    type="unit"
+                    unit="percent"
+                    :value="props.row.tax_scheme.rate"
+                  /> {{ ' ' }} ({{ props.row.tax_scheme.short_name || props.row.tax_scheme.name }})
+                </span>
               </q-td>
             </template>
             <template #body-cell-tax_amount="props">
@@ -293,19 +286,6 @@ export default {
                   :value="props.row.total_amount"
                 />
               </q-td>
-            </template>
-            <template #bottom-row>
-              <q-tr>
-                <q-td colspan="3">
-                  Average rate per item:
-
-                  <FormattedNumber
-                    class="text-bold"
-                    type="currency"
-                    :value="averageRate"
-                  />
-                </q-td>
-              </q-tr>
             </template>
           </q-table>
         </q-card-section>

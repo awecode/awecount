@@ -289,6 +289,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
+        "apps.company.permissions.CompanyMemberPermission",
     ],
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
@@ -461,7 +462,7 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Liabilities": "LIABILITIES",
     "Equity": "EQUITY",
     "Opening Balance Difference": "OPEN-BAL-DIFF",
-    "Landed Cost": "LANDED-COST",
+    "Additional Cost": "ADD-COST",
 }
 
 # Bank reconciliation settings

@@ -207,12 +207,12 @@ const updateItem = (itemObject: any) => {
   if (itemObject) {
     modalValue.value.itemObj = itemObject
     modalValue.value.item_id = itemObject.id
-    modalValue.value.description = itemObject.description
-    modalValue.value.rate = itemObject.rate
-    modalValue.value.unit_id = itemObject.unit_id
-    modalValue.value.tax_scheme_id = props.taxType === 'No Tax' ? null : itemObject.tax_scheme_id
-    modalValue.value.selected_unit_obj = itemObject.default_unit_obj
-    modalValue.value.selected_tax_scheme_obj = itemObject.default_tax_scheme_obj
+    modalValue.value.description = modalValue.value.description || itemObject.description
+    modalValue.value.rate = modalValue.value.rate || itemObject.rate
+    modalValue.value.unit_id = modalValue.value.unit_id || itemObject.unit_id
+    modalValue.value.tax_scheme_id = props.taxType === 'No Tax' ? null : (modalValue.value.tax_scheme_id || itemObject.tax_scheme_id)
+    modalValue.value.selected_unit_obj = modalValue.value.selected_unit_obj || itemObject.default_unit_obj
+    modalValue.value.selected_tax_scheme_obj = modalValue.value.selected_tax_scheme_obj || itemObject.default_tax_scheme_obj
 
     // Check for missing fields based on config
     if (props.missingFieldsConfig?.enabled) {

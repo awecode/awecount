@@ -44,6 +44,7 @@ if (!props.isEdit) {
   fields.value.due_date = props.today
   fields.value.date = props.today
   fields.value.is_export = false
+  fields.value.received_by = ''
 }
 
 const customerMode = ref(false)
@@ -545,6 +546,12 @@ fields.value.tax_type = fields.value.tax_type || 'Tax Exclusive'
         data-testid="export-checkbox"
         label="Export?"
       />
+    </div>
+    <div v-if="formDefaults.options?.enable_received_by_in_voucher" class="mt-sm col-12">
+      <q-label class="q-mb-lg">
+        Received By
+      </q-label>
+      <q-editor v-model="fields.received_by" />
     </div>
   </div>
 </template>

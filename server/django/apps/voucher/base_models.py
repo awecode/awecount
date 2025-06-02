@@ -200,7 +200,6 @@ class InvoiceModel(models.Model):
         return dct
 
     def get_voucher_meta(self, update_row_data=False, prefetched_rows=False):
-        # import ipdb; ipdb.set_trace()
         if self.meta_tax is None:
             self.generate_meta(save=True)
         dct = {
