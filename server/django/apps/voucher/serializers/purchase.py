@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from apps.ledger.models import JournalEntry
 from apps.ledger.serializers import PartyMinSerializer
 from apps.product.models import Item
 from apps.product.serializers import ItemPurchaseSerializer
@@ -12,15 +13,15 @@ from awecount.libs.serializers import StatusReversionMixin
 from lib.drf.serializers import BaseModelSerializer
 
 from ..models import (
+    LandedCostRow,
     PurchaseDiscount,
     PurchaseOrder,
     PurchaseOrderRow,
     PurchaseVoucher,
     PurchaseVoucherRow,
-    LandedCostRow,
 )
-from .mixins import DiscountObjectTypeSerializerMixin
 from .landed_cost import LandedCostRowSerializer
+from .mixins import DiscountObjectTypeSerializerMixin
 
 
 class PurchaseDiscountSerializer(BaseModelSerializer):
@@ -72,6 +73,16 @@ class PurchaseVoucherCreateSerializer(
     purchase_order_numbers = serializers.ReadOnlyField()
     selected_party_obj = PartyMinSerializer(source="party", read_only=True)
     selected_mode_obj = GenericSerializer(source="bank_account", read_only=True)
+
+    def to_representation(self, instance):
+        """
+        Overridden to sort landed_cost_rows by id.
+        """
+        representation = super().to_representation(instance)
+        if 'landed_cost_rows' in representation and representation['landed_cost_rows'] is not None:
+            # Ensure each row has an 'id' before sorting, or handle cases where it might be missing
+            representation['landed_cost_rows'].sort(key=lambda x: x.get('id') if x.get('id') is not None else float('inf'))
+        return representation
 
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
@@ -151,9 +162,6 @@ class PurchaseVoucherCreateSerializer(
         #     return data
 
     def validate_rows(self, rows):
-        request = self.context["request"]
-        purchase_setting = request.company.purchase_setting
-
         # Collect all item IDs and fetch items in a single query
         item_ids = [row.get("item_id") for row in rows]
         items = {item.id: item for item in Item.objects.filter(id__in=item_ids)}
@@ -197,11 +205,8 @@ class PurchaseVoucherCreateSerializer(
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
 
         # Create landed cost if rows exist
-        if landed_cost_rows_data:
-            LandedCostRow.objects.bulk_create([
-                LandedCostRow(invoice=instance, **row_data)
-                for row_data in landed_cost_rows_data
-            ])
+        for row_data in landed_cost_rows_data:
+            LandedCostRow.objects.create(invoice=instance, **row_data)
 
         if purchase_orders:
             instance.purchase_orders.clear()
@@ -210,7 +215,7 @@ class PurchaseVoucherCreateSerializer(
         instance.apply_transactions(voucher_meta=meta)
         return instance
 
-    def update(self, instance, validated_data):
+    def update(self, instance: PurchaseVoucher, validated_data):
         rows_data = validated_data.pop("rows")
         landed_cost_rows_data = validated_data.pop("landed_cost_rows", [])
         if validated_data.get("voucher_no") == "":
@@ -229,13 +234,17 @@ class PurchaseVoucherCreateSerializer(
 
         # Update landed cost rows
         if landed_cost_rows_data:
-            # Delete existing rows
-            instance.landed_cost_rows.all().delete()
-            # Create new rows
-            LandedCostRow.objects.bulk_create([
-                LandedCostRow(invoice=instance, **row_data)
-                for row_data in landed_cost_rows_data
-            ])
+            new_row_ids = []
+            for row_data in landed_cost_rows_data:
+                new_row, __created = LandedCostRow.objects.update_or_create(
+                    invoice=instance, pk=row_data.get("id"), defaults=row_data
+                )
+                new_row_ids.append(new_row.id)
+            instance.landed_cost_rows.exclude(id__in=new_row_ids).delete()
+            JournalEntry.objects.filter(
+                content_type__model="landedcostrow",
+                source_voucher_id=instance.id,
+            ).exclude(object_id__in=new_row_ids).delete()
 
         if purchase_orders:
             instance.purchase_orders.clear()
@@ -309,6 +318,16 @@ class PurchaseVoucherDetailSerializer(BaseModelSerializer):
         source="company.purchase_setting.enable_row_description"
     )
     purchase_order_numbers = serializers.ReadOnlyField()
+
+    def to_representation(self, instance):
+        """
+        Overridden to sort landed_cost_rows by id.
+        """
+        representation = super().to_representation(instance)
+        if 'landed_cost_rows' in representation and representation['landed_cost_rows'] is not None:
+            # Ensure each row has an 'id' before sorting, or handle cases where it might be missing
+            representation['landed_cost_rows'].sort(key=lambda x: x.get('id') if x.get('id') is not None else float('inf'))
+        return representation
 
     class Meta:
         model = PurchaseVoucher

@@ -145,6 +145,9 @@ export default {
               <q-checkbox v-model="fields.enable_reference_in_voucher" label="Enable Reference in voucher?" />
             </div>
             <div>
+              <q-checkbox v-model="fields.enable_received_by_in_voucher" label="Enable Received by in voucher?" />
+            </div>
+            <div>
               <q-checkbox v-model="fields.enable_discount_in_voucher" label="Enable Discount in voucher?" />
             </div>
             <div>

@@ -130,7 +130,7 @@ const { columns, rows, loading, searchQuery, pagination, onRequest, filters, onF
             color="orange-6"
             label="edit"
             style="font-size: 12px"
-            :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }"
+            :to="{ name: 'company-inventory-items-id-edit', params: { company: $route.params.company, id: props.row.id } }"
           />
         </q-td>
       </template>

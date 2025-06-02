@@ -1,9 +1,13 @@
+import json
 import uuid
+from decimal import Decimal
 
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.signing import BadSignature, Signer
+from django.db import models
+from django.forms import model_to_dict
 from django.utils.crypto import constant_time_compare
 from requests import Request
 
@@ -51,7 +55,7 @@ def check_verification_hash(hash_to_check, value):
 
 
 def upload_file(file, folder):
-    filename = f"{uuid.uuid4()}{file.name[file.name.rfind('.'):]}"
+    filename = f"{uuid.uuid4()}{file.name[file.name.rfind('.') :]}"
     if folder:
         filename = f"{folder}/{filename}"
     file_path = default_storage.save(filename, ContentFile(file.read()))
@@ -93,3 +97,17 @@ def get_relative_file_path(file_url):
     if len(parts) > 1:
         return parts[1]
     return file_url
+
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return json.JSONEncoder.default(self, obj)
+
+
+def jsonify(obj):
+    # if obj is a model instance, convert it to a dict
+    if isinstance(obj, models.Model):
+        obj = model_to_dict(obj)
+    return json.loads(json.dumps(obj, cls=DecimalEncoder))

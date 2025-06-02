@@ -1,3 +1,5 @@
+from django.db.models import Prefetch, Q
+
 from apps.ledger.models import Party
 from apps.ledger.serializers import (
     PartyMinSerializer,
@@ -53,13 +55,36 @@ from apps.quotation.serializers import (
     QuotationChoiceSerializer,
     QuotationCreateSerializer,
     QuotationCreateSettingSerializer,
-    QuotationSettingCreateSerializer,
     QuotationDetailSerializer,
     QuotationListSerializer,
-    QuotationSettingUpdateSerializer,
+    QuotationSettingCreateSerializer,
     QuotationSettingsSerializer,
+    QuotationSettingUpdateSerializer,
+)
+from apps.tax.models import TaxScheme
+from apps.tax.serializers import TaxSchemeMinSerializer
+from apps.users.serializers import CompanySerializer
+from apps.voucher.models import (
+    SalesAgent,
 )
 from apps.voucher.models.discounts import SalesDiscount
+from apps.voucher.serializers.sales import (
+    SalesDiscountMinSerializer,
+    SalesVoucherCreateSerializer,
+)
+from awecount.libs import get_next_quotation_no
+from awecount.libs.CustomViewSet import (
+    CRULViewSet,
+    GenericSerializer,
+)
+from awecount.libs.helpers import (
+    check_verification_hash,
+    get_verification_hash,
+)
+from awecount.libs.mixins import (
+    DeleteRows,
+    InputChoiceMixin,
+)
 
 
 class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):

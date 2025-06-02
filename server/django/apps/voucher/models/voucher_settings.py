@@ -23,6 +23,7 @@ class SalesSetting(models.Model):
     is_trade_discount_in_row = models.BooleanField(default=False)
     enable_due_date_in_voucher = models.BooleanField(default=False)
     enable_reference_in_voucher = models.BooleanField(default=False)
+    enable_received_by_in_voucher = models.BooleanField(default=False)
     enable_discount_in_voucher = models.BooleanField(default=True)
 
     # Required fields settings
@@ -72,6 +73,7 @@ class SalesSetting(models.Model):
             "is_trade_discount_in_row": self.is_trade_discount_in_row,
             "enable_due_date_in_voucher": self.enable_due_date_in_voucher,
             "enable_reference_in_voucher": self.enable_reference_in_voucher,
+            "enable_received_by_in_voucher": self.enable_received_by_in_voucher,
             "enable_discount_in_voucher": self.enable_discount_in_voucher,
             "enable_import_challan": self.enable_import_challan,
             "enable_amount_entry": self.enable_amount_entry,
@@ -121,6 +123,9 @@ class PurchaseSetting(models.Model):
     enable_item_rate_change_alert = models.BooleanField(default=False)
     rate_change_alert_emails = ArrayField(models.EmailField(), default=list, blank=True)
 
+    enable_landed_cost = models.BooleanField(default=False)
+    landed_cost_accounts = models.JSONField(default=dict, blank=True)
+
     def update(self, update_data):
         bank_account_id = update_data.get("bank_account")
         payment_mode_id = update_data.get("payment_mode")
@@ -163,6 +168,8 @@ class PurchaseSetting(models.Model):
             "enable_purchase_order_import": self.enable_purchase_order_import,
             "require_item_code": self.require_item_code,
             "require_item_hs_code": self.require_item_hs_code,
+            "enable_landed_costs": self.enable_landed_cost,
+            "landed_cost_accounts": self.landed_cost_accounts,
         }
 
     def __str__(self):
