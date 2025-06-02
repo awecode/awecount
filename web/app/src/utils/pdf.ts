@@ -65,7 +65,6 @@ export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<st
       return `
       <tr style="color: #444; font-weight: 400;">
         <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${index + 1}</td>
-        <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${row.hs_code ?? ''}</td>
         <td style="padding: 8px; border: 1px solid #ccc;">
           <strong>${row.item_name}</strong>
           ${row.description ? `<div style="font-size: 12px; color: #888;">${formatRowDescription(row.description)}</div>` : ''}
@@ -137,8 +136,7 @@ export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<st
     <thead>
       <tr style="background-color: #f2f2f2;">
         <th style="padding: 8px; border: 1px solid #ccc;">SN</th>
-        <th style="padding: 8px; border: 1px solid #ccc;">HS Code</th>
-        <th style="padding: 8px; border: 1px solid #ccc;">Particulars</th>
+        <th style="padding: 8px; border: 1px solid #ccc;">Particular</th>
         <th style="padding: 8px; border: 1px solid #ccc;">Qty</th>
         <th style="padding: 8px; border: 1px solid #ccc;">Rate</th>
         <th style="padding: 8px; border: 1px solid #ccc;">Amount (${companyInfo.config_template === 'np' ? 'NRS' : 'N/A'})</th>

@@ -15,6 +15,10 @@ export default {
       type: Boolean,
       default: () => true,
     },
+    showHSCode: {
+      type: Boolean,
+      default: () => true,
+    },
   },
   setup(props) {
     const tax = computed(() => {
@@ -76,7 +80,7 @@ export default {
         <q-th data-testid="SN">
           SN
         </q-th>
-        <q-th data-testid="hs-code">
+        <q-th data-testid="hs-code" v-if="props.showHSCode">
           H.S. code
         </q-th>
         <q-th data-testid="Particular">
@@ -104,7 +108,7 @@ export default {
         <q-td>
           {{ index + 1 }}
         </q-td>
-        <q-td>{{ row.hs_code }}</q-td>
+        <q-td v-if="props.showHSCode">{{ row.hs_code }}</q-td>
         <q-td>
           {{ row.item_name }}
           <br />

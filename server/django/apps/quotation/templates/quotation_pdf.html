@@ -267,7 +267,6 @@
             <thead>
                 <tr>
                     <th>SN</th>
-                    <th>H.S. Code</th>
                     <th>Particular</th>
                     <th>Qty</th>
                     <th>Rate</th>
@@ -278,7 +277,6 @@
                 {% for row in quotation.rows %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ row.item.hs_code }}</td>
                         <td>{{ row.item.name }}</td>
                         <td>{{ row.quantity }} {{ row.unit }}</td>
                         <td>{{ row.rate }}</td>

@@ -115,7 +115,7 @@ useApi(endpoint, { method: 'GET' }, false, true)
   .then((data) => {
     fields.value = data
     fields.value.voucher_meta = fields.value.quotation_meta
-    if(!isLoggedIn && route.query.hash){
+    if (!isLoggedIn && route.query.hash) {
       useAuthStore().company = data.company
     }
     resetEmailQuotationPayload()
@@ -255,7 +255,7 @@ const createCopy = () => {
       </q-card>
       <q-card id="to_print" class="q-mx-lg">
         <q-card-section>
-          <ViewerTable :fields="fields" />
+          <ViewerTable :fields="fields" :show-h-s-code="false" />
         </q-card-section>
       </q-card>
       <q-card v-if="fields?.remarks" class="q-mx-lg q-my-md">
