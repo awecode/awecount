@@ -124,6 +124,7 @@ class PurchaseSetting(models.Model):
     rate_change_alert_emails = ArrayField(models.EmailField(), default=list, blank=True)
 
     enable_landed_cost = models.BooleanField(default=False)
+    update_cost_price_with_landed_cost = models.BooleanField(default=False)
     landed_cost_accounts = models.JSONField(default=dict, blank=True)
 
     def update(self, update_data):

@@ -206,6 +206,11 @@ export default {
             </div>
             <q-card v-if="fields.enable_landed_cost" class="q-mt-lg">
               <q-card-section>
+                <div>
+                  <q-checkbox v-model="fields.update_cost_price_with_landed_cost" label="Update Cost Price with Landed Cost?" />
+                </div>
+              </q-card-section>
+              <q-card-section>
                 <div class="text-grey-7 q-mb-md">
                   <q-icon name="info" size="sm" />
                   Landed Cost Type Account Mapping
