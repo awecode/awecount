@@ -562,7 +562,7 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
         label="Export?"
       />
     </div>
-    <div class="col-md-12">
+    <div v-if="formDefaults.options?.enable_received_by_in_voucher" class="mt-sm col-12">
       <q-label class="q-mb-lg">
         Received By
       </q-label>
