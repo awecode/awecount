@@ -1,7 +1,6 @@
 import datetime
 
 from django.conf import settings
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import F
 from django.utils import timezone
 from rest_framework import serializers
@@ -19,7 +18,7 @@ from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.helpers import get_full_file_url
-from awecount.libs.serializers import StatusReversionMixin
+from awecount.libs.serializers import FileOrStringField, StatusReversionMixin
 from lib.drf.serializers import BaseModelSerializer
 
 from ..models import (
@@ -294,13 +293,7 @@ class SalesVoucherCreateSerializer(
             )
 
     def validate(self, data):
-        # TODO: Find why due date is null and fix the issue
         request = self.context["request"]
-        # request_data = self.context["request"].data
-        if "due_date" not in request.data.keys():
-            data["due_date"] = None
-        else:
-            data["due_date"] = request.data["due_date"]
         if (
             not data.get("party")
             and not data.get("payment_mode")
@@ -403,11 +396,10 @@ class SalesVoucherCreateSerializer(
         if due_date:
             if isinstance(due_date, str):
                 due_date = datetime.datetime.strptime(due_date, "%Y-%m-%d").date()
-            validation_date = (
-                self.instance.due_date if self.instance else timezone.now().date()
-            )
+            validation_date = self.instance.date if self.instance else timezone.now().date()
             if due_date < validation_date:
                 raise ValidationError("Due date cannot be before invoice date.")
+        return due_date
 
     def check_challans(self, challans, rows):
         voucher_items = []
@@ -458,8 +450,6 @@ class SalesVoucherCreateSerializer(
         validated_data["company_id"] = request.company.id
         validated_data["user_id"] = request.user.id
         self.validate_invoice_date(validated_data)
-        if validated_data.get("due_date"):
-            self.validate_due_date(validated_data["due_date"])
         instance = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
@@ -495,7 +485,6 @@ class SalesVoucherCreateSerializer(
         validated_data["company_id"] = self.context["request"].company.id
         validated_data["fiscal_year_id"] = instance.fiscal_year_id
         self.validate_invoice_date(validated_data, voucher_no=instance.voucher_no)
-        # self.validate_due_date(validated_data['due_date'], instance=instance)
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
 
         for index, row in enumerate(rows_data):
@@ -633,28 +622,6 @@ class RecurringVoucherTemplateCreateSerializer(BaseModelSerializer):
             "created_at",
             "updated_at",
         )
-
-
-class FileOrStringField(serializers.Field):
-    def to_internal_value(self, data):
-        if isinstance(data, InMemoryUploadedFile):
-            max_file_upload_size = settings.MAX_FILE_UPLOAD_SIZE
-            if data.size > max_file_upload_size:
-                max_file_upload_size_mb = max_file_upload_size / (1024 * 1024)
-                raise serializers.ValidationError(
-                    f"File size exceeds the maximum limit of {max_file_upload_size_mb:.2f} MB"
-                )
-            return data
-
-        if isinstance(data, str):
-            return data
-
-        raise serializers.ValidationError(
-            "This field must be either a file or a string."
-        )
-
-    def to_representation(self, value):
-        return value
 
 
 class EmailInvoiceRequestSerializer(serializers.Serializer):

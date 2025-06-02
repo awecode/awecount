@@ -1,11 +1,4 @@
 from django.db.models import Prefetch, Q
-from django_filters import rest_framework as filters
-from rest_framework import filters as rf_filters
-from rest_framework.decorators import action
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 
 from apps.ledger.models import Party
 from apps.ledger.serializers import (
@@ -15,9 +8,50 @@ from apps.product.models import Item, Unit
 from apps.product.serializers import (
     ItemSalesSerializer,
 )
+from apps.tax.models import TaxScheme
+from apps.tax.serializers import TaxSchemeMinSerializer
+
+from apps.voucher.models import (
+    SalesAgent,
+)
+
+from django_q.tasks import async_task
+from django_filters import rest_framework as filters
+from rest_framework import filters as rf_filters
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.generics import get_object_or_404
+from rest_framework.exceptions import AuthenticationFailed
+from django.utils import timezone
+
+from apps.users.serializers import CompanySerializer
+
+from django.db.models import Prefetch, Q
+
+
+from apps.voucher.serializers.sales import (
+    SalesDiscountMinSerializer,
+    SalesVoucherCreateSerializer,
+)
+
+
+from awecount.libs import get_next_quotation_no
+from awecount.libs.CustomViewSet import (
+    CRULViewSet,
+    GenericSerializer,
+)
+from awecount.libs.helpers import (
+    get_verification_hash,
+    check_verification_hash,
+)
+from awecount.libs.mixins import (
+    DeleteRows,
+    InputChoiceMixin,
+)
 from apps.quotation.filters import QuotationFilterSet
 from apps.quotation.models import Quotation, QuotationRow
 from apps.quotation.serializers import (
+    EmailQuotationRequestSerializer,
     QuotationChoiceSerializer,
     QuotationCreateSerializer,
     QuotationCreateSettingSerializer,
@@ -148,23 +182,64 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return data
 
     @action(detail=True)
-    def details(self, request, pk, *args, **kwargs):
+    def details(self, request, pk, company_slug, *args, **kwargs):
         details = self.get_quotation_details(pk)
-        hash = get_verification_hash("quotation-{}".format(pk))
+        hash = get_verification_hash(
+            "quotation-{}".format("{}-{}".format(pk, company_slug))
+        )
         return Response({**details, "hash": hash})
 
-    @action(detail=True, permission_classes=[AllowAny], url_path="details-by-hash")
-    def details_by_hash(self, request, pk):
+    @action(detail=True, permission_classes=[], url_path="details-by-hash")
+    def details_by_hash(self, request, pk, company_slug, *args, **kwargs):
         hash = request.GET.get("hash")
         if not hash:
             raise AuthenticationFailed("No hash provided")
-        if check_verification_hash(hash, "quotation-{}".format(pk)) is False:
+        if (
+            check_verification_hash(
+                hash, "quotation-{}".format("{}-{}".format(pk, company_slug))
+            )
+            is False
+        ):
             raise AuthenticationFailed("Invalid hash")
         obj = Quotation.objects.get(pk=pk)
         self.request.company = obj.company
         self.request.company_id = obj.company_id
-        details = self.get_voucher_details(pk)
+        details = self.get_quotation_details(pk)
         return Response({**details, "company": CompanySerializer(obj.company).data})
+
+    @action(detail=True, url_path="email-quotation", methods=["POST"])
+    def email_quotation(self, request, pk, *args, **kwargs):
+        serializer = EmailQuotationRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        obj = self.get_object()
+        async_task(
+            "apps.quotation.models.Quotation.email_quotation",
+            obj,
+            **serializer.validated_data,
+        )
+        if obj.status == "Generated":
+            obj.status = "Sent"
+            obj.save()
+        return Response({})
+
+    @action(detail=True, url_path="create-a-copy", methods=["POST"])
+    def create_a_copy(self, request, pk, *args, **kwargs):
+        """
+        Create a copy of the Quotation
+        """
+        obj = self.get_object()
+        data = QuotationCreateSerializer(obj).data
+        data["number"] = None
+        data["status"] = "Draft"
+        data["date"] = timezone.now().date()
+        data["user"] = request.user
+        data["expiry_date"] = None
+        if obj.expiry_date:
+            data["expiry_date"] = data["date"] + (obj.expiry_date - obj.date)
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     def get_defaults(self, request=None, *args, **kwargs):
         return {

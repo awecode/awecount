@@ -6,6 +6,7 @@ from decimal import Decimal
 from io import BytesIO
 from typing import Union
 
+from apps.ledger.models.base import Account
 from auditlog.registry import auditlog
 from dateutil.relativedelta import relativedelta
 from django.apps import apps
@@ -44,13 +45,6 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.helpers import (
-    deserialize_request,
-    get_relative_file_path,
-    merge_dicts,
-    use_miti,
-)
-from apps.ledger.models.base import Account
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -777,8 +771,8 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                         "company": {
                             "name": self.company.name,
                             "address": self.company.address,
-                            "contact": self.company.contact_no,
-                            "email": ", ".join(self.company.emails),
+                            "contact": self.company.phone,
+                            "email": self.company.email,
                             "tax_identification_number": self.company.tax_identification_number,
                             "currency_code": self.company.currency_code,
                         },
@@ -1396,7 +1390,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                     if landed_cost.tax_scheme and landed_cost.tax_scheme.rate:
                         credit_account = landed_cost.credit_account
                         if not credit_account:
-                            raise ValidationError("Credit account is required for customs valuation uplift when tax is applied")
+                            raise ValidationError(
+                                "Credit account is required for customs valuation uplift when tax is applied"
+                            )
                         account = landed_cost.tax_scheme.receivable
                         entries.append(["dr", account, landed_cost.tax_amount])
                         entries.append(
@@ -1431,11 +1427,17 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
 
                     if landed_cost.tax_scheme:
                         row_tax_amount = (
-                            landed_cost.tax_scheme.rate * landed_cost.amount / Decimal(100)
+                            landed_cost.tax_scheme.rate
+                            * landed_cost.amount
+                            / Decimal(100)
                         )
                         if row_tax_amount:
                             entries.append(
-                                ["dr", landed_cost.tax_scheme.receivable, row_tax_amount]
+                                [
+                                    "dr",
+                                    landed_cost.tax_scheme.receivable,
+                                    row_tax_amount,
+                                ]
                             )
 
                     entries.append(
