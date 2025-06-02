@@ -2,7 +2,7 @@
 import FormattedNumber from 'src/components/FormattedNumber.vue'
 import { useLandedCosts } from 'src/composables/useLandedCosts'
 import { useLoginStore } from 'src/stores/login-info'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 
 const props = defineProps({
   fields: {
@@ -59,6 +59,22 @@ const handleTaxSchemeChange = (row) => {
     row.tax_scheme = null
   }
 }
+
+// Watch for changes in averageRatePerItem and update fields.value.rows accordingly
+watch(
+  averageRatePerItem,
+  (newAverageRates) => {
+    if (!newAverageRates?.length || !props.fields.rows) return
+
+    // Update each row's rate with the totalCost from averageRatePerItem
+    props.fields.rows.forEach((row, index) => {
+      if (newAverageRates[index] && newAverageRates[index].totalCost) {
+        row.updated_cost_price = newAverageRates[index].totalCost.toNumber()
+      }
+    })
+  },
+  { deep: true },
+)
 </script>
 
 <template>

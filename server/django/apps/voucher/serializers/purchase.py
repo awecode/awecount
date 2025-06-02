@@ -45,7 +45,7 @@ class PurchaseVoucherRowSerializer(
     voucher_id = serializers.ReadOnlyField(source="voucher.id")
     selected_item_obj = ItemPurchaseSerializer(read_only=True, source="item")
     selected_unit_obj = GenericSerializer(read_only=True, source="unit")
-
+    updated_cost_price = serializers.FloatField(required=False)
     def validate_discount(self, value):
         if not value:
             value = 0
@@ -225,12 +225,17 @@ class PurchaseVoucherCreateSerializer(
         self.assign_discount_obj(validated_data)
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
 
+        request = self.context["request"]
+        company = request.company
         # Update purchase voucher rows
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             PurchaseVoucherRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
             )
+            if company.purchase_setting.update_cost_price_with_landed_cost:
+                if row.get("updated_cost_price"):
+                    Item.objects.filter(id=row.get("item_id"), company=company).update(cost_price=row.get("updated_cost_price"))
 
         # Update landed cost rows
         if landed_cost_rows_data:
