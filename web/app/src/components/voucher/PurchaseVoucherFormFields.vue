@@ -180,10 +180,10 @@ watch(
       } else {
         fields.value.mode = 'Credit'
       }
-    }
-
-    if (Object.hasOwn(props.formDefaults.fields, 'trade_discount')) {
-      fields.value.trade_discount = props.formDefaults.fields?.trade_discount
+    } else {
+      if (Object.hasOwn(props.formDefaults.fields, 'trade_discount')) {
+        fields.value.trade_discount = props.formDefaults.fields?.trade_discount
+      }
     }
   },
 )

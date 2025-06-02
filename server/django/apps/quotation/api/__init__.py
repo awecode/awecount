@@ -7,6 +7,7 @@ from apps.ledger.serializers import (
 from apps.product.models import Item, Unit
 from apps.product.serializers import (
     ItemSalesSerializer,
+    UnitSerializer,
 )
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
@@ -94,7 +95,7 @@ class QuotationViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     row = QuotationRow
     collections = [
         ("parties", Party, PartyMinSerializer, True, ["name"]),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         ("discounts", SalesDiscount, SalesDiscountMinSerializer, False),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, True, ["name"]),
         (

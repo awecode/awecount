@@ -34,7 +34,7 @@ const importChallanModal = ref(false)
 
 const loginStore = useLoginStore()
 
-const { $q } = useQuasar()
+const $q = useQuasar()
 
 const fields = defineModel('fields')
 
@@ -237,12 +237,12 @@ const onPaymentModeChange = (obj) => {
 watch(
   () => props.formDefaults,
   () => {
-    if (props.formDefaults.fields?.hasOwnProperty('trade_discount')) {
-      fields.value.trade_discount = props.formDefaults.fields?.trade_discount
-    }
     if (props.isEdit) {
       if (fields.value.customer_name) customerMode.value = true
     } else {
+      if (props.formDefaults.fields?.hasOwnProperty('trade_discount')) {
+        fields.value.trade_discount = props.formDefaults.fields?.trade_discount
+      }
       if (props.formDefaults.fields?.payment_mode) {
         fields.value.payment_mode = props.formDefaults.fields.payment_mode
       }

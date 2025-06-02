@@ -150,7 +150,7 @@ export default {
           color="orange-5"
           icon="edit"
           label="Edit"
-          :to="`/${$route.params.company}/sales/credit-notes/${fields.id}`"
+          :to="`/${$route.params.company}/sales/credit-notes/${fields.id}/edit`"
         />
         <q-btn
           v-if="fields?.status === 'Issued'"

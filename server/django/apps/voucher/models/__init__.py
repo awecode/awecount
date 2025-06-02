@@ -437,7 +437,7 @@ class ChallanRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         max_digits=24,
         decimal_places=6,
         default=Decimal("1.000000"),
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
 
@@ -1048,7 +1048,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         max_digits=24,
         decimal_places=6,
         default=Decimal("1.000000"),
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(
         Unit,
@@ -1162,7 +1162,7 @@ class PurchaseOrderRow(TransactionModel, InvoiceRowModel):
         max_digits=24,
         decimal_places=6,
         default=Decimal("1.000000"),
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
 
@@ -1472,7 +1472,7 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     quantity = models.DecimalField(
         max_digits=24,
         decimal_places=6,
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(
         Unit,
