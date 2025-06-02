@@ -1,13 +1,36 @@
 import DateConverter from 'src/components/date/VikramSamvat.js'
 import numberToText from 'src/composables/numToText'
 import { useLoginStore } from 'src/stores/login-info'
+import { createApp } from 'vue'
 
-function formatNumberWithComma(number: number): string {
+export function formatNumberWithComma(number: number): string {
   return Number(number || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })
 }
 
 function $nf(value: number): string {
   return value.toLocaleString('en-IN', { maximumFractionDigits: 2 })
+}
+
+export const formatRowDescription = (str?: string) => {
+  if (!str) return ''
+  const dataArray = str.split('\n')
+  return dataArray.map(data => `<div>${data}</div>`).join(' ')
+}
+
+export const formatNumber = (num: number): string => {
+  return formatNumberWithComma(Number(Number(num).toFixed(2)))
+}
+
+export function generateHTMLFromVueComponent(component: any, props: Record<string, any>): string {
+  const container = document.createElement('div')
+
+  const app = createApp(component, props)
+  const vm = app.mount(container)
+
+  const html = vm.$el.innerHTML
+  app.unmount()
+
+  return html
 }
 
 export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<string, any>, companyInfo?: Record<string, any>): string {
@@ -22,7 +45,7 @@ export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<st
   const formatRowDescription = (str: string) => {
     return str
       .split('\n')
-      .map((line) => `<div>${line}</div>`)
+      .map(line => `<div>${line}</div>`)
       .join(' ')
   }
 
@@ -63,8 +86,12 @@ export function generateQuotationPDF(onlyBody: boolean, quotationInfo: Record<st
     <div style="display: flex; justify-content: space-between; align-items: flex-start; font-family: Arial, sans-serif;">
       <div>
         <h1 style="margin: 0; font-size: 28px;">${companyInfo.name}${companyInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.' : ''}</h1>
-        <p style="margin: 5px 0;">${companyInfo.address}</p>
-        <p style="margin: 5px 0;">Tax Reg. No.: <strong>${companyInfo.tax_identification_number}</strong></p>
+        ${companyInfo.address ? `<p style="margin: 5px 0;">${companyInfo.address}</p>` : ''}
+        ${
+          companyInfo.tax_identification_number
+            ? `<p style="margin: 5px 0;">Tax Reg. No.: <strong>${companyInfo.tax_identification_number}</strong></p>`
+            : ''
+        }
       </div>
       <div style="text-align: right;">
         ${companyInfo.logo_url ? `<img src="${companyInfo.logo_url}" alt="Logo" style="height: 60px; max-width: 200px; object-fit: contain;" />` : ''}
