@@ -1230,6 +1230,39 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
         PurchaseOrder, related_name="purchases", blank=True
     )
 
+    meta_fixed_assets_tax = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+
+    meta_import_tax_excl_fixed_assets = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+
+    meta_fixed_assets_taxable = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+
+    meta_import_taxable_excl_fixed_assets = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+
+
     @property
     def item_names(self):
         # TODO Optimize - PurchaseBookExportSerializer
@@ -1260,6 +1293,126 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     @property
     def purchase_order_numbers(self):
         return self.purchase_orders.values_list("voucher_no", flat=True)
+    
+    def generate_meta(self, update_row_data=False, prefetched_rows=False, save=True):
+        dct = {
+            "sub_total": 0,
+            "sub_total_after_row_discounts": 0,
+            "discount": 0,
+            "non_taxable": 0,
+            "taxable": 0,
+            "tax": 0,
+            "fixed_assets_tax": 0,
+            "import_tax_excl_fixed_assets": 0,
+            "fixed_assets_taxable": 0,
+            "import_taxable_excl_fixed_assets": 0,
+        }
+        rows_data = []
+        row_objs = {}
+        # bypass prefetch cache using filter
+        rows = self.rows.all() if prefetched_rows else self.rows.filter()
+        has_import_tax = self.landed_cost_rows.filter(
+            type="Tax on Purchase"
+        ).exists()
+        for row in rows:
+            row_data = dict(
+                id=row.id,
+                quantity=row.quantity,
+                rate=row.rate,
+                total=row.rate * row.quantity,
+                is_fixed_asset=row.item.fixed_asset,
+                row_discount=row.get_discount()[0] if row.has_discount() else 0,
+            )
+            row_data["gross_total"] = row_data["total"] - row_data["row_discount"]
+            row_data["tax_rate"] = row.tax_scheme.rate if row.tax_scheme else 0
+            dct["sub_total_after_row_discounts"] += row_data["gross_total"]
+            dct["sub_total"] += row_data["total"]
+            rows_data.append(row_data)
+            row_objs[row.id] = row
+
+        voucher_discount_data = self.get_voucher_discount_data()
+
+        for row_data in rows_data:
+            if voucher_discount_data["type"] == "Percent":
+                dividend_discount = (
+                    row_data["gross_total"] * voucher_discount_data["value"] / 100
+                )
+            elif voucher_discount_data["type"] == "Amount":
+                dividend_discount = (
+                    row_data["gross_total"]
+                    * voucher_discount_data["value"]
+                    / dct["sub_total_after_row_discounts"]
+                )
+            else:
+                dividend_discount = 0
+            row_data["dividend_discount"] = dividend_discount
+            row_data["pure_total"] = row_data["gross_total"] - dividend_discount
+            row_data["tax_amount"] = row_data["tax_rate"] * row_data["pure_total"] / 100
+            total_row_discount = (
+                row_data["row_discount"] + row_data["dividend_discount"]
+            )
+            dct["discount"] += total_row_discount
+            dct["tax"] += row_data["tax_amount"]
+
+            if row_data["tax_amount"]:
+                dct["taxable"] += row_data["pure_total"]
+                if(row_data["is_fixed_asset"]):
+                    dct["fixed_assets_tax"] += row_data["tax_amount"]
+                    dct["fixed_assets_taxable"] += row_data["pure_total"]
+                elif has_import_tax:
+                    dct["import_tax_excl_fixed_assets"] += row_data["tax_amount"]
+                    dct["import_taxable_excl_fixed_assets"] += row_data["pure_total"]
+            else:
+                dct["non_taxable"] += row_data["pure_total"]
+
+            if update_row_data:
+                row_obj = row_objs[row_data["id"]]
+                row_obj.discount_amount = total_row_discount
+                row_obj.tax_amount = row_data["tax_amount"]
+                row_obj.net_amount = row_data["pure_total"] + row_data["tax_amount"]
+                row_obj.save()
+
+        dct["grand_total"] = dct["sub_total"] - dct["discount"] + dct["tax"]
+
+        for key, val in dct.items():
+            dct[key] = round(val, 2)
+
+        if save:
+            self.meta_sub_total = dct["sub_total"]
+            self.meta_sub_total_after_row_discounts = dct[
+                "sub_total_after_row_discounts"
+            ]
+            self.meta_discount = dct["discount"]
+            self.meta_non_taxable = dct["non_taxable"]
+            self.meta_taxable = dct["taxable"]
+            self.meta_tax = dct["tax"]
+            self.meta_fixed_assets_tax = dct["fixed_assets_tax"]
+            self.meta_import_tax_excl_fixed_assets = dct["import_tax_excl_fixed_assets"]
+            self.meta_fixed_assets_taxable = dct["fixed_assets_taxable"]
+            self.meta_import_taxable_excl_fixed_assets = (
+                dct["import_taxable_excl_fixed_assets"]
+            )
+            self.save()
+
+        return dct
+
+    def get_voucher_meta(self, update_row_data=False, prefetched_rows=False):
+        if self.meta_tax is None:
+            self.generate_meta(save=True)
+        dct = {
+            "sub_total": self.meta_sub_total,
+            "sub_total_after_row_discounts": self.meta_sub_total_after_row_discounts,
+            "discount": self.meta_discount,
+            "non_taxable": self.meta_non_taxable,
+            "taxable": self.meta_taxable,
+            "tax": self.meta_tax,
+            "fixed_assets_tax": self.meta_fixed_assets_tax,
+            "import_tax_excl_fixed_assets": self.meta_import_tax_excl_fixed_assets,
+            "fixed_assets_taxable": self.meta_fixed_assets_taxable,
+            "import_taxable_excl_fixed_assets": self.meta_import_taxable_excl_fixed_assets,
+        }
+        dct["grand_total"] = dct["sub_total"] - dct["discount"] + dct["tax"]
+        return dct
 
     def find_invalid_transaction(self):
         for row in self.rows.filter(
