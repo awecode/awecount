@@ -2136,6 +2136,17 @@ class PurchaseBookViewSet(
             for idx, row in enumerate(data):
                 taxable = row.get("voucher_meta").get("taxable")
                 non_taxable = row.get("voucher_meta").get("non_taxable")
+
+                fixed_assets_taxable = row.get("voucher_meta").get("fixed_assets_taxable") or 0
+                import_taxable_excl_fixed_assets = row.get("voucher_meta").get("import_taxable_excl_fixed_assets") or 0
+                capital_purchase_taxable = taxable - fixed_assets_taxable - import_taxable_excl_fixed_assets
+
+                tax = row.get("voucher_meta").get("tax")
+
+                fixed_assets_tax = row.get("voucher_meta").get("fixed_assets_tax") or 0
+                import_tax_excl_fixed_assets = row.get("voucher_meta").get("import_tax_excl_fixed_assets") or 0
+                capital_purchase_tax = tax - fixed_assets_tax - import_tax_excl_fixed_assets
+
                 ws.cell(
                     column=1,
                     row=idx + 7,
@@ -2147,9 +2158,23 @@ class PurchaseBookViewSet(
                     column=5, row=idx + 7, value=row.get("tax_identification_number")
                 )
                 ws.cell(column=6, row=idx + 7, value=taxable + non_taxable)
-                ws.cell(column=7, row=idx + 7, value=non_taxable)
-                ws.cell(column=8, row=idx + 7, value=taxable)
-                ws.cell(column=9, row=idx + 7, value=row.get("voucher_meta").get("tax"))
+                
+                if non_taxable > 0:
+                    ws.cell(column=7, row=idx + 7, value=non_taxable)
+                
+                if taxable > 0:
+                    if capital_purchase_taxable > 0:
+                        ws.cell(column=8, row=idx + 7, value=capital_purchase_taxable)
+                        ws.cell(column=9, row=idx + 7, value=capital_purchase_tax)
+
+                    if import_taxable_excl_fixed_assets > 0:
+                        ws.cell(column=10, row=idx + 7, value=import_taxable_excl_fixed_assets)
+                        ws.cell(column=11, row=idx + 7, value=import_tax_excl_fixed_assets)
+
+                    if fixed_assets_taxable > 0:
+                        ws.cell(column=12, row=idx + 7, value=fixed_assets_taxable)
+                        ws.cell(column=13, row=idx + 7, value=fixed_assets_tax)
+
 
             years = [
                 ad2bs(self.request.query_params.get("start_date"))[0],
