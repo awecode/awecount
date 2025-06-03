@@ -1262,6 +1262,22 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
         validators=[MinValueValidator(Decimal("0.000000"))],
     )
 
+    def tax_till_declaration(self):
+        landed_cost_rows = self.landed_cost_rows.all()
+        sum = 0
+        total_tax_on_purchase = 0
+        for row in landed_cost_rows:
+            if row.type == "Tax on Purchase":
+                total_tax_on_purchase += row.amount
+        for row in landed_cost_rows:
+            if row.type == "Customs Declaration":
+                sum += row.tax_amount
+                break
+            elif row.type == "Tax on Purchase":
+                continue
+            else:
+                sum += row.tax_amount
+        return sum + total_tax_on_purchase
 
     @property
     def item_names(self):
@@ -1293,7 +1309,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     @property
     def purchase_order_numbers(self):
         return self.purchase_orders.values_list("voucher_no", flat=True)
-    
+
     def generate_meta(self, update_row_data=False, prefetched_rows=False, save=True):
         dct = {
             "sub_total": 0,
@@ -1311,9 +1327,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
         row_objs = {}
         # bypass prefetch cache using filter
         rows = self.rows.all() if prefetched_rows else self.rows.filter()
-        has_import_tax = self.landed_cost_rows.filter(
-            type="Tax on Purchase"
-        ).exists()
+        has_import_tax = self.landed_cost_rows.filter(type="Tax on Purchase").exists()
         for row in rows:
             row_data = dict(
                 id=row.id,
@@ -1356,14 +1370,23 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
 
             if row_data["tax_amount"]:
                 dct["taxable"] += row_data["pure_total"]
-                if(row_data["is_fixed_asset"]):
+                if row_data["is_fixed_asset"]:
                     dct["fixed_assets_tax"] += row_data["tax_amount"]
                     dct["fixed_assets_taxable"] += row_data["pure_total"]
                 elif has_import_tax:
                     dct["import_tax_excl_fixed_assets"] += row_data["tax_amount"]
                     dct["import_taxable_excl_fixed_assets"] += row_data["pure_total"]
             else:
-                dct["non_taxable"] += row_data["pure_total"]
+                if has_import_tax is False:
+                    dct["non_taxable"] += row_data["pure_total"]
+                else:
+                    dct["taxable"] += row_data["pure_total"]
+                    if row_data["is_fixed_asset"]:
+                        dct["fixed_assets_taxable"] += row_data["pure_total"]
+                    else:
+                        dct["import_taxable_excl_fixed_assets"] += row_data[
+                            "pure_total"
+                        ]
 
             if update_row_data:
                 row_obj = row_objs[row_data["id"]]
@@ -1389,9 +1412,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
             self.meta_fixed_assets_tax = dct["fixed_assets_tax"]
             self.meta_import_tax_excl_fixed_assets = dct["import_tax_excl_fixed_assets"]
             self.meta_fixed_assets_taxable = dct["fixed_assets_taxable"]
-            self.meta_import_taxable_excl_fixed_assets = (
-                dct["import_taxable_excl_fixed_assets"]
-            )
+            self.meta_import_taxable_excl_fixed_assets = dct[
+                "import_taxable_excl_fixed_assets"
+            ]
             self.save()
 
         return dct
