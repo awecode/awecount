@@ -6,7 +6,6 @@ from decimal import Decimal
 from io import BytesIO
 from typing import Union
 
-from apps.ledger.models.base import Account
 from auditlog.registry import auditlog
 from dateutil.relativedelta import relativedelta
 from django.apps import apps
@@ -16,12 +15,11 @@ from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
-from django.db.models import Prefetch, Q
+from django.db.models import Avg, Prefetch, Q
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django_q.models import Schedule
 from django_q.tasks import schedule
-from apps.quotation.models import Quotation
 from weasyprint import HTML
 
 from apps.bank.models import BankAccount, ChequeDeposit
@@ -35,12 +33,14 @@ from apps.ledger.models import (
     get_account,
 )
 from apps.ledger.models import set_transactions as set_ledger_transactions
+from apps.ledger.models.base import Account
 from apps.product.models import (
     Item,
     Unit,
     find_obsolete_transactions,
     set_inventory_transactions,
 )
+from apps.quotation.models import Quotation
 from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
@@ -1322,6 +1322,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
             "import_tax_excl_fixed_assets": 0,
             "fixed_assets_taxable": 0,
             "import_taxable_excl_fixed_assets": 0,
+            "fixed_assets_sub_total": 0,
         }
         rows_data = []
         row_objs = {}
@@ -1341,6 +1342,8 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
             row_data["tax_rate"] = row.tax_scheme.rate if row.tax_scheme else 0
             dct["sub_total_after_row_discounts"] += row_data["gross_total"]
             dct["sub_total"] += row_data["total"]
+            if row_data["is_fixed_asset"]:
+                dct["fixed_assets_sub_total"] += row_data["total"]
             rows_data.append(row_data)
             row_objs[row.id] = row
 
@@ -1366,27 +1369,27 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                 row_data["row_discount"] + row_data["dividend_discount"]
             )
             dct["discount"] += total_row_discount
-            dct["tax"] += row_data["tax_amount"]
 
-            if row_data["tax_amount"]:
-                dct["taxable"] += row_data["pure_total"]
-                if row_data["is_fixed_asset"]:
-                    dct["fixed_assets_tax"] += row_data["tax_amount"]
-                    dct["fixed_assets_taxable"] += row_data["pure_total"]
-                elif has_import_tax:
-                    dct["import_tax_excl_fixed_assets"] += row_data["tax_amount"]
-                    dct["import_taxable_excl_fixed_assets"] += row_data["pure_total"]
-            else:
-                if has_import_tax is False:
-                    dct["non_taxable"] += row_data["pure_total"]
-                else:
+            if has_import_tax is False:
+                dct["tax"] += row_data["tax_amount"]
+                if row_data["tax_amount"]:
                     dct["taxable"] += row_data["pure_total"]
                     if row_data["is_fixed_asset"]:
+                        dct["fixed_assets_tax"] += row_data["tax_amount"]
                         dct["fixed_assets_taxable"] += row_data["pure_total"]
-                    else:
-                        dct["import_taxable_excl_fixed_assets"] += row_data[
-                            "pure_total"
-                        ]
+                    # elif has_import_tax:
+                    #     dct["import_tax_excl_fixed_assets"] += row_data["tax_amount"]
+                    #     dct["import_taxable_excl_fixed_assets"] += row_data["pure_total"]
+                else:
+                    dct["non_taxable"] += row_data["pure_total"]
+                    # else:
+                    #     dct["taxable"] += row_data["pure_total"]
+                    #     if row_data["is_fixed_asset"]:
+                    #         dct["fixed_assets_taxable"] += row_data["pure_total"]
+                    #     else:
+                    #         dct["import_taxable_excl_fixed_assets"] += row_data[
+                    #             "pure_total"
+                    #         ]
 
             if update_row_data:
                 row_obj = row_objs[row_data["id"]]
@@ -1399,6 +1402,25 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
 
         for key, val in dct.items():
             dct[key] = round(val, 2)
+
+        if has_import_tax:
+            fixed_assets_ratio = dct["fixed_assets_sub_total"] / dct["sub_total"]
+            dct["tax"] = self.tax_till_declaration()
+            dct["fixed_assets_tax"] = dct["tax"] * fixed_assets_ratio
+            dct["import_tax_excl_fixed_assets"] = dct["tax"] - dct["fixed_assets_tax"]
+            average_tax_on_purchase = (
+                self.landed_cost_rows.filter(type="Tax on Purchase").aggregate(
+                    Avg("value")
+                )["value__avg"]
+                or 0
+            )
+            dct["fixed_assets_taxable"] = (
+                dct["fixed_assets_tax"] * 100 / average_tax_on_purchase
+            )
+            dct["import_taxable_excl_fixed_assets"] = (
+                dct["import_tax_excl_fixed_assets"] * 100 / average_tax_on_purchase
+            )
+            dct["taxable"] = dct["taxable"] + dct["import_taxable_excl_fixed_assets"]
 
         if save:
             self.meta_sub_total = dct["sub_total"]
