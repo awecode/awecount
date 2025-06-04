@@ -1210,6 +1210,13 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
 
     remarks = models.TextField(blank=True, null=True)
     is_import = models.BooleanField(default=False)
+    import_country= models.CharField(
+        max_length=100, blank=True, null=True, help_text="Country of import"
+    )
+    import_date = models.DateField(blank=True, null=True, help_text="Date of import")
+    import_document_number = models.CharField(
+        max_length=100, blank=True, null=True, help_text="Document number of import"
+    )  
 
     total_amount = models.DecimalField(
         max_digits=24,
