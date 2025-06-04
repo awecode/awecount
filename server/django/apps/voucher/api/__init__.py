@@ -2153,6 +2153,7 @@ class PurchaseBookViewSet(
                     value=ad2bs_str(row.get("date")).replace("-", "."),
                 )
                 ws.cell(column=2, row=idx + 7, value=row.get("voucher_no"))
+                ws.cell(column=3, row=idx + 7, value=row.get("import_document_number"))
                 ws.cell(column=4, row=idx + 7, value=row.get("party_name"))
                 ws.cell(
                     column=5, row=idx + 7, value=row.get("tax_identification_number")

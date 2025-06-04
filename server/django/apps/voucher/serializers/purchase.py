@@ -357,6 +357,7 @@ class PurchaseBookExportSerializer(BaseModelSerializer):
             "date",
             "party_name",
             "tax_identification_number",
+            "import_document_number",
             "voucher_no",
             "voucher_meta",
         )
