@@ -113,7 +113,6 @@ from awecount.libs.helpers import (
     get_origin,
     get_verification_hash,
     serialize_request,
-    upload_file,
 )
 from awecount.libs.mixins import (
     CancelCreditOrDebitNoteMixin,
