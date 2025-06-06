@@ -202,6 +202,7 @@ class PurchaseVoucherCreateSerializer(
         # Create purchase voucher rows
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
+            row.pop("updated_cost_price", None)  
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
 
         # Create landed cost if rows exist
