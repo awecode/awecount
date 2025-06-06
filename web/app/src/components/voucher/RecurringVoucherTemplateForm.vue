@@ -22,7 +22,7 @@ const endpoint = `/api/company/${route.params.company}/recurring-voucher-templat
 const formData = useForm(endpoint, {
   getDefaults: true,
   queryParams: { type: `${capitalizedType} Voucher` },
-  successRoute: `/${props.type}-voucher/recurring-templates`,
+  successRoute: `/${props.type}/vouchers/recurring-templates`,
   createDefaultsEndpoint: `${endpoint}create-defaults/?type=${capitalizedType} Voucher`,
 })
 

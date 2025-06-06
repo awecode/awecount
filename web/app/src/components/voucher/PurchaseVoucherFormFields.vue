@@ -280,7 +280,7 @@ onMounted(() => {
           :error-message="errors.voucher_no"
         />
         <div
-          v-if="formDefaults.options?.enable_discount_in_voucher && !isTemplate"
+          v-if="formDefaults.options?.enable_discount_in_voucher"
           class="col-md-6 col-12 row q-col-gutter-md"
         >
           <div :class="['Percent', 'Amount'].includes(fields.discount_type) ? 'col-6' : 'col-12'">

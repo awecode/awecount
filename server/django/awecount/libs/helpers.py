@@ -1,6 +1,8 @@
+import datetime
 import json
 import uuid
 from decimal import Decimal
+from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -111,3 +113,15 @@ def jsonify(obj):
     if isinstance(obj, models.Model):
         obj = model_to_dict(obj)
     return json.loads(json.dumps(obj, cls=DecimalEncoder))
+
+
+def add_time_to_date(date, amount, time_unit):
+    if time_unit == "Day(s)":
+        new_date = date + datetime.timedelta(days=amount)
+    elif time_unit == "Week(s)":
+        new_date = date + datetime.timedelta(weeks=amount)
+    elif time_unit == "Month(s)":
+        new_date = date + relativedelta(months=amount)
+    elif time_unit == "Year(s)":
+        new_date = date + relativedelta(years=amount)
+    return new_date
