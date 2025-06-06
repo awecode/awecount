@@ -401,7 +401,7 @@ fields.value.tax_type = fields.value.tax_type || 'Tax Exclusive'
           :to-limit="fields.date"
         />
         <div
-          v-if="formDefaults.options?.enable_discount_in_voucher && !isTemplate"
+          v-if="formDefaults.options?.enable_discount_in_voucher"
           class="col-md-6 col-12 row q-col-gutter-md"
         >
           <div data-testid="overall-discount-type-div" :class="['Percent', 'Amount'].includes(fields.discount_type) ? 'col-6' : 'col-12'">
@@ -464,8 +464,7 @@ fields.value.tax_type = fields.value.tax_type || 'Tax Exclusive'
         </div>
         <div
           v-if="
-            formDefaults.options?.enable_reference_in_voucher
-              && !isTemplate"
+            formDefaults.options?.enable_reference_in_voucher"
           class="col-12 col-md-6"
         >
           <q-input
