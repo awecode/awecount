@@ -101,7 +101,7 @@ class PartnerJournalVoucherCreateSerializer(
                 )
             except Account.MultipleObjectsReturned:
                 raise ValidationError(
-                    "More than one account found for the given details."
+                    f"More than one account found for the given details. {str(row.get('account'))}"
                 )
 
             if not dr_amt and not cr_amt:
