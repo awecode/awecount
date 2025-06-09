@@ -797,7 +797,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return qs_to_xls(params)
 
     @action(detail=False, url_path="import", methods=["POST"])
-    def import_xls(self, request):
+    def import_xls(self, request, *args, **kwargs):
         serializer = ImportRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         xls_file = serializer.validated_data.get("file")
@@ -1268,7 +1268,7 @@ class PurchaseVoucherViewSet(
         return qs_to_xls(params)
 
     @action(detail=False, url_path="import", methods=["POST"])
-    def import_xls(self, request):
+    def import_xls(self, request, *args, **kwargs):
         serializer = ImportRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         xls_file = serializer.validated_data.get("file")

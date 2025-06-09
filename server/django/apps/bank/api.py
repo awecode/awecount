@@ -2566,7 +2566,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         )
 
     @action(detail=False, methods=["POST"], url_path="update-transactions")
-    def update_transactions(self, request):
+    def update_transactions(self, request, *args, **kwargs):
         statement_ids = request.data.get("statement_ids")
         transaction_ids = request.data.get("transaction_ids")
         if not statement_ids or not transaction_ids:
