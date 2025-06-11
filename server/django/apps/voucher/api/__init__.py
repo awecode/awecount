@@ -1306,6 +1306,8 @@ class PurchaseVoucherViewSet(
         data["user"] = request.user
         for row in data["rows"]:
             row.pop("id")
+        for row in data["landed_cost_rows"]:
+            row.pop("id")
         data["date"] = timezone.now().date()
         if obj.due_date:
             data["due_date"] = obj.due_date + (obj.date - data["date"])

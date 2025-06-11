@@ -22,6 +22,7 @@ class SalesSetting(models.Model):
     show_trade_discount_in_row = models.BooleanField(default=False)
     is_trade_discount_in_row = models.BooleanField(default=False)
     enable_due_date_in_voucher = models.BooleanField(default=False)
+    enable_remarks_in_voucher = models.BooleanField(default=True)
     enable_reference_in_voucher = models.BooleanField(default=False)
     enable_received_by_in_voucher = models.BooleanField(default=False)
     enable_discount_in_voucher = models.BooleanField(default=True)
@@ -72,6 +73,7 @@ class SalesSetting(models.Model):
             "enable_row_description": self.enable_row_description,
             "is_trade_discount_in_row": self.is_trade_discount_in_row,
             "enable_due_date_in_voucher": self.enable_due_date_in_voucher,
+            "enable_remarks_in_voucher": self.enable_remarks_in_voucher,
             "enable_reference_in_voucher": self.enable_reference_in_voucher,
             "enable_received_by_in_voucher": self.enable_received_by_in_voucher,
             "enable_discount_in_voucher": self.enable_discount_in_voucher,

@@ -512,7 +512,10 @@ fields.value.tax_type = fields.value.tax_type || 'Tax Exclusive'
     @delete-row-err="deleteRowErr"
   />
   <div class="row q-px-lg">
-    <div class="col-12 col-md-4 row">
+    <div
+      v-if="formDefaults.options?.enable_remarks_in_voucher"
+      class="col-12 col-md-4 row"
+    >
       <q-input
         v-model="fields.remarks"
         autogrow
