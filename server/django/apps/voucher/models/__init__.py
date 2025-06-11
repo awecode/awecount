@@ -1,5 +1,4 @@
 import datetime
-import random
 import uuid
 from copy import deepcopy
 from decimal import Decimal
@@ -7,19 +6,19 @@ from io import BytesIO
 from typing import Union
 
 from auditlog.registry import auditlog
-from dateutil.relativedelta import relativedelta
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.core.validators import MinValueValidator
-from django.db import models, transaction
+from django.db import models
 from django.db.models import Avg, Prefetch, Q
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django_q.models import Schedule
 from django_q.tasks import schedule
+from awecount.libs.helpers import add_time_to_date
 from weasyprint import HTML
 
 from apps.bank.models import BankAccount, ChequeDeposit
@@ -895,16 +894,6 @@ RECURRING_TEMPLATE_TYPES = (
 )
 
 
-def add_time_to_date(date, amount, time_unit):
-    if time_unit == "Day(s)":
-        new_date = date + datetime.timedelta(days=amount)
-    elif time_unit == "Week(s)":
-        new_date = date + datetime.timedelta(weeks=amount)
-    elif time_unit == "Month(s)":
-        new_date = date + relativedelta(months=amount)
-    elif time_unit == "Year(s)":
-        new_date = date + relativedelta(years=amount)
-    return new_date
 
 
 class RecurringVoucherTemplate(CompanyBaseModel):
@@ -929,18 +918,25 @@ class RecurringVoucherTemplate(CompanyBaseModel):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
         self.next_date = self.get_next_date()
-        if self.pk:
+
+        if not is_new:
             Schedule.objects.filter(name=f"recurring_voucher_{self.pk}").delete()
+
         if self.is_active and self.next_date:
             schedule(
-                "apps.voucher.models.RecurringVoucherTemplate.generate_voucher",
-                self,
+                "apps.voucher.tasks.generate_voucher",  
+                self.id,
                 name=f"recurring_voucher_{self.pk}",
                 next_run=self.next_date,
                 schedule_type="O",
             )
-        super().save(*args, **kwargs)
+
+        super().save(update_fields=["next_date"])
+
 
     def get_next_date(self):
         if not self.is_active:
@@ -959,82 +955,6 @@ class RecurringVoucherTemplate(CompanyBaseModel):
         else:
             next_date = self.start_date
         return next_date
-
-    @transaction.atomic
-    def generate_voucher(self):
-        invoice_data = deepcopy(self.invoice_data)
-
-        request = deserialize_request(
-            {
-                "user": self.user,
-                "company": self.company,
-                "company_id": self.company.id,
-                "user_id": self.user.id,
-                "data": invoice_data,
-            }
-        )
-        if self.type == "Sales Voucher":
-            from apps.voucher.serializers.sales import SalesVoucherCreateSerializer
-
-            invoice_data["date"] = self.next_date
-            invoice_data["due_date"] = add_time_to_date(
-                self.next_date, self.due_date_after, self.due_date_after_time_unit
-            )
-            invoice_data["status"] = "Issued"
-            serializer = SalesVoucherCreateSerializer(
-                data=invoice_data,
-                context={
-                    "request": request,
-                },
-            )
-            serializer.is_valid(raise_exception=True)
-            voucher = serializer.save()
-        else:
-            from apps.voucher.serializers.purchase import (
-                PurchaseVoucherCreateSerializer,
-            )
-
-            invoice_data["date"] = self.next_date
-            invoice_data["due_date"] = add_time_to_date(
-                self.next_date, self.due_date_after, self.due_date_after_time_unit
-            )
-            invoice_data["status"] = "Issued"
-            invoice_data["voucher_no"] = "auto-{}-{}-{}".format(
-                self.id, self.no_of_vouchers_created + 1, random.randint(1000, 9999)
-            )
-            voucher = PurchaseVoucherCreateSerializer(
-                data=invoice_data,
-                context={
-                    "request": request,
-                },
-            )
-            voucher.is_valid(raise_exception=True)
-            voucher = voucher.save()
-
-        if self.send_email:
-            success_message = f"""
-            <html>
-                <body>
-                    <h1>Recurring {self.type} Generated Successfully</h1>
-                    <p>Dear {self.user.full_name},</p>
-                    <p>We are pleased to inform you that the recurring {self.type.lower()} titled <strong>{self.title}</strong> has been successfully generated.</p>
-                <p>You can view the generated voucher in the dashboard. If you encounter any issues, please contact us.</p>
-                </body>
-            </html>
-            """
-
-            email = EmailMessage(
-                subject="Recurring Voucher Generated Successfully",
-                body=success_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[self.user.email],
-            )
-            email.content_subtype = "html"
-            email.send()
-
-        self.no_of_vouchers_created += 1
-        self.last_generated = self.next_date
-        self.save()
 
 
 class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):

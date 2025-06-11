@@ -163,7 +163,7 @@ watch(
                     label="Tax Scheme"
                     option-label="name"
                     option-value="id"
-                    :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/tax_schemes`"
+                    :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/tax_schemes/`"
                     :options="formDefaults.collections?.tax_schemes"
                     @update:model-value="handleTaxSchemeChange(row)"
                   >
@@ -187,7 +187,7 @@ watch(
                     map-options
                     option-label="name"
                     option-value="id"
-                    :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/landed_cost_credit_accounts`"
+                    :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/landed_cost_credit_accounts/`"
                     :label="`${row.type === 'Customs Valuation Uplift' ? 'Credit Account for Tax' : 'Credit Account'}`"
                     :options="formDefaults.collections?.landed_cost_credit_accounts"
                   >

@@ -113,7 +113,6 @@ from awecount.libs.helpers import (
     get_origin,
     get_verification_hash,
     serialize_request,
-    upload_file,
 )
 from awecount.libs.mixins import (
     CancelCreditOrDebitNoteMixin,
@@ -873,7 +872,21 @@ class RecurringVoucherTemplateViewSet(CRULViewSet):
                 )
             elif type == "Purchase Voucher":
                 self.collections.append(
-                    ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False)
+                    ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
+                )
+                self.collections.append(
+                      (
+                        "landed_cost_credit_accounts",
+                        Account.objects.filter(
+                            category__name__in=["Cash Accounts", "Bank Accounts", "Suppliers"]
+                        ),
+                        GenericSerializer,
+                        True,
+                        ["name"],
+                    )
+                )
+                self.collections.append(    
+                    ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, True, ["name"]),
                 )
         return super().get_collections(request)
 
