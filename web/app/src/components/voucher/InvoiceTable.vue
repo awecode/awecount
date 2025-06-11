@@ -225,7 +225,6 @@ const totalDataComputed = computed(() => {
     }
   })
 
-  console.log(data)
   if (typeof data.sameScheme === 'number' && data.taxObj) {
     data.taxName = `${data.taxObj.name || ''} @ ${data.taxObj.rate || ''}%`
     data.taxRate = data.taxObj.rate
