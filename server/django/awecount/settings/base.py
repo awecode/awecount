@@ -439,6 +439,7 @@ ACCOUNT_SYSTEM_CODES = {
     "Discount Expenses": "DIS-EXP",
     "Damage Expense": "DAM-EXP",
     "TDS Receivables": "TDS-REC",
+    "Capital Expenses": "CAP-EXP",
 }
 
 ACCOUNT_CATEGORY_SYSTEM_CODES = {

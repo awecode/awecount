@@ -791,6 +791,14 @@ def handle_company_creation(sender, **kwargs):
         company=company,
         default=True,
     )
+    Account.objects.create(
+        name="Capital Expenses",
+        category=root["Assets"],
+        code="Q-CE",
+        company=company,
+        default=True,
+        system_code=acc_system_codes["Capital Expenses"],
+    )
 
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR ASSETS
     # ================================================
