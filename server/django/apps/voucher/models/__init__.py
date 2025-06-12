@@ -56,6 +56,11 @@ STATUSES = (
     ("Partially Paid", "Partially Paid"),
 )
 
+EXPENSE_TYPES = (
+    ("Purchase/Expense", "Purchase/Expense"),
+    ("Capital Expense", "Capital Expense"),
+)
+
 CHALLAN_STATUSES = (
     ("Draft", "Draft"),
     ("Issued", "Issued"),
@@ -1129,6 +1134,11 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     )
 
     remarks = models.TextField(blank=True, null=True)
+    expense_type = models.CharField(
+        max_length=50,
+        choices=EXPENSE_TYPES,
+        default=EXPENSE_TYPES[0][0],
+    )
     is_import = models.BooleanField(default=False)
     import_country= models.CharField(
         max_length=100, blank=True, null=True, help_text="Country of import"

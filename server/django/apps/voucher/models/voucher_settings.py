@@ -102,6 +102,7 @@ class PurchaseSetting(models.Model):
     enable_due_date_in_voucher = models.BooleanField(default=False)
     enable_empty_voucher_no = models.BooleanField(default=False)
     enable_discount_in_voucher = models.BooleanField(default=True)
+    enable_expense_type_in_voucher = models.BooleanField(default=False)
 
     # Required fields settings
     require_item_code = models.BooleanField(default=False)
@@ -169,6 +170,7 @@ class PurchaseSetting(models.Model):
             "enable_due_date_in_voucher": self.enable_due_date_in_voucher,
             "enable_discount_in_voucher": self.enable_discount_in_voucher,
             "enable_purchase_order_import": self.enable_purchase_order_import,
+            "enable_expense_type_in_voucher": self.enable_expense_type_in_voucher,
             "require_item_code": self.require_item_code,
             "require_item_hs_code": self.require_item_hs_code,
             "enable_landed_costs": self.enable_landed_cost,
