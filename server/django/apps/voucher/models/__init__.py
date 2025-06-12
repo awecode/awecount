@@ -48,6 +48,8 @@ from awecount.libs import decimalize, nepdate
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
 
+acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
+
 STATUSES = (
     ("Draft", "Draft"),
     ("Issued", "Issued"),
@@ -1495,7 +1497,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                     entries.append(["dr", row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
 
-            entries.append(["dr", item.dr_account, purchase_value])
+            dr_account = item.get_or_create_capital_expense_account() if self.type == "Capital Expense" else item.dr_account
+
+            entries.append(["dr", dr_account, purchase_value])
             entries.append(["cr", cr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)

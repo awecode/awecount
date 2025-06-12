@@ -439,7 +439,6 @@ ACCOUNT_SYSTEM_CODES = {
     "Discount Expenses": "DIS-EXP",
     "Damage Expense": "DAM-EXP",
     "TDS Receivables": "TDS-REC",
-    "Capital Expenses": "CAP-EXP",
 }
 
 ACCOUNT_CATEGORY_SYSTEM_CODES = {
@@ -464,6 +463,7 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Equity": "EQUITY",
     "Opening Balance Difference": "OPEN-BAL-DIFF",
     "Additional Cost": "ADD-COST",
+    "Capital Expenses": "CAP-EXP",
 }
 
 # Bank reconciliation settings
