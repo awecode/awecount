@@ -1272,7 +1272,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                 quantity=row.quantity,
                 rate=row.rate,
                 total=row.rate * row.quantity,
-                is_fixed_asset=row.item.fixed_asset,
+                is_fixed_asset=self.expense_type == "Capital Expense" or row.item.fixed_asset,
                 row_discount=row.get_discount()[0] if row.has_discount() else 0,
             )
             row_data["gross_total"] = row_data["total"] - row_data["row_discount"]
@@ -1358,6 +1358,8 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                 dct["import_tax_excl_fixed_assets"] * 100 / average_tax_on_purchase
             )
             dct["taxable"] = dct["taxable"] + dct["import_taxable_excl_fixed_assets"]
+
+            dct["taxable"] += dct["fixed_assets_taxable"]
 
         if save:
             self.meta_sub_total = dct["sub_total"]
