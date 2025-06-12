@@ -56,7 +56,7 @@ STATUSES = (
     ("Partially Paid", "Partially Paid"),
 )
 
-EXPENSE_TYPES = (
+PURCHASE_VOUCHER_TYPES = (
     ("Purchase/Expense", "Purchase/Expense"),
     ("Capital Expense", "Capital Expense"),
 )
@@ -1134,10 +1134,10 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     )
 
     remarks = models.TextField(blank=True, null=True)
-    expense_type = models.CharField(
+    type = models.CharField(
         max_length=50,
-        choices=EXPENSE_TYPES,
-        default=EXPENSE_TYPES[0][0],
+        choices=PURCHASE_VOUCHER_TYPES,
+        default=PURCHASE_VOUCHER_TYPES[0][0],
     )
     is_import = models.BooleanField(default=False)
     import_country= models.CharField(
@@ -1272,7 +1272,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                 quantity=row.quantity,
                 rate=row.rate,
                 total=row.rate * row.quantity,
-                is_fixed_asset=self.expense_type == "Capital Expense" or row.item.fixed_asset,
+                is_fixed_asset=self.type == "Capital Expense" or row.item.fixed_asset,
                 row_discount=row.get_discount()[0] if row.has_discount() else 0,
             )
             row_data["gross_total"] = row_data["total"] - row_data["row_discount"]

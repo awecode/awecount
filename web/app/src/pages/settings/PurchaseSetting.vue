@@ -179,7 +179,7 @@ export default {
               <q-checkbox v-model="fields.enable_discount_in_voucher" label="Enable Discount in voucher?" />
             </div>
             <div>
-              <q-checkbox v-model="fields.enable_expense_type_in_voucher" label="Enable Type in voucher?" />
+              <q-checkbox v-model="fields.enable_type_in_voucher" label="Enable Type in voucher?" />
             </div>
             <div>
               <q-checkbox v-model="fields.enable_purchase_order_import" label="Enable Purchase Orders Import?" />
