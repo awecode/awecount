@@ -10,7 +10,7 @@ const EXCHANGE_RATES = {
   },
   INR: {
     USD: '0.012',
-    NPR: '1.60',
+    NPR: '1.6015',
   },
   NPR: {
     USD: '0.0075',
