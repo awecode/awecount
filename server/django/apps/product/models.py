@@ -27,6 +27,7 @@ from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import zero_for_none
 from awecount.libs.helpers import jsonify
 
+acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
 
 class Unit(models.Model):
     name = models.CharField(max_length=50)
@@ -1693,6 +1694,42 @@ class Item(CompanyBaseModel):
         if self.fixed_asset:
             return self.fixed_asset_account
         return self.purchase_account
+    
+    def get_or_create_capital_expense_account(self):
+        """
+        Returns the capital expense account for the given item.
+        If it does not exist, it creates a new one.
+        """
+        company = self.company
+        capex_system_code = acc_cat_system_codes.get("Capital Expenses")
+        assets_system_code = acc_cat_system_codes.get("Assets")
+
+        capital_expense_category, _ = AccountCategory.objects.get_or_create(
+            company=company,
+            system_code=capex_system_code,
+            defaults={
+                "name": "Capital Expenses",
+                "parent": AccountCategory.objects.get(
+                    system_code=assets_system_code,
+                    company=company
+                ),
+                "code": "CAP-EX",
+                "default": True,
+            }
+        )
+
+        system_code = f"CE-I:{self.pk}"
+        capital_expense_account, _ = Account.objects.get_or_create(
+            company=company,
+            system_code=system_code,
+            defaults={
+                "name": self.name,
+                "category": capital_expense_category,
+                "code": "CAP-EX",
+                "default": True,
+            }
+        )
+        return capital_expense_account
 
     def update_opening_balance(self, fiscal_year):
         date = fiscal_year.previous_day

@@ -171,6 +171,7 @@ watch(
   () => props.formDefaults,
   () => {
     if (!props.isEdit) {
+      fields.value.type = 'Purchase/Expense'
       if (props.formDefaults.fields?.mode) {
         if (Number.isNaN(props.formDefaults.fields?.mode)) {
           fields.value.mode = props.formDefaults.fields.mode
@@ -349,6 +350,20 @@ onMounted(() => {
           :error-message="errors?.due_date"
           :to-limit="fields.date"
         />
+        <div v-if="formDefaults.options?.enable_type_in_voucher" class="col-md-6 col-12">
+          <q-select
+            v-model="fields.type"
+            emit-value
+            map-options
+            label="Type"
+            :error="!!errors?.type"
+            :error-message="errors?.type"
+            :options="[
+              'Purchase/Expense',
+              'Capital Expense',
+            ]"
+          />
+        </div>
       </div>
     </q-card-section>
   </q-card>

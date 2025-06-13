@@ -10,7 +10,7 @@ from apps.ledger.models import Account
 from apps.ledger.serializers import AccountBalanceSerializer, AccountMinSerializer
 from apps.product.helpers import create_book_category
 from apps.product.models import Item, Transaction
-from apps.tax.serializers import TaxSchemeSerializer
+from apps.tax.serializers import TaxSchemeMinSerializer, TaxSchemeSerializer
 from awecount.libs import get_next_voucher_no
 from awecount.libs.Base64FileField import Base64FileField
 from awecount.libs.CustomViewSet import GenericSerializer
@@ -40,7 +40,7 @@ class ItemSerializer(BaseModelSerializer):
     tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
     unit_id = serializers.IntegerField(required=False, allow_null=True)
     default_unit_obj = GenericSerializer(read_only=True, source="unit")
-    default_tax_scheme_obj = GenericSerializer(read_only=True, source="tax_scheme")
+    default_tax_scheme_obj = TaxSchemeMinSerializer(read_only=True, source="tax_scheme")
     extra_fields = serializers.ReadOnlyField(source="category.extra_fields")
     front_image = Base64FileField(required=False, allow_null=True)
     back_image = Base64FileField(required=False, allow_null=True)

@@ -191,7 +191,7 @@ const totalDataComputed = computed(() => {
         data.sameScheme = currentTaxObj.id
         data.taxObj = currentTaxObj
       } else if (data.sameScheme !== currentTaxObj?.id && currentTaxObj.rate !== 0) {
-        data.sameScheme = -1
+        data.sameScheme = null
       }
     }
 

@@ -463,6 +463,7 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Equity": "EQUITY",
     "Opening Balance Difference": "OPEN-BAL-DIFF",
     "Additional Cost": "ADD-COST",
+    "Capital Expenses": "CAP-EXP",
 }
 
 # Bank reconciliation settings
