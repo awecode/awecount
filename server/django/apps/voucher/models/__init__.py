@@ -901,8 +901,6 @@ RECURRING_TEMPLATE_TYPES = (
 )
 
 
-
-
 class RecurringVoucherTemplate(CompanyBaseModel):
     title = models.CharField(max_length=255)
     type = models.CharField(max_length=25, choices=RECURRING_TEMPLATE_TYPES)
@@ -935,7 +933,7 @@ class RecurringVoucherTemplate(CompanyBaseModel):
 
         if self.is_active and self.next_date:
             schedule(
-                "apps.voucher.tasks.generate_voucher",  
+                "apps.voucher.tasks.generate_voucher",
                 self.id,
                 name=f"recurring_voucher_{self.pk}",
                 next_run=self.next_date,
@@ -943,7 +941,6 @@ class RecurringVoucherTemplate(CompanyBaseModel):
             )
 
         super().save(update_fields=["next_date"])
-
 
     def get_next_date(self):
         if not self.is_active:
@@ -1142,13 +1139,13 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
         default=PURCHASE_VOUCHER_TYPES[0][0],
     )
     is_import = models.BooleanField(default=False)
-    import_country= models.CharField(
+    import_country = models.CharField(
         max_length=100, blank=True, null=True, help_text="Country of import"
     )
     import_date = models.DateField(blank=True, null=True, help_text="Date of import")
     import_document_number = models.CharField(
         max_length=100, blank=True, null=True, help_text="Document number of import"
-    )  
+    )
 
     total_amount = models.DecimalField(
         max_digits=24,
@@ -1497,7 +1494,11 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                     entries.append(["dr", row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
 
-            dr_account = item.get_or_create_capital_expense_account() if self.type == "Capital Expense" else item.dr_account
+            dr_account = (
+                item.get_or_create_capital_expense_account()
+                if self.type == "Capital Expense"
+                else item.dr_account
+            )
 
             entries.append(["dr", dr_account, purchase_value])
             entries.append(["cr", cr_acc, row_total])
@@ -2061,6 +2062,13 @@ class DebitNote(TransactionModel, InvoiceModel, CompanyBaseModel):
             sub_total_after_row_discounts
         )
 
+        invoices = self.invoices.all()
+
+        invoice_types = set(invoice.type for invoice in invoices)
+        if len(invoice_types) > 1:
+            raise ValidationError("All invoices must be of the same type for a debit note.")
+        invoice_type = invoices[0].type
+
         # filter bypasses rows cached by prefetching
         for row in self.rows.filter().select_related(
             "tax_scheme",
@@ -2102,7 +2110,13 @@ class DebitNote(TransactionModel, InvoiceModel, CompanyBaseModel):
                     entries.append(["cr", row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
 
-            entries.append(["cr", item.dr_account, purchase_value])
+            dr_account = (
+                item.get_or_create_capital_expense_account()
+                if invoice_type == "Capital Expense"
+                else item.dr_account
+            )
+
+            entries.append(["cr", dr_account, purchase_value])
 
             entries.append(["dr", dr_acc, row_total])
 
