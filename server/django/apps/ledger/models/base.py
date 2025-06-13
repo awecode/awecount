@@ -1068,6 +1068,7 @@ def handle_company_creation(sender, **kwargs):
         parent=root["Income"],
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Direct Income"],
     )
     Category.objects.create(
         name="Transfer and Remittance",
@@ -1082,6 +1083,7 @@ def handle_company_creation(sender, **kwargs):
         parent=root["Income"],
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Indirect Income"],
     )
 
     discount_income_category = Category.objects.create(
@@ -1092,6 +1094,7 @@ def handle_company_creation(sender, **kwargs):
         default=True,
         system_code=acc_cat_system_codes["Discount Income"],
     )
+
     Account.objects.create(
         name="Discount Income",
         code="I-I-DI-DI",
@@ -1099,6 +1102,24 @@ def handle_company_creation(sender, **kwargs):
         company=company,
         default=True,
         system_code=acc_system_codes["Discount Income"],
+    )
+
+    interest_income_category = Category.objects.create(
+        name="Interest Income",
+        code="I-I-II",
+        parent=indirect_income,
+        company=company,
+        default=True,
+        system_code=acc_cat_system_codes["Interest Income"],
+    )
+
+    Account.objects.create(
+        name="Interest Income",
+        code="I-I-II-II",
+        category=interest_income_category,
+        company=company,
+        default=True,
+        system_code=acc_system_codes["Interest Income"],
     )
 
     # CREATE DEFAULT CATEGORIES FOR EXPENSES
@@ -1261,6 +1282,23 @@ def handle_company_creation(sender, **kwargs):
         company=company,
         default=True,
         system_code=acc_system_codes["Discount Expenses"],
+    )
+
+    interest_expense_category = Category.objects.create(
+        name="Interest Expenses",
+        code="E-I-IE",
+        parent=indirect_expenses,
+        company=company,
+        default=True,
+        system_code=acc_cat_system_codes["Interest Expenses"],
+    )
+    Account.objects.create(
+        name="Interest Expenses",
+        category=interest_expense_category,
+        code="E-I-IE-IE",
+        company=company,
+        default=True,
+        system_code=acc_system_codes["Interest Expenses"],
     )
 
     # Opening Balance Difference
