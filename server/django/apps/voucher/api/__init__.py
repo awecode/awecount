@@ -195,6 +195,11 @@ def send_sales_voucher_import_completion_email(
         <p>Thank you for using our service. If you need any further assistance, don't hesitate to contact us.</p>
         """
 
+    Import.objects.filter(
+        company=request.company, type="Sales Voucher", status="Pending"
+    ).update(status="Failed" if error_message else "Completed")
+
+
     email = EmailMessage(
         subject=subject,
         body=message,
@@ -225,6 +230,10 @@ def send_purchase_voucher_import_completion_email(
         <p>You can view and manage these invoices in your <a href="{origin}/purchase-voucher/list/">Purchase Voucher List</a>.</p>
         <p>Thank you for using our service. If you need any further assistance, don't hesitate to contact us.</p>
         """
+    
+    Import.objects.filter(
+        company=request.company, type="Purchase Voucher", status="Pending"
+    ).update(status="Failed" if error_message else "Completed")
 
     email = EmailMessage(
         subject=subject,
@@ -240,7 +249,7 @@ def import_sales_vouchers(request_obj, file):
     request = deserialize_request(request_obj)
     wb = openpyxl.load_workbook(file)
     sheet = wb.worksheets[0]
-    rows = list(sheet.iter_rows(values_only=True))
+    rows = [row for row in sheet.iter_rows(values_only=True) if any(cell is not None and str(cell).strip() != "" for cell in row)]
 
     required_fields = [
         "Invoice Group ID",
@@ -252,11 +261,13 @@ def import_sales_vouchers(request_obj, file):
         "Discount",
         "Trade Discount",
         "Payment Mode",
+        "Tax Type",
+        "Reference",
         "Remarks",
         "Is Export",
         "Sales Agent ID",
         "Status",
-        "Row Item ID",
+        "Row Item Code",
         "Row Quantity",
         "Row Rate",
         "Row Unit ID",
@@ -272,15 +283,24 @@ def import_sales_vouchers(request_obj, file):
             error_message = f"Column {i + 1} should be {required_fields[i]}"
             break
 
-    if error_message:
-        send_sales_voucher_import_completion_email(request, error_message=error_message)
-        return
-
+    row_codes = set()
     data = rows[1:]
     invoices = {}
 
+    row_codes = set(row[15] for row in data)
+    row_code_items = Item.objects.filter(code__in=row_codes).values_list("code", "id")
+    row_code_items = dict(row_code_items)
+    if len(row_code_items) != len(row_codes):
+        missing_codes = row_codes - set(row_code_items.keys())
+        error_message = f"Item with code(s) {', '.join(str(code) for code in missing_codes)} not found."
+
+
     for row in data:
         invoice_id = row[0]
+        if not invoice_id:
+            error_message = "Invoice Group ID is required."
+            break
+
         if invoice_id not in invoices:
             invoices[invoice_id] = {
                 "date": timezone.now().date(),
@@ -292,26 +312,33 @@ def import_sales_vouchers(request_obj, file):
                 "discount": row[6] or 0,
                 "trade_discount": row[7],
                 "payment_mode": row[8],
-                "remarks": row[9],
-                "is_export": row[10],
-                "sales_agent": row[11],
+                "tax_type": row[9],
+                "reference": row[10],
+                "remarks": row[11],
+                "is_export": row[12],
+                "sales_agent": row[13],
                 "rows": [],
-                "status": row[12],
+                "status": row[14],
             }
         invoices[invoice_id]["rows"].append(
             {
-                "item_id": row[13],
-                "quantity": row[14],
-                "rate": row[15],
-                "unit_id": row[16],
-                "discount_type": row[17],
-                "discount": row[18],
-                "tax_scheme_id": row[19],
-                "description": row[20],
+                "item_id": row_code_items.get(row[15]),
+                "quantity": row[16],
+                "rate": row[17],
+                "unit_id": row[18],
+                "discount_type": row[19],
+                "discount": row[20],
+                "tax_scheme_id": row[21],
+                "description": row[22],
             }
         )
+    
+    if error_message:
+        send_sales_voucher_import_completion_email(request, error_message=error_message)
+        return
 
     new_invoices = invoices.items()
+
 
     try:
         with transaction.atomic():
@@ -322,6 +349,8 @@ def import_sales_vouchers(request_obj, file):
                 serializer.is_valid(raise_exception=True)
                 instance = serializer.create(validated_data=serializer.validated_data)
                 invoice_data["id"] = instance.id
+    except ValidationError as e:
+        error_message = e.message
     except RESTValidationError as e:
         error_message = e.detail
     except SuspiciousOperation as e:
@@ -330,10 +359,6 @@ def import_sales_vouchers(request_obj, file):
     send_sales_voucher_import_completion_email(
         request, new_invoices=new_invoices, error_message=error_message
     )
-
-    Import.objects.filter(
-        company=request.company, type="Sales Voucher", status="Pending"
-    ).update(status="Failed" if error_message else "Completed")
 
 
 def import_purchase_vouchers(request_obj, file):
@@ -422,6 +447,8 @@ def import_purchase_vouchers(request_obj, file):
                 instance = serializer.create(validated_data=serializer.validated_data)
                 invoice_data["id"] = instance.id
 
+    except ValidationError as e:
+        error_message = e.message
     except RESTValidationError as e:
         error_message = e.detail
     except SuspiciousOperation as e:
@@ -431,9 +458,6 @@ def import_purchase_vouchers(request_obj, file):
         request, new_invoices=new_invoices, error_message=error_message
     )
 
-    Import.objects.filter(
-        company=request.company, type="Purchase Voucher", status="Pending"
-    ).update(status="Failed" if error_message else "Completed")
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
