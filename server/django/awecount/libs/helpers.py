@@ -65,7 +65,7 @@ def upload_file(file, folder):
 
 
 def get_origin():
-    return settings.URL
+    return settings.APP_URL
 
 
 def serialize_request(request):
