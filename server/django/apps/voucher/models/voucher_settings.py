@@ -190,5 +190,4 @@ def handle_company_creation(sender, **kwargs):
         body_text="We are pleased to provide you with the following quotation for the listed items.",
         footer_text="<div>Terms and conditions apply.</div><div>We look forward to working with you.</div>",
     )
-    PurchaseSetting.objects.create(company=company)
     InventorySetting.objects.create(company=company)
