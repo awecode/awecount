@@ -305,8 +305,7 @@ class Company(BaseModel):
     def create_company_defaults(self):
         # CREATE ROOT CATEGORIES
         # ================================================
-        Category = apps.get_model("ledger", "Category")
-        Account = apps.get_model("ledger", "Account")
+        from apps.ledger.models import Category, Account
         root = {}
         for category in Category.ROOT:
             root[category[0]] = Category.objects.create(
@@ -430,7 +429,7 @@ class Company(BaseModel):
             system_code=acc_system_codes["Cash"],
         )
 
-        PaymentMode = apps.get_model("voucher", "PaymentMode")
+        from apps.voucher.models import PaymentMode
         PaymentMode.objects.create(name="Cash", account=cash_account, company=self)
         Category.objects.create(
             name="Cash Equivalent Account",
@@ -695,7 +694,7 @@ class Company(BaseModel):
                 )
                 additional_cost_accounts[cost_type] = account.id
 
-        PurchaseSetting = apps.get_model("voucher", "PurchaseSetting")
+        from apps.voucher.models.voucher_settings import PurchaseSetting
         purchase_setting, _ = PurchaseSetting.objects.get_or_create(company=self)
         purchase_setting.landed_cost_accounts = additional_cost_accounts
         purchase_setting.save()
@@ -851,12 +850,15 @@ class Company(BaseModel):
         )
 
         #  create default settings for company
+        from apps.voucher.models.voucher_settings import SalesSetting
         SalesSetting.objects.create(company=self)
+        from apps.quotation.models import QuotationSetting
         QuotationSetting.objects.create(
             company=self,
             body_text="We are pleased to provide you with the following quotation for the listed items.",
             footer_text="<div>Terms and conditions apply.</div><div>We look forward to working with you.</div>",
         )
+        from apps.product.models import InventorySetting
         InventorySetting.objects.create(company=self)
 
 
