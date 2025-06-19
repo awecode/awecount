@@ -308,539 +308,681 @@ class Company(BaseModel):
         from apps.ledger.models import Category, Account
         root = {}
         for category in Category.ROOT:
-            root[category[0]] = Category.objects.create(
-                name=category[0],
-                code=category[1],
+            root[category[0]], _ = Category.objects.get_or_create(
+                system_code=acc_cat_system_codes[category[0]],
                 company=self,
-                default=True,
-                system_code=acc_cat_system_codes.get(category[0], None),
+                defaults={
+                    'name': category[0],
+                    'code': category[1],
+                    'default': True,
+                }
             )
+        
 
         # CREATE DEFAULT CATEGORIES AND LEDGERS FOR EQUITY
         # ================================================
 
-        Account.objects.create(
-            name="Profit and Loss Account",
-            category=root["Equity"],
-            code="Q-PL",
-            company=self,
-            default=True,
+        Account.objects.get_or_create(
             system_code=acc_system_codes["Profit and Loss Account"],
+            company=self,
+            defaults={
+                'name': "Profit and Loss Account",
+                'category': root["Equity"],
+                'code': "Q-PL",
+                'default': True,
+            }
         )
-        Account.objects.create(
-            name="Opening Balance Equity",
-            category=root["Equity"],
+        Account.objects.get_or_create(
             code="Q-OBE",
             company=self,
-            default=True,
+            defaults={
+                'name': "Opening Balance Equity",
+                'category': root["Equity"],
+                'default': True,
+            }
         )
-        Account.objects.create(
-            name="Capital Investment",
-            category=root["Equity"],
+        Account.objects.get_or_create(
             code="Q-CI",
             company=self,
-            default=True,
+            defaults={
+                'name': "Capital Investment",
+                'category': root["Equity"],
+                'default': True,
+            }
         )
-        Account.objects.create(
-            name="Drawing Capital",
-            category=root["Equity"],
+        Account.objects.get_or_create(
             code="Q-DC",
             company=self,
-            default=True,
+            defaults={
+                'name': "Drawing Capital",
+                'category': root["Equity"],
+                'default': True,
+            }
         )
 
         # CREATE DEFAULT CATEGORIES AND LEDGERS FOR ASSETS
         # ================================================
 
-        Category.objects.create(
-            name="Other Receivables",
+        Category.objects.get_or_create(
             code="A-OR",
-            parent=root["Assets"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Other Receivables",
+                'parent': root["Assets"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Deferred Assets",
+        Category.objects.get_or_create(
             code="A-DA",
-            parent=root["Assets"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Deferred Assets",
+                'parent': root["Assets"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Fixed Assets",
-            code="A-FA",
-            parent=root["Assets"],
-            company=self,
-            default=True,
+        Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Fixed Assets"],
+            company=self,
+            defaults={
+                'name': "Fixed Assets",
+                'code': "A-FA",
+                'parent': root["Assets"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Loans and Advances Given",
+        Category.objects.get_or_create(
             code="A-LA",
-            parent=root["Assets"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Loans and Advances Given",
+                'parent': root["Assets"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Deposits Made",
+        Category.objects.get_or_create(
             code="A-D",
-            parent=root["Assets"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Deposits Made",
+                'parent': root["Assets"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Employee",
+        Category.objects.get_or_create(
             code="A-E",
-            parent=root["Assets"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Employee",
+                'parent': root["Assets"],
+                'default': True,
+            }
         )
-        tax_receivables = Category.objects.create(
-            name="Tax Receivables",
-            code="A-TR",
-            parent=root["Assets"],
-            company=self,
-            default=True,
+        tax_receivables, _ = Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Tax Receivables"],
-        )
-        Account.objects.create(
             company=self,
-            default=True,
-            name="TDS Receivables",
-            category=tax_receivables,
-            code="A-TR-TDS",
+            defaults={
+                'name': "Tax Receivables",
+                'code': "A-TR",
+                'parent': root["Assets"],
+                'default': True,
+            }
+        )
+        Account.objects.get_or_create(
             system_code=acc_system_codes["TDS Receivables"],
+            company=self,
+            defaults={
+                'name': "TDS Receivables",
+                'category': tax_receivables,
+                'code': "A-TR-TDS",
+                'default': True,
+            }
         )
 
-        cash_account_category = Category.objects.create(
-            name="Cash Accounts",
-            code="A-C",
-            parent=root["Assets"],
-            company=self,
-            default=True,
+        cash_account_category, _ = Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Cash Accounts"],
-        )
-        cash_account = Account.objects.create(
             company=self,
-            default=True,
-            name="Cash",
-            category=cash_account_category,
-            code="A-C-C",
+            defaults={
+                'name': "Cash Accounts",
+                'code': "A-C",
+                'parent': root["Assets"],
+                'default': True,
+            }
+        )
+        cash_account, _ = Account.objects.get_or_create(
             system_code=acc_system_codes["Cash"],
+            company=self,
+            defaults={
+                'name': "Cash",
+                'category': cash_account_category,
+                'code': "A-C-C",
+                'default': True,
+            }
         )
 
         from apps.voucher.models import PaymentMode
-        PaymentMode.objects.create(name="Cash", account=cash_account, company=self)
-        Category.objects.create(
-            name="Cash Equivalent Account",
+        PaymentMode.objects.get_or_create(name="Cash", company=self, defaults={'account': cash_account})
+        Category.objects.get_or_create(
             code="A-CE",
-            parent=root["Assets"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Cash Equivalent Account",
+                'parent': root["Assets"],
+                'default': True,
+            }
         )
 
-        Category.objects.create(
-            name="Bank Accounts",
-            code="A-B",
-            parent=root["Assets"],
-            company=self,
-            default=True,
+        Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Bank Accounts"],
+            company=self,
+            defaults={
+                'name': "Bank Accounts",
+                'code': "A-B",
+                'parent': root["Assets"],
+                'default': True,
+            }
         )
 
-        account_receivables = Category.objects.create(
-            name="Account Receivables",
-            code="A-AR",
-            parent=root["Assets"],
+        account_receivables, _ = Category.objects.get_or_create(
+            system_code=acc_cat_system_codes["Account Receivables"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Account Receivables",
+                'code': "A-AR",
+                'parent': root["Assets"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Customers",
-            code="A-AR-C",
-            parent=account_receivables,
-            company=self,
-            default=True,
+        Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Customers"],
+            company=self,
+            defaults={
+                'name': "Customers",
+                'code': "A-AR-C",
+                'parent': account_receivables,
+                'default': True,
+            }
         )
 
-        Category.objects.create(
-            name="Employee Deductions",
+        Category.objects.get_or_create(
             code="A-ED",
-            parent=root["Assets"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Employee Deductions",
+                'parent': root["Assets"],
+                'default': True,
+            }
         )
 
         # CREATE DEFAULT CATEGORIES AND LEDGERS FOR LIABILITIES
         # =====================================================
 
-        account_payables = Category.objects.create(
-            name="Account Payables",
-            code="L-AP",
-            parent=root["Liabilities"],
+        account_payables, _ = Category.objects.get_or_create(
+            system_code=acc_cat_system_codes["Account Payables"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Account Payables",
+                'code': "L-AP",
+                'parent': root["Liabilities"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Suppliers",
-            parent=account_payables,
-            code="L-AP-S",
-            company=self,
-            default=True,
+        Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Suppliers"],
+            company=self,
+            defaults={
+                'name': "Suppliers",
+                'parent': account_payables,
+                'code': "L-AP-S",
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Other Payables",
+        Category.objects.get_or_create(
             code="L-OP",
-            parent=root["Liabilities"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Other Payables",
+                'parent': root["Liabilities"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Provisions",
+        Category.objects.get_or_create(
             code="L-P",
-            parent=root["Liabilities"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Provisions",
+                'parent': root["Liabilities"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Secured Loans",
+        Category.objects.get_or_create(
             code="L-SL",
-            parent=root["Liabilities"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Secured Loans",
+                'parent': root["Liabilities"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Unsecured Loans",
+        Category.objects.get_or_create(
             code="L-US",
-            parent=root["Liabilities"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Unsecured Loans",
+                'parent': root["Liabilities"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Deposits Taken",
+        Category.objects.get_or_create(
             code="L-DT",
-            parent=root["Liabilities"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Deposits Taken",
+                'parent': root["Liabilities"],
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Loans & Advances Taken",
+        Category.objects.get_or_create(
             code="L-LA",
-            parent=root["Liabilities"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Loans & Advances Taken",
+                'parent': root["Liabilities"],
+                'default': True,
+            }
         )
-        Account.objects.create(
-            name="Provision for Accumulated Depreciation",
-            category=root["Liabilities"],
+        Account.objects.get_or_create(
             code="L-DEP",
             company=self,
-            default=True,
+            defaults={
+                'name': "Provision for Accumulated Depreciation",
+                'category': root["Liabilities"],
+                'default': True,
+            }
         )
-        Account.objects.create(
-            name="Audit Fee Payable",
-            category=root["Liabilities"],
+        Account.objects.get_or_create(
             code="L-AFP",
             company=self,
-            default=True,
+            defaults={
+                'name': "Audit Fee Payable",
+                'category': root["Liabilities"],
+                'default': True,
+            }
         )
-        Account.objects.create(
-            name="Other Payables",
-            category=root["Liabilities"],
+        Account.objects.get_or_create(
             code="L-OP",
             company=self,
-            default=True,
+            defaults={
+                'name': "Other Payables",
+                'category': root["Liabilities"],
+                'default': True,
+            }
         )
-        duties_and_taxes = Category.objects.create(
-            name="Duties & Taxes",
-            code="L-T",
-            parent=root["Liabilities"],
-            company=self,
-            default=True,
+        duties_and_taxes, _ = Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Duties & Taxes"],
+            company=self,
+            defaults={
+                'name': "Duties & Taxes",
+                'code': "L-T",
+                'parent': root["Liabilities"],
+                'default': True,
+            }
         )
-        Account.objects.create(
-            name="Income Tax",
-            category=duties_and_taxes,
+        Account.objects.get_or_create(
             code="L-T-I",
             company=self,
-            default=True,
+            defaults={
+                'name': "Income Tax",
+                'category': duties_and_taxes,
+                'default': True,
+            }
         )
-        Account.objects.create(
-            name="TDS (Audit Fee)",
-            category=duties_and_taxes,
+        Account.objects.get_or_create(
             code="L-T-TA",
             company=self,
-            default=True,
+            defaults={
+                'name': "TDS (Audit Fee)",
+                'category': duties_and_taxes,
+                'default': True,
+            }
         )
-        Account.objects.create(
-            name="TDS (Rent)",
-            category=duties_and_taxes,
+        Account.objects.get_or_create(
             code="L-T-TR",
             company=self,
-            default=True,
+            defaults={
+                'name': "TDS (Rent)",
+                'category': duties_and_taxes,
+                'default': True,
+            }
         )
 
         # CREATE DEFAULT CATEGORIES FOR INCOME
         # =====================================
 
-        sales_category = Category.objects.create(
-            name="Sales",
-            code="I-S",
-            parent=root["Income"],
-            company=self,
-            default=True,
+        sales_category, _ = Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Sales"],
-        )
-        Account.objects.create(
-            name="Sales Account",
-            code="I-S-S",
-            category=sales_category,
             company=self,
-            default=True,
+            defaults={
+                'name': "Sales",
+                'code': "I-S",
+                'parent': root["Income"],
+                'default': True,
+            }
+        )
+        Account.objects.get_or_create(
             system_code=acc_system_codes["Sales Account"],
-        )
-        direct_income = Category.objects.create(
-            name="Direct Income",
-            code="I-D",
-            parent=root["Income"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Sales Account",
+                'code': "I-S-S",
+                'category': sales_category,
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Transfer and Remittance",
+        direct_income, _ = Category.objects.get_or_create(
+            system_code=acc_cat_system_codes["Direct Income"],
+            company=self,
+            defaults={
+                'name': "Direct Income",
+                'parent': root["Income"],
+                'code': "I-D",
+                'default': True,
+            }
+        )
+        Category.objects.get_or_create(
             code="I-D-TR",
-            parent=direct_income,
             company=self,
-            default=True,
+            defaults={
+                'name': "Transfer and Remittance",
+                'parent': direct_income,
+                'default': True,
+            }
         )
-        indirect_income = Category.objects.create(
-            name="Indirect Income",
-            code="I-I",
-            parent=root["Income"],
+        indirect_income, _ = Category.objects.get_or_create(
+            system_code=acc_cat_system_codes["Indirect Income"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Indirect Income",
+                'parent': root["Income"],
+                'code': "I-I",
+                'default': True,
+            }
         )
 
-        discount_income_category = Category.objects.create(
-            name="Discount Income",
-            code="I-I-DI",
-            parent=indirect_income,
-            company=self,
-            default=True,
+        discount_income_category, _ = Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Discount Income"],
-        )
-        Account.objects.create(
-            name="Discount Income",
-            code="I-I-DI-DI",
-            category=discount_income_category,
             company=self,
-            default=True,
+            defaults={
+                'name': "Discount Income",
+                'code': "I-I-DI",
+                'parent': indirect_income,
+                'default': True,
+            }
+        )
+        Account.objects.get_or_create(
             system_code=acc_system_codes["Discount Income"],
+            company=self,
+            defaults={
+                'name': "Discount Income",
+                'code': "I-I-DI-DI",
+                'category': discount_income_category,
+                'default': True,
+            }
         )
 
         # CREATE DEFAULT CATEGORIES FOR EXPENSES
         # =====================================
 
-        purchase_category = Category.objects.create(
-            name="Purchase",
-            code="E-P",
-            parent=root["Expenses"],
-            company=self,
-            default=True,
+        purchase_category, _ = Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Purchase"],
-        )
-        Account.objects.create(
-            name="Purchase Account",
-            code="E-P-P",
-            category=purchase_category,
             company=self,
-            default=True,
+            defaults={
+                'name': "Purchase",
+                'code': "E-P",
+                'parent': root["Expenses"],
+                'default': True,
+            }
+        )
+        Account.objects.get_or_create(
             system_code=acc_system_codes["Purchase Account"],
+            company=self,
+            defaults={
+                'name': "Purchase Account",
+                'code': "E-P-P",
+                'category': purchase_category,
+                'default': True,
+            }
         )
 
-        direct_expenses = Category.objects.create(
-            name="Direct Expenses",
-            code="E-D",
-            parent=root["Expenses"],
-            company=self,
-            default=True,
+        direct_expenses, _ = Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Direct Expenses"],
-        )
-
-        additional_cost_category = Category.objects.create(
-            name="Additional Cost",
-            code="E-D-AC",
-            parent=direct_expenses,
             company=self,
-            default=True,
-            system_code=acc_cat_system_codes["Additional Cost"],
+            defaults={
+                'name': "Direct Expenses",
+                'code': "E-D",
+                'parent': root["Expenses"],
+                'default': True,
+            }
         )
 
-        additional_cost_accounts = {}
+        additional_cost_category, _ = Category.objects.get_or_create(
+            system_code=acc_cat_system_codes["Additional Cost"],
+            company=self,
+            defaults={
+                'name': "Additional Cost",
+                'code': "E-D-AC",
+                'parent': direct_expenses,
+                'default': True,
+            }
+        )
+
+        new_additional_cost_accounts = {}
 
         from apps.voucher.models import LandedCostRowType
 
         for index, cost_type in enumerate(LandedCostRowType.values):
             if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
-                account = Account.objects.create(
-                    name=cost_type,
-                    code=f"E-D-LC-{cost_type[:3].upper()}{index}",
-                    category=additional_cost_category,
+                account, created = Account.objects.get_or_create(
+                    system_code=f"E-D-LC-{cost_type[:3].upper()}{index}",
                     company=self,
-                    default=True,
+                    defaults={
+                        'name': cost_type,
+                        'category': additional_cost_category,
+                        'code': f"E-D-LC-{cost_type[:3].upper()}{index}",
+                        'default': True,
+                    }
                 )
-                additional_cost_accounts[cost_type] = account.id
+                if created:
+                    new_additional_cost_accounts[cost_type] = account.id
 
         from apps.voucher.models.voucher_settings import PurchaseSetting
-        purchase_setting, _ = PurchaseSetting.objects.get_or_create(company=self)
-        purchase_setting.landed_cost_accounts = additional_cost_accounts
+        purchase_setting, created = PurchaseSetting.objects.get_or_create(company=self)
+
+        if created:
+            purchase_setting.landed_cost_accounts = new_additional_cost_accounts
+        else:
+            purchase_setting.landed_cost_accounts.update(new_additional_cost_accounts)
         purchase_setting.save()
 
-        Category.objects.create(
-            name="Purchase Expenses",
+        Category.objects.get_or_create(
             code="E-D-PE",
-            parent=direct_expenses,
             company=self,
-            default=True,
+            defaults={
+                'name': "Purchase Expenses",
+                'parent': direct_expenses,
+                'default': True,
+            }
         )
-        indirect_expenses = Category.objects.create(
-            name="Indirect Expenses",
-            code="E-I",
-            parent=root["Expenses"],
-            company=self,
-            default=True,
+        indirect_expenses, _ = Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Indirect Expenses"],
+            company=self,
+            defaults={
+                'name': "Indirect Expenses",
+                'code': "E-I",
+                'parent': root["Expenses"],
+                'default': True,
+            }
         )
 
-        bank_charges = Category.objects.create(
-            name="Bank Charges",
-            code="E-I-BC",
-            parent=indirect_expenses,
-            company=self,
-            default=True,
+        bank_charges, _ = Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Bank Charges"],
+            company=self,
+            defaults={
+                'name': "Bank Charges",
+                'code': "E-I-BC",
+                'parent': indirect_expenses,
+                'default': True,
+            }
         )
-        Account.objects.create(
-            name="Bank Charges",
-            category=bank_charges,
+        Account.objects.get_or_create(
             code="E-I-BC-BC",
             company=self,
-            default=True,
+            defaults={
+                'name': "Bank Charges",
+                'category': bank_charges,
+                'default': True,
+            }
         )
-        Account.objects.create(
-            name="Fines & Penalties",
-            category=indirect_expenses,
+        Account.objects.get_or_create(
             code="E-I-FP",
             company=self,
-            default=True,
+            defaults={
+                'name': "Fines & Penalties",
+                'category': indirect_expenses,
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Pay Head",
+        Category.objects.get_or_create(
             code="E-I-P",
-            parent=indirect_expenses,
             company=self,
-            default=True,
+            defaults={
+                'name': "Pay Head",
+                'parent': indirect_expenses,
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Food and Beverages",
+        Category.objects.get_or_create(
             code="E-I-FB",
-            parent=indirect_expenses,
             company=self,
-            default=True,
+            defaults={
+                'name': "Food and Beverages",
+                'parent': indirect_expenses,
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Communication Expenses",
+        Category.objects.get_or_create(
             code="E-I-C",
-            parent=indirect_expenses,
             company=self,
-            default=True,
+            defaults={
+                'name': "Communication Expenses",
+                'parent': indirect_expenses,
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Courier Charges",
+        Category.objects.get_or_create(
             code="E-I-CC",
-            parent=indirect_expenses,
             company=self,
-            default=True,
+            defaults={
+                'name': "Courier Charges",
+                'parent': indirect_expenses,
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Printing and Stationery",
+        Category.objects.get_or_create(
             code="E-I-PS",
-            parent=indirect_expenses,
             company=self,
-            default=True,
+            defaults={
+                'name': "Printing and Stationery",
+                'parent': indirect_expenses,
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Repair and Maintenance",
+        Category.objects.get_or_create(
             code="E-I-RM",
-            parent=indirect_expenses,
             company=self,
-            default=True,
+            defaults={
+                'name': "Repair and Maintenance",
+                'parent': indirect_expenses,
+                'default': True,
+            }
         )
-        Category.objects.create(
-            name="Fuel and Transport",
+        Category.objects.get_or_create(
             code="E-I-FT",
-            parent=indirect_expenses,
             company=self,
-            default=True,
+            defaults={
+                'name': "Fuel and Transport",
+                'parent': indirect_expenses,
+                'default': True,
+            }
         )
-        discount_expense_category = Category.objects.create(
-            name="Discount Expenses",
-            parent=indirect_expenses,
-            code="E-I-DE",
-            company=self,
-            default=True,
+        discount_expense_category, _ = Category.objects.get_or_create(
             system_code=acc_cat_system_codes["Discount Expenses"],
-        )
-        Account.objects.create(
-            name="Discount Expenses",
-            category=discount_expense_category,
-            code="E-I-DE-DE",
             company=self,
-            default=True,
+            defaults={
+                'name': "Discount Expenses",
+                'parent': indirect_expenses,
+                'code': "E-I-DE",
+                'default': True,
+            }
+        )
+        Account.objects.get_or_create(
             system_code=acc_system_codes["Discount Expenses"],
+            company=self,
+            defaults={
+                'name': "Discount Expenses",
+                'category': discount_expense_category,
+                'code': "E-I-DE-DE",
+                'default': True,
+            }
         )
 
         # Opening Balance Difference
         # ==========================
 
-        Account.objects.create(
-            name="Opening Balance Difference",
-            code="O-OBD",
-            category=root["Opening Balance Difference"],
-            company=self,
-            default=True,
+        Account.objects.get_or_create(
             system_code=acc_system_codes["Opening Balance Difference"],
+            company=self,
+            defaults={
+                'name': "Opening Balance Difference",
+                'code': "O-OBD",
+                'category': root["Opening Balance Difference"],
+                'default': True,
+            }
         )
 
         # For Inventory Adjustemnt
         # ==========================
-        inventory_write_off_account = Category.objects.create(
-            name="Inventory write-off",
-            parent=indirect_expenses,
-            code="E-I-DE-IWO",
+        inventory_write_off_account, _ = Category.objects.get_or_create(
+            system_code=acc_cat_system_codes["Inventory Write-off"],
             company=self,
-            default=True,
+            defaults={
+                'name': "Inventory write-off",
+                'parent': indirect_expenses,
+                'code': "E-I-DE-IWO",
+                'default': True,
+            }
         )
 
-        Account.objects.create(
-            name="Damage Expense",
-            code="E-I-DE-IWO-DE",
-            category=inventory_write_off_account,
-            company=self,
-            default=True,
+        Account.objects.get_or_create(
             system_code=acc_system_codes["Damage Expense"],
+            company=self,
+            defaults={
+                'name': "Damage Expense",
+                'code': "E-I-DE-IWO-DE",
+                'category': inventory_write_off_account,
+                'default': True,
+            }
         )
 
-        Account.objects.create(
-            name="Expiry Expense",
-            code="E-I-DE-IWO-EE",
-            category=inventory_write_off_account,
-            company=self,
-            default=True,
+        Account.objects.get_or_create(
             system_code=acc_system_codes["Expiry Expense"],
+            company=self,
+            defaults={
+                'name': "Expiry Expense",
+                'code': "E-I-DE-IWO-EE",
+                'category': inventory_write_off_account,
+                'default': True,
+            }
         )
 
         # create default permission for company
@@ -851,15 +993,17 @@ class Company(BaseModel):
 
         #  create default settings for company
         from apps.voucher.models.voucher_settings import SalesSetting
-        SalesSetting.objects.create(company=self)
+        SalesSetting.objects.get_or_create(company=self)
         from apps.quotation.models import QuotationSetting
-        QuotationSetting.objects.create(
+        QuotationSetting.objects.get_or_create(
             company=self,
-            body_text="We are pleased to provide you with the following quotation for the listed items.",
-            footer_text="<div>Terms and conditions apply.</div><div>We look forward to working with you.</div>",
+            defaults={
+                'body_text': "We are pleased to provide you with the following quotation for the listed items.",
+                'footer_text': "<div>Terms and conditions apply.</div><div>We look forward to working with you.</div>",
+            }
         )
         from apps.product.models import InventorySetting
-        InventorySetting.objects.create(company=self)
+        InventorySetting.objects.get_or_create(company=self)
 
 
 
