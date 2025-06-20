@@ -3,19 +3,6 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
-
-def create_quotation_setting_for_existing_companies(apps, schema_editor):
-    Company = apps.get_model('company', 'Company')
-    QuotationSetting = apps.get_model('quotation', 'QuotationSetting')
-
-    companies = Company.objects.all()
-
-    quotation_settings = [
-        QuotationSetting(company=company) for company in companies
-    ]
-
-    QuotationSetting.objects.bulk_create(quotation_settings)
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -32,9 +19,5 @@ class Migration(migrations.Migration):
                 ('footer_text', models.TextField(blank=True, null=True)),
                 ('company', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='quotation_setting', to='company.company')),
             ],
-        ),
-        migrations.RunPython(
-            create_quotation_setting_for_existing_companies,
-            migrations.RunPython.noop,
         ),
     ]
