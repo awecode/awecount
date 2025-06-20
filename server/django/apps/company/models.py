@@ -309,22 +309,20 @@ class Company(BaseModel):
         from apps.quotation.models import QuotationSetting
         from apps.product.models import InventorySetting
 
-        # Fetch existing categories and accounts to avoid duplicates
-        # Only fetch codes and system_codes that are actually used in the defaults
-        used_category_codes = {
+        CATEGORY_CODES = {
             "A", "A-FA", "A-LA", "A-D", "A-E", "A-TR", "A-C", "A-CE", "A-B", "A-AR", "A-AR-C", "A-ED",
             "L-AP", "L-AP-S", "L-OP", "L-P", "L-SL", "L-US", "L-DT", "L-LA", "L-T",
             "I-S", "I-D", "I-D-TR", "I-I", "I-I-DI", "A-OR", "A-DA", "E-D-PE",
             "E-D", "E-I", "E-I-P", "E-I-FB", "E-I-C", "E-I-CC", "E-I-PS", "E-I-RM", "E-I-FT", "E-I-DE", "E-I-DE-IWO"
         }
-        used_account_codes = {
+        ACCOUNT_CODES = {
             "A-TR-TDS", "A-C-C", "L-DEP", "L-AFP", "L-OP", "L-T-I", "L-T-TA", "L-T-TR",
             "I-S-S", "I-I-DI-DI", "E-I-FP", "E-I-DE-DE", "O-OBD", "E-I-DE-IWO-DE", "E-I-DE-IWO-EE"
         }
         
-        existing_categories = {
+        existing_categories_by_code = {
             cat.code: cat for cat in Category.objects.filter(
-                company=self, code__in=used_category_codes
+                company=self, code__in=CATEGORY_CODES
             )
         }
         existing_categories_by_system_code = {
@@ -332,9 +330,9 @@ class Company(BaseModel):
                 company=self, system_code__in=acc_cat_system_codes.values()
             )
         }
-        existing_accounts = {
+        existing_accounts_by_code = {
             acc.code: acc for acc in Account.objects.filter(
-                company=self, code__in=used_account_codes
+                company=self, code__in=ACCOUNT_CODES
             )
         }
         # Build system codes for landed cost accounts
@@ -353,89 +351,79 @@ class Company(BaseModel):
             )
         }
 
-        # Categories and accounts to be created
-        categories_to_create = []
         accounts_to_create = []
+        categories_to_create = []
 
-        # Helper function to get or prepare category for creation
-        def get_or_prepare_category(system_code=None, code=None, name=None, parent=None, default=True):
+        def get_or_prepare_category(name, code=None, system_code=None, parent=None):
+            if not name:
+                raise ValueError("name is required")
+            
             if system_code and system_code in existing_categories_by_system_code:
                 return existing_categories_by_system_code[system_code]
-            elif code and code in existing_categories:
-                return existing_categories[code]
+
+            if code and code in existing_categories_by_code:
+                return existing_categories_by_code[code]
             
-            # Create new category object (not saved yet)
             category_data = {
                 'name': name,
                 'company': self,
-                'default': default,
+                'parent': parent,
+                'code': code,
+                'system_code': system_code,
             }
-            if system_code:
-                category_data['system_code'] = system_code
-            if code:
-                category_data['code'] = code
-            if parent:
-                category_data['parent'] = parent
-                
+            
             category = Category(**category_data)
             categories_to_create.append(category)
-            
-            # Add to existing dict so subsequent references work
-            if code:
-                existing_categories[code] = category
+
             if system_code:
                 existing_categories_by_system_code[system_code] = category
+            elif code:
+                existing_categories_by_code[code] = category
             
             return category
 
-        # Helper function to get or prepare account for creation
-        def get_or_prepare_account(system_code=None, code=None, name=None, category=None, default=True):
+
+        def get_or_prepare_account(code, name, system_code=None, category=None):
+            if not code:
+                raise ValueError("code is required")
+            if not name:
+                raise ValueError("name is required")
+            
             if system_code and system_code in existing_accounts_by_system_code:
                 return existing_accounts_by_system_code[system_code]
-            elif code and code in existing_accounts:
-                return existing_accounts[code]
+
+            if code in existing_accounts_by_code:
+                return existing_accounts_by_code[code]
             
-            # Create new account object (not saved yet)
+            
             account_data = {
                 'name': name,
                 'company': self,
                 'category': category,
-                'default': default,
+                'default': True,
+                'code': code,
+                'system_code': system_code,
             }
-            if system_code:
-                account_data['system_code'] = system_code
-            if code:
-                account_data['code'] = code
+            
                 
             account = Account(**account_data)
             accounts_to_create.append(account)
-            
-            # Add to existing dict so subsequent references work
-            if code:
-                existing_accounts[code] = account
+
             if system_code:
                 existing_accounts_by_system_code[system_code] = account
+            else:
+                existing_accounts_by_code[code] = account
             
             return account
 
-        # CREATE ROOT CATEGORIES
-        # ================================================
         root = {}
         for category in Category.ROOT:
             root[category[0]] = get_or_prepare_category(
-                system_code=acc_cat_system_codes[category[0]],
                 name=category[0],
-                code=category[1]
+                code=category[1],
+                system_code=acc_cat_system_codes[category[0]]
             )
 
-        # Create root categories first since others depend on them (MPTT requires individual saves)
-        root_categories = [cat for cat in categories_to_create if cat.parent is None]
-        for category in root_categories:
-            category.save()
-        categories_to_create = [cat for cat in categories_to_create if cat.parent is not None]
-
-        # CREATE DEFAULT CATEGORIES AND LEDGERS FOR EQUITY
-        # ================================================
         get_or_prepare_account(
             system_code=acc_system_codes["Profit and Loss Account"],
             name="Profit and Loss Account",
@@ -464,46 +452,46 @@ class Company(BaseModel):
         # CREATE DEFAULT CATEGORIES AND LEDGERS FOR ASSETS
         # ================================================
         get_or_prepare_category(
-            code="A-OR",
             name="Other Receivables",
+            code="A-OR",
             parent=root["Assets"]
         )
         
         get_or_prepare_category(
-            code="A-DA",
             name="Deferred Assets",
+            code="A-DA",
             parent=root["Assets"]
         )
         
         get_or_prepare_category(
-            system_code=acc_cat_system_codes["Fixed Assets"],
             name="Fixed Assets",
             code="A-FA",
+            system_code=acc_cat_system_codes["Fixed Assets"],
             parent=root["Assets"]
         )
         
         get_or_prepare_category(
-            code="A-LA",
             name="Loans and Advances Given",
+            code="A-LA",
             parent=root["Assets"]
         )
         
         get_or_prepare_category(
-            code="A-D",
             name="Deposits Made",
+            code="A-D",
             parent=root["Assets"]
         )
         
         get_or_prepare_category(
-            code="A-E",
             name="Employee",
+            code="A-E",
             parent=root["Assets"]
         )
         
         tax_receivables = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Tax Receivables"],
             name="Tax Receivables",
             code="A-TR",
+            system_code=acc_cat_system_codes["Tax Receivables"],
             parent=root["Assets"]
         )
         
@@ -515,13 +503,13 @@ class Company(BaseModel):
         )
 
         cash_account_category = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Cash Accounts"],
             name="Cash Accounts",
             code="A-C",
+            system_code=acc_cat_system_codes["Cash Accounts"],
             parent=root["Assets"]
         )
         
-        cash_account = get_or_prepare_account(
+        get_or_prepare_account(
             system_code=acc_system_codes["Cash"],
             name="Cash",
             category=cash_account_category,
@@ -529,88 +517,98 @@ class Company(BaseModel):
         )
         
         get_or_prepare_category(
-            code="A-CE",
             name="Cash Equivalent Account",
+            code="A-CE",
             parent=root["Assets"]
         )
 
         get_or_prepare_category(
-            system_code=acc_cat_system_codes["Bank Accounts"],
             name="Bank Accounts",
             code="A-B",
+            system_code=acc_cat_system_codes["Bank Accounts"],
             parent=root["Assets"]
         )
 
         account_receivables = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Account Receivables"],
             name="Account Receivables",
             code="A-AR",
+            system_code=acc_cat_system_codes["Account Receivables"],
             parent=root["Assets"]
         )
         
         get_or_prepare_category(
-            system_code=acc_cat_system_codes["Customers"],
             name="Customers",
             code="A-AR-C",
+            system_code=acc_cat_system_codes["Customers"],
             parent=account_receivables
+            
         )
 
         get_or_prepare_category(
-            code="A-ED",
             name="Employee Deductions",
+            code="A-ED",
             parent=root["Assets"]
+            
         )
 
         # CREATE DEFAULT CATEGORIES AND LEDGERS FOR LIABILITIES
         # =====================================================
         account_payables = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Account Payables"],
             name="Account Payables",
             code="L-AP",
+            system_code=acc_cat_system_codes["Account Payables"],
             parent=root["Liabilities"]
+            
         )
         
         get_or_prepare_category(
-            system_code=acc_cat_system_codes["Suppliers"],
             name="Suppliers",
-            parent=account_payables,
-            code="L-AP-S"
+            code="L-AP-S",
+            system_code=acc_cat_system_codes["Suppliers"],
+            parent=account_payables
+            
         )
         
         get_or_prepare_category(
-            code="L-OP",
             name="Other Payables",
+            code="L-OP",
             parent=root["Liabilities"]
+            
         )
         
         get_or_prepare_category(
-            code="L-P",
             name="Provisions",
+            code="L-P",
             parent=root["Liabilities"]
+            
         )
         
         get_or_prepare_category(
-            code="L-SL",
             name="Secured Loans",
+            code="L-SL",
             parent=root["Liabilities"]
+            
         )
         
         get_or_prepare_category(
-            code="L-US",
             name="Unsecured Loans",
+            code="L-US",
             parent=root["Liabilities"]
+            
         )
         
         get_or_prepare_category(
-            code="L-DT",
             name="Deposits Taken",
+            code="L-DT",
             parent=root["Liabilities"]
+            
         )
         
         get_or_prepare_category(
-            code="L-LA",
             name="Loans & Advances Taken",
+            code="L-LA",
             parent=root["Liabilities"]
+            
         )
         
         get_or_prepare_account(
@@ -632,10 +630,11 @@ class Company(BaseModel):
         )
         
         duties_and_taxes = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Duties & Taxes"],
             name="Duties & Taxes",
             code="L-T",
+            system_code=acc_cat_system_codes["Duties & Taxes"],
             parent=root["Liabilities"]
+            
         )
         
         get_or_prepare_account(
@@ -659,10 +658,11 @@ class Company(BaseModel):
         # CREATE DEFAULT CATEGORIES FOR INCOME
         # =====================================
         sales_category = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Sales"],
             name="Sales",
             code="I-S",
+            system_code=acc_cat_system_codes["Sales"],
             parent=root["Income"]
+            
         )
         
         get_or_prepare_account(
@@ -673,30 +673,32 @@ class Company(BaseModel):
         )
         
         direct_income = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Direct Income"],
             name="Direct Income",
-            parent=root["Income"],
-            code="I-D"
+            code="I-D",
+            system_code=acc_cat_system_codes["Direct Income"],
+            parent=root["Income"]
         )
         
         get_or_prepare_category(
-            code="I-D-TR",
             name="Transfer and Remittance",
+            code="I-D-TR",
             parent=direct_income
+            
         )
         
         indirect_income = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Indirect Income"],
             name="Indirect Income",
-            parent=root["Income"],
-            code="I-I"
+            code="I-I",
+            system_code=acc_cat_system_codes["Indirect Income"],
+            parent=root["Income"]
         )
 
         discount_income_category = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Discount Income"],
             name="Discount Income",
             code="I-I-DI",
+            system_code=acc_cat_system_codes["Discount Income"],
             parent=indirect_income
+            
         )
         
         get_or_prepare_account(
@@ -709,10 +711,11 @@ class Company(BaseModel):
         # CREATE DEFAULT CATEGORIES FOR EXPENSES
         # =====================================
         purchase_category = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Purchase"],
             name="Purchase",
             code="E-P",
+            system_code=acc_cat_system_codes["Purchase"],
             parent=root["Expenses"]
+            
         )
         
         get_or_prepare_account(
@@ -723,17 +726,19 @@ class Company(BaseModel):
         )
 
         direct_expenses = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Direct Expenses"],
             name="Direct Expenses",
             code="E-D",
+            system_code=acc_cat_system_codes["Direct Expenses"],
             parent=root["Expenses"]
+            
         )
 
         additional_cost_category = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Additional Cost"],
             name="Additional Cost",
             code="E-D-AC",
+            system_code=acc_cat_system_codes["Additional Cost"],
             parent=direct_expenses
+            
         )
 
         # Handle landed cost accounts
@@ -750,28 +755,30 @@ class Company(BaseModel):
                     code=code
                 )
                 
-                # Check if this is a new account we're creating
                 if account in accounts_to_create:
-                    new_additional_cost_accounts[cost_type] = None  # Will be set after save
+                    new_additional_cost_accounts[cost_type] = None
 
         get_or_prepare_category(
-            code="E-D-PE",
             name="Purchase Expenses",
+            code="E-D-PE",
             parent=direct_expenses
+            
         )
         
         indirect_expenses = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Indirect Expenses"],
             name="Indirect Expenses",
             code="E-I",
+            system_code=acc_cat_system_codes["Indirect Expenses"],
             parent=root["Expenses"]
+            
         )
 
         bank_charges = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Bank Charges"],
             name="Bank Charges",
             code="E-I-BC",
+            system_code=acc_cat_system_codes["Bank Charges"],
             parent=indirect_expenses
+            
         )
         
         get_or_prepare_account(
@@ -787,52 +794,60 @@ class Company(BaseModel):
         )
         
         get_or_prepare_category(
-            code="E-I-P",
             name="Pay Head",
+            code="E-I-P",
             parent=indirect_expenses
+            
         )
         
         get_or_prepare_category(
-            code="E-I-FB",
             name="Food and Beverages",
+            code="E-I-FB",
             parent=indirect_expenses
+            
         )
         
         get_or_prepare_category(
-            code="E-I-C",
             name="Communication Expenses",
+            code="E-I-C",
             parent=indirect_expenses
+            
         )
         
         get_or_prepare_category(
-            code="E-I-CC",
             name="Courier Charges",
+            code="E-I-CC",
             parent=indirect_expenses
+            
         )
         
         get_or_prepare_category(
-            code="E-I-PS",
             name="Printing and Stationery",
+            code="E-I-PS",
             parent=indirect_expenses
+            
         )
         
         get_or_prepare_category(
-            code="E-I-RM",
             name="Repair and Maintenance",
+            code="E-I-RM",
             parent=indirect_expenses
+            
         )
         
         get_or_prepare_category(
-            code="E-I-FT",
             name="Fuel and Transport",
+            code="E-I-FT",
             parent=indirect_expenses
+            
         )
         
         discount_expense_category = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Discount Expenses"],
             name="Discount Expenses",
-            parent=indirect_expenses,
-            code="E-I-DE"
+            code="E-I-DE",
+            system_code=acc_cat_system_codes["Discount Expenses"],
+            parent=indirect_expenses
+            
         )
         
         get_or_prepare_account(
@@ -854,10 +869,11 @@ class Company(BaseModel):
         # For Inventory Adjustment
         # ==========================
         inventory_write_off_account = get_or_prepare_category(
-            system_code=acc_cat_system_codes["Inventory Write-off"],
             name="Inventory write-off",
-            parent=indirect_expenses,
-            code="E-I-DE-IWO"
+            code="E-I-DE-IWO",
+            system_code=acc_cat_system_codes["Inventory Write-off"],
+            parent=indirect_expenses
+            
         )
 
         get_or_prepare_account(
@@ -873,42 +889,11 @@ class Company(BaseModel):
             code="E-I-DE-IWO-EE",
             category=inventory_write_off_account
         )
-
-        # CREATE CATEGORIES IN ORDER (MPTT REQUIRES INDIVIDUAL SAVES)
-        # ===========================================================
-        
-        # Batch 2: Create second-level categories that are parents to other categories
-        parent_category_objects = [
-            tax_receivables, cash_account_category, account_receivables, account_payables, 
-            duties_and_taxes, sales_category, direct_income, indirect_income, 
-            purchase_category, direct_expenses, indirect_expenses
-        ]
-        second_level_categories = [cat for cat in categories_to_create if cat in parent_category_objects]
-        for category in second_level_categories:
-            category.save()
-        # Remove created categories from the main list
-        categories_to_create = [cat for cat in categories_to_create if cat not in second_level_categories]
-        
-        # Batch 3: Create third-level categories that are parents to other categories  
-        third_level_parent_objects = [discount_income_category, additional_cost_category, 
-                                     bank_charges, discount_expense_category]
-        third_level_categories = [cat for cat in categories_to_create if cat in third_level_parent_objects]
-        for category in third_level_categories:
-            category.save()
-        # Remove created categories from the main list
-        categories_to_create = [cat for cat in categories_to_create if cat not in third_level_categories]
-        
-        # Batch 4: Create remaining categories
-        for category in categories_to_create:
-            category.save()
             
-        # Create all accounts at once since they don't have hierarchical dependencies
         if accounts_to_create:
             Account.objects.bulk_create(accounts_to_create, ignore_conflicts=True)
 
-        # Update landed cost account IDs after bulk create
         if new_additional_cost_accounts:
-            # Refresh accounts from DB to get IDs
             created_accounts = Account.objects.filter(
                 company=self,
                 system_code__startswith="E-D-LC-"
@@ -959,12 +944,6 @@ class Company(BaseModel):
             }
         )
         InventorySetting.objects.get_or_create(company=self)
-
-
-
-
-
-
 
 
 class CompanyBaseModel(BaseModel):
