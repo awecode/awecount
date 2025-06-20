@@ -1,6 +1,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
-import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
+import VoucherPDF from 'src/components/voucher/pdf/PDF.vue'
+import { useAuthStore } from 'src/stores/auth'
 import { useLoginStore } from 'src/stores/login-info'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
@@ -134,10 +135,6 @@ const data = {
   ],
 }
 
-const generateHtml = (template, invoiceFooterText) => {
-  return useGeneratePdf('salesVoucher', false, { ...data, invoice_footer_text: invoiceFooterText }, false, loginStore.companyInfo, template)
-}
-
 const templateOptions = ref([
   { label: 'Template 1', value: 1, html: '' },
   { label: 'Template 2', value: 2, html: '' },
@@ -145,19 +142,11 @@ const templateOptions = ref([
   { label: 'Template 4', value: 4, html: '' },
 ])
 
-watch(() => salesSettings.value, (val) => {
-  templateOptions.value.forEach((template) => {
-    template.html = generateHtml(template.value, val.invoice_footer_text)
-  })
-}, {
-  deep: true,
-})
-
 const htmlDialogOpen = ref(false)
-const selectedHtml = ref('')
+const selectedTemplate = ref()
 
-const openHtmlDialog = (html) => {
-  selectedHtml.value = html
+const openHtmlDialog = (template) => {
+  selectedTemplate.value = template
   htmlDialogOpen.value = true
 }
 
@@ -174,7 +163,7 @@ const onUpdateClick = async (fields) => {
         message: 'Saved!',
         icon: 'check',
       })
-      loginStore.companyInfo.invoice_template = fields.invoice_template
+      useAuthStore().company.invoice_template = fields.invoice_template
     })
     .catch(() => {
       $q.notify({
@@ -195,7 +184,13 @@ const onUpdateClick = async (fields) => {
     <q-dialog v-model="htmlDialogOpen">
       <q-card style="size: a4; min-width: 60%; max-width: 90vw">
         <q-card-section>
-          <div v-html="selectedHtml"></div>
+          <VoucherPDF
+            class="w-full h-full"
+            voucher-type="salesVoucher"
+            :company-info="loginStore.companyInfo"
+            :invoice-info="data"
+            :template="selectedTemplate"
+          />
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -217,11 +212,18 @@ const onUpdateClick = async (fields) => {
               v-for="template in templateOptions"
               :key="template.id"
               class="q-mb-md"
-              @click="openHtmlDialog(template.html)"
+              @click="openHtmlDialog(template.value)"
             >
               <div>{{ template.label }}</div>
               <div class="relative w-[200px] h-[125px] cursor-pointer overflow-hidden">
-                <div class="w-full h-full" style="zoom: 0.2" v-html="template.html"></div>
+                <VoucherPDF
+                  class="w-full h-full"
+                  style="zoom: 0.25"
+                  voucher-type="salesVoucher"
+                  :company-info="loginStore.companyInfo"
+                  :invoice-info="data"
+                  :template="template.value"
+                />
               </div>
             </div>
           </div>

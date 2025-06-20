@@ -462,12 +462,16 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Liabilities": "LIABILITIES",
     "Equity": "EQUITY",
     "Opening Balance Difference": "OPEN-BAL-DIFF",
-    "Direct Income": "DIR-INCOME",
-    "Indirect Income": "IND-INCOME",
+    "Additional Cost": "ADD-COST",
+    "Capital Expenses": "CAP-EXP",
+    "Account Receivables": "AR",
+    "Account Payables": "AP",
+    "Direct Income": "D-INCOME",
+    "Indirect Income": "I-INCOME",
+    "Inventory Write-off": "IWO",
     "Interest Income": "INT-INCOME",
     "Interest Expenses": "INT-EXP",
     "Landed Cost": "LANDED-COST",
-    "Additional Cost": "ADD-COST",
 }
 
 # Bank reconciliation settings

@@ -171,6 +171,7 @@ watch(
   () => props.formDefaults,
   () => {
     if (!props.isEdit) {
+      fields.value.type = 'Purchase/Expense'
       if (props.formDefaults.fields?.mode) {
         if (Number.isNaN(props.formDefaults.fields?.mode)) {
           fields.value.mode = props.formDefaults.fields.mode
@@ -180,10 +181,10 @@ watch(
       } else {
         fields.value.mode = 'Credit'
       }
-    }
-
-    if (Object.hasOwn(props.formDefaults.fields, 'trade_discount')) {
-      fields.value.trade_discount = props.formDefaults.fields?.trade_discount
+    } else {
+      if (Object.hasOwn(props.formDefaults.fields, 'trade_discount')) {
+        fields.value.trade_discount = props.formDefaults.fields?.trade_discount
+      }
     }
   },
 )
@@ -275,12 +276,12 @@ onMounted(() => {
           v-if="!isTemplate"
           v-model="fields.voucher_no"
           class="col-md-6 col-12"
-          label="Bill No.*"
+          label="Bill No."
           :error="!!errors.voucher_no"
           :error-message="errors.voucher_no"
         />
         <div
-          v-if="formDefaults.options?.enable_discount_in_voucher && !isTemplate"
+          v-if="formDefaults.options?.enable_discount_in_voucher"
           class="col-md-6 col-12 row q-col-gutter-md"
         >
           <div :class="['Percent', 'Amount'].includes(fields.discount_type) ? 'col-6' : 'col-12'">
@@ -349,6 +350,20 @@ onMounted(() => {
           :error-message="errors?.due_date"
           :to-limit="fields.date"
         />
+        <div v-if="formDefaults.options?.enable_type_in_voucher" class="col-md-6 col-12">
+          <q-select
+            v-model="fields.type"
+            emit-value
+            map-options
+            label="Type"
+            :error="!!errors?.type"
+            :error-message="errors?.type"
+            :options="[
+              'Purchase/Expense',
+              'Capital Expense',
+            ]"
+          />
+        </div>
       </div>
     </q-card-section>
   </q-card>
@@ -376,11 +391,52 @@ onMounted(() => {
     :unit-options="formDefaults.collections ? formDefaults.collections.units : null"
     @delete-row-err="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)"
   />
+
+  <div class="q-px-md">
+    <q-checkbox
+      v-model="fields.is_import"
+      class=""
+      label="Import?"
+      @update:model-value="
+        (val) => {
+          if (!val) {
+            fields.import_country = null
+            fields.import_date = null
+            fields.import_document_number = null
+          }
+        }"
+    />
+    <div v-if="fields.is_import" class="row q-col-gutter-md">
+      <q-input
+        v-model="fields.import_country"
+        class="col-12 col-md-4"
+        label="Import Country"
+        :error="!!errors?.import_country"
+        :error-message="errors?.import_country"
+      />
+      <date-picker
+        v-model="fields.import_date"
+        class="col-12 col-md-4"
+        label="Import Date"
+        :error="!!errors?.import_date"
+        :error-message="errors?.import_date"
+      />
+      <q-input
+        v-model="fields.import_document_number"
+        class="col-12 col-md-4"
+        label="Import Document Number"
+        :error="!!errors?.import_document_number"
+        :error-message="errors?.import_document_number"
+      />
+    </div>
+  </div>
+
   <LandedCosts
     :errors="errors"
     :fields="fields"
     :form-defaults="formDefaults"
   />
+
   <div class="row q-px-lg">
     <div class="col-12 col-md-6 row">
       <q-input
@@ -392,11 +448,6 @@ onMounted(() => {
         :error="!!errors?.remarks"
         :error-message="errors?.remarks"
       />
-    </div>
-    <div class="col-12 col-md-6 row justify-between">
-      <div>
-        <q-checkbox v-model="fields.is_import" class="q-mt-md col-3" label="Import?" />
-      </div>
     </div>
   </div>
 </template>

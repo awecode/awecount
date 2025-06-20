@@ -26,20 +26,7 @@ const props = defineProps({
   },
 })
 
-const taxTypes = [
-  {
-    label: 'No Tax',
-    value: 'no_tax',
-  },
-  {
-    label: 'Tax Exclusive',
-    value: 'tax_exclusive',
-  },
-  {
-    label: 'Tax Inclusive',
-    value: 'tax_inclusive',
-  },
-]
+const taxTypes = ['No Tax', 'Tax Exclusive', 'Tax Inclusive']
 
 const route = useRoute()
 
@@ -47,7 +34,7 @@ const importChallanModal = ref(false)
 
 const loginStore = useLoginStore()
 
-const { $q } = useQuasar()
+const $q = useQuasar()
 
 const fields = defineModel('fields')
 
@@ -57,7 +44,6 @@ if (!props.isEdit) {
   fields.value.due_date = props.today
   fields.value.date = props.today
   fields.value.is_export = false
-  fields.value.received_by = ''
 }
 
 const customerMode = ref(false)
@@ -251,12 +237,12 @@ const onPaymentModeChange = (obj) => {
 watch(
   () => props.formDefaults,
   () => {
-    if (props.formDefaults.fields?.hasOwnProperty('trade_discount')) {
-      fields.value.trade_discount = props.formDefaults.fields?.trade_discount
-    }
     if (props.isEdit) {
       if (fields.value.customer_name) customerMode.value = true
     } else {
+      if (props.formDefaults.fields?.hasOwnProperty('trade_discount')) {
+        fields.value.trade_discount = props.formDefaults.fields?.trade_discount
+      }
       if (props.formDefaults.fields?.payment_mode) {
         fields.value.payment_mode = props.formDefaults.fields.payment_mode
       }
@@ -264,7 +250,7 @@ watch(
   },
 )
 
-fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
+fields.value.tax_type = fields.value.tax_type || 'Tax Exclusive'
 </script>
 
 <template>
@@ -415,7 +401,7 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
           :to-limit="fields.date"
         />
         <div
-          v-if="formDefaults.options?.enable_discount_in_voucher && !isTemplate"
+          v-if="formDefaults.options?.enable_discount_in_voucher"
           class="col-md-6 col-12 row q-col-gutter-md"
         >
           <div data-testid="overall-discount-type-div" :class="['Percent', 'Amount'].includes(fields.discount_type) ? 'col-6' : 'col-12'">
@@ -473,15 +459,12 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
             map-options
             class="w-full"
             label="Tax Type"
-            option-label="label"
-            option-value="value"
             :options="taxTypes"
           />
         </div>
         <div
           v-if="
-            formDefaults.options?.enable_reference_in_voucher
-              && !isTemplate"
+            formDefaults.options?.enable_reference_in_voucher"
           class="col-12 col-md-6"
         >
           <q-input
@@ -528,7 +511,10 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
     @delete-row-err="deleteRowErr"
   />
   <div class="row q-px-lg">
-    <div class="col-12 col-md-4 row">
+    <div
+      v-if="formDefaults.options?.enable_remarks_in_voucher"
+      class="col-12 col-md-4 row"
+    >
       <q-input
         v-model="fields.remarks"
         autogrow
@@ -563,10 +549,19 @@ fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
       />
     </div>
     <div v-if="formDefaults.options?.enable_received_by_in_voucher" class="mt-sm col-12">
-      <q-label class="q-mb-lg">
-        Received By
-      </q-label>
-      <q-editor v-model="fields.received_by" />
+      <q-input
+        v-model="fields.received_by"
+        autogrow
+        class="col-12"
+        data-testid="received-by-input"
+        label="Received By"
+        type="textarea"
+        :error="!!errors?.received_by"
+        :error-message="errors?.received_by"
+        :input-style="{
+          minHeight: '45px',
+        }"
+      />
     </div>
   </div>
 </template>

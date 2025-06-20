@@ -71,7 +71,7 @@ export default {
     ]
 
     const showImportModal = ref(false)
-    const importFileRequiredColumns = ['Invoice Group ID', 'Party', 'Customer Name', 'Address', 'Due Date', 'Discount Type', 'Discount', 'Trade Discount', 'Payment Mode', 'Remarks', 'Is Export', 'Sales Agent ID', 'Status', 'Row Item ID', 'Row Quantity', 'Row Rate', 'Row Unit ID', 'Row Discount Type', 'Row Discount', 'Row Tax Scheme ID', 'Row Description']
+    const importFileRequiredColumns = ['Invoice Group ID', 'Party', 'Customer Name', 'Address', 'Due Date', 'Discount Type', 'Discount', 'Trade Discount', 'Payment Mode', 'Tax Type', 'Reference', 'Remarks', 'Is Export', 'Sales Agent ID', 'Status', 'Row Item Code', 'Row Quantity', 'Row Rate', 'Row Unit ID', 'Row Discount Type', 'Row Discount', 'Row Tax Scheme ID', 'Row Description']
 
     return {
       ...listData,

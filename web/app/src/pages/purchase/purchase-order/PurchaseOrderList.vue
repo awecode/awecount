@@ -138,7 +138,7 @@ export default {
               color="orange"
               label="Edit"
               style="font-size: 12px"
-              :to="`/${$route.params.company}/purchase/purchase-orders/${props.row.id}`"
+              :to="`/${$route.params.company}/purchase/purchase-orders/${props.row.id}/edit`"
             />
           </div>
         </q-td>

@@ -3,6 +3,7 @@ from datetime import date
 from django.core.management.base import BaseCommand
 
 from apps.voucher.models import RecurringVoucherTemplate
+from server.django.apps.voucher.tasks import generate_voucher
 
 
 class Command(BaseCommand):
@@ -14,4 +15,4 @@ class Command(BaseCommand):
             is_active=True, next_date=today
         )
         for template in templates:
-            template.generate_voucher()
+            generate_voucher(template_id=template.id)

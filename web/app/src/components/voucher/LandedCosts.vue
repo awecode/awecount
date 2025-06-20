@@ -2,7 +2,7 @@
 import FormattedNumber from 'src/components/FormattedNumber.vue'
 import { useLandedCosts } from 'src/composables/useLandedCosts'
 import { useLoginStore } from 'src/stores/login-info'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 
 const props = defineProps({
   fields: {
@@ -59,6 +59,22 @@ const handleTaxSchemeChange = (row) => {
     row.tax_scheme = null
   }
 }
+
+// Watch for changes in averageRatePerItem and update fields.value.rows accordingly
+watch(
+  averageRatePerItem,
+  (newAverageRates) => {
+    if (!newAverageRates?.length || !props.fields.rows) return
+
+    // Update each row's rate with the totalCost from averageRatePerItem
+    props.fields.rows.forEach((row, index) => {
+      if (newAverageRates[index] && newAverageRates[index].totalCost) {
+        row.updated_cost_price = newAverageRates[index].totalCost.toNumber()
+      }
+    })
+  },
+  { deep: true },
+)
 </script>
 
 <template>
@@ -147,7 +163,7 @@ const handleTaxSchemeChange = (row) => {
                     label="Tax Scheme"
                     option-label="name"
                     option-value="id"
-                    :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/tax_schemes`"
+                    :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/tax_schemes/`"
                     :options="formDefaults.collections?.tax_schemes"
                     @update:model-value="handleTaxSchemeChange(row)"
                   >
@@ -171,7 +187,7 @@ const handleTaxSchemeChange = (row) => {
                     map-options
                     option-label="name"
                     option-value="id"
-                    :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/landed_cost_credit_accounts`"
+                    :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/landed_cost_credit_accounts/`"
                     :label="`${row.type === 'Customs Valuation Uplift' ? 'Credit Account for Tax' : 'Credit Account'}`"
                     :options="formDefaults.collections?.landed_cost_credit_accounts"
                   >

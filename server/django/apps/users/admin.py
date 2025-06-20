@@ -9,14 +9,11 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
 from apps.company.models import Company, CompanyMember, FiscalYear, Permission
-from apps.ledger.models import handle_company_creation
 from apps.product.helpers import create_book_category
 from apps.product.models import Brand, Item, Unit
 from apps.product.models import Category as InventoryCategory
 from apps.tax.models import TaxScheme
-from apps.voucher.models.voucher_settings import (
-    handle_company_creation as create_settings,
-)
+
 
 from .models import Role, User
 
@@ -29,8 +26,7 @@ admin.site.index_title = "Welcome to Awecount"
 
 def create_company_defaults(modeladmin, request, queryset):
     for company in queryset:
-        handle_company_creation(modeladmin, company=company)
-        create_settings(modeladmin, company=company)
+        company.create_company_defaults()
 
 
 create_company_defaults.short_description = "Create company defaults"

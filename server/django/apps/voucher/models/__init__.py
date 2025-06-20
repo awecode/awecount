@@ -1,5 +1,4 @@
 import datetime
-import random
 import uuid
 from copy import deepcopy
 from decimal import Decimal
@@ -7,20 +6,19 @@ from io import BytesIO
 from typing import Union
 
 from auditlog.registry import auditlog
-from dateutil.relativedelta import relativedelta
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.core.validators import MinValueValidator
-from django.db import models, transaction
-from django.db.models import Prefetch, Q
+from django.db import models
+from django.db.models import Avg, Prefetch, Q
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django_q.models import Schedule
 from django_q.tasks import schedule
-from apps.quotation.models import Quotation
+from awecount.libs.helpers import add_time_to_date
 from weasyprint import HTML
 
 from apps.bank.models import BankAccount, ChequeDeposit
@@ -34,26 +32,23 @@ from apps.ledger.models import (
     get_account,
 )
 from apps.ledger.models import set_transactions as set_ledger_transactions
+from apps.ledger.models.base import Account
 from apps.product.models import (
     Item,
     Unit,
     find_obsolete_transactions,
     set_inventory_transactions,
 )
+from apps.quotation.models import Quotation
 from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.helpers import (
-    deserialize_request,
-    get_relative_file_path,
-    merge_dicts,
-    use_miti,
-)
-from apps.ledger.models.base import Account
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
+
+acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
 
 STATUSES = (
     ("Draft", "Draft"),
@@ -61,6 +56,11 @@ STATUSES = (
     ("Cancelled", "Cancelled"),
     ("Paid", "Paid"),
     ("Partially Paid", "Partially Paid"),
+)
+
+PURCHASE_VOUCHER_TYPES = (
+    ("Purchase/Expense", "Purchase/Expense"),
+    ("Capital Expense", "Capital Expense"),
 )
 
 CHALLAN_STATUSES = (
@@ -97,6 +97,12 @@ TRANSACTION_TYPE_CHOICES = [
     ("Cr", "Cr"),
     ("Dr", "Dr"),
 ]
+
+TAX_TYPES = (
+    ("Tax Exclusive", "Tax Exclusive"),
+    ("Tax Inclusive", "Tax Inclusive"),
+    ("No Tax", "No Tax"),
+)
 
 
 class TransactionFeeConfig:
@@ -437,7 +443,7 @@ class ChallanRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         max_digits=24,
         decimal_places=6,
         default=Decimal("1.000000"),
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
 
@@ -535,6 +541,11 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
         null=True,
         on_delete=models.SET_NULL,
         related_name="sales_invoice",
+    )
+    tax_type = models.CharField(
+        choices=TAX_TYPES,
+        max_length=15,
+        default=TAX_TYPES[0][0],
     )
     # Model key for module based permission
     key = "Sales"
@@ -766,8 +777,8 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                         "company": {
                             "name": self.company.name,
                             "address": self.company.address,
-                            "contact": self.company.contact_no,
-                            "email": ", ".join(self.company.emails),
+                            "contact": self.company.phone,
+                            "email": self.company.email,
                             "tax_identification_number": self.company.tax_identification_number,
                             "currency_code": self.company.currency_code,
                         },
@@ -775,18 +786,23 @@ class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                         "address": self.address,
                         "fiscal_year": self.fiscal_year.name,
                         "date": self.date,
-                        "miti": nepdate.string_from_tuple(nepdate.ad2bs(str(self.date)))
-                        if use_miti(self.company)
-                        else "",
-                        "payment_mode": self.payment_mode.name
-                        if self.payment_mode
-                        else "Credit",
+                        "miti": (
+                            nepdate.string_from_tuple(nepdate.ad2bs(str(self.date)))
+                            if use_miti(self.company)
+                            else ""
+                        ),
+                        "payment_mode": (
+                            self.payment_mode.name if self.payment_mode else "Credit"
+                        ),
                         "rows": [
                             {
                                 "item": {
-                                    "hs_code": row.item.category.hs_code
-                                    if row.item.category and row.item.category.hs_code
-                                    else "",
+                                    "hs_code": (
+                                        row.item.category.hs_code
+                                        if row.item.category
+                                        and row.item.category.hs_code
+                                        else ""
+                                    ),
                                     "name": row.item.name,
                                 },
                                 "unit": row.unit.name,
@@ -885,18 +901,6 @@ RECURRING_TEMPLATE_TYPES = (
 )
 
 
-def add_time_to_date(date, amount, time_unit):
-    if time_unit == "Day(s)":
-        new_date = date + datetime.timedelta(days=amount)
-    elif time_unit == "Week(s)":
-        new_date = date + datetime.timedelta(weeks=amount)
-    elif time_unit == "Month(s)":
-        new_date = date + relativedelta(months=amount)
-    elif time_unit == "Year(s)":
-        new_date = date + relativedelta(years=amount)
-    return new_date
-
-
 class RecurringVoucherTemplate(CompanyBaseModel):
     title = models.CharField(max_length=255)
     type = models.CharField(max_length=25, choices=RECURRING_TEMPLATE_TYPES)
@@ -919,18 +923,24 @@ class RecurringVoucherTemplate(CompanyBaseModel):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
         self.next_date = self.get_next_date()
-        if self.pk:
+
+        if not is_new:
             Schedule.objects.filter(name=f"recurring_voucher_{self.pk}").delete()
+
         if self.is_active and self.next_date:
             schedule(
-                "apps.voucher.models.RecurringVoucherTemplate.generate_voucher",
-                self,
+                "apps.voucher.tasks.generate_voucher",
+                self.id,
                 name=f"recurring_voucher_{self.pk}",
                 next_run=self.next_date,
                 schedule_type="O",
             )
-        super().save(*args, **kwargs)
+
+        super().save(update_fields=["next_date"])
 
     def get_next_date(self):
         if not self.is_active:
@@ -950,82 +960,6 @@ class RecurringVoucherTemplate(CompanyBaseModel):
             next_date = self.start_date
         return next_date
 
-    @transaction.atomic
-    def generate_voucher(self):
-        invoice_data = deepcopy(self.invoice_data)
-
-        request = deserialize_request(
-            {
-                "user": self.user,
-                "company": self.company,
-                "company_id": self.company.id,
-                "user_id": self.user.id,
-                "data": invoice_data,
-            }
-        )
-        if self.type == "Sales Voucher":
-            from apps.voucher.serializers.sales import SalesVoucherCreateSerializer
-
-            invoice_data["date"] = self.next_date
-            invoice_data["due_date"] = add_time_to_date(
-                self.next_date, self.due_date_after, self.due_date_after_time_unit
-            )
-            invoice_data["status"] = "Issued"
-            serializer = SalesVoucherCreateSerializer(
-                data=invoice_data,
-                context={
-                    "request": request,
-                },
-            )
-            serializer.is_valid(raise_exception=True)
-            voucher = serializer.save()
-        else:
-            from apps.voucher.serializers.purchase import (
-                PurchaseVoucherCreateSerializer,
-            )
-
-            invoice_data["date"] = self.next_date
-            invoice_data["due_date"] = add_time_to_date(
-                self.next_date, self.due_date_after, self.due_date_after_time_unit
-            )
-            invoice_data["status"] = "Issued"
-            invoice_data["voucher_no"] = "auto-{}-{}-{}".format(
-                self.id, self.no_of_vouchers_created + 1, random.randint(1000, 9999)
-            )
-            voucher = PurchaseVoucherCreateSerializer(
-                data=invoice_data,
-                context={
-                    "request": request,
-                },
-            )
-            voucher.is_valid(raise_exception=True)
-            voucher = voucher.save()
-
-        if self.send_email:
-            success_message = f"""
-            <html>
-                <body>
-                    <h1>Recurring {self.type} Generated Successfully</h1>
-                    <p>Dear {self.user.full_name},</p>
-                    <p>We are pleased to inform you that the recurring {self.type.lower()} titled <strong>{self.title}</strong> has been successfully generated.</p>
-                <p>You can view the generated voucher in the dashboard. If you encounter any issues, please contact us.</p>
-                </body>
-            </html>
-            """
-
-            email = EmailMessage(
-                subject="Recurring Voucher Generated Successfully",
-                body=success_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[self.user.email],
-            )
-            email.content_subtype = "html"
-            email.send()
-
-        self.no_of_vouchers_created += 1
-        self.last_generated = self.next_date
-        self.save()
-
 
 class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     voucher = models.ForeignKey(
@@ -1038,7 +972,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
         max_digits=24,
         decimal_places=6,
         default=Decimal("1.000000"),
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(
         Unit,
@@ -1152,7 +1086,7 @@ class PurchaseOrderRow(TransactionModel, InvoiceRowModel):
         max_digits=24,
         decimal_places=6,
         default=Decimal("1.000000"),
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
 
@@ -1199,7 +1133,19 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     )
 
     remarks = models.TextField(blank=True, null=True)
+    type = models.CharField(
+        max_length=50,
+        choices=PURCHASE_VOUCHER_TYPES,
+        default=PURCHASE_VOUCHER_TYPES[0][0],
+    )
     is_import = models.BooleanField(default=False)
+    import_country = models.CharField(
+        max_length=100, blank=True, null=True, help_text="Country of import"
+    )
+    import_date = models.DateField(blank=True, null=True, help_text="Date of import")
+    import_document_number = models.CharField(
+        max_length=100, blank=True, null=True, help_text="Document number of import"
+    )
 
     total_amount = models.DecimalField(
         max_digits=24,
@@ -1219,6 +1165,55 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     purchase_orders = models.ManyToManyField(
         PurchaseOrder, related_name="purchases", blank=True
     )
+
+    meta_fixed_assets_tax = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+
+    meta_import_tax_excl_fixed_assets = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+
+    meta_fixed_assets_taxable = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+
+    meta_import_taxable_excl_fixed_assets = models.DecimalField(
+        max_digits=24,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.000000"))],
+    )
+
+    def tax_till_declaration(self):
+        landed_cost_rows = self.landed_cost_rows.all()
+        sum = 0
+        total_tax_on_purchase = 0
+        for row in landed_cost_rows:
+            if row.type == "Tax on Purchase":
+                total_tax_on_purchase += row.amount
+        for row in landed_cost_rows:
+            if row.type == "Customs Declaration":
+                sum += row.tax_amount
+                break
+            elif row.type == "Tax on Purchase":
+                continue
+            else:
+                sum += row.tax_amount
+        return sum + total_tax_on_purchase
 
     @property
     def item_names(self):
@@ -1250,6 +1245,157 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     @property
     def purchase_order_numbers(self):
         return self.purchase_orders.values_list("voucher_no", flat=True)
+
+    def generate_meta(self, update_row_data=False, prefetched_rows=False, save=True):
+        dct = {
+            "sub_total": 0,
+            "sub_total_after_row_discounts": 0,
+            "discount": 0,
+            "non_taxable": 0,
+            "taxable": 0,
+            "tax": 0,
+            "fixed_assets_tax": 0,
+            "import_tax_excl_fixed_assets": 0,
+            "fixed_assets_taxable": 0,
+            "import_taxable_excl_fixed_assets": 0,
+            "fixed_assets_sub_total": 0,
+        }
+        rows_data = []
+        row_objs = {}
+        # bypass prefetch cache using filter
+        rows = self.rows.all() if prefetched_rows else self.rows.filter()
+        has_import_tax = self.landed_cost_rows.filter(type="Tax on Purchase").exists()
+        for row in rows:
+            row_data = dict(
+                id=row.id,
+                quantity=row.quantity,
+                rate=row.rate,
+                total=row.rate * row.quantity,
+                is_fixed_asset=self.type == "Capital Expense" or row.item.fixed_asset,
+                row_discount=row.get_discount()[0] if row.has_discount() else 0,
+            )
+            row_data["gross_total"] = row_data["total"] - row_data["row_discount"]
+            row_data["tax_rate"] = row.tax_scheme.rate if row.tax_scheme else 0
+            dct["sub_total_after_row_discounts"] += row_data["gross_total"]
+            dct["sub_total"] += row_data["total"]
+            if row_data["is_fixed_asset"]:
+                dct["fixed_assets_sub_total"] += row_data["total"]
+            rows_data.append(row_data)
+            row_objs[row.id] = row
+
+        voucher_discount_data = self.get_voucher_discount_data()
+
+        for row_data in rows_data:
+            if voucher_discount_data["type"] == "Percent":
+                dividend_discount = (
+                    row_data["gross_total"] * voucher_discount_data["value"] / 100
+                )
+            elif voucher_discount_data["type"] == "Amount":
+                dividend_discount = (
+                    row_data["gross_total"]
+                    * voucher_discount_data["value"]
+                    / dct["sub_total_after_row_discounts"]
+                )
+            else:
+                dividend_discount = 0
+            row_data["dividend_discount"] = dividend_discount
+            row_data["pure_total"] = row_data["gross_total"] - dividend_discount
+            row_data["tax_amount"] = row_data["tax_rate"] * row_data["pure_total"] / 100
+            total_row_discount = (
+                row_data["row_discount"] + row_data["dividend_discount"]
+            )
+            dct["discount"] += total_row_discount
+
+            if has_import_tax is False:
+                dct["tax"] += row_data["tax_amount"]
+                if row_data["tax_amount"]:
+                    dct["taxable"] += row_data["pure_total"]
+                    if row_data["is_fixed_asset"]:
+                        dct["fixed_assets_tax"] += row_data["tax_amount"]
+                        dct["fixed_assets_taxable"] += row_data["pure_total"]
+                    # elif has_import_tax:
+                    #     dct["import_tax_excl_fixed_assets"] += row_data["tax_amount"]
+                    #     dct["import_taxable_excl_fixed_assets"] += row_data["pure_total"]
+                else:
+                    dct["non_taxable"] += row_data["pure_total"]
+                    # else:
+                    #     dct["taxable"] += row_data["pure_total"]
+                    #     if row_data["is_fixed_asset"]:
+                    #         dct["fixed_assets_taxable"] += row_data["pure_total"]
+                    #     else:
+                    #         dct["import_taxable_excl_fixed_assets"] += row_data[
+                    #             "pure_total"
+                    #         ]
+
+            if update_row_data:
+                row_obj = row_objs[row_data["id"]]
+                row_obj.discount_amount = total_row_discount
+                row_obj.tax_amount = row_data["tax_amount"]
+                row_obj.net_amount = row_data["pure_total"] + row_data["tax_amount"]
+                row_obj.save()
+
+        dct["grand_total"] = dct["sub_total"] - dct["discount"] + dct["tax"]
+
+        for key, val in dct.items():
+            dct[key] = round(val, 2)
+
+        if has_import_tax:
+            fixed_assets_ratio = dct["fixed_assets_sub_total"] / dct["sub_total"]
+            dct["tax"] = self.tax_till_declaration()
+            dct["fixed_assets_tax"] = dct["tax"] * fixed_assets_ratio
+            dct["import_tax_excl_fixed_assets"] = dct["tax"] - dct["fixed_assets_tax"]
+            average_tax_on_purchase = (
+                self.landed_cost_rows.filter(type="Tax on Purchase").aggregate(
+                    Avg("value")
+                )["value__avg"]
+                or 0
+            )
+            dct["fixed_assets_taxable"] = (
+                dct["fixed_assets_tax"] * 100 / average_tax_on_purchase
+            )
+            dct["import_taxable_excl_fixed_assets"] = (
+                dct["import_tax_excl_fixed_assets"] * 100 / average_tax_on_purchase
+            )
+            dct["taxable"] = dct["taxable"] + dct["import_taxable_excl_fixed_assets"]
+
+            dct["taxable"] += dct["fixed_assets_taxable"]
+
+        if save:
+            self.meta_sub_total = dct["sub_total"]
+            self.meta_sub_total_after_row_discounts = dct[
+                "sub_total_after_row_discounts"
+            ]
+            self.meta_discount = dct["discount"]
+            self.meta_non_taxable = dct["non_taxable"]
+            self.meta_taxable = dct["taxable"]
+            self.meta_tax = dct["tax"]
+            self.meta_fixed_assets_tax = dct["fixed_assets_tax"]
+            self.meta_import_tax_excl_fixed_assets = dct["import_tax_excl_fixed_assets"]
+            self.meta_fixed_assets_taxable = dct["fixed_assets_taxable"]
+            self.meta_import_taxable_excl_fixed_assets = dct[
+                "import_taxable_excl_fixed_assets"
+            ]
+            self.save()
+
+        return dct
+
+    def get_voucher_meta(self, update_row_data=False, prefetched_rows=False):
+        if self.meta_tax is None:
+            self.generate_meta(save=True)
+        dct = {
+            "sub_total": self.meta_sub_total,
+            "sub_total_after_row_discounts": self.meta_sub_total_after_row_discounts,
+            "discount": self.meta_discount,
+            "non_taxable": self.meta_non_taxable,
+            "taxable": self.meta_taxable,
+            "tax": self.meta_tax,
+            "fixed_assets_tax": self.meta_fixed_assets_tax,
+            "import_tax_excl_fixed_assets": self.meta_import_tax_excl_fixed_assets,
+            "fixed_assets_taxable": self.meta_fixed_assets_taxable,
+            "import_taxable_excl_fixed_assets": self.meta_import_taxable_excl_fixed_assets,
+        }
+        dct["grand_total"] = dct["sub_total"] - dct["discount"] + dct["tax"]
+        return dct
 
     def find_invalid_transaction(self):
         for row in self.rows.filter(
@@ -1348,7 +1494,13 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                     entries.append(["dr", row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
 
-            entries.append(["dr", item.dr_account, purchase_value])
+            dr_account = (
+                item.get_or_create_capital_expense_account()
+                if self.type == "Capital Expense"
+                else item.dr_account
+            )
+
+            entries.append(["dr", dr_account, purchase_value])
             entries.append(["cr", cr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
@@ -1380,7 +1532,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
                     if landed_cost.tax_scheme and landed_cost.tax_scheme.rate:
                         credit_account = landed_cost.credit_account
                         if not credit_account:
-                            raise ValidationError("Credit account is required for customs valuation uplift when tax is applied")
+                            raise ValidationError(
+                                "Credit account is required for customs valuation uplift when tax is applied"
+                            )
                         account = landed_cost.tax_scheme.receivable
                         entries.append(["dr", account, landed_cost.tax_amount])
                         entries.append(
@@ -1415,11 +1569,17 @@ class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
 
                     if landed_cost.tax_scheme:
                         row_tax_amount = (
-                            landed_cost.tax_scheme.rate * landed_cost.amount / Decimal(100)
+                            landed_cost.tax_scheme.rate
+                            * landed_cost.amount
+                            / Decimal(100)
                         )
                         if row_tax_amount:
                             entries.append(
-                                ["dr", landed_cost.tax_scheme.receivable, row_tax_amount]
+                                [
+                                    "dr",
+                                    landed_cost.tax_scheme.receivable,
+                                    row_tax_amount,
+                                ]
                             )
 
                     entries.append(
@@ -1454,7 +1614,7 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     quantity = models.DecimalField(
         max_digits=24,
         decimal_places=6,
-        validators=[MinValueValidator(Decimal("0.000000"))],
+        validators=[MinValueValidator(Decimal("0.000001"))],
     )
     unit = models.ForeignKey(
         Unit,
@@ -1902,6 +2062,13 @@ class DebitNote(TransactionModel, InvoiceModel, CompanyBaseModel):
             sub_total_after_row_discounts
         )
 
+        invoices = self.invoices.all()
+
+        invoice_types = set(invoice.type for invoice in invoices)
+        if len(invoice_types) > 1:
+            raise ValidationError("All invoices must be of the same type for a debit note.")
+        invoice_type = invoices[0].type
+
         # filter bypasses rows cached by prefetching
         for row in self.rows.filter().select_related(
             "tax_scheme",
@@ -1943,7 +2110,13 @@ class DebitNote(TransactionModel, InvoiceModel, CompanyBaseModel):
                     entries.append(["cr", row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
 
-            entries.append(["cr", item.dr_account, purchase_value])
+            dr_account = (
+                item.get_or_create_capital_expense_account()
+                if invoice_type == "Capital Expense"
+                else item.dr_account
+            )
+
+            entries.append(["cr", dr_account, purchase_value])
 
             entries.append(["dr", dr_acc, row_total])
 
@@ -2221,6 +2394,8 @@ class Import(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+# NOTE: Updating these choices and ordering will break its account's code and system_code
+# which is created in Company.create_company_defaults(), so be careful when updating these.
 class LandedCostRowType(models.TextChoices):
     DUTY = "Duty"
     LABOR = "Labor"

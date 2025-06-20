@@ -179,6 +179,9 @@ export default {
               <q-checkbox v-model="fields.enable_discount_in_voucher" label="Enable Discount in voucher?" />
             </div>
             <div>
+              <q-checkbox v-model="fields.enable_type_in_voucher" label="Enable Type in voucher?" />
+            </div>
+            <div>
               <q-checkbox v-model="fields.enable_purchase_order_import" label="Enable Purchase Orders Import?" />
             </div>
             <div>
@@ -205,6 +208,11 @@ export default {
               <q-checkbox v-model="fields.enable_landed_cost" label="Enable Landed Cost?" />
             </div>
             <q-card v-if="fields.enable_landed_cost" class="q-mt-lg">
+              <q-card-section>
+                <div>
+                  <q-checkbox v-model="fields.update_cost_price_with_landed_cost" label="Update Cost Price with Landed Cost?" />
+                </div>
+              </q-card-section>
               <q-card-section>
                 <div class="text-grey-7 q-mb-md">
                   <q-icon name="info" size="sm" />

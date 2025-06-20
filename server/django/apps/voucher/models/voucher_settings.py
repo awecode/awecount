@@ -1,13 +1,9 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.dispatch import receiver
 
 from apps.bank.models import BankAccount
 from apps.company.models import Company
-from apps.company.signals import company_created
-from apps.product.models import InventorySetting
 from apps.voucher.models import PaymentMode
-from apps.quotation.models import QuotationSetting
 
 
 class SalesSetting(models.Model):
@@ -22,6 +18,7 @@ class SalesSetting(models.Model):
     show_trade_discount_in_row = models.BooleanField(default=False)
     is_trade_discount_in_row = models.BooleanField(default=False)
     enable_due_date_in_voucher = models.BooleanField(default=False)
+    enable_remarks_in_voucher = models.BooleanField(default=True)
     enable_reference_in_voucher = models.BooleanField(default=False)
     enable_received_by_in_voucher = models.BooleanField(default=False)
     enable_discount_in_voucher = models.BooleanField(default=True)
@@ -72,6 +69,7 @@ class SalesSetting(models.Model):
             "enable_row_description": self.enable_row_description,
             "is_trade_discount_in_row": self.is_trade_discount_in_row,
             "enable_due_date_in_voucher": self.enable_due_date_in_voucher,
+            "enable_remarks_in_voucher": self.enable_remarks_in_voucher,
             "enable_reference_in_voucher": self.enable_reference_in_voucher,
             "enable_received_by_in_voucher": self.enable_received_by_in_voucher,
             "enable_discount_in_voucher": self.enable_discount_in_voucher,
@@ -100,6 +98,7 @@ class PurchaseSetting(models.Model):
     enable_due_date_in_voucher = models.BooleanField(default=False)
     enable_empty_voucher_no = models.BooleanField(default=False)
     enable_discount_in_voucher = models.BooleanField(default=True)
+    enable_type_in_voucher = models.BooleanField(default=False)
 
     # Required fields settings
     require_item_code = models.BooleanField(default=False)
@@ -124,6 +123,7 @@ class PurchaseSetting(models.Model):
     rate_change_alert_emails = ArrayField(models.EmailField(), default=list, blank=True)
 
     enable_landed_cost = models.BooleanField(default=False)
+    update_cost_price_with_landed_cost = models.BooleanField(default=False)
     landed_cost_accounts = models.JSONField(default=dict, blank=True)
 
     def update(self, update_data):
@@ -166,6 +166,7 @@ class PurchaseSetting(models.Model):
             "enable_due_date_in_voucher": self.enable_due_date_in_voucher,
             "enable_discount_in_voucher": self.enable_discount_in_voucher,
             "enable_purchase_order_import": self.enable_purchase_order_import,
+            "enable_type_in_voucher": self.enable_type_in_voucher,
             "require_item_code": self.require_item_code,
             "require_item_hs_code": self.require_item_hs_code,
             "enable_landed_costs": self.enable_landed_cost,
@@ -174,12 +175,3 @@ class PurchaseSetting(models.Model):
 
     def __str__(self):
         return "Purchase Setting - {}".format(self.company.name)
-
-
-@receiver(company_created)
-def handle_company_creation(sender, **kwargs):
-    company = kwargs.get("company")
-    SalesSetting.objects.create(company=company)
-    QuotationSetting.objects.create(company=company)
-    PurchaseSetting.objects.get_or_create(company=company)
-    InventorySetting.objects.create(company=company)

@@ -60,8 +60,10 @@ const store = useLoginStore()
                 : ''
             }}
           </h1>
-          <div>{{ store.companyInfo.address }}</div>
-          <div>
+          <div v-if="store.companyInfo.address">
+            {{ store.companyInfo.address }}
+          </div>
+          <div v-if="store.companyInfo.tax_identification_number">
             Tax Reg. No.
             <strong>
               {{ store.companyInfo.tax_identification_number }}

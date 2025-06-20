@@ -26,10 +26,10 @@ const onSubmitClick = async (status, redirect) => {
   fields.value.status = status
 
   const taxType = fields.value.tax_type
-  // if fields has tax_type as tax_inclusive then decrease the tax_amount from the total amount
+  // if fields has tax_type as Tax Inclusive then decrease the tax_amount from the total amount
   // find
 
-  if (taxType === 'tax_inclusive') {
+  if (taxType === 'Tax Inclusive') {
     fields.value.rows.forEach((row) => {
       if (row.tax_scheme_id) {
         const taxObj = formDefaults.value.value.collections.tax_schemes.results.find(tax => tax.id === row.tax_scheme_id)
@@ -55,20 +55,7 @@ const onSubmitClick = async (status, redirect) => {
   }
 }
 
-const taxTypes = [
-  {
-    label: 'No Tax',
-    value: 'no_tax',
-  },
-  {
-    label: 'Tax Exclusive',
-    value: 'tax_exclusive',
-  },
-  {
-    label: 'Tax Inclusive',
-    value: 'tax_inclusive',
-  },
-]
+const taxTypes = ['No Tax', 'Tax Exclusive', 'Tax Inclusive']
 
 const importChallanModal = ref(false)
 
@@ -119,7 +106,7 @@ watch(
     } else {
       fields.value.date = today
     }
-    fields.value.tax_type = fields.value.tax_type || 'tax_exclusive'
+    fields.value.tax_type = fields.value.tax_type || 'Tax Exclusive'
   },
 )
 
@@ -250,8 +237,6 @@ watch(
                 map-options
                 class="w-full"
                 label="Tax Type"
-                option-label="label"
-                option-value="value"
                 :options="taxTypes"
               />
             </div>

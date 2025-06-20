@@ -170,7 +170,7 @@ const totalDataComputed = computed(() => {
   modalValue.value.forEach((item, index) => {
     let currentTaxObj = null
 
-    if (item.tax_scheme_id && taxOptions.value.length && props.taxType !== 'no_tax') {
+    if (item.tax_scheme_id && taxOptions.value.length && props.taxType !== 'No Tax') {
       const taxIndex = taxOptions.value.findIndex(taxItem => taxItem.id === item.tax_scheme_id)
       if (taxIndex > -1) {
         currentTaxObj = taxOptions.value[taxIndex]
@@ -178,7 +178,7 @@ const totalDataComputed = computed(() => {
     }
 
     let updatedRate = new Decimal(item.rate || 0)
-    if (props.taxType === 'tax_inclusive' && currentTaxObj) {
+    if (props.taxType === 'Tax Inclusive' && currentTaxObj) {
       updatedRate = new Decimal(item.rate).div(new Decimal(1).add(new Decimal(currentTaxObj.rate).div(100)))
     }
 
@@ -191,7 +191,7 @@ const totalDataComputed = computed(() => {
         data.sameScheme = currentTaxObj.id
         data.taxObj = currentTaxObj
       } else if (data.sameScheme !== currentTaxObj?.id && currentTaxObj.rate !== 0) {
-        data.sameScheme = -1
+        data.sameScheme = null
       }
     }
 

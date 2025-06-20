@@ -13,6 +13,7 @@ from apps.voucher.models import (
     PurchaseDiscount,
     PurchaseVoucher,
     PurchaseVoucherRow,
+    RecurringVoucherTemplate,
     SalesAgent,
     SalesDiscount,
     SalesVoucher,
@@ -278,3 +279,22 @@ class LandedCostRowAdmin(admin.ModelAdmin):
 
 
 admin.site.register(LandedCostRow, LandedCostRowAdmin)
+
+
+class RecurringVoucherTemplateAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "company",
+        "type",
+        "is_active",
+        "next_date",
+        "no_of_vouchers_created",
+    )
+    search_fields = (
+        "title",
+        "company__name",
+        "company__tax_identification_number",
+    )
+    list_filter = ("company", "type", "is_active")
+
+admin.site.register(RecurringVoucherTemplate, RecurringVoucherTemplateAdmin)

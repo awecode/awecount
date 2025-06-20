@@ -37,6 +37,7 @@ from apps.product.serializers import (
     ItemPOSSerializer,
     ItemPurchaseSerializer,
     ItemSalesSerializer,
+    UnitSerializer,
 )
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
@@ -112,7 +113,6 @@ from awecount.libs.helpers import (
     get_origin,
     get_verification_hash,
     serialize_request,
-    upload_file,
 )
 from awecount.libs.mixins import (
     CancelCreditOrDebitNoteMixin,
@@ -195,6 +195,11 @@ def send_sales_voucher_import_completion_email(
         <p>Thank you for using our service. If you need any further assistance, don't hesitate to contact us.</p>
         """
 
+    Import.objects.filter(
+        company=request.company, type="Sales Voucher", status="Pending"
+    ).update(status="Failed" if error_message else "Completed")
+
+
     email = EmailMessage(
         subject=subject,
         body=message,
@@ -225,6 +230,10 @@ def send_purchase_voucher_import_completion_email(
         <p>You can view and manage these invoices in your <a href="{origin}/purchase-voucher/list/">Purchase Voucher List</a>.</p>
         <p>Thank you for using our service. If you need any further assistance, don't hesitate to contact us.</p>
         """
+    
+    Import.objects.filter(
+        company=request.company, type="Purchase Voucher", status="Pending"
+    ).update(status="Failed" if error_message else "Completed")
 
     email = EmailMessage(
         subject=subject,
@@ -240,7 +249,7 @@ def import_sales_vouchers(request_obj, file):
     request = deserialize_request(request_obj)
     wb = openpyxl.load_workbook(file)
     sheet = wb.worksheets[0]
-    rows = list(sheet.iter_rows(values_only=True))
+    rows = [row for row in sheet.iter_rows(values_only=True) if any(cell is not None and str(cell).strip() != "" for cell in row)]
 
     required_fields = [
         "Invoice Group ID",
@@ -252,11 +261,13 @@ def import_sales_vouchers(request_obj, file):
         "Discount",
         "Trade Discount",
         "Payment Mode",
+        "Tax Type",
+        "Reference",
         "Remarks",
         "Is Export",
         "Sales Agent ID",
         "Status",
-        "Row Item ID",
+        "Row Item Code",
         "Row Quantity",
         "Row Rate",
         "Row Unit ID",
@@ -272,15 +283,24 @@ def import_sales_vouchers(request_obj, file):
             error_message = f"Column {i + 1} should be {required_fields[i]}"
             break
 
-    if error_message:
-        send_sales_voucher_import_completion_email(request, error_message=error_message)
-        return
-
+    row_codes = set()
     data = rows[1:]
     invoices = {}
 
+    row_codes = set(row[15] for row in data)
+    row_code_items = Item.objects.filter(code__in=row_codes).values_list("code", "id")
+    row_code_items = dict(row_code_items)
+    if len(row_code_items) != len(row_codes):
+        missing_codes = row_codes - set(row_code_items.keys())
+        error_message = f"Item with code(s) {', '.join(str(code) for code in missing_codes)} not found."
+
+
     for row in data:
         invoice_id = row[0]
+        if not invoice_id:
+            error_message = "Invoice Group ID is required."
+            break
+
         if invoice_id not in invoices:
             invoices[invoice_id] = {
                 "date": timezone.now().date(),
@@ -292,26 +312,33 @@ def import_sales_vouchers(request_obj, file):
                 "discount": row[6] or 0,
                 "trade_discount": row[7],
                 "payment_mode": row[8],
-                "remarks": row[9],
-                "is_export": row[10],
-                "sales_agent": row[11],
+                "tax_type": row[9],
+                "reference": row[10],
+                "remarks": row[11],
+                "is_export": row[12],
+                "sales_agent": row[13],
                 "rows": [],
-                "status": row[12],
+                "status": row[14],
             }
         invoices[invoice_id]["rows"].append(
             {
-                "item_id": row[13],
-                "quantity": row[14],
-                "rate": row[15],
-                "unit_id": row[16],
-                "discount_type": row[17],
-                "discount": row[18],
-                "tax_scheme_id": row[19],
-                "description": row[20],
+                "item_id": row_code_items.get(row[15]),
+                "quantity": row[16],
+                "rate": row[17],
+                "unit_id": row[18],
+                "discount_type": row[19],
+                "discount": row[20],
+                "tax_scheme_id": row[21],
+                "description": row[22],
             }
         )
+    
+    if error_message:
+        send_sales_voucher_import_completion_email(request, error_message=error_message)
+        return
 
     new_invoices = invoices.items()
+
 
     try:
         with transaction.atomic():
@@ -322,6 +349,8 @@ def import_sales_vouchers(request_obj, file):
                 serializer.is_valid(raise_exception=True)
                 instance = serializer.create(validated_data=serializer.validated_data)
                 invoice_data["id"] = instance.id
+    except ValidationError as e:
+        error_message = e.message
     except RESTValidationError as e:
         error_message = e.detail
     except SuspiciousOperation as e:
@@ -330,10 +359,6 @@ def import_sales_vouchers(request_obj, file):
     send_sales_voucher_import_completion_email(
         request, new_invoices=new_invoices, error_message=error_message
     )
-
-    Import.objects.filter(
-        company=request.company, type="Sales Voucher", status="Pending"
-    ).update(status="Failed" if error_message else "Completed")
 
 
 def import_purchase_vouchers(request_obj, file):
@@ -422,6 +447,8 @@ def import_purchase_vouchers(request_obj, file):
                 instance = serializer.create(validated_data=serializer.validated_data)
                 invoice_data["id"] = instance.id
 
+    except ValidationError as e:
+        error_message = e.message
     except RESTValidationError as e:
         error_message = e.detail
     except SuspiciousOperation as e:
@@ -431,9 +458,6 @@ def import_purchase_vouchers(request_obj, file):
         request, new_invoices=new_invoices, error_message=error_message
     )
 
-    Import.objects.filter(
-        company=request.company, type="Purchase Voucher", status="Pending"
-    ).update(status="Failed" if error_message else "Completed")
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -443,7 +467,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     row = SalesVoucherRow
     collections = [
         ("parties", Party, PartyMinSerializer, True, ["name"]),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         ("discounts", SalesDiscount, SalesDiscountMinSerializer, False),
         (
             "bank_accounts",
@@ -581,9 +605,11 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return data
 
     @action(detail=True)
-    def details(self, request, pk, *args, **kwargs):
+    def details(self, request, pk, company_slug, *args, **kwargs):
         details = self.get_voucher_details(pk)
-        hash = get_verification_hash("sales-invoice-{}".format(pk))
+        hash = get_verification_hash(
+            "sales-invoice-{}".format({"{}-{}".format(pk, company_slug)})
+        )
         return Response(
             {
                 **details,
@@ -592,11 +618,16 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         )
 
     @action(detail=True, permission_classes=[], url_path="details-by-hash")
-    def details_by_hash(self, request, pk):
+    def details_by_hash(self, request, pk, company_slug, *args, **kwargs):
         hash = request.GET.get("hash")
         if not hash:
             raise AuthenticationFailed("No hash provided")
-        if check_verification_hash(hash, "sales-invoice-{}".format(pk)) is False:
+        if (
+            check_verification_hash(
+                hash, "sales-invoice-{}".format("{}-{}".format(pk, company_slug))
+            )
+            is False
+        ):
             raise AuthenticationFailed("Invalid hash")
         obj = SalesVoucher.objects.get(pk=pk)
         self.request.company = obj.company
@@ -605,7 +636,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return Response({**details, "company": CompanySerializer(obj.company).data})
 
     @action(detail=True, url_path="email-invoice", methods=["POST"])
-    def email_invoice(self, request, pk):
+    def email_invoice(self, request, pk, *args, **kwargs):
         serializer = EmailInvoiceRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         obj = self.get_object()
@@ -615,6 +646,27 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             **serializer.validated_data,
         )
         return Response({})
+
+    @action(detail=True, url_path="create-a-copy", methods=["POST"])
+    def create_a_copy(self, request, pk, *args, **kwargs):
+        """
+        Create a copy of the Sales Voucher
+        """
+        obj = self.get_object()
+        data = SalesVoucherCreateSerializer(obj).data
+        data["voucher_no"] = None
+        data["status"] = "Draft"
+        data["date"] = timezone.now().date()
+        data["payment_date"] = None
+        data["print_count"] = 0
+        data["user"] = request.user
+        data["quotation"] = None
+        if obj.due_date:
+            data["due_date"] = data["date"] + (obj.due_date - obj.date)
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     def get_defaults(self, request=None, *args, **kwargs):
         return {
@@ -768,7 +820,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return qs_to_xls(params)
 
     @action(detail=False, url_path="import", methods=["POST"])
-    def import_xls(self, request):
+    def import_xls(self, request, *args, **kwargs):
         serializer = ImportRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         xls_file = serializer.validated_data.get("file")
@@ -808,7 +860,7 @@ class RecurringVoucherTemplateViewSet(CRULViewSet):
 
     collections = [
         ("parties", Party, PartyMinSerializer, True, ["name"]),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "bank_accounts",
             BankAccount,
@@ -844,7 +896,21 @@ class RecurringVoucherTemplateViewSet(CRULViewSet):
                 )
             elif type == "Purchase Voucher":
                 self.collections.append(
-                    ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False)
+                    ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
+                )
+                self.collections.append(
+                      (
+                        "landed_cost_credit_accounts",
+                        Account.objects.filter(
+                            category__name__in=["Cash Accounts", "Bank Accounts", "Suppliers"]
+                        ),
+                        GenericSerializer,
+                        True,
+                        ["name"],
+                    )
+                )
+                self.collections.append(    
+                    ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, True, ["name"]),
                 )
         return super().get_collections(request)
 
@@ -1027,7 +1093,7 @@ class PurchaseVoucherViewSet(
     collections = (
         ("parties", Party, PartyMinSerializer, True, ["name"]),
         ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "bank_accounts",
             BankAccount,
@@ -1077,9 +1143,12 @@ class PurchaseVoucherViewSet(
         voucher_no = request.data.get("voucher_no", None)
         party_id = request.data.get("party", None)
         fiscal_year = request.company.current_fiscal_year
-        if self.model.objects.filter(
-            voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
-        ).exists():
+        if (
+            voucher_no
+            and self.model.objects.filter(
+                voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
+            ).exists()
+        ):
             raise ValidationError(
                 {
                     "voucher_no": [
@@ -1094,7 +1163,8 @@ class PurchaseVoucherViewSet(
         voucher_no = request.data.get("voucher_no", None)
         party_id = request.data.get("party", None)
         fiscal_year = request.company.current_fiscal_year
-        if (
+
+        if voucher_no and (
             self.model.objects.filter(
                 voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
             )
@@ -1235,7 +1305,7 @@ class PurchaseVoucherViewSet(
         return qs_to_xls(params)
 
     @action(detail=False, url_path="import", methods=["POST"])
-    def import_xls(self, request):
+    def import_xls(self, request, *args, **kwargs):
         serializer = ImportRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         xls_file = serializer.validated_data.get("file")
@@ -1261,6 +1331,28 @@ class PurchaseVoucherViewSet(
 
         return Response({})
 
+    @action(detail=True, url_path="create-a-copy", methods=["POST"])
+    def create_a_copy(self, request, pk, *args, **kwargs):
+        """
+        Create a copy of the Purchase Voucher
+        """
+        obj = self.get_object()
+        data = PurchaseVoucherCreateSerializer(obj).data
+        data["status"] = "Draft"
+        data["voucher_no"] = None
+        data["user"] = request.user
+        for row in data["rows"]:
+            row.pop("id")
+        for row in data["landed_cost_rows"]:
+            row.pop("id")
+        data["date"] = timezone.now().date()
+        if obj.due_date:
+            data["due_date"] = obj.due_date + (obj.date - data["date"])
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
 
 class CreditNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
     serializer_class = CreditNoteCreateSerializer
@@ -1284,7 +1376,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
 
     collections = (
         ("discounts", SalesDiscount, SalesDiscountSerializer, False),
-        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "bank_accounts",
             BankAccount,
@@ -1449,7 +1541,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
 
     collections = (
         ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
-        ("units", Unit),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         ("bank_accounts", BankAccount),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         ("bank_accounts", BankAccount, BankAccountSerializer),
@@ -2083,20 +2175,46 @@ class PurchaseBookViewSet(
             for idx, row in enumerate(data):
                 taxable = row.get("voucher_meta").get("taxable")
                 non_taxable = row.get("voucher_meta").get("non_taxable")
+
+                fixed_assets_taxable = row.get("voucher_meta").get("fixed_assets_taxable") or 0
+                import_taxable_excl_fixed_assets = row.get("voucher_meta").get("import_taxable_excl_fixed_assets") or 0
+                capital_purchase_taxable = taxable - fixed_assets_taxable - import_taxable_excl_fixed_assets
+
+                tax = row.get("voucher_meta").get("tax")
+
+                fixed_assets_tax = row.get("voucher_meta").get("fixed_assets_tax") or 0
+                import_tax_excl_fixed_assets = row.get("voucher_meta").get("import_tax_excl_fixed_assets") or 0
+                capital_purchase_tax = tax - fixed_assets_tax - import_tax_excl_fixed_assets
+
                 ws.cell(
                     column=1,
                     row=idx + 7,
                     value=ad2bs_str(row.get("date")).replace("-", "."),
                 )
                 ws.cell(column=2, row=idx + 7, value=row.get("voucher_no"))
+                ws.cell(column=3, row=idx + 7, value=row.get("import_document_number"))
                 ws.cell(column=4, row=idx + 7, value=row.get("party_name"))
                 ws.cell(
                     column=5, row=idx + 7, value=row.get("tax_identification_number")
                 )
                 ws.cell(column=6, row=idx + 7, value=taxable + non_taxable)
-                ws.cell(column=7, row=idx + 7, value=non_taxable)
-                ws.cell(column=8, row=idx + 7, value=taxable)
-                ws.cell(column=9, row=idx + 7, value=row.get("voucher_meta").get("tax"))
+                
+                if non_taxable > 0:
+                    ws.cell(column=7, row=idx + 7, value=non_taxable)
+                
+                if taxable > 0:
+                    if capital_purchase_taxable > 0:
+                        ws.cell(column=8, row=idx + 7, value=capital_purchase_taxable)
+                        ws.cell(column=9, row=idx + 7, value=capital_purchase_tax)
+
+                    if import_taxable_excl_fixed_assets > 0:
+                        ws.cell(column=10, row=idx + 7, value=import_taxable_excl_fixed_assets)
+                        ws.cell(column=11, row=idx + 7, value=import_tax_excl_fixed_assets)
+
+                    if fixed_assets_taxable > 0:
+                        ws.cell(column=12, row=idx + 7, value=fixed_assets_taxable)
+                        ws.cell(column=13, row=idx + 7, value=fixed_assets_tax)
+
 
             years = [
                 ad2bs(self.request.query_params.get("start_date"))[0],
@@ -2367,7 +2485,7 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     row = ChallanRow
     collections = [
         ("parties", Party, PartyMinSerializer),
-        ("units", Unit),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "items",
             Item.objects.filter(can_be_sold=True, track_inventory=True).select_related(
@@ -2556,7 +2674,7 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     collections = [
         ("parties", Party, PartyMinSerializer),
-        ("units", Unit),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
         (
             "items",
             Item.objects.filter(

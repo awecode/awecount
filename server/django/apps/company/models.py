@@ -10,17 +10,17 @@ from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.db import models
-from django.dispatch import receiver
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 
 from apps.company.constants import RESTRICTED_COMPANY_SLUGS
-from apps.company.signals import company_created
 from lib.models import BaseModel
 from lib.models.mixins import TimeAuditModel
 from lib.string import to_snake
 
+acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
+acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
 
 def get_default_permissions() -> Dict[str, Dict[str, bool]]:
     """
@@ -295,7 +295,7 @@ class Company(BaseModel):
         super().save(*args, **kwargs)
 
         if is_creating:
-            company_created.send(sender=self.__class__, company=self)
+            self.create_company_defaults()
 
     def get_fiscal_years(self):
         # TODO Assign fiscal years to companies (m2m), return related fiscal years here
@@ -304,6 +304,706 @@ class Company(BaseModel):
             key=lambda fy: 999 if fy.id == self.current_fiscal_year_id else fy.id,
             reverse=True,
         )
+
+    def create_company_defaults(self):
+        from apps.ledger.models import Category, Account
+        from apps.voucher.models import PaymentMode, LandedCostRowType
+        from apps.voucher.models.voucher_settings import PurchaseSetting, SalesSetting
+        from apps.quotation.models import QuotationSetting
+        from apps.product.models import InventorySetting
+
+        CATEGORY_CODES = [
+            "A-OR",
+            "A-DA",
+            "A-LA",
+            "A-D",
+            "A-E",
+            "A-CE",
+            "A-AR",
+            "A-ED",
+            "L-AP",
+            "L-OP",
+            "L-P",
+            "L-SL",
+            "L-US",
+            "L-DT",
+            "L-LA",
+            "I-D",
+            "I-D-TR",
+            "I-I",
+            "E-D-PE",
+            "E-I-P",
+            "E-I-FB",
+            "E-I-C",
+            "E-I-CC",
+            "E-I-PS",
+            "E-I-RM",
+            "E-I-FT",
+            "E-I-DE-IWO"
+        ]
+        
+        ACCOUNT_CODES = [
+            "Q-OBE",
+            "Q-CI",
+            "Q-DC",
+            "L-DEP",
+            "L-AFP",
+            "L-OP",
+            "L-T-I",
+            "L-T-TA",
+            "L-T-TR",
+            "E-I-BC-BC",
+            "E-I-FP",
+        ]
+        
+        existing_categories_by_code = {
+            cat.code: cat for cat in Category.objects.filter(
+                company=self, code__in=CATEGORY_CODES
+            )
+        }
+        existing_categories_by_system_code = {
+            cat.system_code: cat for cat in Category.objects.filter(
+                company=self, system_code__in=acc_cat_system_codes.values()
+            )
+        }
+        existing_accounts_by_code = {
+            acc.code: acc for acc in Account.objects.filter(
+                company=self, code__in=ACCOUNT_CODES
+            )
+        }
+        # Build system codes for landed cost accounts
+        landed_cost_system_codes = []
+        for index, cost_type in enumerate(LandedCostRowType.values):
+            if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
+                system_code = f"E-D-LC-{cost_type[:3].upper()}{index}"
+                landed_cost_system_codes.append(system_code)
+        
+        # Combine regular system codes with landed cost system codes
+        all_system_codes = list(acc_system_codes.values()) + landed_cost_system_codes
+        
+        existing_accounts_by_system_code = {
+            acc.system_code: acc for acc in Account.objects.filter(
+                company=self, system_code__in=all_system_codes
+            )
+        }
+
+        accounts_to_create = []
+
+        def get_or_prepare_category(name, code=None, system_code=None, parent=None):
+            if not name:
+                raise ValueError("name is required")
+
+            if not code:
+                raise ValueError("code is required")
+            
+            if system_code:
+                if system_code in existing_categories_by_system_code:
+                    return existing_categories_by_system_code[system_code]
+            elif code in existing_categories_by_code:
+                return existing_categories_by_code[code]
+            
+            category = Category.objects.create(
+                name=name,
+                company=self,
+                parent=parent,
+                code=code,
+                default=True,
+                system_code=system_code,
+            )
+
+            if system_code:
+                existing_categories_by_system_code[system_code] = category
+            elif code:
+                existing_categories_by_code[code] = category
+            
+            return category
+
+
+        def get_or_prepare_account(code, name, system_code=None, category=None):
+            if not code:
+                raise ValueError("code is required")
+            if not name:
+                raise ValueError("name is required")
+            
+            if system_code:
+                if system_code in existing_accounts_by_system_code:
+                    return existing_accounts_by_system_code[system_code], False
+            elif code in existing_accounts_by_code:
+                return existing_accounts_by_code[code], False
+
+            account_data = {
+                'name': name,
+                'company': self,
+                'category': category,
+                'default': True,
+                'code': code,
+                'system_code': system_code,
+            }
+            
+                
+            account = Account(**account_data)
+            accounts_to_create.append(account)
+
+            if system_code:
+                existing_accounts_by_system_code[system_code] = account
+            else:
+                existing_accounts_by_code[code] = account
+            
+            return account, True
+
+        root = {}
+        for category in Category.ROOT:
+            root[category[0]] = get_or_prepare_category(
+                name=category[0],
+                code=category[1],
+                system_code=acc_cat_system_codes[category[0]]
+            )
+
+        get_or_prepare_account(
+            system_code=acc_system_codes["Profit and Loss Account"],
+            name="Profit and Loss Account",
+            category=root["Equity"],
+            code="Q-PL"
+        )
+        
+        get_or_prepare_account(
+            code="Q-OBE",
+            name="Opening Balance Equity",
+            category=root["Equity"]
+        )
+        
+        get_or_prepare_account(
+            code="Q-CI",
+            name="Capital Investment",
+            category=root["Equity"]
+        )
+        
+        get_or_prepare_account(
+            code="Q-DC",
+            name="Drawing Capital",
+            category=root["Equity"]
+        )
+
+        # CREATE DEFAULT CATEGORIES AND LEDGERS FOR ASSETS
+        # ================================================
+        get_or_prepare_category(
+            name="Other Receivables",
+            code="A-OR",
+            parent=root["Assets"]
+        )
+        
+        get_or_prepare_category(
+            name="Deferred Assets",
+            code="A-DA",
+            parent=root["Assets"]
+        )
+        
+        get_or_prepare_category(
+            name="Fixed Assets",
+            code="A-FA",
+            system_code=acc_cat_system_codes["Fixed Assets"],
+            parent=root["Assets"]
+        )
+        
+        get_or_prepare_category(
+            name="Loans and Advances Given",
+            code="A-LA",
+            parent=root["Assets"]
+        )
+        
+        get_or_prepare_category(
+            name="Deposits Made",
+            code="A-D",
+            parent=root["Assets"]
+        )
+        
+        get_or_prepare_category(
+            name="Employee",
+            code="A-E",
+            parent=root["Assets"]
+        )
+        
+        tax_receivables = get_or_prepare_category(
+            name="Tax Receivables",
+            code="A-TR",
+            system_code=acc_cat_system_codes["Tax Receivables"],
+            parent=root["Assets"]
+        )
+        
+        get_or_prepare_account(
+            system_code=acc_system_codes["TDS Receivables"],
+            name="TDS Receivables",
+            category=tax_receivables,
+            code="A-TR-TDS"
+        )
+
+        cash_account_category = get_or_prepare_category(
+            name="Cash Accounts",
+            code="A-C",
+            system_code=acc_cat_system_codes["Cash Accounts"],
+            parent=root["Assets"]
+        )
+        
+        cash_account, _ = get_or_prepare_account(
+            system_code=acc_system_codes["Cash"],
+            name="Cash",
+            category=cash_account_category,
+            code="A-C-C"
+        )
+        
+        get_or_prepare_category(
+            name="Cash Equivalent Account",
+            code="A-CE",
+            parent=root["Assets"]
+        )
+
+        get_or_prepare_category(
+            name="Bank Accounts",
+            code="A-B",
+            system_code=acc_cat_system_codes["Bank Accounts"],
+            parent=root["Assets"]
+        )
+
+        account_receivables = get_or_prepare_category(
+            name="Account Receivables",
+            code="A-AR",
+            system_code=acc_cat_system_codes["Account Receivables"],
+            parent=root["Assets"]
+        )
+        
+        get_or_prepare_category(
+            name="Customers",
+            code="A-AR-C",
+            system_code=acc_cat_system_codes["Customers"],
+            parent=account_receivables
+            
+        )
+
+        get_or_prepare_category(
+            name="Employee Deductions",
+            code="A-ED",
+            parent=root["Assets"]
+            
+        )
+
+        # CREATE DEFAULT CATEGORIES AND LEDGERS FOR LIABILITIES
+        # =====================================================
+        account_payables = get_or_prepare_category(
+            name="Account Payables",
+            code="L-AP",
+            system_code=acc_cat_system_codes["Account Payables"],
+            parent=root["Liabilities"]
+            
+        )
+        
+        get_or_prepare_category(
+            name="Suppliers",
+            code="L-AP-S",
+            system_code=acc_cat_system_codes["Suppliers"],
+            parent=account_payables
+            
+        )
+        
+        get_or_prepare_category(
+            name="Other Payables",
+            code="L-OP",
+            parent=root["Liabilities"]
+            
+        )
+        
+        get_or_prepare_category(
+            name="Provisions",
+            code="L-P",
+            parent=root["Liabilities"]
+            
+        )
+        
+        get_or_prepare_category(
+            name="Secured Loans",
+            code="L-SL",
+            parent=root["Liabilities"]
+            
+        )
+        
+        get_or_prepare_category(
+            name="Unsecured Loans",
+            code="L-US",
+            parent=root["Liabilities"]
+            
+        )
+        
+        get_or_prepare_category(
+            name="Deposits Taken",
+            code="L-DT",
+            parent=root["Liabilities"]
+            
+        )
+        
+        get_or_prepare_category(
+            name="Loans & Advances Taken",
+            code="L-LA",
+            parent=root["Liabilities"]
+            
+        )
+        
+        get_or_prepare_account(
+            code="L-DEP",
+            name="Provision for Accumulated Depreciation",
+            category=root["Liabilities"]
+        )
+        
+        get_or_prepare_account(
+            code="L-AFP",
+            name="Audit Fee Payable",
+            category=root["Liabilities"]
+        )
+        
+        get_or_prepare_account(
+            code="L-OP",
+            name="Other Payables",
+            category=root["Liabilities"]
+        )
+        
+        duties_and_taxes = get_or_prepare_category(
+            name="Duties & Taxes",
+            code="L-T",
+            system_code=acc_cat_system_codes["Duties & Taxes"],
+            parent=root["Liabilities"]
+            
+        )
+        
+        get_or_prepare_account(
+            code="L-T-I",
+            name="Income Tax",
+            category=duties_and_taxes
+        )
+        
+        get_or_prepare_account(
+            code="L-T-TA",
+            name="TDS (Audit Fee)",
+            category=duties_and_taxes
+        )
+        
+        get_or_prepare_account(
+            code="L-T-TR",
+            name="TDS (Rent)",
+            category=duties_and_taxes
+        )
+
+        # CREATE DEFAULT CATEGORIES FOR INCOME
+        # =====================================
+        sales_category = get_or_prepare_category(
+            name="Sales",
+            code="I-S",
+            system_code=acc_cat_system_codes["Sales"],
+            parent=root["Income"]
+            
+        )
+        
+        get_or_prepare_account(
+            system_code=acc_system_codes["Sales Account"],
+            name="Sales Account",
+            code="I-S-S",
+            category=sales_category
+        )
+        
+        direct_income = get_or_prepare_category(
+            name="Direct Income",
+            code="I-D",
+            system_code=acc_cat_system_codes["Direct Income"],
+            parent=root["Income"]
+        )
+        
+        get_or_prepare_category(
+            name="Transfer and Remittance",
+            code="I-D-TR",
+            parent=direct_income
+            
+        )
+        
+        indirect_income = get_or_prepare_category(
+            name="Indirect Income",
+            code="I-I",
+            system_code=acc_cat_system_codes["Indirect Income"],
+            parent=root["Income"]
+        )
+
+        discount_income_category = get_or_prepare_category(
+            name="Discount Income",
+            code="I-I-DI",
+            system_code=acc_cat_system_codes["Discount Income"],
+            parent=indirect_income
+            
+        )
+        
+        get_or_prepare_account(
+            system_code=acc_system_codes["Discount Income"],
+            name="Discount Income",
+            code="I-I-DI-DI",
+            category=discount_income_category
+        )
+
+        interest_income_category = get_or_prepare_category(
+            name="Interest Income",
+            code="I-I-II",
+            parent=indirect_income,
+            system_code=acc_cat_system_codes["Interest Income"],
+        )
+
+        get_or_prepare_account(
+            system_code=acc_system_codes["Interest Income"],
+            name="Interest Income",
+            code="I-I-II-II",
+            category=interest_income_category,
+        )
+
+        # CREATE DEFAULT CATEGORIES FOR EXPENSES
+        # =====================================
+        purchase_category = get_or_prepare_category(
+            name="Purchase",
+            code="E-P",
+            system_code=acc_cat_system_codes["Purchase"],
+            parent=root["Expenses"]
+            
+        )
+        
+        get_or_prepare_account(
+            system_code=acc_system_codes["Purchase Account"],
+            name="Purchase Account",
+            code="E-P-P",
+            category=purchase_category
+        )
+
+        direct_expenses = get_or_prepare_category(
+            name="Direct Expenses",
+            code="E-D",
+            system_code=acc_cat_system_codes["Direct Expenses"],
+            parent=root["Expenses"]
+            
+        )
+
+        additional_cost_category = get_or_prepare_category(
+            name="Additional Cost",
+            code="E-D-AC",
+            system_code=acc_cat_system_codes["Additional Cost"],
+            parent=direct_expenses
+            
+        )
+
+        # Handle landed cost accounts
+        new_additional_cost_accounts = {}
+        new_additional_cost_accounts_system_codes = []
+        for index, cost_type in enumerate(LandedCostRowType.values):
+            if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
+                system_code = f"E-D-LC-{cost_type[:3].upper()}{index}"
+                code = f"E-D-LC-{cost_type[:3].upper()}{index}"
+                
+                account, is_new = get_or_prepare_account(
+                    system_code=system_code,
+                    name=cost_type,
+                    category=additional_cost_category,
+                    code=code
+                )
+                
+                if is_new:
+                    new_additional_cost_accounts[cost_type] = None
+                    new_additional_cost_accounts_system_codes.append(system_code)
+
+        get_or_prepare_category(
+            name="Purchase Expenses",
+            code="E-D-PE",
+            parent=direct_expenses
+            
+        )
+        
+        indirect_expenses = get_or_prepare_category(
+            name="Indirect Expenses",
+            code="E-I",
+            system_code=acc_cat_system_codes["Indirect Expenses"],
+            parent=root["Expenses"]
+            
+        )
+
+        bank_charges = get_or_prepare_category(
+            name="Bank Charges",
+            code="E-I-BC",
+            system_code=acc_cat_system_codes["Bank Charges"],
+            parent=indirect_expenses
+            
+        )
+        
+        get_or_prepare_account(
+            code="E-I-BC-BC",
+            name="Bank Charges",
+            category=bank_charges
+        )
+        
+        get_or_prepare_account(
+            code="E-I-FP",
+            name="Fines & Penalties",
+            category=indirect_expenses
+        )
+        
+        get_or_prepare_category(
+            name="Pay Head",
+            code="E-I-P",
+            parent=indirect_expenses
+            
+        )
+        
+        get_or_prepare_category(
+            name="Food and Beverages",
+            code="E-I-FB",
+            parent=indirect_expenses
+            
+        )
+        
+        get_or_prepare_category(
+            name="Communication Expenses",
+            code="E-I-C",
+            parent=indirect_expenses
+            
+        )
+        
+        get_or_prepare_category(
+            name="Courier Charges",
+            code="E-I-CC",
+            parent=indirect_expenses
+            
+        )
+        
+        get_or_prepare_category(
+            name="Printing and Stationery",
+            code="E-I-PS",
+            parent=indirect_expenses
+            
+        )
+        
+        get_or_prepare_category(
+            name="Repair and Maintenance",
+            code="E-I-RM",
+            parent=indirect_expenses
+            
+        )
+        
+        get_or_prepare_category(
+            name="Fuel and Transport",
+            code="E-I-FT",
+            parent=indirect_expenses
+            
+        )
+        
+        discount_expense_category = get_or_prepare_category(
+            name="Discount Expenses",
+            code="E-I-DE",
+            system_code=acc_cat_system_codes["Discount Expenses"],
+            parent=indirect_expenses
+            
+        )
+        
+        get_or_prepare_account(
+            system_code=acc_system_codes["Discount Expenses"],
+            name="Discount Expenses",
+            category=discount_expense_category,
+            code="E-I-DE-DE"
+        )
+
+        interest_expense_category = get_or_prepare_category(
+            name="Interest Expenses",
+            code="E-I-IE",
+            system_code=acc_cat_system_codes["Interest Expenses"],
+            parent=indirect_expenses
+        )
+
+        get_or_prepare_account(
+            system_code=acc_system_codes["Interest Expenses"],
+            name="Interest Expenses",
+            code="E-I-IE-IE",
+            category=interest_expense_category
+        )
+
+        # Opening Balance Difference
+        # ==========================
+        get_or_prepare_account(
+            system_code=acc_system_codes["Opening Balance Difference"],
+            name="Opening Balance Difference",
+            code="O-OBD",
+            category=root["Opening Balance Difference"]
+        )
+
+        # For Inventory Adjustment
+        # ==========================
+        inventory_write_off_account = get_or_prepare_category(
+            name="Inventory write-off",
+            code="E-I-DE-IWO",
+            system_code=acc_cat_system_codes["Inventory Write-off"],
+            parent=indirect_expenses
+            
+        )
+
+        get_or_prepare_account(
+            system_code=acc_system_codes["Damage Expense"],
+            name="Damage Expense",
+            code="E-I-DE-IWO-DE",
+            category=inventory_write_off_account
+        )
+
+        get_or_prepare_account(
+            system_code=acc_system_codes["Expiry Expense"],
+            name="Expiry Expense",
+            code="E-I-DE-IWO-EE",
+            category=inventory_write_off_account
+        )
+            
+        if accounts_to_create:
+            Account.objects.bulk_create(accounts_to_create)
+
+        if new_additional_cost_accounts:
+            created_accounts = Account.objects.filter(
+                company=self,
+                system_code__in=new_additional_cost_accounts_system_codes
+            ).values('system_code', 'id')
+
+            account_id_map = {acc['system_code']: acc['id'] for acc in created_accounts}
+
+            for cost_type in new_additional_cost_accounts:
+                system_code = f"E-D-LC-{cost_type[:3].upper()}{LandedCostRowType.values.index(cost_type)}"
+                if system_code in account_id_map:
+                    new_additional_cost_accounts[cost_type] = account_id_map[system_code]
+
+        # Handle PurchaseSetting
+        purchase_setting, created = PurchaseSetting.objects.get_or_create(company=self)
+        if created and new_additional_cost_accounts:
+            purchase_setting.landed_cost_accounts = new_additional_cost_accounts
+        elif new_additional_cost_accounts:
+            purchase_setting.landed_cost_accounts.update(new_additional_cost_accounts)
+        if new_additional_cost_accounts:
+            purchase_setting.save()
+
+        PaymentMode.objects.get_or_create(
+            company=self,
+            name="Cash",
+            defaults={
+                'account': cash_account
+            }
+        )
+
+        # Create default permission for company
+        Permission.objects.get_or_create(
+            company=self,
+            name="Default",
+        )
+
+        # Create default settings for company
+        SalesSetting.objects.get_or_create(company=self)
+        QuotationSetting.objects.get_or_create(
+            company=self,
+            defaults={
+                'body_text': "We are pleased to provide you with the following quotation for the listed items.",
+                'footer_text': "<div>Terms and conditions apply.</div><div>We look forward to working with you.</div>",
+            }
+        )
+        InventorySetting.objects.get_or_create(company=self)
 
 
 class CompanyBaseModel(BaseModel):
@@ -548,11 +1248,3 @@ class CompanyMemberInvite(BaseModel):
                 )
             )
         )
-
-
-@receiver(company_created)
-def create_default_permission(sender, company, **kwargs):
-    Permission.objects.get_or_create(
-        company=company,
-        name="Default",
-    )

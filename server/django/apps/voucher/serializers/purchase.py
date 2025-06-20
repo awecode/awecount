@@ -45,7 +45,7 @@ class PurchaseVoucherRowSerializer(
     voucher_id = serializers.ReadOnlyField(source="voucher.id")
     selected_item_obj = ItemPurchaseSerializer(read_only=True, source="item")
     selected_unit_obj = GenericSerializer(read_only=True, source="unit")
-
+    updated_cost_price = serializers.FloatField(required=False)
     def validate_discount(self, value):
         if not value:
             value = 0
@@ -128,22 +128,23 @@ class PurchaseVoucherCreateSerializer(
         voucher_no = data.get("voucher_no")
 
         if not company.purchase_setting.enable_empty_voucher_no:
-            if not voucher_no:
+            if not voucher_no and data.get("status") != "Draft":
                 raise ValidationError({"voucher_no": ["This field cannot be empty."]})
 
-            qs = self.Meta.model.objects.filter(
-                voucher_no=voucher_no, party=party, fiscal_year=fiscal_year
-            )
-            if self.instance:
-                qs = qs.exclude(pk=self.instance.pk)
-            if qs.exists():
-                raise ValidationError(
-                    {
-                        "voucher_no": [
-                            "Purchase with the bill number for the chosen party already exists."
-                        ]
-                    }
+            if voucher_no:
+                qs = self.Meta.model.objects.filter(
+                    voucher_no=voucher_no, party=party, fiscal_year=fiscal_year
                 )
+                if self.instance:
+                    qs = qs.exclude(pk=self.instance.pk)
+                if qs.exists():
+                    raise ValidationError(
+                        {
+                            "voucher_no": [
+                                "Purchase with the bill number for the chosen party already exists."
+                            ]
+                        }
+                    )
 
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
@@ -201,6 +202,7 @@ class PurchaseVoucherCreateSerializer(
         # Create purchase voucher rows
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
+            row.pop("updated_cost_price", None)  
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
 
         # Create landed cost if rows exist
@@ -224,12 +226,18 @@ class PurchaseVoucherCreateSerializer(
         self.assign_discount_obj(validated_data)
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
 
+        request = self.context["request"]
+        company = request.company
         # Update purchase voucher rows
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
+            updated_cost_price = row.pop("updated_cost_price", None)
             PurchaseVoucherRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
             )
+            if company.purchase_setting.update_cost_price_with_landed_cost:
+                if updated_cost_price:
+                    Item.objects.filter(id=row.get("item_id"), company=company).update(cost_price=updated_cost_price)
 
         # Update landed cost rows
         if landed_cost_rows_data:
@@ -350,6 +358,7 @@ class PurchaseBookExportSerializer(BaseModelSerializer):
             "date",
             "party_name",
             "tax_identification_number",
+            "import_document_number",
             "voucher_no",
             "voucher_meta",
         )
