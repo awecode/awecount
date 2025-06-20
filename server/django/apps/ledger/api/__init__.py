@@ -57,6 +57,7 @@ from ..serializers import (
     TransactionReportSerializer,
 )
 
+acc_cat_system_codes = settings.ACC_CAT_SYSTEM_CODES    
 
 class PartyViewSet(
     InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet
@@ -893,20 +894,20 @@ class IncomeStatementView(APIView):
         interest_expense_category = []
 
         for category in serializer.data:
-            if category.get("system_code") == "INCOME":
+            if category.get("system_code") == acc_cat_system_codes["Income"]:
                 # income_categories.append(category)
                 # accounts_ids.extend(get_all_ids(category))
                 for child in category.get("children", []):
-                    if child.get("system_code") == "DIR-INCOME":
+                    if child.get("system_code") == acc_cat_system_codes["Direct Income"]:
                         direct_income_category.append(child)
                         accounts_ids.extend(get_all_ids(child))
 
-                    if child.get("system_code") == "IND-INCOME":
+                    if child.get("system_code") == acc_cat_system_codes["Indirect Income"]:
                         indirect_income_category_temp = child
                         for grandchild in indirect_income_category_temp.get(
                             "children", []
                         ):
-                            if grandchild.get("system_code") == "INT-INCOME":
+                            if grandchild.get("system_code") == acc_cat_system_codes["Interest Income"]:
                                 interest_income_category.append(grandchild)
                                 indirect_income_category_temp["children"].remove(
                                     grandchild
@@ -914,19 +915,19 @@ class IncomeStatementView(APIView):
                         indirect_income_category.append(indirect_income_category_temp)
                         accounts_ids.extend(get_all_ids(child))
 
-            elif category.get("system_code") == "EXPENSES":
+            elif category.get("system_code") == acc_cat_system_codes["Expenses"]:
                 expense.append(category)
                 for child in category.get("children", []):
-                    if child.get("system_code") == "DIR-EXP":
+                    if child.get("system_code") == acc_cat_system_codes["Direct Expenses"]:
                         direct_expense_category.append(child)
                         accounts_ids.extend(get_all_ids(child))
 
-                    if child.get("system_code") == "IND-EXP":
+                    if child.get("system_code") == acc_cat_system_codes["Indirect Expenses"]:
                         indirect_expense_category_temp = child
                         for grandchild in indirect_expense_category_temp.get(
                             "children", []
                         ):
-                            if grandchild.get("system_code") == "INT-EXP":
+                            if grandchild.get("system_code") == acc_cat_system_codes["Interest Expenses"]:
                                 interest_expense_category.append(grandchild)
                                 indirect_expense_category_temp["children"].remove(
                                     grandchild
@@ -934,7 +935,7 @@ class IncomeStatementView(APIView):
                         indirect_expense_category.append(indirect_expense_category_temp)
                         accounts_ids.extend(get_all_ids(child))
 
-                    if child.get("system_code") == "PURCHASE":
+                    if child.get("system_code") == acc_cat_system_codes["Purchase"]:
                         purchase_category.append(child)
                         accounts_ids.extend(get_all_ids(child))
 
