@@ -439,6 +439,8 @@ ACCOUNT_SYSTEM_CODES = {
     "Discount Expenses": "DIS-EXP",
     "Damage Expense": "DAM-EXP",
     "TDS Receivables": "TDS-REC",
+    "Interest Income": "INT-INCOME",
+    "Interest Expenses": "INT-EXP",
 }
 
 ACCOUNT_CATEGORY_SYSTEM_CODES = {
@@ -468,10 +470,9 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Account Payables": "AP",
     "Direct Income": "D-INCOME",
     "Indirect Income": "I-INCOME",
-    "Inventory Write-off": "IWO",
+    "Inventory write-off": "IWO",
     "Interest Income": "INT-INCOME",
     "Interest Expenses": "INT-EXP",
-    "Landed Cost": "LANDED-COST",
 }
 
 # Bank reconciliation settings

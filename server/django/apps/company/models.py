@@ -339,7 +339,6 @@ class Company(BaseModel):
             "E-I-PS",
             "E-I-RM",
             "E-I-FT",
-            "E-I-DE-IWO"
         ]
         
         ACCOUNT_CODES = [
@@ -697,7 +696,6 @@ class Company(BaseModel):
             code="I-S",
             system_code=acc_cat_system_codes["Sales"],
             parent=root["Income"]
-            
         )
         
         get_or_prepare_account(
@@ -936,7 +934,7 @@ class Company(BaseModel):
         inventory_write_off_account = get_or_prepare_category(
             name="Inventory write-off",
             code="E-I-DE-IWO",
-            system_code=acc_cat_system_codes["Inventory Write-off"],
+            system_code=acc_cat_system_codes["Inventory write-off"],
             parent=indirect_expenses
             
         )
