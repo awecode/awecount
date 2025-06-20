@@ -2,10 +2,10 @@ from django.core.management.base import BaseCommand
 
 # from apps.tax.models import TaxScheme
 from apps.company.models import Company
-from apps.ledger.models import Category
+from apps.ledger.models.base import Category, Account
 from django.conf import settings
 
-from apps.ledger.models.base import Account
+from apps.voucher.models import LandedCostRowType
 
 acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
 acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
@@ -30,12 +30,10 @@ class Command(BaseCommand):
         for company in Company.objects.all():
             for category_name in categories.keys():
                 try:
-                    # First check if category with system code exists
                     system_code = acc_cat_system_codes.get(category_name)
                     if not system_code:
-                        continue
+                        raise Exception(f"System code not found for {category_name}")
                         
-                    # Try to find category by system code first
                     category = Category.objects.filter(
                         system_code=system_code,
                         company=company,
@@ -44,7 +42,6 @@ class Command(BaseCommand):
                     if category:
                         print(f"Category {category_name} for company {company.name} already has correct system_code: {system_code}")
                         continue
-                    
                     
                     category = Category.objects.get(
                         code=categories[category_name],
@@ -70,6 +67,12 @@ class Command(BaseCommand):
             "Sales Account": "I-S-S",
             "Discount Expenses": "E-I-DE-DE",
         }
+
+        for index, cost_type in enumerate(LandedCostRowType.values):
+            if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
+                system_code = f"E-D-LC-{cost_type[:3].upper()}{index}"
+                accounts[cost_type] = system_code
+                acc_system_codes[cost_type] = system_code
 
         for company in Company.objects.all():
             for account_name in accounts:
