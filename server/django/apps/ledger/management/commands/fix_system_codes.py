@@ -5,40 +5,33 @@ from apps.company.models import Company
 from apps.ledger.models import Category
 from django.conf import settings
 
+from apps.ledger.models.base import Account
+
 acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
+acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
 
 
 class Command(BaseCommand):
-    help = "Change categories and organizations to dynamic relations"
+    help = "Fix system codes for categories and accounts"
 
     def handle(self, *args, **options):
-        categories = [
-            "Assets",
-            "Account Receivables",
-            "Liabilities",
-            "Account Payables",
-            "Direct Income",
-            "Indirect Income",
-            "Equity",
-            "Opening Balance Difference",
-        ]
+        categories = {
+            "Assets": "A",
+            "Account Receivables": "A-AR",
+            "Liabilities": "L",
+            "Account Payables": "L-AP",
+            "Direct Income": "I-D",
+            "Indirect Income": "I-I",
+            "Equity": "E",
+            "Opening Balance Difference": "E-OBD",
+            "Inventory write-off": "E-I-DE-IWO",
+        }
 
         for company in Company.objects.all():
-            for category_name in categories:
+            for category_name in categories.keys():
                 try:
                     # First check if category with system code exists
-                    system_code_mapping = {
-                        "Assets": acc_cat_system_codes["Assets"],
-                        "Account Receivables": acc_cat_system_codes["Account Receivables"], 
-                        "Liabilities": acc_cat_system_codes["Liabilities"],
-                        "Account Payables": acc_cat_system_codes["Account Payables"],
-                        "Direct Income": acc_cat_system_codes["Direct Income"],
-                        "Indirect Income": acc_cat_system_codes["Indirect Income"],
-                        "Equity": acc_cat_system_codes["Equity"],
-                        "Opening Balance Difference": acc_cat_system_codes["Opening Balance Difference"],
-                    }
-                    
-                    system_code = system_code_mapping.get(category_name)
+                    system_code = acc_cat_system_codes.get(category_name)
                     if not system_code:
                         continue
                         
@@ -46,30 +39,73 @@ class Command(BaseCommand):
                     category = Category.objects.filter(
                         system_code=system_code,
                         company=company,
-                        parent__isnull=True
                     ).first()
+
+                    if category:
+                        print(f"Category {category_name} for company {company.name} already has correct system_code: {system_code}")
+                        continue
                     
-                    # If not found by system code, try by name
-                    if not category:
-                        category = Category.objects.get(
-                            name=category_name,
-                            company=company,
-                            parent__isnull=True
-                        )
                     
-                    # Update system code if it's different
-                    if category.system_code != system_code:
-                        category.system_code = system_code
-                        category.save()
-                        print(
-                            f"Updated {category_name} for company {company.name} with system_code: {system_code}"
-                        )
-                    else:
-                        print(
-                            f"Category {category_name} for company {company.name} already has correct system_code: {system_code}"
-                        )
+                    category = Category.objects.get(
+                        code=categories[category_name],
+                        company=company,
+                    )
+
+                    if category.system_code == system_code:
+                        print(f"Category {category_name} for company {company.name} already has correct system_code: {system_code}")
+                        continue
+                    
+                    category.system_code = system_code
+                    category.save()
+                    print(
+                        f"Updated {category_name} for company {company.name} with system_code: {system_code}"
+                    )
                         
                 except Category.DoesNotExist:
                     print(
                         f"Category {category_name} not found for company {company.name}"
+                    )
+
+        accounts = {
+            "Sales Account": "I-S-S",
+            "Discount Expenses": "E-I-DE-DE",
+        }
+
+        for company in Company.objects.all():
+            for account_name in accounts:
+                try:
+                    # First check if account with system code exists
+                    system_code = acc_system_codes.get(account_name)
+                    if not system_code:
+                        continue
+                        
+                    # Try to find account by system code first
+                    account = Account.objects.filter(
+                        system_code=system_code,
+                        company=company,
+                    ).first()
+
+                    if account:
+                        print(f"Account {account_name} for company {company.name} already has correct system_code: {system_code}")
+                        continue
+                    
+                    
+                    account = Account.objects.get(
+                        code=accounts[account_name],
+                        company=company,
+                    )
+
+                    if account.system_code == system_code:
+                        print(f"Account {account_name} for company {company.name} already has correct system_code: {system_code}")
+                        continue
+                    
+                    account.system_code = system_code
+                    account.save()
+                    print(
+                        f"Updated {account_name} for company {company.name} with system_code: {system_code}"
+                    )
+                        
+                except Account.DoesNotExist:
+                    print(
+                        f"Account {account_name} not found for company {company.name}"
                     )
