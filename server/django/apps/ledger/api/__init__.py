@@ -57,6 +57,7 @@ from ..serializers import (
     TransactionReportSerializer,
 )
 
+acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES    
 
 class PartyViewSet(
     InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet
@@ -884,26 +885,57 @@ class IncomeStatementView(APIView):
         income_categories = []
         expense = []
         accounts_ids = []
+        direct_income_category = []
+        indirect_income_category = []
         direct_expense_category = []
         indirect_expense_category = []
         purchase_category = []
+        interest_income_category = []
+        interest_expense_category = []
 
         for category in serializer.data:
-            if category.get("system_code") == "INCOME":
-                income_categories.append(category)
-                accounts_ids.extend(get_all_ids(category))
-            elif category.get("system_code") == "EXPENSES":
+            if category.get("system_code") == acc_cat_system_codes["Income"]:
+                # income_categories.append(category)
+                # accounts_ids.extend(get_all_ids(category))
+                for child in category.get("children", []):
+                    if child.get("system_code") == acc_cat_system_codes["Direct Income"]:
+                        direct_income_category.append(child)
+                        accounts_ids.extend(get_all_ids(child))
+
+                    if child.get("system_code") == acc_cat_system_codes["Indirect Income"]:
+                        indirect_income_category_temp = child
+                        for grandchild in indirect_income_category_temp.get(
+                            "children", []
+                        ):
+                            if grandchild.get("system_code") == acc_cat_system_codes["Interest Income"]:
+                                interest_income_category.append(grandchild)
+                                indirect_income_category_temp["children"].remove(
+                                    grandchild
+                                )
+                        indirect_income_category.append(indirect_income_category_temp)
+                        accounts_ids.extend(get_all_ids(child))
+
+            elif category.get("system_code") == acc_cat_system_codes["Expenses"]:
                 expense.append(category)
                 for child in category.get("children", []):
-                    if child.get("system_code") == "DIR-EXP":
+                    if child.get("system_code") == acc_cat_system_codes["Direct Expenses"]:
                         direct_expense_category.append(child)
                         accounts_ids.extend(get_all_ids(child))
 
-                    if child.get("system_code") == "IND-EXP":
-                        indirect_expense_category.append(child)
+                    if child.get("system_code") == acc_cat_system_codes["Indirect Expenses"]:
+                        indirect_expense_category_temp = child
+                        for grandchild in indirect_expense_category_temp.get(
+                            "children", []
+                        ):
+                            if grandchild.get("system_code") == acc_cat_system_codes["Interest Expenses"]:
+                                interest_expense_category.append(grandchild)
+                                indirect_expense_category_temp["children"].remove(
+                                    grandchild
+                                )
+                        indirect_expense_category.append(indirect_expense_category_temp)
                         accounts_ids.extend(get_all_ids(child))
 
-                    if child.get("system_code") == "PURCHASE":
+                    if child.get("system_code") == acc_cat_system_codes["Purchase"]:
                         purchase_category.append(child)
                         accounts_ids.extend(get_all_ids(child))
 
@@ -1056,17 +1088,22 @@ class IncomeStatementView(APIView):
             row = cursor.fetchone()
             opening_stock = row[0] or 0
             closing_stock = row[1] or 0
-
         return Response(
             {
                 "accounts": accounts,
                 "opening_stock": opening_stock,
                 "closing_stock": closing_stock,
                 "category_tree": {
-                    "net_sales": income_categories,
+                    "revenue": direct_income_category,
                     "direct_expense": direct_expense_category,
+                    "net_sales": income_categories,
+                    "other_income": indirect_income_category,
                     "purchase": purchase_category,
-                    "indirect_expense": indirect_expense_category,
+                    "operating_expense": indirect_expense_category,
+                    "interest_income": interest_income_category,
+                    "interest_expense": interest_expense_category,
                 },
+                "corporate_tax_rate": company.corporate_tax_rate,
+                "country_iso": company.country_iso,
             }
         )

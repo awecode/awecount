@@ -439,6 +439,8 @@ ACCOUNT_SYSTEM_CODES = {
     "Discount Expenses": "DIS-EXP",
     "Damage Expense": "DAM-EXP",
     "TDS Receivables": "TDS-REC",
+    "Interest Income": "INT-INCOME",
+    "Interest Expenses": "INT-EXP",
 }
 
 ACCOUNT_CATEGORY_SYSTEM_CODES = {
@@ -464,6 +466,13 @@ ACCOUNT_CATEGORY_SYSTEM_CODES = {
     "Opening Balance Difference": "OPEN-BAL-DIFF",
     "Additional Cost": "ADD-COST",
     "Capital Expenses": "CAP-EXP",
+    "Account Receivables": "AR",
+    "Account Payables": "AP",
+    "Direct Income": "D-INCOME",
+    "Indirect Income": "I-INCOME",
+    "Inventory write-off": "IWO",
+    "Interest Income": "INT-INCOME",
+    "Interest Expenses": "INT-EXP",
 }
 
 # Bank reconciliation settings

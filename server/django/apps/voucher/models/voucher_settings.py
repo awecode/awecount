@@ -1,13 +1,9 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.dispatch import receiver
 
 from apps.bank.models import BankAccount
 from apps.company.models import Company
-from apps.company.signals import company_created
-from apps.product.models import InventorySetting
 from apps.voucher.models import PaymentMode
-from apps.quotation.models import QuotationSetting
 
 
 class SalesSetting(models.Model):
@@ -179,15 +175,3 @@ class PurchaseSetting(models.Model):
 
     def __str__(self):
         return "Purchase Setting - {}".format(self.company.name)
-
-
-@receiver(company_created)
-def handle_company_creation(sender, **kwargs):
-    company = kwargs.get("company")
-    SalesSetting.objects.create(company=company)
-    QuotationSetting.objects.create(
-        company=company,
-        body_text="We are pleased to provide you with the following quotation for the listed items.",
-        footer_text="<div>Terms and conditions apply.</div><div>We look forward to working with you.</div>",
-    )
-    InventorySetting.objects.create(company=company)
