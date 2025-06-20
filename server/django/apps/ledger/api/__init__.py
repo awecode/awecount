@@ -57,7 +57,7 @@ from ..serializers import (
     TransactionReportSerializer,
 )
 
-acc_cat_system_codes = settings.ACC_CAT_SYSTEM_CODES    
+acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES    
 
 class PartyViewSet(
     InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet
