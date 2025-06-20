@@ -309,16 +309,49 @@ class Company(BaseModel):
         from apps.quotation.models import QuotationSetting
         from apps.product.models import InventorySetting
 
-        CATEGORY_CODES = {
-            "A", "A-FA", "A-LA", "A-D", "A-E", "A-TR", "A-C", "A-CE", "A-B", "A-AR", "A-AR-C", "A-ED",
-            "L-AP", "L-AP-S", "L-OP", "L-P", "L-SL", "L-US", "L-DT", "L-LA", "L-T",
-            "I-S", "I-D", "I-D-TR", "I-I", "I-I-DI", "A-OR", "A-DA", "E-D-PE",
-            "E-D", "E-I", "E-I-P", "E-I-FB", "E-I-C", "E-I-CC", "E-I-PS", "E-I-RM", "E-I-FT", "E-I-DE", "E-I-DE-IWO"
-        }
-        ACCOUNT_CODES = {
-            "A-TR-TDS", "A-C-C", "L-DEP", "L-AFP", "L-OP", "L-T-I", "L-T-TA", "L-T-TR",
-            "I-S-S", "I-I-DI-DI", "E-I-FP", "E-I-DE-DE", "O-OBD", "E-I-DE-IWO-DE", "E-I-DE-IWO-EE"
-        }
+        CATEGORY_CODES = [
+            "A-OR",
+            "A-DA",
+            "A-LA",
+            "A-D",
+            "A-E",
+            "A-CE",
+            "A-AR",
+            "A-ED",
+            "L-AP",
+            "L-OP",
+            "L-P",
+            "L-SL",
+            "L-US",
+            "L-DT",
+            "L-LA",
+            "I-D",
+            "I-D-TR",
+            "I-I",
+            "E-D-PE",
+            "E-I-P",
+            "E-I-FB",
+            "E-I-C",
+            "E-I-CC",
+            "E-I-PS",
+            "E-I-RM",
+            "E-I-FT",
+            "E-I-DE-IWO"
+        ]
+        
+        ACCOUNT_CODES = [
+            "Q-OBE",
+            "Q-CI",
+            "Q-DC",
+            "L-DEP",
+            "L-AFP",
+            "L-OP",
+            "L-T-I",
+            "L-T-TA",
+            "L-T-TR",
+            "E-I-BC-BC",
+            "E-I-FP",
+        ]
         
         existing_categories_by_code = {
             cat.code: cat for cat in Category.objects.filter(
@@ -352,28 +385,28 @@ class Company(BaseModel):
         }
 
         accounts_to_create = []
-        categories_to_create = []
 
         def get_or_prepare_category(name, code=None, system_code=None, parent=None):
             if not name:
                 raise ValueError("name is required")
-            
-            if system_code and system_code in existing_categories_by_system_code:
-                return existing_categories_by_system_code[system_code]
 
-            if code and code in existing_categories_by_code:
+            if not code:
+                raise ValueError("code is required")
+            
+            if system_code:
+                if system_code in existing_categories_by_system_code:
+                    return existing_categories_by_system_code[system_code]
+            elif code in existing_categories_by_code:
                 return existing_categories_by_code[code]
             
-            category_data = {
-                'name': name,
-                'company': self,
-                'parent': parent,
-                'code': code,
-                'system_code': system_code,
-            }
-            
-            category = Category(**category_data)
-            categories_to_create.append(category)
+            category = Category.objects.create(
+                name=name,
+                company=self,
+                parent=parent,
+                code=code,
+                default=True,
+                system_code=system_code,
+            )
 
             if system_code:
                 existing_categories_by_system_code[system_code] = category
@@ -508,7 +541,7 @@ class Company(BaseModel):
             parent=root["Assets"]
         )
         
-        get_or_prepare_account(
+        cash_account, _ = get_or_prepare_account(
             system_code=acc_system_codes["Cash"],
             name="Cash",
             category=cash_account_category,
@@ -892,7 +925,7 @@ class Company(BaseModel):
         )
             
         if accounts_to_create:
-            Account.objects.bulk_create(accounts_to_create, ignore_conflicts=True)
+            Account.objects.bulk_create(accounts_to_create)
 
         if new_additional_cost_accounts:
             created_accounts = Account.objects.filter(
@@ -916,18 +949,13 @@ class Company(BaseModel):
         if new_additional_cost_accounts:
             purchase_setting.save()
 
-        # Create PaymentMode for Cash if it doesn't exist
-        if not PaymentMode.objects.filter(name="Cash", company=self).exists():
-            # Get the actual cash account from DB
-            actual_cash_account = Account.objects.get(
-                company=self,
-                system_code=acc_system_codes["Cash"]
-            )
-            PaymentMode.objects.create(
-                name="Cash", 
-                company=self, 
-                account=actual_cash_account
-            )
+        PaymentMode.objects.get_or_create(
+            company=self,
+            name="Cash",
+            defaults={
+                'account': cash_account
+            }
+        )
 
         # Create default permission for company
         Permission.objects.get_or_create(
