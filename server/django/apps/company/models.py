@@ -388,7 +388,7 @@ class Company(BaseModel):
 
         accounts_to_create = []
 
-        def get_or_prepare_category(name, code=None, system_code=None, parent=None):
+        def get_or_create_category(name, code=None, system_code=None, parent=None):
             if not name:
                 raise ValueError("name is required")
 
@@ -452,7 +452,7 @@ class Company(BaseModel):
 
         root = {}
         for category in Category.ROOT:
-            root[category[0]] = get_or_prepare_category(
+            root[category[0]] = get_or_create_category(
                 name=category[0],
                 code=category[1],
                 system_code=acc_cat_system_codes[category[0]]
@@ -485,44 +485,44 @@ class Company(BaseModel):
 
         # CREATE DEFAULT CATEGORIES AND LEDGERS FOR ASSETS
         # ================================================
-        get_or_prepare_category(
+        get_or_create_category(
             name="Other Receivables",
             code="A-OR",
             parent=root["Assets"]
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Deferred Assets",
             code="A-DA",
             parent=root["Assets"]
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Fixed Assets",
             code="A-FA",
             system_code=acc_cat_system_codes["Fixed Assets"],
             parent=root["Assets"]
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Loans and Advances Given",
             code="A-LA",
             parent=root["Assets"]
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Deposits Made",
             code="A-D",
             parent=root["Assets"]
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Employee",
             code="A-E",
             parent=root["Assets"]
         )
         
-        tax_receivables = get_or_prepare_category(
+        tax_receivables = get_or_create_category(
             name="Tax Receivables",
             code="A-TR",
             system_code=acc_cat_system_codes["Tax Receivables"],
@@ -536,7 +536,7 @@ class Company(BaseModel):
             code="A-TR-TDS"
         )
 
-        cash_account_category = get_or_prepare_category(
+        cash_account_category = get_or_create_category(
             name="Cash Accounts",
             code="A-C",
             system_code=acc_cat_system_codes["Cash Accounts"],
@@ -550,27 +550,27 @@ class Company(BaseModel):
             code="A-C-C"
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Cash Equivalent Account",
             code="A-CE",
             parent=root["Assets"]
         )
 
-        get_or_prepare_category(
+        get_or_create_category(
             name="Bank Accounts",
             code="A-B",
             system_code=acc_cat_system_codes["Bank Accounts"],
             parent=root["Assets"]
         )
 
-        account_receivables = get_or_prepare_category(
+        account_receivables = get_or_create_category(
             name="Account Receivables",
             code="A-AR",
             system_code=acc_cat_system_codes["Account Receivables"],
             parent=root["Assets"]
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Customers",
             code="A-AR-C",
             system_code=acc_cat_system_codes["Customers"],
@@ -578,7 +578,7 @@ class Company(BaseModel):
             
         )
 
-        get_or_prepare_category(
+        get_or_create_category(
             name="Employee Deductions",
             code="A-ED",
             parent=root["Assets"]
@@ -587,7 +587,7 @@ class Company(BaseModel):
 
         # CREATE DEFAULT CATEGORIES AND LEDGERS FOR LIABILITIES
         # =====================================================
-        account_payables = get_or_prepare_category(
+        account_payables = get_or_create_category(
             name="Account Payables",
             code="L-AP",
             system_code=acc_cat_system_codes["Account Payables"],
@@ -595,7 +595,7 @@ class Company(BaseModel):
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Suppliers",
             code="L-AP-S",
             system_code=acc_cat_system_codes["Suppliers"],
@@ -603,42 +603,42 @@ class Company(BaseModel):
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Other Payables",
             code="L-OP",
             parent=root["Liabilities"]
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Provisions",
             code="L-P",
             parent=root["Liabilities"]
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Secured Loans",
             code="L-SL",
             parent=root["Liabilities"]
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Unsecured Loans",
             code="L-US",
             parent=root["Liabilities"]
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Deposits Taken",
             code="L-DT",
             parent=root["Liabilities"]
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Loans & Advances Taken",
             code="L-LA",
             parent=root["Liabilities"]
@@ -663,7 +663,7 @@ class Company(BaseModel):
             category=root["Liabilities"]
         )
         
-        duties_and_taxes = get_or_prepare_category(
+        duties_and_taxes = get_or_create_category(
             name="Duties & Taxes",
             code="L-T",
             system_code=acc_cat_system_codes["Duties & Taxes"],
@@ -691,7 +691,7 @@ class Company(BaseModel):
 
         # CREATE DEFAULT CATEGORIES FOR INCOME
         # =====================================
-        sales_category = get_or_prepare_category(
+        sales_category = get_or_create_category(
             name="Sales",
             code="I-S",
             system_code=acc_cat_system_codes["Sales"],
@@ -705,28 +705,28 @@ class Company(BaseModel):
             category=sales_category
         )
         
-        direct_income = get_or_prepare_category(
+        direct_income = get_or_create_category(
             name="Direct Income",
             code="I-D",
             system_code=acc_cat_system_codes["Direct Income"],
             parent=root["Income"]
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Transfer and Remittance",
             code="I-D-TR",
             parent=direct_income
             
         )
         
-        indirect_income = get_or_prepare_category(
+        indirect_income = get_or_create_category(
             name="Indirect Income",
             code="I-I",
             system_code=acc_cat_system_codes["Indirect Income"],
             parent=root["Income"]
         )
 
-        discount_income_category = get_or_prepare_category(
+        discount_income_category = get_or_create_category(
             name="Discount Income",
             code="I-I-DI",
             system_code=acc_cat_system_codes["Discount Income"],
@@ -741,7 +741,7 @@ class Company(BaseModel):
             category=discount_income_category
         )
 
-        interest_income_category = get_or_prepare_category(
+        interest_income_category = get_or_create_category(
             name="Interest Income",
             code="I-I-II",
             parent=indirect_income,
@@ -757,7 +757,7 @@ class Company(BaseModel):
 
         # CREATE DEFAULT CATEGORIES FOR EXPENSES
         # =====================================
-        purchase_category = get_or_prepare_category(
+        purchase_category = get_or_create_category(
             name="Purchase",
             code="E-P",
             system_code=acc_cat_system_codes["Purchase"],
@@ -772,7 +772,7 @@ class Company(BaseModel):
             category=purchase_category
         )
 
-        direct_expenses = get_or_prepare_category(
+        direct_expenses = get_or_create_category(
             name="Direct Expenses",
             code="E-D",
             system_code=acc_cat_system_codes["Direct Expenses"],
@@ -780,7 +780,7 @@ class Company(BaseModel):
             
         )
 
-        additional_cost_category = get_or_prepare_category(
+        additional_cost_category = get_or_create_category(
             name="Additional Cost",
             code="E-D-AC",
             system_code=acc_cat_system_codes["Additional Cost"],
@@ -807,14 +807,14 @@ class Company(BaseModel):
                     new_additional_cost_accounts[cost_type] = None
                     new_additional_cost_accounts_system_codes.append(system_code)
 
-        get_or_prepare_category(
+        get_or_create_category(
             name="Purchase Expenses",
             code="E-D-PE",
             parent=direct_expenses
             
         )
         
-        indirect_expenses = get_or_prepare_category(
+        indirect_expenses = get_or_create_category(
             name="Indirect Expenses",
             code="E-I",
             system_code=acc_cat_system_codes["Indirect Expenses"],
@@ -822,7 +822,7 @@ class Company(BaseModel):
             
         )
 
-        bank_charges = get_or_prepare_category(
+        bank_charges = get_or_create_category(
             name="Bank Charges",
             code="E-I-BC",
             system_code=acc_cat_system_codes["Bank Charges"],
@@ -842,56 +842,56 @@ class Company(BaseModel):
             category=indirect_expenses
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Pay Head",
             code="E-I-P",
             parent=indirect_expenses
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Food and Beverages",
             code="E-I-FB",
             parent=indirect_expenses
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Communication Expenses",
             code="E-I-C",
             parent=indirect_expenses
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Courier Charges",
             code="E-I-CC",
             parent=indirect_expenses
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Printing and Stationery",
             code="E-I-PS",
             parent=indirect_expenses
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Repair and Maintenance",
             code="E-I-RM",
             parent=indirect_expenses
             
         )
         
-        get_or_prepare_category(
+        get_or_create_category(
             name="Fuel and Transport",
             code="E-I-FT",
             parent=indirect_expenses
             
         )
         
-        discount_expense_category = get_or_prepare_category(
+        discount_expense_category = get_or_create_category(
             name="Discount Expenses",
             code="E-I-DE",
             system_code=acc_cat_system_codes["Discount Expenses"],
@@ -906,7 +906,7 @@ class Company(BaseModel):
             code="E-I-DE-DE"
         )
 
-        interest_expense_category = get_or_prepare_category(
+        interest_expense_category = get_or_create_category(
             name="Interest Expenses",
             code="E-I-IE",
             system_code=acc_cat_system_codes["Interest Expenses"],
@@ -931,7 +931,7 @@ class Company(BaseModel):
 
         # For Inventory Adjustment
         # ==========================
-        inventory_write_off_account = get_or_prepare_category(
+        inventory_write_off_account = get_or_create_category(
             name="Inventory write-off",
             code="E-I-DE-IWO",
             system_code=acc_cat_system_codes["Inventory write-off"],
