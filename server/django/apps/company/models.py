@@ -389,13 +389,12 @@ class Company(BaseModel):
             if not name:
                 raise ValueError("name is required")
             
-            if system_code and system_code in existing_accounts_by_system_code:
-                return existing_accounts_by_system_code[system_code]
+            if system_code:
+                if system_code in existing_accounts_by_system_code:
+                    return existing_accounts_by_system_code[system_code], False
+            elif code in existing_accounts_by_code:
+                return existing_accounts_by_code[code], False
 
-            if code in existing_accounts_by_code:
-                return existing_accounts_by_code[code]
-            
-            
             account_data = {
                 'name': name,
                 'company': self,
@@ -414,7 +413,7 @@ class Company(BaseModel):
             else:
                 existing_accounts_by_code[code] = account
             
-            return account
+            return account, True
 
         root = {}
         for category in Category.ROOT:
@@ -743,20 +742,22 @@ class Company(BaseModel):
 
         # Handle landed cost accounts
         new_additional_cost_accounts = {}
+        new_additional_cost_accounts_system_codes = []
         for index, cost_type in enumerate(LandedCostRowType.values):
             if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
                 system_code = f"E-D-LC-{cost_type[:3].upper()}{index}"
                 code = f"E-D-LC-{cost_type[:3].upper()}{index}"
                 
-                account = get_or_prepare_account(
+                account, is_new = get_or_prepare_account(
                     system_code=system_code,
                     name=cost_type,
                     category=additional_cost_category,
                     code=code
                 )
                 
-                if account in accounts_to_create:
+                if is_new:
                     new_additional_cost_accounts[cost_type] = None
+                    new_additional_cost_accounts_system_codes.append(system_code)
 
         get_or_prepare_category(
             name="Purchase Expenses",
@@ -896,11 +897,11 @@ class Company(BaseModel):
         if new_additional_cost_accounts:
             created_accounts = Account.objects.filter(
                 company=self,
-                system_code__startswith="E-D-LC-"
+                system_code__in=new_additional_cost_accounts_system_codes
             ).values('system_code', 'id')
-            
+
             account_id_map = {acc['system_code']: acc['id'] for acc in created_accounts}
-            
+
             for cost_type in new_additional_cost_accounts:
                 system_code = f"E-D-LC-{cost_type[:3].upper()}{LandedCostRowType.values.index(cost_type)}"
                 if system_code in account_id_map:
