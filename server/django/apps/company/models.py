@@ -5,6 +5,7 @@ import warnings
 from datetime import timedelta
 from functools import cached_property
 from typing import Dict
+from django.db.models import Q
 
 from django.apps import apps
 from django.conf import settings
@@ -312,144 +313,6 @@ class Company(BaseModel):
         from apps.quotation.models import QuotationSetting
         from apps.product.models import InventorySetting
 
-        CATEGORY_CODES = [
-            "A-OR",
-            "A-DA",
-            "A-LA",
-            "A-D",
-            "A-E",
-            "A-CE",
-            "A-AR",
-            "A-ED",
-            "L-AP",
-            "L-OP",
-            "L-P",
-            "L-SL",
-            "L-US",
-            "L-DT",
-            "L-LA",
-            "I-D",
-            "I-D-TR",
-            "I-I",
-            "E-D-PE",
-            "E-I-P",
-            "E-I-FB",
-            "E-I-C",
-            "E-I-CC",
-            "E-I-PS",
-            "E-I-RM",
-            "E-I-FT",
-        ]
-        
-        ACCOUNT_CODES = [
-            "Q-OBE",
-            "Q-CI",
-            "Q-DC",
-            "L-DEP",
-            "L-AFP",
-            "L-OP",
-            "L-T-I",
-            "L-T-TA",
-            "L-T-TR",
-            "E-I-BC-BC",
-            "E-I-FP",
-        ]
-        
-        existing_categories_by_code = {
-            cat.code: cat for cat in Category.objects.filter(
-                company=self, code__in=CATEGORY_CODES
-            )
-        }
-        existing_categories_by_system_code = {
-            cat.system_code: cat for cat in Category.objects.filter(
-                company=self, system_code__in=acc_cat_system_codes.values()
-            )
-        }
-        existing_accounts_by_code = {
-            acc.code: acc for acc in Account.objects.filter(
-                company=self, code__in=ACCOUNT_CODES
-            )
-        }
-        # Build system codes for landed cost accounts
-        landed_cost_system_codes = []
-        for index, cost_type in enumerate(LandedCostRowType.values):
-            if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
-                system_code = f"E-D-LC-{cost_type[:3].upper()}{index}"
-                landed_cost_system_codes.append(system_code)
-        
-        # Combine regular system codes with landed cost system codes
-        all_system_codes = list(acc_system_codes.values()) + landed_cost_system_codes
-        
-        existing_accounts_by_system_code = {
-            acc.system_code: acc for acc in Account.objects.filter(
-                company=self, system_code__in=all_system_codes
-            )
-        }
-
-        accounts_to_create = []
-
-        def get_or_create_category(name, code=None, system_code=None, parent=None):
-            if not name:
-                raise ValueError("name is required")
-
-            if not code:
-                raise ValueError("code is required")
-            
-            if system_code:
-                if system_code in existing_categories_by_system_code:
-                    return existing_categories_by_system_code[system_code]
-            elif code in existing_categories_by_code:
-                return existing_categories_by_code[code]
-            
-            category = Category.objects.create(
-                name=name,
-                company=self,
-                parent=parent,
-                code=code,
-                default=True,
-                system_code=system_code,
-            )
-
-            if system_code:
-                existing_categories_by_system_code[system_code] = category
-            elif code:
-                existing_categories_by_code[code] = category
-            
-            return category
-
-
-        def get_or_prepare_account(code, name, system_code=None, category=None):
-            if not code:
-                raise ValueError("code is required")
-            if not name:
-                raise ValueError("name is required")
-            
-            if system_code:
-                if system_code in existing_accounts_by_system_code:
-                    return existing_accounts_by_system_code[system_code], False
-            elif code in existing_accounts_by_code:
-                return existing_accounts_by_code[code], False
-
-            account_data = {
-                'name': name,
-                'company': self,
-                'category': category,
-                'default': True,
-                'code': code,
-                'system_code': system_code,
-            }
-            
-                
-            account = Account(**account_data)
-            accounts_to_create.append(account)
-
-            if system_code:
-                existing_accounts_by_system_code[system_code] = account
-            else:
-                existing_accounts_by_code[code] = account
-            
-            return account, True
-
         # Define all categories in a structured way
         CATEGORY_DEFINITIONS = [
             # Root categories
@@ -520,17 +383,6 @@ class Company(BaseModel):
             {"name": "Inventory write-off", "code": "E-I-DE-IWO", "system_code": acc_cat_system_codes["Inventory write-off"], "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
         ]
 
-        for category_def in CATEGORY_DEFINITIONS:
-            parent_system_code = category_def.get("parent_system_code")
-            parent = existing_categories_by_system_code[parent_system_code] if parent_system_code else None
-            
-            get_or_create_category(
-                name=category_def["name"],
-                code=category_def["code"],
-                system_code=category_def.get("system_code"),
-                parent=parent
-            )
-            
         # Define all accounts in a structured way
         ACCOUNT_DEFINITIONS = [
             # Equity accounts
@@ -568,6 +420,120 @@ class Company(BaseModel):
             {"name": "Damage Expense", "code": "E-I-DE-IWO-DE", "system_code": acc_system_codes["Damage Expense"], "category_system_code": acc_cat_system_codes["Inventory write-off"]},
             {"name": "Expiry Expense", "code": "E-I-DE-IWO-EE", "system_code": acc_system_codes["Expiry Expense"], "category_system_code": acc_cat_system_codes["Inventory write-off"]},
         ]
+
+        CATEGORY_CODES = [cat["code"] for cat in CATEGORY_DEFINITIONS if "system_code" not in cat]
+        ACCOUNT_CODES = [acc["code"] for acc in ACCOUNT_DEFINITIONS if "system_code" not in acc]
+        
+        landed_cost_system_codes = []
+        for index, cost_type in enumerate(LandedCostRowType.values):
+            if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
+                system_code = f"E-D-LC-{cost_type[:3].upper()}{index}"
+                landed_cost_system_codes.append(system_code)
+        
+        all_account_system_codes = list(acc_system_codes.values()) + landed_cost_system_codes
+        
+        category_filter = Q(code__in=CATEGORY_CODES) | Q(system_code__in=acc_cat_system_codes.values())
+        filtered_categories = Category.objects.filter(company=self).filter(category_filter)
+        
+        existing_categories_by_code = {}
+        existing_categories_by_system_code = {}
+        
+        for cat in filtered_categories:
+            if cat.system_code:
+                existing_categories_by_system_code[cat.system_code] = cat
+            else:
+                existing_categories_by_code[cat.code] = cat
+
+        account_filter = Q(code__in=ACCOUNT_CODES) | Q(system_code__in=all_account_system_codes)
+        filtered_accounts = Account.objects.filter(company=self).filter(account_filter)
+        
+        existing_accounts_by_code = {}
+        existing_accounts_by_system_code = {}
+        
+        for acc in filtered_accounts:
+            if acc.system_code:
+                existing_accounts_by_system_code[acc.system_code] = acc
+            else:
+                existing_accounts_by_code[acc.code] = acc
+
+        accounts_to_create = []
+
+        def get_or_create_category(name, code=None, system_code=None, parent=None):
+            if not name:
+                raise ValueError("name is required")
+
+            if not code:
+                raise ValueError("code is required")
+            
+            if system_code:
+                if system_code in existing_categories_by_system_code:
+                    return existing_categories_by_system_code[system_code]
+            elif code in existing_categories_by_code:
+                return existing_categories_by_code[code]
+            
+            category = Category.objects.create(
+                name=name,
+                company=self,
+                parent=parent,
+                code=code,
+                default=True,
+                system_code=system_code,
+            )
+
+            if system_code:
+                existing_categories_by_system_code[system_code] = category
+            elif code:
+                existing_categories_by_code[code] = category
+            
+            return category
+
+
+        def get_or_prepare_account(code, name, system_code=None, category=None):
+            if not code:
+                raise ValueError("code is required")
+            if not name:
+                raise ValueError("name is required")
+            
+            if system_code:
+                if system_code in existing_accounts_by_system_code:
+                    return existing_accounts_by_system_code[system_code], False
+            elif code in existing_accounts_by_code:
+                return existing_accounts_by_code[code], False
+
+            account_data = {
+                'name': name,
+                'company': self,
+                'category': category,
+                'default': True,
+                'code': code,
+                'system_code': system_code,
+            }
+            
+                
+            account = Account(**account_data)
+            accounts_to_create.append(account)
+
+            if system_code:
+                existing_accounts_by_system_code[system_code] = account
+            else:
+                existing_accounts_by_code[code] = account
+            
+            return account, True
+
+        
+
+        for category_def in CATEGORY_DEFINITIONS:
+            parent_system_code = category_def.get("parent_system_code")
+            parent = existing_categories_by_system_code[parent_system_code] if parent_system_code else None
+            
+            get_or_create_category(
+                name=category_def["name"],
+                code=category_def["code"],
+                system_code=category_def.get("system_code"),
+                parent=parent
+            )
+            
+        
 
         for account_def in ACCOUNT_DEFINITIONS:
             category_system_code = account_def.get("category_system_code")
