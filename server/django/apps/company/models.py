@@ -450,345 +450,139 @@ class Company(BaseModel):
             
             return account, True
 
-        root = {}
-        for category in Category.ROOT:
-            root[category[0]] = get_or_create_category(
-                name=category[0],
-                code=category[1],
-                system_code=acc_cat_system_codes[category[0]]
+        # Define all categories in a structured way
+        CATEGORY_DEFINITIONS = [
+            # Root categories
+            *[{"name": category[0], "code": category[1], "system_code": acc_cat_system_codes[category[0]]} for category in Category.ROOT],
+            
+            # Assets subcategories
+            {"name": "Other Receivables", "code": "A-OR", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Deferred Assets", "code": "A-DA", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Fixed Assets", "code": "A-FA", "system_code": acc_cat_system_codes["Fixed Assets"], "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Loans and Advances Given", "code": "A-LA", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Deposits Made", "code": "A-D", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Employee", "code": "A-E", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Tax Receivables", "code": "A-TR", "system_code": acc_cat_system_codes["Tax Receivables"], "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Cash Accounts", "code": "A-C", "system_code": acc_cat_system_codes["Cash Accounts"], "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Cash Equivalent Account", "code": "A-CE", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Bank Accounts", "code": "A-B", "system_code": acc_cat_system_codes["Bank Accounts"], "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Account Receivables", "code": "A-AR", "system_code": acc_cat_system_codes["Account Receivables"], "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Employee Deductions", "code": "A-ED", "parent_system_code": acc_cat_system_codes["Assets"]},
+            
+            # Account Receivables subcategories
+            {"name": "Customers", "code": "A-AR-C", "system_code": acc_cat_system_codes["Customers"], "parent_system_code": acc_cat_system_codes["Account Receivables"]},
+            
+            # Liabilities subcategories
+            {"name": "Account Payables", "code": "L-AP", "system_code": acc_cat_system_codes["Account Payables"], "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Other Payables", "code": "L-OP", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Provisions", "code": "L-P", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Secured Loans", "code": "L-SL", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Unsecured Loans", "code": "L-US", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Deposits Taken", "code": "L-DT", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Loans & Advances Taken", "code": "L-LA", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Duties & Taxes", "code": "L-T", "system_code": acc_cat_system_codes["Duties & Taxes"], "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            
+            # Account Payables subcategories
+            {"name": "Suppliers", "code": "L-AP-S", "system_code": acc_cat_system_codes["Suppliers"], "parent_system_code": acc_cat_system_codes["Account Payables"]},
+            
+            # Income subcategories
+            {"name": "Sales", "code": "I-S", "system_code": acc_cat_system_codes["Sales"], "parent_system_code": acc_cat_system_codes["Income"]},
+            {"name": "Direct Income", "code": "I-D", "system_code": acc_cat_system_codes["Direct Income"], "parent_system_code": acc_cat_system_codes["Income"]},
+            {"name": "Indirect Income", "code": "I-I", "system_code": acc_cat_system_codes["Indirect Income"], "parent_system_code": acc_cat_system_codes["Income"]},
+            
+            # Direct Income subcategories
+            {"name": "Transfer and Remittance", "code": "I-D-TR", "parent_system_code": acc_cat_system_codes["Direct Income"]},
+            
+            # Indirect Income subcategories
+            {"name": "Discount Income", "code": "I-I-DI", "system_code": acc_cat_system_codes["Discount Income"], "parent_system_code": acc_cat_system_codes["Indirect Income"]},
+            {"name": "Interest Income", "code": "I-I-II", "system_code": acc_cat_system_codes["Interest Income"], "parent_system_code": acc_cat_system_codes["Indirect Income"]},
+            
+            # Expenses subcategories
+            {"name": "Purchase", "code": "E-P", "system_code": acc_cat_system_codes["Purchase"], "parent_system_code": acc_cat_system_codes["Expenses"]},
+            {"name": "Direct Expenses", "code": "E-D", "system_code": acc_cat_system_codes["Direct Expenses"], "parent_system_code": acc_cat_system_codes["Expenses"]},
+            {"name": "Indirect Expenses", "code": "E-I", "system_code": acc_cat_system_codes["Indirect Expenses"], "parent_system_code": acc_cat_system_codes["Expenses"]},
+            
+            # Direct Expenses subcategories
+            {"name": "Additional Cost", "code": "E-D-AC", "system_code": acc_cat_system_codes["Additional Cost"], "parent_system_code": acc_cat_system_codes["Direct Expenses"]},
+            {"name": "Purchase Expenses", "code": "E-D-PE", "parent_system_code": acc_cat_system_codes["Direct Expenses"]},
+            
+            # Indirect Expenses subcategories
+            {"name": "Bank Charges", "code": "E-I-BC", "system_code": acc_cat_system_codes["Bank Charges"], "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Pay Head", "code": "E-I-P", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Food and Beverages", "code": "E-I-FB", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Communication Expenses", "code": "E-I-C", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Courier Charges", "code": "E-I-CC", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Printing and Stationery", "code": "E-I-PS", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Repair and Maintenance", "code": "E-I-RM", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Fuel and Transport", "code": "E-I-FT", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Discount Expenses", "code": "E-I-DE", "system_code": acc_cat_system_codes["Discount Expenses"], "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Interest Expenses", "code": "E-I-IE", "system_code": acc_cat_system_codes["Interest Expenses"], "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Inventory write-off", "code": "E-I-DE-IWO", "system_code": acc_cat_system_codes["Inventory write-off"], "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+        ]
+
+        for category_def in CATEGORY_DEFINITIONS:
+            parent_system_code = category_def.get("parent_system_code")
+            parent = existing_categories_by_system_code[parent_system_code] if parent_system_code else None
+            
+            get_or_create_category(
+                name=category_def["name"],
+                code=category_def["code"],
+                system_code=category_def.get("system_code"),
+                parent=parent
             )
+            
+        # Define all accounts in a structured way
+        ACCOUNT_DEFINITIONS = [
+            # Equity accounts
+            {"name": "Profit and Loss Account", "code": "Q-PL", "system_code": acc_system_codes["Profit and Loss Account"], "category_system_code": acc_cat_system_codes["Equity"]},
+            {"name": "Opening Balance Equity", "code": "Q-OBE", "category_system_code": acc_cat_system_codes["Equity"]},
+            {"name": "Capital Investment", "code": "Q-CI", "category_system_code": acc_cat_system_codes["Equity"]},
+            {"name": "Drawing Capital", "code": "Q-DC", "category_system_code": acc_cat_system_codes["Equity"]},
+            
+            # Asset accounts
+            {"name": "TDS Receivables", "code": "A-TR-TDS", "system_code": acc_system_codes["TDS Receivables"], "category_system_code": acc_cat_system_codes["Tax Receivables"]},
+            {"name": "Cash", "code": "A-C-C", "system_code": acc_system_codes["Cash"], "category_system_code": acc_cat_system_codes["Cash Accounts"]},
+            
+            # Liability accounts
+            {"name": "Provision for Accumulated Depreciation", "code": "L-DEP", "category_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Audit Fee Payable", "code": "L-AFP", "category_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Other Payables", "code": "L-OP", "category_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Income Tax", "code": "L-T-I", "category_system_code": acc_cat_system_codes["Duties & Taxes"]},
+            {"name": "TDS (Audit Fee)", "code": "L-T-TA", "category_system_code": acc_cat_system_codes["Duties & Taxes"]},
+            {"name": "TDS (Rent)", "code": "L-T-TR", "category_system_code": acc_cat_system_codes["Duties & Taxes"]},
+            
+            # Income accounts
+            {"name": "Sales Account", "code": "I-S-S", "system_code": acc_system_codes["Sales Account"], "category_system_code": acc_cat_system_codes["Sales"]},
+            {"name": "Discount Income", "code": "I-I-DI-DI", "system_code": acc_system_codes["Discount Income"], "category_system_code": acc_cat_system_codes["Discount Income"]},
+            {"name": "Interest Income", "code": "I-I-II-II", "system_code": acc_system_codes["Interest Income"], "category_system_code": acc_cat_system_codes["Interest Income"]},
+            
+            # Expense accounts
+            {"name": "Purchase Account", "code": "E-P-P", "system_code": acc_system_codes["Purchase Account"], "category_system_code": acc_cat_system_codes["Purchase"]},
+            {"name": "Bank Charges", "code": "E-I-BC-BC", "category_system_code": acc_cat_system_codes["Bank Charges"]},
+            {"name": "Fines & Penalties", "code": "E-I-FP", "category_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Discount Expenses", "code": "E-I-DE-DE", "system_code": acc_system_codes["Discount Expenses"], "category_system_code": acc_cat_system_codes["Discount Expenses"]},
+            {"name": "Interest Expenses", "code": "E-I-IE-IE", "system_code": acc_system_codes["Interest Expenses"], "category_system_code": acc_cat_system_codes["Interest Expenses"]},
+            
+            # Special accounts
+            {"name": "Opening Balance Difference", "code": "O-OBD", "system_code": acc_system_codes["Opening Balance Difference"], "category_system_code": acc_cat_system_codes["Opening Balance Difference"]},
+            {"name": "Damage Expense", "code": "E-I-DE-IWO-DE", "system_code": acc_system_codes["Damage Expense"], "category_system_code": acc_cat_system_codes["Inventory write-off"]},
+            {"name": "Expiry Expense", "code": "E-I-DE-IWO-EE", "system_code": acc_system_codes["Expiry Expense"], "category_system_code": acc_cat_system_codes["Inventory write-off"]},
+        ]
 
-        get_or_prepare_account(
-            system_code=acc_system_codes["Profit and Loss Account"],
-            name="Profit and Loss Account",
-            category=root["Equity"],
-            code="Q-PL"
-        )
-        
-        get_or_prepare_account(
-            code="Q-OBE",
-            name="Opening Balance Equity",
-            category=root["Equity"]
-        )
-        
-        get_or_prepare_account(
-            code="Q-CI",
-            name="Capital Investment",
-            category=root["Equity"]
-        )
-        
-        get_or_prepare_account(
-            code="Q-DC",
-            name="Drawing Capital",
-            category=root["Equity"]
-        )
+        for account_def in ACCOUNT_DEFINITIONS:
+            category_system_code = account_def.get("category_system_code")
+            category = existing_categories_by_system_code.get(category_system_code) if category_system_code else None
+            
+            get_or_prepare_account(
+                name=account_def["name"],
+                code=account_def["code"],
+                system_code=account_def.get("system_code"),
+                category=category
+            )
+            
+        # Get specific categories needed for landed cost accounts
+        additional_cost_category = existing_categories_by_system_code[acc_cat_system_codes["Additional Cost"]]
 
-        # CREATE DEFAULT CATEGORIES AND LEDGERS FOR ASSETS
-        # ================================================
-        get_or_create_category(
-            name="Other Receivables",
-            code="A-OR",
-            parent=root["Assets"]
-        )
-        
-        get_or_create_category(
-            name="Deferred Assets",
-            code="A-DA",
-            parent=root["Assets"]
-        )
-        
-        get_or_create_category(
-            name="Fixed Assets",
-            code="A-FA",
-            system_code=acc_cat_system_codes["Fixed Assets"],
-            parent=root["Assets"]
-        )
-        
-        get_or_create_category(
-            name="Loans and Advances Given",
-            code="A-LA",
-            parent=root["Assets"]
-        )
-        
-        get_or_create_category(
-            name="Deposits Made",
-            code="A-D",
-            parent=root["Assets"]
-        )
-        
-        get_or_create_category(
-            name="Employee",
-            code="A-E",
-            parent=root["Assets"]
-        )
-        
-        tax_receivables = get_or_create_category(
-            name="Tax Receivables",
-            code="A-TR",
-            system_code=acc_cat_system_codes["Tax Receivables"],
-            parent=root["Assets"]
-        )
-        
-        get_or_prepare_account(
-            system_code=acc_system_codes["TDS Receivables"],
-            name="TDS Receivables",
-            category=tax_receivables,
-            code="A-TR-TDS"
-        )
-
-        cash_account_category = get_or_create_category(
-            name="Cash Accounts",
-            code="A-C",
-            system_code=acc_cat_system_codes["Cash Accounts"],
-            parent=root["Assets"]
-        )
-        
-        cash_account, _ = get_or_prepare_account(
-            system_code=acc_system_codes["Cash"],
-            name="Cash",
-            category=cash_account_category,
-            code="A-C-C"
-        )
-        
-        get_or_create_category(
-            name="Cash Equivalent Account",
-            code="A-CE",
-            parent=root["Assets"]
-        )
-
-        get_or_create_category(
-            name="Bank Accounts",
-            code="A-B",
-            system_code=acc_cat_system_codes["Bank Accounts"],
-            parent=root["Assets"]
-        )
-
-        account_receivables = get_or_create_category(
-            name="Account Receivables",
-            code="A-AR",
-            system_code=acc_cat_system_codes["Account Receivables"],
-            parent=root["Assets"]
-        )
-        
-        get_or_create_category(
-            name="Customers",
-            code="A-AR-C",
-            system_code=acc_cat_system_codes["Customers"],
-            parent=account_receivables
-            
-        )
-
-        get_or_create_category(
-            name="Employee Deductions",
-            code="A-ED",
-            parent=root["Assets"]
-            
-        )
-
-        # CREATE DEFAULT CATEGORIES AND LEDGERS FOR LIABILITIES
-        # =====================================================
-        account_payables = get_or_create_category(
-            name="Account Payables",
-            code="L-AP",
-            system_code=acc_cat_system_codes["Account Payables"],
-            parent=root["Liabilities"]
-            
-        )
-        
-        get_or_create_category(
-            name="Suppliers",
-            code="L-AP-S",
-            system_code=acc_cat_system_codes["Suppliers"],
-            parent=account_payables
-            
-        )
-        
-        get_or_create_category(
-            name="Other Payables",
-            code="L-OP",
-            parent=root["Liabilities"]
-            
-        )
-        
-        get_or_create_category(
-            name="Provisions",
-            code="L-P",
-            parent=root["Liabilities"]
-            
-        )
-        
-        get_or_create_category(
-            name="Secured Loans",
-            code="L-SL",
-            parent=root["Liabilities"]
-            
-        )
-        
-        get_or_create_category(
-            name="Unsecured Loans",
-            code="L-US",
-            parent=root["Liabilities"]
-            
-        )
-        
-        get_or_create_category(
-            name="Deposits Taken",
-            code="L-DT",
-            parent=root["Liabilities"]
-            
-        )
-        
-        get_or_create_category(
-            name="Loans & Advances Taken",
-            code="L-LA",
-            parent=root["Liabilities"]
-            
-        )
-        
-        get_or_prepare_account(
-            code="L-DEP",
-            name="Provision for Accumulated Depreciation",
-            category=root["Liabilities"]
-        )
-        
-        get_or_prepare_account(
-            code="L-AFP",
-            name="Audit Fee Payable",
-            category=root["Liabilities"]
-        )
-        
-        get_or_prepare_account(
-            code="L-OP",
-            name="Other Payables",
-            category=root["Liabilities"]
-        )
-        
-        duties_and_taxes = get_or_create_category(
-            name="Duties & Taxes",
-            code="L-T",
-            system_code=acc_cat_system_codes["Duties & Taxes"],
-            parent=root["Liabilities"]
-            
-        )
-        
-        get_or_prepare_account(
-            code="L-T-I",
-            name="Income Tax",
-            category=duties_and_taxes
-        )
-        
-        get_or_prepare_account(
-            code="L-T-TA",
-            name="TDS (Audit Fee)",
-            category=duties_and_taxes
-        )
-        
-        get_or_prepare_account(
-            code="L-T-TR",
-            name="TDS (Rent)",
-            category=duties_and_taxes
-        )
-
-        # CREATE DEFAULT CATEGORIES FOR INCOME
-        # =====================================
-        sales_category = get_or_create_category(
-            name="Sales",
-            code="I-S",
-            system_code=acc_cat_system_codes["Sales"],
-            parent=root["Income"]
-        )
-        
-        get_or_prepare_account(
-            system_code=acc_system_codes["Sales Account"],
-            name="Sales Account",
-            code="I-S-S",
-            category=sales_category
-        )
-        
-        direct_income = get_or_create_category(
-            name="Direct Income",
-            code="I-D",
-            system_code=acc_cat_system_codes["Direct Income"],
-            parent=root["Income"]
-        )
-        
-        get_or_create_category(
-            name="Transfer and Remittance",
-            code="I-D-TR",
-            parent=direct_income
-            
-        )
-        
-        indirect_income = get_or_create_category(
-            name="Indirect Income",
-            code="I-I",
-            system_code=acc_cat_system_codes["Indirect Income"],
-            parent=root["Income"]
-        )
-
-        discount_income_category = get_or_create_category(
-            name="Discount Income",
-            code="I-I-DI",
-            system_code=acc_cat_system_codes["Discount Income"],
-            parent=indirect_income
-            
-        )
-        
-        get_or_prepare_account(
-            system_code=acc_system_codes["Discount Income"],
-            name="Discount Income",
-            code="I-I-DI-DI",
-            category=discount_income_category
-        )
-
-        interest_income_category = get_or_create_category(
-            name="Interest Income",
-            code="I-I-II",
-            parent=indirect_income,
-            system_code=acc_cat_system_codes["Interest Income"],
-        )
-
-        get_or_prepare_account(
-            system_code=acc_system_codes["Interest Income"],
-            name="Interest Income",
-            code="I-I-II-II",
-            category=interest_income_category,
-        )
-
-        # CREATE DEFAULT CATEGORIES FOR EXPENSES
-        # =====================================
-        purchase_category = get_or_create_category(
-            name="Purchase",
-            code="E-P",
-            system_code=acc_cat_system_codes["Purchase"],
-            parent=root["Expenses"]
-            
-        )
-        
-        get_or_prepare_account(
-            system_code=acc_system_codes["Purchase Account"],
-            name="Purchase Account",
-            code="E-P-P",
-            category=purchase_category
-        )
-
-        direct_expenses = get_or_create_category(
-            name="Direct Expenses",
-            code="E-D",
-            system_code=acc_cat_system_codes["Direct Expenses"],
-            parent=root["Expenses"]
-            
-        )
-
-        additional_cost_category = get_or_create_category(
-            name="Additional Cost",
-            code="E-D-AC",
-            system_code=acc_cat_system_codes["Additional Cost"],
-            parent=direct_expenses
-            
-        )
-
-        # Handle landed cost accounts
         new_additional_cost_accounts = {}
         new_additional_cost_accounts_system_codes = []
         for index, cost_type in enumerate(LandedCostRowType.values):
@@ -796,7 +590,7 @@ class Company(BaseModel):
                 system_code = f"E-D-LC-{cost_type[:3].upper()}{index}"
                 code = f"E-D-LC-{cost_type[:3].upper()}{index}"
                 
-                account, is_new = get_or_prepare_account(
+                _, is_new = get_or_prepare_account(
                     system_code=system_code,
                     name=cost_type,
                     category=additional_cost_category,
@@ -807,152 +601,7 @@ class Company(BaseModel):
                     new_additional_cost_accounts[cost_type] = None
                     new_additional_cost_accounts_system_codes.append(system_code)
 
-        get_or_create_category(
-            name="Purchase Expenses",
-            code="E-D-PE",
-            parent=direct_expenses
-            
-        )
-        
-        indirect_expenses = get_or_create_category(
-            name="Indirect Expenses",
-            code="E-I",
-            system_code=acc_cat_system_codes["Indirect Expenses"],
-            parent=root["Expenses"]
-            
-        )
-
-        bank_charges = get_or_create_category(
-            name="Bank Charges",
-            code="E-I-BC",
-            system_code=acc_cat_system_codes["Bank Charges"],
-            parent=indirect_expenses
-            
-        )
-        
-        get_or_prepare_account(
-            code="E-I-BC-BC",
-            name="Bank Charges",
-            category=bank_charges
-        )
-        
-        get_or_prepare_account(
-            code="E-I-FP",
-            name="Fines & Penalties",
-            category=indirect_expenses
-        )
-        
-        get_or_create_category(
-            name="Pay Head",
-            code="E-I-P",
-            parent=indirect_expenses
-            
-        )
-        
-        get_or_create_category(
-            name="Food and Beverages",
-            code="E-I-FB",
-            parent=indirect_expenses
-            
-        )
-        
-        get_or_create_category(
-            name="Communication Expenses",
-            code="E-I-C",
-            parent=indirect_expenses
-            
-        )
-        
-        get_or_create_category(
-            name="Courier Charges",
-            code="E-I-CC",
-            parent=indirect_expenses
-            
-        )
-        
-        get_or_create_category(
-            name="Printing and Stationery",
-            code="E-I-PS",
-            parent=indirect_expenses
-            
-        )
-        
-        get_or_create_category(
-            name="Repair and Maintenance",
-            code="E-I-RM",
-            parent=indirect_expenses
-            
-        )
-        
-        get_or_create_category(
-            name="Fuel and Transport",
-            code="E-I-FT",
-            parent=indirect_expenses
-            
-        )
-        
-        discount_expense_category = get_or_create_category(
-            name="Discount Expenses",
-            code="E-I-DE",
-            system_code=acc_cat_system_codes["Discount Expenses"],
-            parent=indirect_expenses
-            
-        )
-        
-        get_or_prepare_account(
-            system_code=acc_system_codes["Discount Expenses"],
-            name="Discount Expenses",
-            category=discount_expense_category,
-            code="E-I-DE-DE"
-        )
-
-        interest_expense_category = get_or_create_category(
-            name="Interest Expenses",
-            code="E-I-IE",
-            system_code=acc_cat_system_codes["Interest Expenses"],
-            parent=indirect_expenses
-        )
-
-        get_or_prepare_account(
-            system_code=acc_system_codes["Interest Expenses"],
-            name="Interest Expenses",
-            code="E-I-IE-IE",
-            category=interest_expense_category
-        )
-
-        # Opening Balance Difference
-        # ==========================
-        get_or_prepare_account(
-            system_code=acc_system_codes["Opening Balance Difference"],
-            name="Opening Balance Difference",
-            code="O-OBD",
-            category=root["Opening Balance Difference"]
-        )
-
-        # For Inventory Adjustment
-        # ==========================
-        inventory_write_off_account = get_or_create_category(
-            name="Inventory write-off",
-            code="E-I-DE-IWO",
-            system_code=acc_cat_system_codes["Inventory write-off"],
-            parent=indirect_expenses
-            
-        )
-
-        get_or_prepare_account(
-            system_code=acc_system_codes["Damage Expense"],
-            name="Damage Expense",
-            code="E-I-DE-IWO-DE",
-            category=inventory_write_off_account
-        )
-
-        get_or_prepare_account(
-            system_code=acc_system_codes["Expiry Expense"],
-            name="Expiry Expense",
-            code="E-I-DE-IWO-EE",
-            category=inventory_write_off_account
-        )
-            
+        # Handle landed cost accounts (kept separate due to special logic)
         if accounts_to_create:
             Account.objects.bulk_create(accounts_to_create)
 
@@ -982,7 +631,7 @@ class Company(BaseModel):
             company=self,
             name="Cash",
             defaults={
-                'account': cash_account
+                'account': existing_accounts_by_system_code[acc_system_codes["Cash"]]
             }
         )
 
