@@ -5,22 +5,23 @@ import warnings
 from datetime import timedelta
 from functools import cached_property
 from typing import Dict
+from django.db.models import Q
 
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.db import models
-from django.dispatch import receiver
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 
 from apps.company.constants import RESTRICTED_COMPANY_SLUGS
-from apps.company.signals import company_created
 from lib.models import BaseModel
 from lib.models.mixins import TimeAuditModel
 from lib.string import to_snake
 
+acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
+acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
 
 def get_default_permissions() -> Dict[str, Dict[str, bool]]:
     """
@@ -251,6 +252,9 @@ class Company(BaseModel):
     synchronize_cbms_nepal_live = models.BooleanField(default=False)
     config_template = models.CharField(max_length=255, default="np")
     invoice_template = models.IntegerField(choices=INVOICE_TEMPLATE_CHOICES, default=1)
+    corporate_tax_rate = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
 
     current_fiscal_year = models.ForeignKey(
         FiscalYear,
@@ -292,7 +296,7 @@ class Company(BaseModel):
         super().save(*args, **kwargs)
 
         if is_creating:
-            company_created.send(sender=self.__class__, company=self)
+            self.create_company_defaults()
 
     def get_fiscal_years(self):
         # TODO Assign fiscal years to companies (m2m), return related fiscal years here
@@ -301,6 +305,318 @@ class Company(BaseModel):
             key=lambda fy: 999 if fy.id == self.current_fiscal_year_id else fy.id,
             reverse=True,
         )
+
+    def create_company_defaults(self):
+        from apps.ledger.models import Category, Account
+        from apps.voucher.models import PaymentMode, LandedCostRowType
+        from apps.voucher.models.voucher_settings import PurchaseSetting, SalesSetting
+        from apps.quotation.models import QuotationSetting
+        from apps.product.models import InventorySetting
+
+        # Define all categories in a structured way
+        CATEGORY_DEFINITIONS = [
+            # Root categories
+            *[{"name": category[0], "code": category[1], "system_code": acc_cat_system_codes[category[0]]} for category in Category.ROOT],
+            
+            # Assets subcategories
+            {"name": "Other Receivables", "code": "A-OR", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Deferred Assets", "code": "A-DA", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Fixed Assets", "code": "A-FA", "system_code": acc_cat_system_codes["Fixed Assets"], "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Loans and Advances Given", "code": "A-LA", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Deposits Made", "code": "A-D", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Employee", "code": "A-E", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Tax Receivables", "code": "A-TR", "system_code": acc_cat_system_codes["Tax Receivables"], "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Cash Accounts", "code": "A-C", "system_code": acc_cat_system_codes["Cash Accounts"], "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Cash Equivalent Account", "code": "A-CE", "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Bank Accounts", "code": "A-B", "system_code": acc_cat_system_codes["Bank Accounts"], "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Account Receivables", "code": "A-AR", "system_code": acc_cat_system_codes["Account Receivables"], "parent_system_code": acc_cat_system_codes["Assets"]},
+            {"name": "Employee Deductions", "code": "A-ED", "parent_system_code": acc_cat_system_codes["Assets"]},
+            
+            # Account Receivables subcategories
+            {"name": "Customers", "code": "A-AR-C", "system_code": acc_cat_system_codes["Customers"], "parent_system_code": acc_cat_system_codes["Account Receivables"]},
+            
+            # Liabilities subcategories
+            {"name": "Account Payables", "code": "L-AP", "system_code": acc_cat_system_codes["Account Payables"], "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Other Payables", "code": "L-OP", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Provisions", "code": "L-P", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Secured Loans", "code": "L-SL", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Unsecured Loans", "code": "L-US", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Deposits Taken", "code": "L-DT", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Loans & Advances Taken", "code": "L-LA", "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Duties & Taxes", "code": "L-T", "system_code": acc_cat_system_codes["Duties & Taxes"], "parent_system_code": acc_cat_system_codes["Liabilities"]},
+            
+            # Account Payables subcategories
+            {"name": "Suppliers", "code": "L-AP-S", "system_code": acc_cat_system_codes["Suppliers"], "parent_system_code": acc_cat_system_codes["Account Payables"]},
+            
+            # Income subcategories
+            {"name": "Sales", "code": "I-S", "system_code": acc_cat_system_codes["Sales"], "parent_system_code": acc_cat_system_codes["Income"]},
+            {"name": "Direct Income", "code": "I-D", "system_code": acc_cat_system_codes["Direct Income"], "parent_system_code": acc_cat_system_codes["Income"]},
+            {"name": "Indirect Income", "code": "I-I", "system_code": acc_cat_system_codes["Indirect Income"], "parent_system_code": acc_cat_system_codes["Income"]},
+            
+            # Direct Income subcategories
+            {"name": "Transfer and Remittance", "code": "I-D-TR", "parent_system_code": acc_cat_system_codes["Direct Income"]},
+            
+            # Indirect Income subcategories
+            {"name": "Discount Income", "code": "I-I-DI", "system_code": acc_cat_system_codes["Discount Income"], "parent_system_code": acc_cat_system_codes["Indirect Income"]},
+            {"name": "Interest Income", "code": "I-I-II", "system_code": acc_cat_system_codes["Interest Income"], "parent_system_code": acc_cat_system_codes["Indirect Income"]},
+            
+            # Expenses subcategories
+            {"name": "Purchase", "code": "E-P", "system_code": acc_cat_system_codes["Purchase"], "parent_system_code": acc_cat_system_codes["Expenses"]},
+            {"name": "Direct Expenses", "code": "E-D", "system_code": acc_cat_system_codes["Direct Expenses"], "parent_system_code": acc_cat_system_codes["Expenses"]},
+            {"name": "Indirect Expenses", "code": "E-I", "system_code": acc_cat_system_codes["Indirect Expenses"], "parent_system_code": acc_cat_system_codes["Expenses"]},
+            
+            # Direct Expenses subcategories
+            {"name": "Additional Cost", "code": "E-D-AC", "system_code": acc_cat_system_codes["Additional Cost"], "parent_system_code": acc_cat_system_codes["Direct Expenses"]},
+            {"name": "Purchase Expenses", "code": "E-D-PE", "parent_system_code": acc_cat_system_codes["Direct Expenses"]},
+            
+            # Indirect Expenses subcategories
+            {"name": "Bank Charges", "code": "E-I-BC", "system_code": acc_cat_system_codes["Bank Charges"], "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Pay Head", "code": "E-I-P", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Food and Beverages", "code": "E-I-FB", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Communication Expenses", "code": "E-I-C", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Courier Charges", "code": "E-I-CC", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Printing and Stationery", "code": "E-I-PS", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Repair and Maintenance", "code": "E-I-RM", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Fuel and Transport", "code": "E-I-FT", "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Discount Expenses", "code": "E-I-DE", "system_code": acc_cat_system_codes["Discount Expenses"], "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Interest Expenses", "code": "E-I-IE", "system_code": acc_cat_system_codes["Interest Expenses"], "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Inventory write-off", "code": "E-I-DE-IWO", "system_code": acc_cat_system_codes["Inventory write-off"], "parent_system_code": acc_cat_system_codes["Indirect Expenses"]},
+        ]
+
+        # Define all accounts in a structured way
+        ACCOUNT_DEFINITIONS = [
+            # Equity accounts
+            {"name": "Profit and Loss Account", "code": "Q-PL", "system_code": acc_system_codes["Profit and Loss Account"], "category_system_code": acc_cat_system_codes["Equity"]},
+            {"name": "Opening Balance Equity", "code": "Q-OBE", "category_system_code": acc_cat_system_codes["Equity"]},
+            {"name": "Capital Investment", "code": "Q-CI", "category_system_code": acc_cat_system_codes["Equity"]},
+            {"name": "Drawing Capital", "code": "Q-DC", "category_system_code": acc_cat_system_codes["Equity"]},
+            
+            # Asset accounts
+            {"name": "TDS Receivables", "code": "A-TR-TDS", "system_code": acc_system_codes["TDS Receivables"], "category_system_code": acc_cat_system_codes["Tax Receivables"]},
+            {"name": "Cash", "code": "A-C-C", "system_code": acc_system_codes["Cash"], "category_system_code": acc_cat_system_codes["Cash Accounts"]},
+            
+            # Liability accounts
+            {"name": "Provision for Accumulated Depreciation", "code": "L-DEP", "category_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Audit Fee Payable", "code": "L-AFP", "category_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Other Payables", "code": "L-OP", "category_system_code": acc_cat_system_codes["Liabilities"]},
+            {"name": "Income Tax", "code": "L-T-I", "category_system_code": acc_cat_system_codes["Duties & Taxes"]},
+            {"name": "TDS (Audit Fee)", "code": "L-T-TA", "category_system_code": acc_cat_system_codes["Duties & Taxes"]},
+            {"name": "TDS (Rent)", "code": "L-T-TR", "category_system_code": acc_cat_system_codes["Duties & Taxes"]},
+            
+            # Income accounts
+            {"name": "Sales Account", "code": "I-S-S", "system_code": acc_system_codes["Sales Account"], "category_system_code": acc_cat_system_codes["Sales"]},
+            {"name": "Discount Income", "code": "I-I-DI-DI", "system_code": acc_system_codes["Discount Income"], "category_system_code": acc_cat_system_codes["Discount Income"]},
+            {"name": "Interest Income", "code": "I-I-II-II", "system_code": acc_system_codes["Interest Income"], "category_system_code": acc_cat_system_codes["Interest Income"]},
+            
+            # Expense accounts
+            {"name": "Purchase Account", "code": "E-P-P", "system_code": acc_system_codes["Purchase Account"], "category_system_code": acc_cat_system_codes["Purchase"]},
+            {"name": "Bank Charges", "code": "E-I-BC-BC", "category_system_code": acc_cat_system_codes["Bank Charges"]},
+            {"name": "Fines & Penalties", "code": "E-I-FP", "category_system_code": acc_cat_system_codes["Indirect Expenses"]},
+            {"name": "Discount Expenses", "code": "E-I-DE-DE", "system_code": acc_system_codes["Discount Expenses"], "category_system_code": acc_cat_system_codes["Discount Expenses"]},
+            {"name": "Interest Expenses", "code": "E-I-IE-IE", "system_code": acc_system_codes["Interest Expenses"], "category_system_code": acc_cat_system_codes["Interest Expenses"]},
+            
+            # Special accounts
+            {"name": "Opening Balance Difference", "code": "O-OBD", "system_code": acc_system_codes["Opening Balance Difference"], "category_system_code": acc_cat_system_codes["Opening Balance Difference"]},
+            {"name": "Damage Expense", "code": "E-I-DE-IWO-DE", "system_code": acc_system_codes["Damage Expense"], "category_system_code": acc_cat_system_codes["Inventory write-off"]},
+            {"name": "Expiry Expense", "code": "E-I-DE-IWO-EE", "system_code": acc_system_codes["Expiry Expense"], "category_system_code": acc_cat_system_codes["Inventory write-off"]},
+        ]
+
+        CATEGORY_CODES = [cat["code"] for cat in CATEGORY_DEFINITIONS if "system_code" not in cat]
+        ACCOUNT_CODES = [acc["code"] for acc in ACCOUNT_DEFINITIONS if "system_code" not in acc]
+        
+        landed_cost_system_codes = []
+        for index, cost_type in enumerate(LandedCostRowType.values):
+            if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
+                system_code = f"E-D-LC-{cost_type[:3].upper()}{index}"
+                landed_cost_system_codes.append(system_code)
+        
+        all_account_system_codes = list(acc_system_codes.values()) + landed_cost_system_codes
+        
+        category_filter = Q(code__in=CATEGORY_CODES) | Q(system_code__in=acc_cat_system_codes.values())
+        filtered_categories = Category.objects.filter(company=self).filter(category_filter)
+        
+        existing_categories_by_code = {}
+        existing_categories_by_system_code = {}
+        
+        for cat in filtered_categories:
+            if cat.system_code:
+                existing_categories_by_system_code[cat.system_code] = cat
+            else:
+                existing_categories_by_code[cat.code] = cat
+
+        account_filter = Q(code__in=ACCOUNT_CODES) | Q(system_code__in=all_account_system_codes)
+        filtered_accounts = Account.objects.filter(company=self).filter(account_filter)
+        
+        existing_accounts_by_code = {}
+        existing_accounts_by_system_code = {}
+        
+        for acc in filtered_accounts:
+            if acc.system_code:
+                existing_accounts_by_system_code[acc.system_code] = acc
+            else:
+                existing_accounts_by_code[acc.code] = acc
+
+        accounts_to_create = []
+
+        def get_or_create_category(name, code=None, system_code=None, parent=None):
+            if not name:
+                raise ValueError("name is required")
+
+            if not code:
+                raise ValueError("code is required")
+            
+            if system_code:
+                if system_code in existing_categories_by_system_code:
+                    return existing_categories_by_system_code[system_code]
+            elif code in existing_categories_by_code:
+                return existing_categories_by_code[code]
+            
+            category = Category.objects.create(
+                name=name,
+                company=self,
+                parent=parent,
+                code=code,
+                default=True,
+                system_code=system_code,
+            )
+
+            if system_code:
+                existing_categories_by_system_code[system_code] = category
+            elif code:
+                existing_categories_by_code[code] = category
+            
+            return category
+
+
+        def get_or_prepare_account(code, name, system_code=None, category=None):
+            if not code:
+                raise ValueError("code is required")
+            if not name:
+                raise ValueError("name is required")
+            
+            if system_code:
+                if system_code in existing_accounts_by_system_code:
+                    return existing_accounts_by_system_code[system_code], False
+            elif code in existing_accounts_by_code:
+                return existing_accounts_by_code[code], False
+
+            account_data = {
+                'name': name,
+                'company': self,
+                'category': category,
+                'default': True,
+                'code': code,
+                'system_code': system_code,
+            }
+            
+                
+            account = Account(**account_data)
+            accounts_to_create.append(account)
+
+            if system_code:
+                existing_accounts_by_system_code[system_code] = account
+            else:
+                existing_accounts_by_code[code] = account
+            
+            return account, True
+
+        
+
+        for category_def in CATEGORY_DEFINITIONS:
+            parent_system_code = category_def.get("parent_system_code")
+            parent = existing_categories_by_system_code[parent_system_code] if parent_system_code else None
+            
+            get_or_create_category(
+                name=category_def["name"],
+                code=category_def["code"],
+                system_code=category_def.get("system_code"),
+                parent=parent
+            )
+            
+        
+
+        for account_def in ACCOUNT_DEFINITIONS:
+            category_system_code = account_def.get("category_system_code")
+            category = existing_categories_by_system_code.get(category_system_code) if category_system_code else None
+            
+            get_or_prepare_account(
+                name=account_def["name"],
+                code=account_def["code"],
+                system_code=account_def.get("system_code"),
+                category=category
+            )
+            
+        # Get specific categories needed for landed cost accounts
+        additional_cost_category = existing_categories_by_system_code[acc_cat_system_codes["Additional Cost"]]
+
+        new_additional_cost_accounts = {}
+        new_additional_cost_accounts_system_codes = []
+        for index, cost_type in enumerate(LandedCostRowType.values):
+            if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
+                system_code = f"E-D-LC-{cost_type[:3].upper()}{index}"
+                code = f"E-D-LC-{cost_type[:3].upper()}{index}"
+                
+                _, is_new = get_or_prepare_account(
+                    system_code=system_code,
+                    name=cost_type,
+                    category=additional_cost_category,
+                    code=code
+                )
+                
+                if is_new:
+                    new_additional_cost_accounts[cost_type] = None
+                    new_additional_cost_accounts_system_codes.append(system_code)
+
+        # Handle landed cost accounts (kept separate due to special logic)
+        if accounts_to_create:
+            Account.objects.bulk_create(accounts_to_create)
+
+        if new_additional_cost_accounts:
+            created_accounts = Account.objects.filter(
+                company=self,
+                system_code__in=new_additional_cost_accounts_system_codes
+            ).values('system_code', 'id')
+
+            account_id_map = {acc['system_code']: acc['id'] for acc in created_accounts}
+
+            for cost_type in new_additional_cost_accounts:
+                system_code = f"E-D-LC-{cost_type[:3].upper()}{LandedCostRowType.values.index(cost_type)}"
+                if system_code in account_id_map:
+                    new_additional_cost_accounts[cost_type] = account_id_map[system_code]
+
+        # Handle PurchaseSetting
+        purchase_setting, created = PurchaseSetting.objects.get_or_create(company=self)
+        if created and new_additional_cost_accounts:
+            purchase_setting.landed_cost_accounts = new_additional_cost_accounts
+        elif new_additional_cost_accounts:
+            purchase_setting.landed_cost_accounts.update(new_additional_cost_accounts)
+        if new_additional_cost_accounts:
+            purchase_setting.save()
+
+        PaymentMode.objects.get_or_create(
+            company=self,
+            name="Cash",
+            defaults={
+                'account': existing_accounts_by_system_code[acc_system_codes["Cash"]]
+            }
+        )
+
+        # Create default permission for company
+        Permission.objects.get_or_create(
+            company=self,
+            name="Default",
+        )
+
+        # Create default settings for company
+        SalesSetting.objects.get_or_create(company=self)
+        QuotationSetting.objects.get_or_create(
+            company=self,
+            defaults={
+                'body_text': "We are pleased to provide you with the following quotation for the listed items.",
+                'footer_text': "<div>Terms and conditions apply.</div><div>We look forward to working with you.</div>",
+            }
+        )
+        InventorySetting.objects.get_or_create(company=self)
 
 
 class CompanyBaseModel(BaseModel):
@@ -545,11 +861,3 @@ class CompanyMemberInvite(BaseModel):
                 )
             )
         )
-
-
-@receiver(company_created)
-def create_default_permission(sender, company, **kwargs):
-    Permission.objects.get_or_create(
-        company=company,
-        name="Default",
-    )

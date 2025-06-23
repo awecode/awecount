@@ -23,6 +23,7 @@ class CompanyCreateSerializer(BaseModelSerializer):
             "country",
             "country_iso",
             "currency_code",
+            "corporate_tax_rate",
             "slug",
         ]
         read_only_fields = ["slug"]

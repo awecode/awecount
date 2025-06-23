@@ -2394,6 +2394,8 @@ class Import(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+# NOTE: Updating these choices and ordering will break its account's code and system_code
+# which is created in Company.create_company_defaults(), so be careful when updating these.
 class LandedCostRowType(models.TextChoices):
     DUTY = "Duty"
     LABOR = "Labor"

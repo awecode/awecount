@@ -47,7 +47,7 @@ admin.site.register(PartyRepresentative, PartyRepresentativeAdmin)
 
 
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "category", "parent", "default", "order")
+    list_display = ("name", "code", "system_code", "category", "parent", "default", "order")
     search_fields = ("company__name", "code", "name")
     list_filter = ("company", "default", "category")
     # readonly_fields = ('default',)
@@ -77,7 +77,7 @@ admin.site.register(JournalEntry, JournalEntryAdmin)
 
 
 class CategoryAdmin(MPTTModelAdmin):
-    list_display = ("name", "code", "parent", "company")
+    list_display = ("name", "code", "system_code", "default", "parent", "company")
     list_filter = ("company", "default")
     readonly_fields = ("default",)
     search_fields = ("name",)
