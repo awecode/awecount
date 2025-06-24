@@ -424,13 +424,6 @@ class Company(BaseModel):
         CATEGORY_CODES = [cat["code"] for cat in CATEGORY_DEFINITIONS if "system_code" not in cat]
         ACCOUNT_CODES = [acc["code"] for acc in ACCOUNT_DEFINITIONS if "system_code" not in acc]
         
-        landed_cost_system_codes = []
-        for index, cost_type in enumerate(LandedCostRowType.values):
-            if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
-                system_code = f"E-D-LC-{cost_type[:3].upper()}{index}"
-                landed_cost_system_codes.append(system_code)
-        
-        all_account_system_codes = list(acc_system_codes.values()) + landed_cost_system_codes
         
         category_filter = Q(code__in=CATEGORY_CODES) | Q(system_code__in=acc_cat_system_codes.values())
         filtered_categories = Category.objects.filter(company=self).filter(category_filter)
@@ -444,7 +437,7 @@ class Company(BaseModel):
             else:
                 existing_categories_by_code[cat.code] = cat
 
-        account_filter = Q(code__in=ACCOUNT_CODES) | Q(system_code__in=all_account_system_codes)
+        account_filter = Q(code__in=ACCOUNT_CODES) | Q(system_code__in=acc_system_codes.values())
         filtered_accounts = Account.objects.filter(company=self).filter(account_filter)
         
         existing_accounts_by_code = {}
@@ -546,52 +539,12 @@ class Company(BaseModel):
                 category=category
             )
             
-        # Get specific categories needed for landed cost accounts
-        additional_cost_category = existing_categories_by_system_code[acc_cat_system_codes["Additional Cost"]]
-
-        new_additional_cost_accounts = {}
-        new_additional_cost_accounts_system_codes = []
-        for index, cost_type in enumerate(LandedCostRowType.values):
-            if cost_type not in [LandedCostRowType.CUSTOMS_VALUATION_UPLIFT, LandedCostRowType.TAX_ON_PURCHASE]:
-                system_code = f"E-D-LC-{cost_type[:3].upper()}{index}"
-                code = f"E-D-LC-{cost_type[:3].upper()}{index}"
-                
-                _, is_new = get_or_prepare_account(
-                    system_code=system_code,
-                    name=cost_type,
-                    category=additional_cost_category,
-                    code=code
-                )
-                
-                if is_new:
-                    new_additional_cost_accounts[cost_type] = None
-                    new_additional_cost_accounts_system_codes.append(system_code)
-
-        # Handle landed cost accounts (kept separate due to special logic)
         if accounts_to_create:
             Account.objects.bulk_create(accounts_to_create)
 
-        if new_additional_cost_accounts:
-            created_accounts = Account.objects.filter(
-                company=self,
-                system_code__in=new_additional_cost_accounts_system_codes
-            ).values('system_code', 'id')
-
-            account_id_map = {acc['system_code']: acc['id'] for acc in created_accounts}
-
-            for cost_type in new_additional_cost_accounts:
-                system_code = f"E-D-LC-{cost_type[:3].upper()}{LandedCostRowType.values.index(cost_type)}"
-                if system_code in account_id_map:
-                    new_additional_cost_accounts[cost_type] = account_id_map[system_code]
-
-        # Handle PurchaseSetting
-        purchase_setting, created = PurchaseSetting.objects.get_or_create(company=self)
-        if created and new_additional_cost_accounts:
-            purchase_setting.landed_cost_accounts = new_additional_cost_accounts
-        elif new_additional_cost_accounts:
-            purchase_setting.landed_cost_accounts.update(new_additional_cost_accounts)
-        if new_additional_cost_accounts:
-            purchase_setting.save()
+        purchase_settings, created = PurchaseSetting.objects.get_or_create(company=self)
+        if not created and purchase_settings.enable_landed_cost:
+            purchase_settings.save()
 
         PaymentMode.objects.get_or_create(
             company=self,

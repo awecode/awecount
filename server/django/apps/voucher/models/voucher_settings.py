@@ -3,8 +3,11 @@ from django.db import models
 
 from apps.bank.models import BankAccount
 from apps.company.models import Company
-from apps.voucher.models import PaymentMode
+from apps.voucher.models import LandedCostRowType, PaymentMode
+from apps.ledger.models.base import Account, Category
+from django.conf import settings
 
+acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
 
 class SalesSetting(models.Model):
     company = models.OneToOneField(
@@ -145,6 +148,76 @@ class PurchaseSetting(models.Model):
                 setattr(self, key, value)
 
         self.save()
+
+    def save_landed_cost_accounts(self):
+        additional_cost_category = Category.objects.get(
+            system_code=acc_cat_system_codes["Additional Cost"],
+            company=self.company
+        )
+
+        accounts_to_create = []
+
+        excluded_cost_types = [
+            LandedCostRowType.CUSTOMS_VALUATION_UPLIFT,
+            LandedCostRowType.TAX_ON_PURCHASE
+        ]
+        
+        system_codes = [
+            f"E-D-LC-{cost_type[:3].upper()}{index}"
+            for index, cost_type in enumerate(LandedCostRowType.values)
+            if cost_type not in excluded_cost_types
+        ]
+        
+        existing_accounts_by_system_code = {
+            account.system_code: account for account in Account.objects.filter(
+                company=self.company,
+                system_code__in=system_codes
+            )
+        }
+
+        def get_or_prepare_account(code, name, system_code):
+            if system_code in existing_accounts_by_system_code:
+                return existing_accounts_by_system_code[system_code], False
+        
+            account_data = {
+                'name': name,
+                'company': self.company,
+                'category': additional_cost_category,
+                'default': True,
+                'code': code,
+                'system_code': system_code,
+            }
+            
+            account = Account(**account_data)
+            accounts_to_create.append(account)
+
+            existing_accounts_by_system_code[system_code] = account
+            
+            return account, True
+
+        for index, cost_type in enumerate(LandedCostRowType.values):
+            if cost_type not in excluded_cost_types:
+                code = f"E-D-LC-{cost_type[:3].upper()}{index}"
+                get_or_prepare_account(code=code, name=cost_type, system_code=code)
+
+        if accounts_to_create:
+            Account.objects.bulk_create(accounts_to_create)
+
+            new_landed_cost_accounts = {
+                account.name: account.id
+                for account in accounts_to_create
+            }
+
+            if self.pk:
+                self.landed_cost_accounts.update(new_landed_cost_accounts)
+            else:
+                self.landed_cost_accounts = new_landed_cost_accounts
+
+    def save(self, *args, **kwargs):
+        if self.enable_landed_cost:
+            self.save_landed_cost_accounts()
+            
+        super().save(*args, **kwargs)
 
     @property
     def fields(self):
