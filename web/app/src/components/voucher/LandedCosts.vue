@@ -2,7 +2,7 @@
 import FormattedNumber from 'src/components/FormattedNumber.vue'
 import { useLandedCosts } from 'src/composables/useLandedCosts'
 import { useLoginStore } from 'src/stores/login-info'
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   fields: {
@@ -31,13 +31,13 @@ const {
   addLandedCostRow,
   handleTypeChange,
   removeLandedCostRow,
+  updateLandedCostRow,
   totalAdditionalCost,
   duty,
   taxBeforeDeclaration,
   declarationFees,
   totalOnDeclaration,
   totalTax,
-  landedCostRows,
   averageRatePerItem,
 } = useLandedCosts(fieldsValue)
 
@@ -59,33 +59,17 @@ const handleTaxSchemeChange = (row) => {
     row.tax_scheme = null
   }
 }
-
-// Watch for changes in averageRatePerItem and update fields.value.rows accordingly
-watch(
-  averageRatePerItem,
-  (newAverageRates) => {
-    if (!newAverageRates?.length || !props.fields.rows) return
-
-    // Update each row's rate with the totalCost from averageRatePerItem
-    props.fields.rows.forEach((row, index) => {
-      if (newAverageRates[index] && newAverageRates[index].totalCost) {
-        row.updated_cost_price = newAverageRates[index].totalCost.toNumber()
-      }
-    })
-  },
-  { deep: true },
-)
 </script>
 
 <template>
   <q-card v-if="formDefaults.options?.enable_landed_costs">
     <q-card-section>
       <div class="row items-center q-mb-sm">
-        <q-checkbox v-model="showLandedCosts" label="Additional Costs" :disable="!!landedCostRows.length && showLandedCosts" />
+        <q-checkbox v-model="showLandedCosts" label="Additional Costs" :disable="!!fields.landed_cost_rows?.length && showLandedCosts" />
       </div>
       <div v-if="showLandedCosts">
-        <div v-if="landedCostRows.length" class="landed-costs-rows">
-          <q-card v-for="(row, index) in landedCostRows" :key="index" class="landed-cost-row mb-4 px-4">
+        <div v-if="fields.landed_cost_rows?.length" class="landed-costs-rows">
+          <q-card v-for="(row, index) in fields.landed_cost_rows" :key="index" class="landed-cost-row mb-4 px-4">
             <q-card-section class="q-pa-sm">
               <div class="row q-col-gutter-sm">
                 <!-- Type and Percentage -->
@@ -100,7 +84,10 @@ watch(
                         options-dense
                         label="Type"
                         :options="LANDED_COST_TYPES"
-                        @update:model-value="handleTypeChange(row)"
+                        @update:model-value="() => {
+                          handleTypeChange(row)
+                          updateLandedCostRow(index)
+                        }"
                       />
                     </div>
                     <div class="col-4">
@@ -109,6 +96,7 @@ watch(
                         class="full-width"
                         :disable="row.type === 'Tax on Purchase'"
                         :label="row.is_percentage ? 'Percent' : 'Fixed'"
+                        @update:model-value="updateLandedCostRow(index)"
                       />
                     </div>
                   </div>
@@ -126,6 +114,7 @@ watch(
                         :error="!!errors?.landed_cost_rows?.[index]?.value"
                         :error-message="errors?.landed_cost_rows?.[index]?.value"
                         :readonly="row.type === 'Tax on Purchase'"
+                        @update:model-value="updateLandedCostRow(index)"
                       >
                         <template #append>
                           <q-select
@@ -138,6 +127,7 @@ watch(
                             options-dense
                             style="min-width: 80px"
                             :options="AVAILABLE_CURRENCIES"
+                            @update:model-value="updateLandedCostRow(index)"
                           />
                           <span v-else>{{ row.is_percentage ? '%' : row.currency }}</span>
                         </template>

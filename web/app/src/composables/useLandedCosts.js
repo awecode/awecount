@@ -38,6 +38,12 @@ export const LANDED_COST_TYPES = [
 const AVAILABLE_CURRENCIES = ['USD', 'INR', 'NPR']
 
 export const useLandedCosts = (fields) => {
+  if (!fields.value.landed_cost_rows) {
+    fields.value.landed_cost_rows = []
+  }
+  if (!fields.value.rows) {
+    fields.value.rows = []
+  }
   const loginStore = useLoginStore()
   const showLandedCosts = ref(false)
 
@@ -63,105 +69,74 @@ export const useLandedCosts = (fields) => {
     return amount.mul(rate)
   }
 
-  // Create a reactive reference to landed_cost_rows
-  const landedCostRows = computed({
-    get: () => fields.value?.landed_cost_rows || [],
-    set: (value) => {
-      if (fields.value) {
-        fields.value.landed_cost_rows = value
-      }
-    },
-  })
-
   const invoiceTotal = computed(() => {
     return fields.value.rows.reduce((sum, row) =>
       sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
   })
 
-  // TODO Refactor, make DRY
+  // Function to update landed cost row amount and cascade updates
+  const updateLandedCostRow = (index) => {
+    if (!fields.value.landed_cost_rows[index]) return
 
-  // Watch for changes in individual row values
-  watch(
-    () => landedCostRows.value.map(row => ({
-      value: row.value,
-      is_percentage: row.is_percentage,
-      currency: row.currency,
-      type: row.type,
-    })),
-    (newRows, oldRows) => {
-      if (!newRows || !oldRows) return
+    const row = fields.value.landed_cost_rows[index]
 
-      // Find which row changed
-      const changedIndex = newRows.findIndex((row, index) =>
-        JSON.stringify(row) !== JSON.stringify(oldRows[index]),
-      )
+    if (row.is_percentage && row.value) {
+      // Calculate base amount including invoice total and previous landed costs
+      let baseAmount = invoiceTotal.value
 
-      if (changedIndex === -1) return
+      // Add amounts from previous landed cost rows
+      if (row.type !== 'Tax on Purchase') {
+        for (let i = 0; i < index; i++) {
+          const prevRow = fields.value.landed_cost_rows[i]
+          if (prevRow.amount && prevRow.type !== 'Tax on Purchase') {
+            baseAmount = baseAmount.add(new Decimal(prevRow.amount))
+          }
+        }
+      }
 
-      const changedRow = landedCostRows.value[changedIndex]
-      const updatedRows = [...landedCostRows.value]
+      // Calculate percentage amount based on total base amount
+      const newAmount = baseAmount.mul(row.value).div('100')
+      fields.value.landed_cost_rows[index] = { ...row, amount: newAmount }
+    } else if (row.value) {
+      // For fixed amounts, convert to target currency if needed
+      const newAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
+      fields.value.landed_cost_rows[index] = { ...row, amount: newAmount }
+    }
 
-      if (changedRow.is_percentage && changedRow.value) {
-        // Calculate base amount including invoice total and previous landed costs
+    // Update subsequent rows if they are percentages
+    for (let i = index + 1; i < fields.value.landed_cost_rows.length; i++) {
+      const subsequentRow = fields.value.landed_cost_rows[i]
+      if (subsequentRow.is_percentage && subsequentRow.value && subsequentRow.type !== 'Tax on Purchase') {
         let baseAmount = invoiceTotal.value
 
-        // Add amounts from previous landed cost rows
-        if (changedRow.type !== 'Tax on Purchase') {
-          for (let i = 0; i < changedIndex; i++) {
-            const prevRow = updatedRows[i]
-            if (prevRow.amount && prevRow.type !== 'Tax on Purchase') {
-              baseAmount = baseAmount.add(new Decimal(prevRow.amount))
-            }
+        // Add amounts from all previous rows
+        for (let j = 0; j < i; j++) {
+          const prevRow = fields.value.landed_cost_rows[j]
+          if (prevRow.amount && prevRow.type !== 'Tax on Purchase') {
+            baseAmount = baseAmount.add(new Decimal(prevRow.amount))
           }
         }
 
-        // Calculate percentage amount based on total base amount
-        const newAmount = baseAmount.mul(changedRow.value).div('100')
-        updatedRows[changedIndex] = { ...changedRow, amount: newAmount }
-      } else if (changedRow.value) {
-        // For fixed amounts, convert to target currency if needed
-        const newAmount = convertCurrency(changedRow.value, changedRow.currency, loginStore.companyInfo.currency_code || 'USD')
-        updatedRows[changedIndex] = { ...changedRow, amount: newAmount }
+        const newAmount = baseAmount.mul(subsequentRow.value).div('100')
+        fields.value.landed_cost_rows[i] = { ...subsequentRow, amount: newAmount }
       }
-
-      // Update subsequent rows if they are percentages
-      for (let i = changedIndex + 1; i < updatedRows.length; i++) {
-        const row = updatedRows[i]
-        if (row.is_percentage && row.value && row.type !== 'Tax on Purchase') {
-          let baseAmount = invoiceTotal.value
-
-          // Add amounts from all previous rows
-          for (let j = 0; j < i; j++) {
-            const prevRow = updatedRows[j]
-            if (prevRow.amount && prevRow.type !== 'Tax on Purchase') {
-              baseAmount = baseAmount.add(new Decimal(prevRow.amount))
-            }
-          }
-
-          const newAmount = baseAmount.mul(row.value).div('100')
-          updatedRows[i] = { ...row, amount: newAmount }
-        }
-      }
-
-      fields.value.landed_cost_rows = updatedRows
-    },
-    { deep: true },
-  )
+    }
+  }
 
   // Watch for changes in invoice rows
   watch(
     () => fields.value.rows,
     () => {
-      if (!landedCostRows.value.length) return
+      if (!fields.value.landed_cost_rows.length) return
 
-      const updatedRows = landedCostRows.value.map((row, index) => {
+      const updatedLandedCostRows = fields.value.landed_cost_rows.map((row, index) => {
         if (row.is_percentage && row.value) {
           let baseAmount = invoiceTotal.value
 
           if (row.type !== 'Tax on Purchase') {
           // Add amounts from previous landed cost rows
             for (let i = 0; i < index; i++) {
-              const prevRow = landedCostRows.value[i]
+              const prevRow = fields.value.landed_cost_rows[i]
               if (prevRow.amount && prevRow.type !== 'Tax on Purchase') {
                 baseAmount = baseAmount.add(new Decimal(prevRow.amount))
               }
@@ -177,20 +152,20 @@ export const useLandedCosts = (fields) => {
         return row
       })
 
-      fields.value.landed_cost_rows = updatedRows
+      fields.value.landed_cost_rows = updatedLandedCostRows
     },
     { deep: true },
   )
 
   // Watch for initial data to copy amount to value
   watch(
-    () => fields.value?.landed_cost_rows,
+    () => fields.value.landed_cost_rows,
     (newRows) => {
-      if (newRows?.length) {
+      if (newRows.length) {
         const updatedRows = newRows.map((row) => {
           return {
             ...row,
-            currency: loginStore.companyInfo.currency_code || 'USD',
+            currency: row.currency || loginStore.companyInfo.currency_code || 'USD',
           }
         })
         if (JSON.stringify(updatedRows) !== JSON.stringify(newRows)) {
@@ -199,7 +174,7 @@ export const useLandedCosts = (fields) => {
         showLandedCosts.value = true
       }
     },
-    { immediate: true },
+    { once: true },
   )
 
   // TODO Only set presets for non-default values, ie. is_percentage:true
@@ -324,7 +299,11 @@ export const useLandedCosts = (fields) => {
       tax_scheme: null,
       credit_account: null,
     }
-    landedCostRows.value = [...landedCostRows.value, newRow]
+    if (fields.value.landed_cost_rows) {
+      fields.value.landed_cost_rows = [...fields.value.landed_cost_rows, newRow]
+    } else {
+      fields.value.landed_cost_rows = [newRow]
+    }
   }
 
   // Handle type selection to apply presets
@@ -347,10 +326,10 @@ export const useLandedCosts = (fields) => {
   }
 
   const averageRate = computed(() => {
-    if (!fields.value.rows || !landedCostRows.value.length) return 0
+    if (!fields.value.rows || !fields.value.landed_cost_rows.length) return 0
 
     // Calculate landed costs total
-    const totalLandedCosts = landedCostRows.value.reduce((sum, row) => {
+    const totalLandedCosts = fields.value.landed_cost_rows.reduce((sum, row) => {
       return sum.add(row.amount)
     }, new Decimal('0'))
 
@@ -362,7 +341,7 @@ export const useLandedCosts = (fields) => {
 
   const duty = computed(() => {
     const includedTypes = ['Duty']
-    return landedCostRows.value.reduce((sum, row) => {
+    return fields.value.landed_cost_rows.reduce((sum, row) => {
       if (includedTypes.includes(row.type)) {
         return sum.add(row.amount)
       }
@@ -371,7 +350,7 @@ export const useLandedCosts = (fields) => {
   })
 
   const taxOnPurchase = computed(() => {
-    return landedCostRows.value.reduce((sum, row) => {
+    return fields.value.landed_cost_rows.reduce((sum, row) => {
       if (row.type === 'Tax on Purchase' && row.amount) {
         return sum.add(new Decimal(row.amount))
       }
@@ -382,7 +361,7 @@ export const useLandedCosts = (fields) => {
   const taxBeforeDeclaration = computed(() => {
     // Calculate taxes for all rows above customs declaration, except tax on purchase which will be added separately
     let declarationFound = false
-    const taxesExceptPurchaseBeforeDeclaration = landedCostRows.value.reduce((sum, row) => {
+    const taxesExceptPurchaseBeforeDeclaration = fields.value.landed_cost_rows.reduce((sum, row) => {
       if (row.type === 'Customs Declaration') {
         declarationFound = true
         return sum
@@ -411,7 +390,7 @@ export const useLandedCosts = (fields) => {
 
   const declarationFees = computed(() => {
     const includedTypes = ['Customs Declaration']
-    return landedCostRows.value.reduce((sum, row) => {
+    return fields.value.landed_cost_rows.reduce((sum, row) => {
       if (includedTypes.includes(row.type)) {
         let rowAmount = new Decimal(row.amount)
         // Add tax if present
@@ -430,13 +409,13 @@ export const useLandedCosts = (fields) => {
   })
 
   const totalTax = computed(() => {
-    return landedCostRows.value.reduce((sum, row) => {
+    return fields.value.landed_cost_rows.reduce((sum, row) => {
       return sum.add(getRowTaxAmount(row))
     }, new Decimal('0'))
   })
 
   const totalAdditionalCost = computed(() => {
-    return landedCostRows.value.reduce((sum, row) => {
+    return fields.value.landed_cost_rows.reduce((sum, row) => {
       if (!['Tax on Purchase', 'Customs Valuation Uplift'].includes(row.type)) {
         return sum.add(row.amount)
       }
@@ -444,23 +423,40 @@ export const useLandedCosts = (fields) => {
     }, new Decimal('0')).add(totalTax.value)
   })
 
+  // Watch dependencies and update row.updated_cost_price
+  watch(
+    [() => fields.value.rows, () => totalAdditionalCost.value, () => totalTax.value, () => invoiceTotal.value],
+    () => {
+      if (!fields.value.rows || !fields.value.landed_cost_rows.length) return
+
+      fields.value.rows.forEach((row) => {
+        const rowRate = new Decimal(row.rate || '0')
+        const rowAmount = rowRate.mul(row.quantity || '1')
+        const additionalCost = totalAdditionalCost.value.sub(totalTax.value).div(invoiceTotal.value).mul(rowAmount).div(row.quantity || '1')
+        const totalCost = rowRate.add(additionalCost)
+        row.updated_cost_price = totalCost.toNumber()
+      })
+    },
+    { deep: true },
+  )
+
   const averageRatePerItem = computed(() => {
-    if (!fields.value.rows || !landedCostRows.value.length) return []
-    return fields.value.rows?.map((row) => {
+    if (!fields.value.rows) return []
+    return fields.value.rows.map((row) => {
       const rowRate = new Decimal(row.rate || '0')
-      const rowAmount = rowRate.mul(row.quantity || '1')
-      const additionalCost = totalAdditionalCost.value.sub(totalTax.value).div(invoiceTotal.value).mul(rowAmount).div(row.quantity || '1')
-      const totalCost = rowRate.add(additionalCost)
+      const additionalCost = new Decimal(row.updated_cost_price || '0').sub(rowRate)
       return {
         ...row,
         additionalCost,
-        totalCost,
+        totalCost: new Decimal(row.updated_cost_price || '0'),
       }
     })
+  }, {
+    deep: true,
   })
 
   const removeLandedCostRow = (index) => {
-    landedCostRows.value = landedCostRows.value.filter((_, i) => i !== index)
+    fields.value.landed_cost_rows = fields.value.landed_cost_rows.filter((_, i) => i !== index)
   }
 
   return {
@@ -471,13 +467,13 @@ export const useLandedCosts = (fields) => {
     addLandedCostRow,
     handleTypeChange,
     removeLandedCostRow,
+    updateLandedCostRow,
     averageRate,
     duty,
     taxBeforeDeclaration,
     declarationFees,
     totalOnDeclaration,
     totalTax,
-    landedCostRows,
     averageRatePerItem,
     totalAdditionalCost,
   }
