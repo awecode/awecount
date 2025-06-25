@@ -34,6 +34,7 @@ const {
   removeLandedCostRow,
   updateLandedCostRow,
   totalAdditionalCost,
+  taxOnDeclaration,
   duty,
   taxBeforeDeclaration,
   declarationFees,
@@ -226,73 +227,79 @@ const handleTaxSchemeChange = (row) => {
 
     <!-- Additional Costs Summary -->
     <q-card-section v-if="showLandedCosts" class="q-pa-md">
-      <div class="text-h6 q-mb-sm">
+      <div class="text-h6 q-mb-md">
         Additional Costs Summary
       </div>
-      <div class="row q-col-gutter-sm">
-        <div class="col-12 col-md-6">
-          <div class="declaration-summary-item">
-            <span class="label">Duty:</span>
-            <span class="value">
-              <FormattedNumber
-                type="currency"
-                :currency="loginStore.companyInfo.currency_code"
-                :value="duty"
-              />
-            </span>
-          </div>
-          <div class="declaration-summary-item">
-            <span class="label">Tax before declaration:</span>
-            <span class="value">
-              <FormattedNumber
-                type="currency"
-                :currency="loginStore.companyInfo.currency_code"
-                :value="taxBeforeDeclaration"
-              />
-            </span>
-          </div>
-          <div class="declaration-summary-item">
-            <span class="label">Total Tax:</span>
-            <span class="value">
-              <FormattedNumber
-                type="currency"
-                :currency="loginStore.companyInfo.currency_code"
-                :value="totalTax"
-              />
-            </span>
-          </div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="label">Duty:</span>
+          <span class="value">
+            <FormattedNumber
+              type="currency"
+              :currency="loginStore.companyInfo.currency_code"
+              :value="duty"
+            />
+          </span>
         </div>
-        <div class="col-12 col-md-6">
-          <div class="declaration-summary-item">
-            <span class="label">Declaration Fees (incl. tax):</span>
-            <span class="value">
-              <FormattedNumber
-                type="currency"
-                :currency="loginStore.companyInfo.currency_code"
-                :value="declarationFees"
-              />
-            </span>
-          </div>
-          <div class="declaration-summary-item">
-            <span class="label">Total on Declaration:</span>
-            <span class="value">
-              <FormattedNumber
-                type="currency"
-                :currency="loginStore.companyInfo.currency_code"
-                :value="totalOnDeclaration"
-              />
-            </span>
-          </div>
-          <div class="declaration-summary-item">
-            <span class="label">Total Additional:</span>
-            <span class="value">
-              <FormattedNumber
-                type="currency"
-                :currency="loginStore.companyInfo.currency_code"
-                :value="totalAdditionalCost"
-              />
-            </span>
-          </div>
+        <div class="summary-item">
+          <span class="label">Declaration Fees (incl. tax):</span>
+          <span class="value">
+            <FormattedNumber
+              type="currency"
+              :currency="loginStore.companyInfo.currency_code"
+              :value="declarationFees"
+            />
+          </span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Tax before declaration:</span>
+          <span class="value">
+            <FormattedNumber
+              type="currency"
+              :currency="loginStore.companyInfo.currency_code"
+              :value="taxBeforeDeclaration"
+            />
+          </span>
+        </div>
+        <div class="summary-item total-item">
+          <span class="label">Total on Declaration:</span>
+          <span class="value">
+            <FormattedNumber
+              type="currency"
+              :currency="loginStore.companyInfo.currency_code"
+              :value="totalOnDeclaration"
+            />
+          </span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Tax on Declaration:</span>
+          <span class="value">
+            <FormattedNumber
+              type="currency"
+              :currency="loginStore.companyInfo.currency_code"
+              :value="taxOnDeclaration"
+            />
+          </span>
+        </div>
+        <div class="summary-item total-item">
+          <span class="label">Total Tax:</span>
+          <span class="value">
+            <FormattedNumber
+              type="currency"
+              :currency="loginStore.companyInfo.currency_code"
+              :value="totalTax"
+            />
+          </span>
+        </div>
+        <div class="summary-item total-item">
+          <span class="label">Total Additional:</span>
+          <span class="value">
+            <FormattedNumber
+              type="currency"
+              :currency="loginStore.companyInfo.currency_code"
+              :value="totalAdditionalCost"
+            />
+          </span>
         </div>
       </div>
     </q-card-section>
@@ -390,30 +397,35 @@ const handleTaxSchemeChange = (row) => {
   padding: 8px;
 }
 
-.declaration-summary-item {
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.summary-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 0;
-  border-bottom: 1px solid #eee;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f8f9fa;
 }
 
-.declaration-summary-item:last-child {
-  border-bottom: none;
-}
-
-.declaration-summary-item .label {
-  color: #666;
+.summary-item .label {
   font-weight: 500;
 }
 
-.declaration-summary-item .value {
+.summary-item .value {
   font-weight: 600;
 }
 
-@media (max-width: 1024px) {
-  .landed-costs-rows {
-    max-width: 100%;
+@media (min-width: 768px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 }
 </style>

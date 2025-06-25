@@ -37,7 +37,7 @@ export const LANDED_COST_TYPES = [
 // Available currencies
 const AVAILABLE_CURRENCIES = ['USD', 'INR', 'NPR']
 
-export const useLandedCosts = (fields, { roundUp  }) => {
+export const useLandedCosts = (fields, { roundUp }) => {
   if (!fields.value.landed_cost_rows) {
     fields.value.landed_cost_rows = []
   }
@@ -394,6 +394,19 @@ export const useLandedCosts = (fields, { roundUp  }) => {
     return roundUpIfNeeded(taxesExceptPurchaseBeforeDeclaration.add(taxOnPurchase.value))
   })
 
+  const taxOnDeclaration = computed(() => {
+    const includedTypes = ['Customs Declaration']
+    const total = fields.value.landed_cost_rows.reduce((sum, row) => {
+      if (includedTypes.includes(row.type) && row.tax_scheme && row.tax_scheme.rate) {
+        const rowAmount = new Decimal(row.amount)
+        const taxAmount = rowAmount.mul(row.tax_scheme.rate).div('100')
+        return sum.add(taxAmount)
+      }
+      return sum
+    }, new Decimal('0'))
+    return roundUpIfNeeded(total)
+  })
+
   const declarationFees = computed(() => {
     const includedTypes = ['Customs Declaration']
     const total = fields.value.landed_cost_rows.reduce((sum, row) => {
@@ -485,5 +498,6 @@ export const useLandedCosts = (fields, { roundUp  }) => {
     totalTax,
     averageRatePerItem,
     totalAdditionalCost,
+    taxOnDeclaration,
   }
 }
