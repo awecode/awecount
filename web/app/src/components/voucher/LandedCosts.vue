@@ -87,6 +87,7 @@ const handleTaxSchemeChange = (row) => {
                         map-options
                         options-dense
                         label="Type"
+                        :error="!!errors?.landed_cost_rows?.[index]?.type"
                         :options="LANDED_COST_TYPES"
                         @update:model-value="() => {
                           handleTypeChange(row)
@@ -99,6 +100,7 @@ const handleTaxSchemeChange = (row) => {
                         v-model="row.is_percentage"
                         class="full-width"
                         :disable="row.type === 'Tax on Purchase'"
+                        :error="!!errors?.landed_cost_rows?.[index]?.is_percentage"
                         :label="row.is_percentage ? 'Percent' : 'Fixed'"
                         @update:model-value="updateLandedCostRow(index)"
                       />
@@ -130,6 +132,7 @@ const handleTaxSchemeChange = (row) => {
                             map-options
                             options-dense
                             style="min-width: 80px"
+                            :error="!!errors?.landed_cost_rows?.[index]?.currency"
                             :options="AVAILABLE_CURRENCIES"
                             @update:model-value="updateLandedCostRow(index)"
                           />
@@ -158,6 +161,7 @@ const handleTaxSchemeChange = (row) => {
                     option-label="name"
                     option-value="id"
                     :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/tax_schemes/`"
+                    :error="!!errors?.landed_cost_rows?.[index]?.tax_scheme_id"
                     :options="formDefaults.collections?.tax_schemes"
                     @update:model-value="handleTaxSchemeChange(row)"
                   >
@@ -182,6 +186,7 @@ const handleTaxSchemeChange = (row) => {
                     option-label="name"
                     option-value="id"
                     :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/landed_cost_credit_accounts/`"
+                    :error="!!errors?.landed_cost_rows?.[index]?.credit_account_id"
                     :label="`${row.type === 'Customs Valuation Uplift' ? 'Credit Account for Tax' : 'Credit Account'}`"
                     :options="formDefaults.collections?.landed_cost_credit_accounts"
                   >
