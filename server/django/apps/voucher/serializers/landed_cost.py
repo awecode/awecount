@@ -72,6 +72,7 @@ class LandedCostRowSerializer(BaseModelSerializer):
             "credit_account",
             "credit_account_id",
             "tax_amount",
+            "currency",
             "total_amount",
         ]
         extra_kwargs = {

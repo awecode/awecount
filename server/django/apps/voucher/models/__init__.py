@@ -2414,10 +2414,16 @@ class LandedCostRowType(models.TextChoices):
 
 
 class LandedCostRow(models.Model):
+    CURRENCIES = [
+        ("USD", "USD"),
+        ("INR", "INR"),
+        ("NPR", "NPR"),
+    ]
     type = models.CharField(choices=LandedCostRowType.choices, max_length=25)
     description = models.TextField(blank=True, null=True)
     amount = models.DecimalField(max_digits=24, decimal_places=6)
     value = models.DecimalField(max_digits=24, decimal_places=6)
+    currency = models.CharField(max_length=3, choices=CURRENCIES, default=CURRENCIES[0][0])
     is_percentage = models.BooleanField(default=False)
     invoice = models.ForeignKey(
         PurchaseVoucher,
