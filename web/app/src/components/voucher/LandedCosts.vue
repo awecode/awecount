@@ -23,6 +23,7 @@ const props = defineProps({
 const loginStore = useLoginStore()
 
 const fieldsValue = computed(() => props.fields)
+const roundUp = computed(() => props.formDefaults.options?.round_up_additional_costs)
 
 const {
   showLandedCosts,
@@ -39,7 +40,9 @@ const {
   totalOnDeclaration,
   totalTax,
   averageRatePerItem,
-} = useLandedCosts(fieldsValue)
+} = useLandedCosts(fieldsValue, {
+  roundUp,
+})
 
 // Handle tax scheme change for Tax on Purchase type
 const handleTaxSchemeChange = (row) => {

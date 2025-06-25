@@ -37,7 +37,7 @@ export const LANDED_COST_TYPES = [
 // Available currencies
 const AVAILABLE_CURRENCIES = ['USD', 'INR', 'NPR']
 
-export const useLandedCosts = (fields) => {
+export const useLandedCosts = (fields, { roundUp  }) => {
   if (!fields.value.landed_cost_rows) {
     fields.value.landed_cost_rows = []
   }
@@ -69,6 +69,10 @@ export const useLandedCosts = (fields) => {
     return amount.mul(rate)
   }
 
+  const roundUpIfNeeded = (amount) => {
+    return roundUp.value ? amount.ceil() : amount
+  }
+
   const invoiceTotal = computed(() => {
     return fields.value.rows.reduce((sum, row) =>
       sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
@@ -96,11 +100,11 @@ export const useLandedCosts = (fields) => {
 
       // Calculate percentage amount based on total base amount
       const newAmount = baseAmount.mul(row.value).div('100')
-      fields.value.landed_cost_rows[index] = { ...row, amount: newAmount }
+      fields.value.landed_cost_rows[index] = { ...row, amount: roundUpIfNeeded(newAmount) }
     } else if (row.value) {
       // For fixed amounts, convert to target currency if needed
       const newAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
-      fields.value.landed_cost_rows[index] = { ...row, amount: newAmount }
+      fields.value.landed_cost_rows[index] = { ...row, amount: roundUpIfNeeded(newAmount) }
     }
 
     // Update subsequent rows if they are percentages
@@ -118,7 +122,7 @@ export const useLandedCosts = (fields) => {
         }
 
         const newAmount = baseAmount.mul(subsequentRow.value).div('100')
-        fields.value.landed_cost_rows[i] = { ...subsequentRow, amount: newAmount }
+        fields.value.landed_cost_rows[i] = { ...subsequentRow, amount: roundUpIfNeeded(newAmount) }
       }
     }
   }
@@ -144,10 +148,10 @@ export const useLandedCosts = (fields) => {
           }
 
           const newAmount = baseAmount.mul(row.value).div('100')
-          return { ...row, amount: newAmount }
+          return { ...row, amount: roundUpIfNeeded(newAmount) }
         } else if (row.value) {
           const newAmount = convertCurrency(row.value, row.currency, loginStore.companyInfo.currency_code || 'USD')
-          return { ...row, amount: newAmount }
+          return { ...row, amount: roundUpIfNeeded(newAmount) }
         }
         return row
       })
