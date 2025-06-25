@@ -207,6 +207,9 @@ export default {
             <div>
               <q-checkbox v-model="fields.enable_landed_cost" label="Enable Landed Cost?" />
             </div>
+            <div>
+              <q-checkbox v-model="fields.round_up_additional_costs" label="Round up additional costs?" />
+            </div>
             <q-card v-if="fields.enable_landed_cost" class="q-mt-lg">
               <q-card-section>
                 <div>

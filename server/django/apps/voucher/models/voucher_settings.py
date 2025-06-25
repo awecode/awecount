@@ -126,6 +126,7 @@ class PurchaseSetting(models.Model):
     rate_change_alert_emails = ArrayField(models.EmailField(), default=list, blank=True)
 
     enable_landed_cost = models.BooleanField(default=False)
+    round_up_additional_costs = models.BooleanField(default=False)
     update_cost_price_with_landed_cost = models.BooleanField(default=False)
     landed_cost_accounts = models.JSONField(default=dict, blank=True)
 
@@ -243,6 +244,7 @@ class PurchaseSetting(models.Model):
             "require_item_code": self.require_item_code,
             "require_item_hs_code": self.require_item_hs_code,
             "enable_landed_costs": self.enable_landed_cost,
+            "round_up_additional_costs": self.round_up_additional_costs,
             "landed_cost_accounts": self.landed_cost_accounts,
         }
 
