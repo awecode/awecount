@@ -74,8 +74,9 @@ export const useLandedCosts = (fields, { roundUp  }) => {
   }
 
   const invoiceTotal = computed(() => {
-    return fields.value.rows.reduce((sum, row) =>
+    const total = fields.value.rows.reduce((sum, row) =>
       sum.add(new Decimal(row.rate || '0').mul(row.quantity || '0')), new Decimal('0'))
+    return roundUpIfNeeded(total)
   })
 
   // Function to update landed cost row amount and cascade updates
@@ -354,12 +355,13 @@ export const useLandedCosts = (fields, { roundUp  }) => {
   })
 
   const taxOnPurchase = computed(() => {
-    return fields.value.landed_cost_rows.reduce((sum, row) => {
+    const total = fields.value.landed_cost_rows.reduce((sum, row) => {
       if (row.type === 'Tax on Purchase' && row.amount) {
         return sum.add(new Decimal(row.amount))
       }
       return sum
     }, new Decimal('0'))
+    return roundUpIfNeeded(total)
   })
 
   const taxBeforeDeclaration = computed(() => {
@@ -389,12 +391,12 @@ export const useLandedCosts = (fields, { roundUp  }) => {
 
       return sum
     }, new Decimal('0'))
-    return taxesExceptPurchaseBeforeDeclaration.add(taxOnPurchase.value)
+    return roundUpIfNeeded(taxesExceptPurchaseBeforeDeclaration.add(taxOnPurchase.value))
   })
 
   const declarationFees = computed(() => {
     const includedTypes = ['Customs Declaration']
-    return fields.value.landed_cost_rows.reduce((sum, row) => {
+    const total = fields.value.landed_cost_rows.reduce((sum, row) => {
       if (includedTypes.includes(row.type)) {
         let rowAmount = new Decimal(row.amount)
         // Add tax if present
@@ -406,6 +408,7 @@ export const useLandedCosts = (fields, { roundUp  }) => {
       }
       return sum
     }, new Decimal('0'))
+    return roundUpIfNeeded(total)
   })
 
   const totalOnDeclaration = computed(() => {
@@ -413,18 +416,20 @@ export const useLandedCosts = (fields, { roundUp  }) => {
   })
 
   const totalTax = computed(() => {
-    return fields.value.landed_cost_rows.reduce((sum, row) => {
+    const total = fields.value.landed_cost_rows.reduce((sum, row) => {
       return sum.add(getRowTaxAmount(row))
     }, new Decimal('0'))
+    return roundUpIfNeeded(total)
   })
 
   const totalAdditionalCost = computed(() => {
-    return fields.value.landed_cost_rows.reduce((sum, row) => {
+    const total = fields.value.landed_cost_rows.reduce((sum, row) => {
       if (!['Tax on Purchase', 'Customs Valuation Uplift'].includes(row.type)) {
         return sum.add(row.amount)
       }
       return sum
     }, new Decimal('0')).add(totalTax.value)
+    return roundUpIfNeeded(total)
   })
 
   // Watch dependencies and update row.updated_cost_price
