@@ -53,7 +53,7 @@ class LandedCostRowSerializer(BaseModelSerializer):
         ):
             raise serializers.ValidationError(
                 {
-                    "credit_account_id": f"Credit account is required for this type of landed cost row: {landed_cost_type}"
+                    "credit_account_id": "This field may not be null."
                 }
             )
         return data
